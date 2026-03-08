@@ -10,12 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { TeamFilterSelect } from "@/components/TeamFilterSelect";
+import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
+import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
 } from "lucide-react";
-import type { CalendarEvent, CalendarEventType } from "@/types";
+import type { CalendarEvent, CalendarEventType, ConnectedPlayer } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -39,7 +42,7 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
   });
 }
 
-function EventChip({ event, onClick, showPlayer }: { event: CalendarEvent; compact?: boolean; onClick: () => void; showPlayer?: boolean }) {
+function EventChip({ event, onClick, showPlayer }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   return (
     <button onClick={onClick} className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-colors hover:opacity-80 ${cfg.bg}`}>
@@ -106,7 +109,16 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
           <div className="space-y-1.5"><Label>Title</Label><Input value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Event title" /></div>
           <div className="space-y-1.5"><Label>Type</Label><Select value={form.type} onValueChange={(v) => update("type", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{EVENT_TYPES.map((t) => (<SelectItem key={t} value={t}>{EVENT_CONFIG[t].label}</SelectItem>))}</SelectContent></Select></div>
           {playerOptions && playerOptions.length > 0 && (
-            <div className="space-y-1.5"><Label>Assign to Player</Label><Select value={form.playerId} onValueChange={(v) => update("playerId", v)}><SelectTrigger><SelectValue placeholder="Optional — coach schedule" /></SelectTrigger><SelectContent><div className="space-y-1.5"><Label>Assign to Player</Label><Select value={form.playerId || "__mine__"} onValueChange={(v) => update("playerId", v === "__mine__" ? "" : v)}><SelectTrigger><SelectValue placeholder="Optional — coach schedule" /></SelectTrigger><SelectContent><SelectItem value="__mine__">My Schedule</SelectItem>{playerOptions.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}</SelectContent></Select></div>{playerOptions.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}</SelectContent></Select></div>
+            <div className="space-y-1.5">
+              <Label>Assign to Player</Label>
+              <Select value={form.playerId || "__mine__"} onValueChange={(v) => update("playerId", v === "__mine__" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="Optional — coach schedule" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__mine__">My Schedule</SelectItem>
+                  {playerOptions.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label>Start</Label><Input type="datetime-local" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} /></div>
@@ -226,10 +238,24 @@ export default function CalendarPage() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | undefined>(undefined);
   const [playerScope, setPlayerScope] = useState<string>("all");
   const [teamScope, setTeamScope] = useState<string>("__all__");
+  const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
+  const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
+
+  // Sync player scope when team filter changes
+  const teamPlayerIds = useMemo(() => {
+    if (teamScope === "__all__") return null;
+    const team = teams.find((t) => t.id === teamScope);
+    return new Set(team?.players.map((p) => p.id) ?? []);
+  }, [teamScope, teams]);
+
+  // Filter players visible in scope chips based on team
+  const visiblePlayers = useMemo(() => {
+    if (!teamPlayerIds) return connectedPlayers;
+    return connectedPlayers.filter((p) => teamPlayerIds.has(p.id));
+  }, [connectedPlayers, teamPlayerIds]);
 
   const scopedEvents = useMemo(() => {
     const connectedIds = new Set(connectedPlayers.map((p) => p.id));
-    const teamPlayerIds = teamScope !== "__all__" ? new Set(teams.find((t) => t.id === teamScope)?.players.map((p) => p.id) ?? []) : null;
 
     return events.filter((e) => {
       if (!activeFilters.has(e.type)) return false;
@@ -249,7 +275,7 @@ export default function CalendarPage() {
       if (isObserver) return e.playerId ? connectedIds.has(e.playerId) : false;
       return true;
     });
-  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teams]);
+  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds]);
 
   const toggleFilter = (type: CalendarEventType) => {
     setActiveFilters((prev) => { const next = new Set(prev); next.has(type) ? next.delete(type) : next.add(type); return next; });
@@ -286,6 +312,11 @@ export default function CalendarPage() {
     }
   };
 
+  const handleViewPlayerDetail = (player: ConnectedPlayer) => {
+    setDetailPlayer(player);
+    setPlayerDetailOpen(true);
+  };
+
   const heading = view === "month" ? format(currentDate, "MMMM yyyy") : `Week of ${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d")} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d, yyyy")}`;
   const showPlayerLabels = isCoach && playerScope === "all";
   const playerOptions = isCoach ? connectedPlayers.map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}` })) : undefined;
@@ -310,13 +341,19 @@ export default function CalendarPage() {
           <Filter className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs font-medium text-muted-foreground">Scope:</span>
           <PlayerFilterChip label="All Players" active={playerScope === "all"} onClick={() => setPlayerScope("all")} icon={<Users className="h-3 w-3" />} />
           <PlayerFilterChip label="My Schedule" active={playerScope === "mine"} onClick={() => setPlayerScope("mine")} icon={<User className="h-3 w-3" />} />
-          {connectedPlayers.map((p) => (<PlayerFilterChip key={p.id} label={`${p.firstName} ${p.lastName}`} active={playerScope === p.id} onClick={() => setPlayerScope(p.id)} />))}
-          {teams.length > 0 && (
-            <Select value={teamScope} onValueChange={setTeamScope}>
-              <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue placeholder="All Teams" /></SelectTrigger>
-              <SelectContent><SelectItem value="__all__">All Teams</SelectItem>{teams.map((t) => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}</SelectContent>
-            </Select>
-          )}
+          {visiblePlayers.map((p) => (
+            <PlayerFilterChip
+              key={p.id}
+              label={`${p.firstName} ${p.lastName}`}
+              active={playerScope === p.id}
+              onClick={() => {
+                setPlayerScope(p.id);
+                // Double-click or already selected → open detail
+                if (playerScope === p.id) handleViewPlayerDetail(p);
+              }}
+            />
+          ))}
+          <TeamFilterSelect teams={teams} value={teamScope} onValueChange={(v) => { setTeamScope(v); setPlayerScope("all"); }} className="h-8 w-[150px] text-xs" />
         </div>
       )}
 
@@ -339,6 +376,7 @@ export default function CalendarPage() {
 
       <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
+      <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
     </div>
   );
 }

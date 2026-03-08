@@ -1,7 +1,6 @@
 // Training Management — Full Coach CRUD via React Query
 import { useState, useMemo } from "react";
 import { useConnections } from "@/store/ConnectionStore";
-import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +11,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TeamFilterSelect } from "@/components/TeamFilterSelect";
+import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
+import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
   Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
   Target, Zap, StickyNote, Search,
 } from "lucide-react";
-import type { TrainingSession, TrainingType } from "@/types";
+import type { TrainingSession, TrainingType, ConnectedPlayer } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
@@ -74,14 +76,20 @@ function toForm(t: TrainingSession): TrainingFormData {
 }
 
 function TrainingFormDialog({
-  open, onOpenChange, initial, onSave, saving,
+  open, onOpenChange, initial, onSave, saving, preselectedPlayerIds,
 }: {
   open: boolean; onOpenChange: (o: boolean) => void;
   initial?: TrainingSession; onSave: (data: TrainingFormData) => void; saving?: boolean;
+  preselectedPlayerIds?: string[];
 }) {
   const { connectedPlayers } = useConnections();
   const { data: teams = [] } = useTeams();
-  const [form, setForm] = useState<TrainingFormData>(initial ? toForm(initial) : { ...emptyForm });
+  const [form, setForm] = useState<TrainingFormData>(() => {
+    if (initial) return toForm(initial);
+    const base = { ...emptyForm };
+    if (preselectedPlayerIds?.length) base.playerIds = [...preselectedPlayerIds];
+    return base;
+  });
 
   const update = <K extends keyof TrainingFormData>(k: K, v: TrainingFormData[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -248,6 +256,7 @@ export default function TrainingsPage() {
   const readOnly = !isCoach;
 
   const { data: trainings = [], isLoading, error } = useTrainings();
+  const { data: teams = [] } = useTeams();
   const createMut = useCreateTraining();
   const updateMut = useUpdateTraining();
   const deleteMut = useDeleteTraining();
@@ -257,25 +266,48 @@ export default function TrainingsPage() {
   const [detailTarget, setDetailTarget] = useState<TrainingSession | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<TrainingSession | null>(null);
+  const [preselectedPlayerIds, setPreselectedPlayerIds] = useState<string[]>([]);
 
   const [search, setSearch] = useState("");
   const [playerFilter, setPlayerFilter] = useState("__all__");
+  const [teamFilter, setTeamFilter] = useState("__all__");
   const [typeFilter, setTypeFilter] = useState("__all__");
   const [timeFilter, setTimeFilter] = useState<"upcoming" | "past" | "all">("upcoming");
+
+  // Player detail drawer
+  const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
+  const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
+
+  // Team filter → restrict player filter options
+  const teamPlayerIds = useMemo(() => {
+    if (teamFilter === "__all__") return null;
+    const team = teams.find((t) => t.id === teamFilter);
+    return new Set(team?.players.map((p) => p.id) ?? []);
+  }, [teamFilter, teams]);
+
+  const filteredPlayers = useMemo(() => {
+    if (!teamPlayerIds) return connectedPlayers;
+    return connectedPlayers.filter((p) => teamPlayerIds.has(p.id));
+  }, [connectedPlayers, teamPlayerIds]);
 
   const filtered = useMemo(() => {
     return trainings.filter((t) => {
       const q = search.toLowerCase();
       if (q && !t.title.toLowerCase().includes(q) && !(t.location ?? "").toLowerCase().includes(q)) return false;
       if (playerFilter !== "__all__" && !t.playerIds.includes(playerFilter)) return false;
+      if (teamPlayerIds && !t.playerIds.some((pid) => teamPlayerIds.has(pid))) return false;
       if (typeFilter !== "__all__" && t.trainingType !== typeFilter) return false;
       if (timeFilter === "upcoming" && isPast(parseISO(t.endDate))) return false;
       if (timeFilter === "past" && !isPast(parseISO(t.endDate))) return false;
       return true;
     }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  }, [trainings, search, playerFilter, typeFilter, timeFilter]);
+  }, [trainings, search, playerFilter, teamFilter, typeFilter, timeFilter, teamPlayerIds]);
 
-  const handleCreate = () => { setEditTarget(undefined); setFormOpen(true); };
+  const handleCreate = (playerIds?: string[]) => {
+    setEditTarget(undefined);
+    setPreselectedPlayerIds(playerIds ?? []);
+    setFormOpen(true);
+  };
 
   const handleSave = (data: TrainingFormData) => {
     if (editTarget) {
@@ -310,7 +342,12 @@ export default function TrainingsPage() {
   };
 
   const openDetail = (t: TrainingSession) => { setDetailTarget(t); setDetailOpen(true); };
-  const openEdit = (t: TrainingSession) => { setEditTarget(t); setDetailOpen(false); setFormOpen(true); };
+  const openEdit = (t: TrainingSession) => { setEditTarget(t); setPreselectedPlayerIds([]); setDetailOpen(false); setFormOpen(true); };
+
+  const handleViewPlayerDetail = (player: ConnectedPlayer) => {
+    setDetailPlayer(player);
+    setPlayerDetailOpen(true);
+  };
 
   if (isLoading) return <LoadingState message="Loading trainings…" />;
   if (error) return <ErrorState message="Failed to load trainings" onRetry={() => window.location.reload()} />;
@@ -322,19 +359,20 @@ export default function TrainingsPage() {
           <h1 className="text-2xl font-bold text-foreground">Trainings</h1>
           <p className="text-sm text-muted-foreground">{isCoach ? "Create and manage training sessions for your connected players." : "View your assigned training sessions."}</p>
         </div>
-        {isCoach && <Button className="gap-2 self-start" onClick={handleCreate}><Plus className="h-4 w-4" /> Create Training</Button>}
+        {isCoach && <Button className="gap-2 self-start" onClick={() => handleCreate()}><Plus className="h-4 w-4" /> Create Training</Button>}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search trainings…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
-        <Select value={playerFilter} onValueChange={setPlayerFilter}><SelectTrigger className="w-[160px]"><SelectValue placeholder="All Players" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Players</SelectItem>{connectedPlayers.map((p) => (<SelectItem key={p.id} value={p.id}>{p.firstName} {p.lastName}</SelectItem>))}</SelectContent></Select>
+        {isCoach && <TeamFilterSelect teams={teams} value={teamFilter} onValueChange={(v) => { setTeamFilter(v); setPlayerFilter("__all__"); }} />}
+        <PlayerFilterSelect players={filteredPlayers} value={playerFilter} onValueChange={setPlayerFilter} onViewDetail={isCoach ? handleViewPlayerDetail : undefined} />
         <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger className="w-[170px]"><SelectValue placeholder="All Types" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Types</SelectItem>{TRAINING_TYPES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}</SelectContent></Select>
         <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}><TabsList><TabsTrigger value="upcoming">Upcoming</TabsTrigger><TabsTrigger value="past">Past</TabsTrigger><TabsTrigger value="all">All</TabsTrigger></TabsList></Tabs>
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState icon={<Dumbbell className="h-6 w-6 text-muted-foreground" />} title="No training sessions" description={search || playerFilter !== "__all__" || typeFilter !== "__all__" ? "No trainings match your filters." : "Create your first training session."}>
-          {isCoach && !search && <Button onClick={handleCreate} className="gap-1.5"><Plus className="h-4 w-4" /> Create Training</Button>}
+        <EmptyState icon={<Dumbbell className="h-6 w-6 text-muted-foreground" />} title="No training sessions" description={search || playerFilter !== "__all__" || typeFilter !== "__all__" || teamFilter !== "__all__" ? "No trainings match your filters." : "Create your first training session."}>
+          {isCoach && !search && <Button onClick={() => handleCreate()} className="gap-1.5"><Plus className="h-4 w-4" /> Create Training</Button>}
         </EmptyState>
       ) : (
         <div className="space-y-3">
@@ -370,9 +408,10 @@ export default function TrainingsPage() {
         </div>
       )}
 
-      {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} />}
+      {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
       <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} readOnly={readOnly} deleting={deleteMut.isPending} />
       {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
+      <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} onCreateTraining={(pid) => handleCreate([pid])} />
     </div>
   );
 }
