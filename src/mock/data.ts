@@ -40,11 +40,26 @@ export const mockTeams: Team[] = [
 ];
 
 export const mockCalendarEvents: CalendarEvent[] = [
-  { id: "e1", title: "Morning Training", type: "training", startDate: "2026-03-10T08:00:00Z", endDate: "2026-03-10T10:00:00Z", location: "Court A" },
+  // Week of Mar 2
+  { id: "e10", title: "Agility Drills", type: "training", startDate: "2026-03-02T07:00:00Z", endDate: "2026-03-02T08:30:00Z", location: "Court B" },
+  { id: "e11", title: "Video Analysis Session", type: "training", startDate: "2026-03-03T10:00:00Z", endDate: "2026-03-03T11:30:00Z", location: "Media Room" },
+  // Week of Mar 9
+  { id: "e1", title: "Morning Training", type: "training", startDate: "2026-03-09T08:00:00Z", endDate: "2026-03-09T10:00:00Z", location: "Court A" },
+  { id: "e6", title: "Fitness Session", type: "training", startDate: "2026-03-10T06:30:00Z", endDate: "2026-03-10T08:00:00Z", location: "Gym" },
+  { id: "e3", title: "Match vs. Taylor", type: "match", startDate: "2026-03-11T14:00:00Z", endDate: "2026-03-11T16:00:00Z", location: "Court 3" },
+  { id: "e7", title: "Serve Practice", type: "training", startDate: "2026-03-12T09:00:00Z", endDate: "2026-03-12T10:30:00Z", location: "Court A" },
+  { id: "e4", title: "Travel to Regional Open", type: "travel", startDate: "2026-03-13T06:00:00Z", endDate: "2026-03-13T12:00:00Z" },
+  // Week of Mar 16 — Tournament week
   { id: "e2", title: "Regional Open", type: "tournament", startDate: "2026-03-15T09:00:00Z", endDate: "2026-03-17T18:00:00Z", location: "City Tennis Center" },
-  { id: "e3", title: "Match vs. Taylor", type: "match", startDate: "2026-03-12T14:00:00Z", endDate: "2026-03-12T16:00:00Z" },
-  { id: "e4", title: "Travel to Regional Open", type: "travel", startDate: "2026-03-14T06:00:00Z", endDate: "2026-03-14T12:00:00Z" },
-  { id: "e5", title: "Rest Day", type: "recovery", startDate: "2026-03-18T00:00:00Z", endDate: "2026-03-18T23:59:00Z" },
+  { id: "e8", title: "R1: vs. Nguyen", type: "match", startDate: "2026-03-15T11:00:00Z", endDate: "2026-03-15T13:00:00Z", location: "Court 1" },
+  { id: "e9", title: "R2: vs. Johansson", type: "match", startDate: "2026-03-16T14:00:00Z", endDate: "2026-03-16T16:00:00Z", location: "Center Court" },
+  { id: "e5", title: "Rest & Recovery", type: "recovery", startDate: "2026-03-18T00:00:00Z", endDate: "2026-03-18T23:59:00Z" },
+  // Week of Mar 23
+  { id: "e12", title: "Return Travel", type: "travel", startDate: "2026-03-19T08:00:00Z", endDate: "2026-03-19T14:00:00Z" },
+  { id: "e13", title: "Light Recovery Session", type: "recovery", startDate: "2026-03-20T10:00:00Z", endDate: "2026-03-20T11:00:00Z", location: "Wellness Center" },
+  { id: "e14", title: "Tactical Review", type: "training", startDate: "2026-03-23T09:00:00Z", endDate: "2026-03-23T11:00:00Z", location: "Court A" },
+  { id: "e15", title: "Practice Match vs. Chen", type: "match", startDate: "2026-03-25T15:00:00Z", endDate: "2026-03-25T17:00:00Z", location: "Court 2" },
+  { id: "e16", title: "Endurance Training", type: "training", startDate: "2026-03-27T07:00:00Z", endDate: "2026-03-27T09:00:00Z", location: "Track" },
 ];
 
 export const mockTournaments: Tournament[] = [
