@@ -444,11 +444,13 @@ function WeeklyView({
   currentDate,
   events,
   onSelectEvent,
+  onDayClick,
   showPlayerLabel,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (e: CalendarEvent) => void;
+  onDayClick?: (day: Date) => void;
   showPlayerLabel?: boolean;
 }) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -463,7 +465,11 @@ function WeeklyView({
           const dayEvents = getEventsForDay(events, day);
           const isToday = isSameDay(day, today);
           return (
-            <div key={idx} className={`min-h-[280px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card`}>
+            <div
+              key={idx}
+              onClick={() => onDayClick?.(day)}
+              className={`min-h-[280px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/20" : ""}`}
+            >
               <div className="mb-3 text-center">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
                 <div className={`mx-auto mt-1 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${isToday ? "bg-primary text-primary-foreground" : "text-foreground"}`}>
