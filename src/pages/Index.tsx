@@ -64,20 +64,12 @@ const roles = [
   },
   {
     icon: <Eye className="h-6 w-6" />,
-    title: "Observer",
+    title: "Fan",
     description:
       "Follow a player's journey with read-only access to their calendar, tournaments, stats, and financial overview.",
     badge: "Read-only",
     gradient: "from-amber-500/20 to-orange-500/20",
     iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  },
-  {
-    icon: <Shield className="h-6 w-6" />,
-    title: "Admin",
-    description:
-      "Manage users, moderate tournament records, oversee platform activity, and maintain system integrity.",
-    gradient: "from-purple-500/20 to-fuchsia-500/20",
-    iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
   },
 ];
 
