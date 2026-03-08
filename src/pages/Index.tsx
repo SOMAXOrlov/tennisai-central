@@ -106,7 +106,6 @@ const features = [
 ];
 
 const stats = [
-  { value: "50+", label: "Tournament filters" },
   { value: "3", label: "User roles" },
   { value: "AI", label: "Powered insights" },
   { value: "100%", label: "Privacy-first" },
