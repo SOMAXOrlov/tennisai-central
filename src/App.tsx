@@ -47,6 +47,7 @@ import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlayersPage from "./pages/PlayersPage";
 import TrainingsPage from "./pages/TrainingsPage";
+import TrainingRequestsPage from "./pages/TrainingRequestsPage";
 import StatsPage from "./pages/StatsPage";
 
 const queryClient = new QueryClient();
@@ -102,6 +103,9 @@ const App = () => (
                 <Route path="/players" element={<RouteGuard allowedRoles={["coach"]} showDenied><PlayersPage /></RouteGuard>} />
                 <Route path="/teams" element={<RouteGuard allowedRoles={["coach"]} showDenied><TeamsPage /></RouteGuard>} />
                 <Route path="/trainings" element={<RouteGuard allowedRoles={["coach"]} showDenied><TrainingsPage /></RouteGuard>} />
+
+                {/* Player + Coach — Training Requests */}
+                <Route path="/training-requests" element={<RouteGuard allowedRoles={["player", "coach"]} showDenied><TrainingRequestsPage /></RouteGuard>} />
 
                 {/* Coach + Player */}
                 <Route path="/ai-insights" element={<RouteGuard allowedRoles={["player", "coach"]} showDenied><AIInsightsPage /></RouteGuard>} />
