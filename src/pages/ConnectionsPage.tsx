@@ -192,11 +192,17 @@ export default function ConnectionsPage() {
             Manage your connection requests with players, coaches, and fans.
           </p>
         </div>
-        <Button className="gap-2 self-start">
+        <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
           <UserPlus className="h-4 w-4" />
           New Request
         </Button>
       </div>
+
+      <NewConnectionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onRequestSent={handleNewRequest}
+      />
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
