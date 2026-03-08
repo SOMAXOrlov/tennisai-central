@@ -2,22 +2,19 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { StatusBadge, ReadOnlyBadge, ReadOnlyBanner } from "@/components/ui/shared";
 import {
-  Eye,
   Users,
   Calendar,
   Trophy,
-  BarChart3,
   Wallet,
   Bell,
   ArrowRight,
   Clock,
-  Lock,
 } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
+import { useConnections } from "@/store/ConnectionStore";
 import {
-  mockConnectedPlayers,
   mockCalendarEvents,
   mockPlayerTournaments,
   mockFinanceSummary,
@@ -40,29 +37,13 @@ const eventTypeColor: Record<string, string> = {
   recovery: "bg-muted-foreground",
 };
 
-function ReadOnlyBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
-      <Eye className="h-3 w-3" />
-      Read-only
-    </span>
-  );
-}
-
-function ReadOnlyBanner() {
-  return (
-    <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5">
-      <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-      <p className="text-sm text-amber-700 dark:text-amber-300">
-        You have <strong>read-only</strong> access. You can view but not edit any data.
-      </p>
-    </div>
-  );
-}
-
 export default function ObserverDashboard() {
   const { user } = useAuth();
-  const connectedPlayer = mockConnectedPlayers[0];
+  const { connectedPlayers, requests } = useConnections();
+
+  const pendingRequests = requests.filter(
+    (r) => r.status === "pending" && r.fromUserId === user?.id
+  );
   const upcomingEvents = mockCalendarEvents.slice(0, 4);
   const unreadNotifications = mockNotifications.filter((n) => !n.read);
 
@@ -87,7 +68,12 @@ export default function ObserverDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Connected Players"
-          value={mockConnectedPlayers.length}
+          value={connectedPlayers.length}
+          icon={<Users className="h-4 w-4" />}
+        />
+        <StatCard
+          label="Pending Requests"
+          value={pendingRequests.length}
           icon={<Users className="h-4 w-4" />}
         />
         <StatCard
@@ -96,35 +82,49 @@ export default function ObserverDashboard() {
           icon={<Calendar className="h-4 w-4" />}
         />
         <StatCard
-          label="Tournaments"
-          value={mockPlayerTournaments.length}
-          icon={<Trophy className="h-4 w-4" />}
-        />
-        <StatCard
           label="Unread Notifications"
           value={unreadNotifications.length}
           icon={<Bell className="h-4 w-4" />}
         />
       </div>
 
-      {/* Connected Player Summary */}
+      {/* Connected Players Summary */}
       <DashboardCard
-        title="Connected Player"
+        title="Connected Players"
+        description={`${connectedPlayers.length} player${connectedPlayers.length !== 1 ? "s" : ""} you follow`}
         icon={<Users className="h-4 w-4" />}
         badge={<ReadOnlyBadge />}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/connections">Manage <ArrowRight className="ml-1 h-3 w-3" /></Link>
+          </Button>
+        }
       >
-        <div className="flex items-center gap-4 rounded-lg border border-border bg-secondary/30 p-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
-            {connectedPlayer.firstName[0]}{connectedPlayer.lastName[0]}
+        {connectedPlayers.length === 0 ? (
+          <div className="py-4 text-center">
+            <p className="text-sm text-muted-foreground">No connected players yet. Send a request to start following a player.</p>
+            <Button size="sm" variant="outline" className="mt-3" asChild>
+              <Link to="/connections">Send Request</Link>
+            </Button>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold text-foreground">
-              {connectedPlayer.firstName} {connectedPlayer.lastName}
-            </p>
-            <p className="font-mono text-xs text-muted-foreground">{connectedPlayer.playerPublicId}</p>
-            <p className="text-xs text-muted-foreground">Connected since {formatDate(connectedPlayer.connectedSince)}</p>
+        ) : (
+          <div className="space-y-3">
+            {connectedPlayers.map((player) => (
+              <div key={player.id} className="flex items-center gap-4 rounded-lg border border-border bg-secondary/30 p-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+                  {player.firstName[0]}{player.lastName[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-semibold text-foreground">
+                    {player.firstName} {player.lastName}
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
+                  <p className="text-xs text-muted-foreground">Connected since {formatDate(player.connectedSince)}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </DashboardCard>
 
       {/* Calendar + Tournaments */}
@@ -192,34 +192,8 @@ export default function ObserverDashboard() {
         </DashboardCard>
       </div>
 
-      {/* Stats + Finance */}
+      {/* Finance + Notifications */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <DashboardCard
-          title="Player Statistics"
-          description="Season performance overview"
-          icon={<BarChart3 className="h-4 w-4" />}
-          badge={<ReadOnlyBadge />}
-        >
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-muted-foreground">Matches Played</p>
-              <p className="text-xl font-bold text-foreground">24</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Win Rate</p>
-              <p className="text-xl font-bold text-primary">67%</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Tournaments</p>
-              <p className="text-xl font-bold text-foreground">8</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Best Result</p>
-              <p className="text-xl font-bold text-foreground">SF</p>
-            </div>
-          </div>
-        </DashboardCard>
-
         <DashboardCard
           title="Player Finance"
           description="Season cost breakdown"
@@ -253,41 +227,40 @@ export default function ObserverDashboard() {
             </div>
           </div>
         </DashboardCard>
-      </div>
 
-      {/* Notifications */}
-      <DashboardCard
-        title="Recent Notifications"
-        description={`${unreadNotifications.length} unread`}
-        icon={<Bell className="h-4 w-4" />}
-        badge={
-          unreadNotifications.length > 0 ? (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-              {unreadNotifications.length}
-            </span>
-          ) : undefined
-        }
-        action={
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/notifications">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
-          </Button>
-        }
-      >
-        <div className="space-y-3">
-          {mockNotifications.slice(0, 3).map((notif) => (
-            <div key={notif.id} className="flex items-start gap-3">
-              <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notif.read ? "bg-muted" : "bg-primary"}`} />
-              <div className="min-w-0 flex-1">
-                <p className={`text-sm ${notif.read ? "text-muted-foreground" : "font-medium text-foreground"}`}>
-                  {notif.title}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">{notif.message}</p>
+        <DashboardCard
+          title="Recent Notifications"
+          description={`${unreadNotifications.length} unread`}
+          icon={<Bell className="h-4 w-4" />}
+          badge={
+            unreadNotifications.length > 0 ? (
+              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                {unreadNotifications.length}
+              </span>
+            ) : undefined
+          }
+          action={
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/notifications">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          }
+        >
+          <div className="space-y-3">
+            {mockNotifications.slice(0, 3).map((notif) => (
+              <div key={notif.id} className="flex items-start gap-3">
+                <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notif.read ? "bg-muted" : "bg-primary"}`} />
+                <div className="min-w-0 flex-1">
+                  <p className={`text-sm ${notif.read ? "text-muted-foreground" : "font-medium text-foreground"}`}>
+                    {notif.title}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{notif.message}</p>
+                </div>
+                <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(notif.createdAt)}</span>
               </div>
-              <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(notif.createdAt)}</span>
-            </div>
-          ))}
-        </div>
-      </DashboardCard>
+            ))}
+          </div>
+        </DashboardCard>
+      </div>
     </div>
   );
 }

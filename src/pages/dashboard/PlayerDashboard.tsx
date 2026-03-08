@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { StatusBadge } from "@/components/ui/shared";
+import { RoleBadge } from "@/components/ui/shared";
 import {
   Copy,
   UserPlus,
@@ -13,15 +14,14 @@ import {
   Package,
   Brain,
   Bell,
-  Dumbbell,
   Check,
   X,
   ArrowRight,
   Clock,
 } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
+import { useConnections } from "@/store/ConnectionStore";
 import {
-  mockConnectionRequests,
   mockCalendarEvents,
   mockPlayerTournaments,
   mockFinanceSummary,
@@ -30,10 +30,6 @@ import {
 } from "@/mock/data";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-
-// ──────────────────────────────────────────────
-// Helpers
-// ──────────────────────────────────────────────
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -51,16 +47,17 @@ const eventTypeColor: Record<string, string> = {
   recovery: "bg-muted-foreground",
 };
 
-// ──────────────────────────────────────────────
-// Component
-// ──────────────────────────────────────────────
-
 export default function PlayerDashboard() {
   const { user } = useAuth();
+  const { requests } = useConnections();
   const [copied, setCopied] = useState(false);
 
-  const playerPublicId = "TAI-2025-001";
-  const pendingRequests = mockConnectionRequests.filter((r) => r.status === "pending" && r.toUserRole === "player");
+  const playerPublicId = "playerPublicId" in (user ?? {}) ? (user as any).playerPublicId : "TAI-2025-001";
+
+  // Incoming pending requests for this player
+  const pendingRequests = requests.filter(
+    (r) => r.status === "pending" && r.toUserId === user?.id
+  );
   const upcomingEvents = mockCalendarEvents.slice(0, 4);
   const unreadNotifications = mockNotifications.filter((n) => !n.read);
 
@@ -141,11 +138,11 @@ export default function PlayerDashboard() {
             <p className="text-sm text-muted-foreground">No pending requests</p>
           ) : (
             <div className="space-y-3">
-              {pendingRequests.map((req) => (
+              {pendingRequests.slice(0, 4).map((req) => (
                 <div key={req.id} className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{req.fromUserName}</p>
-                    <p className="text-xs capitalize text-muted-foreground">{req.fromUserRole}</p>
+                    <RoleBadge role={req.fromUserRole} />
                   </div>
                   <div className="flex gap-1.5">
                     <Button size="sm" variant="outline" className="h-7 w-7 p-0">
@@ -164,7 +161,6 @@ export default function PlayerDashboard() {
 
       {/* Calendar + Tournaments row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Calendar Preview */}
         <DashboardCard
           title="Upcoming Schedule"
           description="Next events on your calendar"
@@ -180,7 +176,6 @@ export default function PlayerDashboard() {
               <div key={event.id} className="flex items-start gap-3">
                 <div className="mt-1.5 flex flex-col items-center">
                   <div className={`h-2.5 w-2.5 rounded-full ${eventTypeColor[event.type] || "bg-muted"}`} />
-                  <div className="mt-1 h-8 w-px bg-border last:hidden" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground">{event.title}</p>
@@ -198,7 +193,6 @@ export default function PlayerDashboard() {
           </div>
         </DashboardCard>
 
-        {/* Tournaments */}
         <DashboardCard
           title="My Tournaments"
           description="Your planned and registered tournaments"
@@ -230,7 +224,6 @@ export default function PlayerDashboard() {
 
       {/* Stats + Finance + Equipment row */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Stats Summary */}
         <DashboardCard
           title="Statistics"
           description="Season performance overview"
@@ -256,7 +249,6 @@ export default function PlayerDashboard() {
           </div>
         </DashboardCard>
 
-        {/* Finance Summary */}
         <DashboardCard
           title="Finance"
           description="Season cost breakdown"
@@ -276,9 +268,7 @@ export default function PlayerDashboard() {
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
-                <p className="text-sm font-semibold text-foreground">
-                  ${item.amount.toLocaleString()}
-                </p>
+                <p className="text-sm font-semibold text-foreground">${item.amount.toLocaleString()}</p>
               </div>
             ))}
             <div className="border-t border-border pt-2">
@@ -292,7 +282,6 @@ export default function PlayerDashboard() {
           </div>
         </DashboardCard>
 
-        {/* Equipment Summary */}
         <DashboardCard
           title="Equipment"
           description={`${mockEquipment.length} items tracked`}
@@ -323,7 +312,6 @@ export default function PlayerDashboard() {
 
       {/* AI Insights + Notifications row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* AI Insights */}
         <DashboardCard
           title="AI Insights"
           description="AI-powered match preparation"
@@ -345,7 +333,6 @@ export default function PlayerDashboard() {
           </div>
         </DashboardCard>
 
-        {/* Notifications */}
         <DashboardCard
           title="Recent Notifications"
           description={`${unreadNotifications.length} unread`}

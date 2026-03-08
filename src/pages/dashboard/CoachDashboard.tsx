@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { StatusBadge } from "@/components/ui/shared";
 import {
   Users,
   UserPlus,
@@ -13,11 +13,11 @@ import {
   Clock,
   Plus,
   Shield,
+  Brain,
 } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
+import { useConnections } from "@/store/ConnectionStore";
 import {
-  mockConnectedPlayers,
-  mockConnectionRequests,
   mockCalendarEvents,
   mockTeams,
   mockPlayerTournaments,
@@ -37,9 +37,10 @@ const eventTypeColor: Record<string, string> = {
 
 export default function CoachDashboard() {
   const { user } = useAuth();
+  const { connectedPlayers, requests } = useConnections();
 
-  const pendingRequests = mockConnectionRequests.filter(
-    (r) => r.status === "pending" && r.fromUserRole === "coach"
+  const pendingRequests = requests.filter(
+    (r) => r.status === "pending" && r.fromUserId === user?.id
   );
   const upcomingEvents = mockCalendarEvents.slice(0, 4);
 
@@ -57,15 +58,15 @@ export default function CoachDashboard() {
           <Button size="sm" asChild>
             <Link to="/teams"><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Team</Link>
           </Button>
-          <Button size="sm" variant="outline">
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New Training
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/trainings"><Plus className="mr-1.5 h-3.5 w-3.5" /> New Training</Link>
           </Button>
         </div>
       </div>
 
       {/* Top stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Connected Players" value={mockConnectedPlayers.length} icon={<Users className="h-4 w-4" />} />
+        <StatCard label="Connected Players" value={connectedPlayers.length} icon={<Users className="h-4 w-4" />} />
         <StatCard label="Pending Requests" value={pendingRequests.length} icon={<UserPlus className="h-4 w-4" />} />
         <StatCard label="Teams" value={mockTeams.length} icon={<Shield className="h-4 w-4" />} />
         <StatCard label="Upcoming Events" value={upcomingEvents.length} icon={<Calendar className="h-4 w-4" />} />
@@ -75,30 +76,39 @@ export default function CoachDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardCard
           title="Connected Players"
-          description={`${mockConnectedPlayers.length} players in your network`}
+          description={`${connectedPlayers.length} players in your network`}
           icon={<Users className="h-4 w-4" />}
           action={
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/connections">Manage <ArrowRight className="ml-1 h-3 w-3" /></Link>
+              <Link to="/players">Manage <ArrowRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           }
         >
-          <div className="space-y-3">
-            {mockConnectedPlayers.map((player) => (
-              <div key={player.id} className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                  {player.firstName[0]}{player.lastName[0]}
+          {connectedPlayers.length === 0 ? (
+            <div className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">No connected players yet</p>
+              <Button size="sm" variant="outline" className="mt-3" asChild>
+                <Link to="/connections"><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Connect Player</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {connectedPlayers.slice(0, 5).map((player) => (
+                <div key={player.id} className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                    {player.firstName[0]}{player.lastName[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">{player.firstName} {player.lastName}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
+                  </div>
+                  <Button size="sm" variant="ghost" className="text-xs" asChild>
+                    <Link to="/players">View <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                  </Button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">{player.firstName} {player.lastName}</p>
-                  <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
-                </div>
-                <Button size="sm" variant="ghost" className="text-xs">
-                  View <ArrowRight className="ml-1 h-3 w-3" />
-                </Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </DashboardCard>
 
         <DashboardCard
@@ -114,13 +124,13 @@ export default function CoachDashboard() {
           {pendingRequests.length === 0 ? (
             <div className="py-4 text-center">
               <p className="text-sm text-muted-foreground">No pending requests</p>
-              <Button size="sm" variant="outline" className="mt-3">
-                <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Send Request
+              <Button size="sm" variant="outline" className="mt-3" asChild>
+                <Link to="/connections"><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Send Request</Link>
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
-              {pendingRequests.map((req) => (
+              {pendingRequests.slice(0, 4).map((req) => (
                 <div key={req.id} className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{req.toUserName}</p>
@@ -172,8 +182,6 @@ export default function CoachDashboard() {
               </div>
             </div>
           ))}
-
-          {/* Create team CTA */}
           <Link
             to="/teams"
             className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border p-4 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
@@ -184,7 +192,7 @@ export default function CoachDashboard() {
         </div>
       </DashboardCard>
 
-      {/* Calendar + Tournament Visibility */}
+      {/* Calendar + Tournament Visibility + AI Insights */}
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardCard
           title="Upcoming Schedule"
@@ -228,19 +236,23 @@ export default function CoachDashboard() {
             </Button>
           }
         >
-          <div className="space-y-3">
-            {mockPlayerTournaments.map((pt) => (
-              <div key={pt.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{pt.tournament.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {pt.tournament.city}, {pt.tournament.country} · {pt.tournament.surface}
-                  </p>
+          {mockPlayerTournaments.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">No tournament data for connected players</p>
+          ) : (
+            <div className="space-y-3">
+              {mockPlayerTournaments.map((pt) => (
+                <div key={pt.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{pt.tournament.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {pt.tournament.city}, {pt.tournament.country} · {pt.tournament.surface}
+                    </p>
+                  </div>
+                  <StatusBadge status={pt.status} />
                 </div>
-                <StatusBadge status={pt.status} />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </DashboardCard>
       </div>
 
@@ -249,7 +261,7 @@ export default function CoachDashboard() {
         title="Quick Actions"
         icon={<Dumbbell className="h-4 w-4" />}
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-4">
           <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
             <Link to="/connections">
               <UserPlus className="h-5 w-5 text-primary" />
@@ -262,9 +274,17 @@ export default function CoachDashboard() {
               <span className="text-sm">Manage Teams</span>
             </Link>
           </Button>
-          <Button variant="outline" className="h-auto flex-col gap-2 py-4">
-            <Dumbbell className="h-5 w-5 text-primary" />
-            <span className="text-sm">Schedule Training</span>
+          <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
+            <Link to="/trainings">
+              <Dumbbell className="h-5 w-5 text-primary" />
+              <span className="text-sm">Schedule Training</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
+            <Link to="/ai-insights">
+              <Brain className="h-5 w-5 text-primary" />
+              <span className="text-sm">AI Insights</span>
+            </Link>
           </Button>
         </div>
       </DashboardCard>
