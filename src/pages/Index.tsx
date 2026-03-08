@@ -103,12 +103,6 @@ const features = [
     description:
       "Track performance statistics alongside training, travel, tournament, and equipment costs in one dashboard.",
   },
-  {
-    icon: <Globe className="h-5 w-5" />,
-    title: "Connection System",
-    description:
-      "Players control who sees their data. Coaches and observers send requests — nothing is shared until approved.",
-  },
 ];
 
 const stats = [
@@ -137,7 +131,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$12",
+    price: "$25",
     period: "/mo",
     description: "For serious players and coaches",
     features: [
@@ -155,7 +149,7 @@ const plans = [
   },
   {
     name: "Academy",
-    price: "$39",
+    price: "$50",
     period: "/mo",
     description: "For coaching academies and clubs",
     features: [
