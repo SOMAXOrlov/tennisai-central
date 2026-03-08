@@ -7,7 +7,6 @@ import {
   Brain,
   Users,
   Eye,
-  Shield,
   Zap,
   TrendingUp,
   Target,
