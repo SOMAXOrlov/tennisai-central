@@ -34,26 +34,36 @@ export const mockTeams: Team[] = [
 ];
 
 export const mockCalendarEvents: CalendarEvent[] = [
-  // Week of Mar 2
-  { id: "e10", title: "Agility Drills", type: "training", startDate: "2026-03-02T07:00:00Z", endDate: "2026-03-02T08:30:00Z", location: "Court B" },
-  { id: "e11", title: "Video Analysis Session", type: "training", startDate: "2026-03-03T10:00:00Z", endDate: "2026-03-03T11:30:00Z", location: "Media Room" },
-  // Week of Mar 9
-  { id: "e1", title: "Morning Training", type: "training", startDate: "2026-03-09T08:00:00Z", endDate: "2026-03-09T10:00:00Z", location: "Court A" },
-  { id: "e6", title: "Fitness Session", type: "training", startDate: "2026-03-10T06:30:00Z", endDate: "2026-03-10T08:00:00Z", location: "Gym" },
-  { id: "e3", title: "Match vs. Taylor", type: "match", startDate: "2026-03-11T14:00:00Z", endDate: "2026-03-11T16:00:00Z", location: "Court 3" },
-  { id: "e7", title: "Serve Practice", type: "training", startDate: "2026-03-12T09:00:00Z", endDate: "2026-03-12T10:30:00Z", location: "Court A" },
-  { id: "e4", title: "Travel to Regional Open", type: "travel", startDate: "2026-03-13T06:00:00Z", endDate: "2026-03-13T12:00:00Z" },
-  // Week of Mar 16 — Tournament week
-  { id: "e2", title: "Regional Open", type: "tournament", startDate: "2026-03-15T09:00:00Z", endDate: "2026-03-17T18:00:00Z", location: "City Tennis Center" },
-  { id: "e8", title: "R1: vs. Nguyen", type: "match", startDate: "2026-03-15T11:00:00Z", endDate: "2026-03-15T13:00:00Z", location: "Court 1" },
-  { id: "e9", title: "R2: vs. Johansson", type: "match", startDate: "2026-03-16T14:00:00Z", endDate: "2026-03-16T16:00:00Z", location: "Center Court" },
-  { id: "e5", title: "Rest & Recovery", type: "recovery", startDate: "2026-03-18T00:00:00Z", endDate: "2026-03-18T23:59:00Z" },
-  // Week of Mar 23
-  { id: "e12", title: "Return Travel", type: "travel", startDate: "2026-03-19T08:00:00Z", endDate: "2026-03-19T14:00:00Z" },
-  { id: "e13", title: "Light Recovery Session", type: "recovery", startDate: "2026-03-20T10:00:00Z", endDate: "2026-03-20T11:00:00Z", location: "Wellness Center" },
-  { id: "e14", title: "Tactical Review", type: "training", startDate: "2026-03-23T09:00:00Z", endDate: "2026-03-23T11:00:00Z", location: "Court A" },
-  { id: "e15", title: "Practice Match vs. Chen", type: "match", startDate: "2026-03-25T15:00:00Z", endDate: "2026-03-25T17:00:00Z", location: "Court 2" },
-  { id: "e16", title: "Endurance Training", type: "training", startDate: "2026-03-27T07:00:00Z", endDate: "2026-03-27T09:00:00Z", location: "Track" },
+  // Week of Mar 2 — Alex Rivera
+  { id: "e10", title: "Agility Drills", type: "training", startDate: "2026-03-02T07:00:00Z", endDate: "2026-03-02T08:30:00Z", location: "Court B", playerId: "p1", playerName: "Alex Rivera", createdBy: "c1", createdByRole: "coach", coachNotes: "Focus on lateral movement" },
+  { id: "e11", title: "Video Analysis Session", type: "training", startDate: "2026-03-03T10:00:00Z", endDate: "2026-03-03T11:30:00Z", location: "Media Room", playerId: "p1", playerName: "Alex Rivera", createdBy: "c1", createdByRole: "coach" },
+  // Week of Mar 9 — Alex Rivera
+  { id: "e1", title: "Morning Training", type: "training", startDate: "2026-03-09T08:00:00Z", endDate: "2026-03-09T10:00:00Z", location: "Court A", playerId: "p1", playerName: "Alex Rivera", createdBy: "c1", createdByRole: "coach", coachNotes: "Increase backhand intensity" },
+  { id: "e6", title: "Fitness Session", type: "training", startDate: "2026-03-10T06:30:00Z", endDate: "2026-03-10T08:00:00Z", location: "Gym", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e3", title: "Match vs. Taylor", type: "match", startDate: "2026-03-11T14:00:00Z", endDate: "2026-03-11T16:00:00Z", location: "Court 3", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e7", title: "Serve Practice", type: "training", startDate: "2026-03-12T09:00:00Z", endDate: "2026-03-12T10:30:00Z", location: "Court A", playerId: "p1", playerName: "Alex Rivera", createdBy: "c1", createdByRole: "coach" },
+  { id: "e4", title: "Travel to Regional Open", type: "travel", startDate: "2026-03-13T06:00:00Z", endDate: "2026-03-13T12:00:00Z", playerId: "p1", playerName: "Alex Rivera" },
+  // Week of Mar 16 — Tournament week, Alex Rivera
+  { id: "e2", title: "Regional Open", type: "tournament", startDate: "2026-03-15T09:00:00Z", endDate: "2026-03-17T18:00:00Z", location: "City Tennis Center", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e8", title: "R1: vs. Nguyen", type: "match", startDate: "2026-03-15T11:00:00Z", endDate: "2026-03-15T13:00:00Z", location: "Court 1", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e9", title: "R2: vs. Johansson", type: "match", startDate: "2026-03-16T14:00:00Z", endDate: "2026-03-16T16:00:00Z", location: "Center Court", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e5", title: "Rest & Recovery", type: "recovery", startDate: "2026-03-18T00:00:00Z", endDate: "2026-03-18T23:59:00Z", playerId: "p1", playerName: "Alex Rivera" },
+  // Week of Mar 23 — Alex Rivera
+  { id: "e12", title: "Return Travel", type: "travel", startDate: "2026-03-19T08:00:00Z", endDate: "2026-03-19T14:00:00Z", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e13", title: "Light Recovery Session", type: "recovery", startDate: "2026-03-20T10:00:00Z", endDate: "2026-03-20T11:00:00Z", location: "Wellness Center", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e14", title: "Tactical Review", type: "training", startDate: "2026-03-23T09:00:00Z", endDate: "2026-03-23T11:00:00Z", location: "Court A", playerId: "p1", playerName: "Alex Rivera", createdBy: "c1", createdByRole: "coach" },
+  { id: "e15", title: "Practice Match vs. Chen", type: "match", startDate: "2026-03-25T15:00:00Z", endDate: "2026-03-25T17:00:00Z", location: "Court 2", playerId: "p1", playerName: "Alex Rivera" },
+  { id: "e16", title: "Endurance Training", type: "training", startDate: "2026-03-27T07:00:00Z", endDate: "2026-03-27T09:00:00Z", location: "Track", playerId: "p1", playerName: "Alex Rivera" },
+  // Sam Chen events
+  { id: "e20", title: "Forehand Drills", type: "training", startDate: "2026-03-09T10:00:00Z", endDate: "2026-03-09T12:00:00Z", location: "Court B", playerId: "p2", playerName: "Sam Chen", createdBy: "c1", createdByRole: "coach", coachNotes: "Work on topspin consistency" },
+  { id: "e21", title: "Match vs. Lopez", type: "match", startDate: "2026-03-14T14:00:00Z", endDate: "2026-03-14T16:00:00Z", location: "Court 5", playerId: "p2", playerName: "Sam Chen" },
+  { id: "e22", title: "Conditioning", type: "training", startDate: "2026-03-17T07:00:00Z", endDate: "2026-03-17T09:00:00Z", location: "Gym", playerId: "p2", playerName: "Sam Chen", createdBy: "c1", createdByRole: "coach" },
+  // Lena Petrova events
+  { id: "e30", title: "Serve & Volley Session", type: "training", startDate: "2026-03-10T09:00:00Z", endDate: "2026-03-10T11:00:00Z", location: "Court A", playerId: "p3", playerName: "Lena Petrova", createdBy: "c1", createdByRole: "coach" },
+  { id: "e31", title: "Travel to Junior Championship", type: "travel", startDate: "2026-03-28T06:00:00Z", endDate: "2026-03-28T14:00:00Z", playerId: "p3", playerName: "Lena Petrova" },
+  // Coach's own schedule (no playerId)
+  { id: "e40", title: "Team Strategy Meeting", type: "training", startDate: "2026-03-08T15:00:00Z", endDate: "2026-03-08T16:30:00Z", location: "Meeting Room", createdBy: "c1", createdByRole: "coach", coachNotes: "Prepare season plan" },
+  { id: "e41", title: "Scout Tournament", type: "tournament", startDate: "2026-03-22T09:00:00Z", endDate: "2026-03-22T18:00:00Z", location: "Regional Center", createdBy: "c1", createdByRole: "coach" },
 ];
 
 export const mockTournaments: Tournament[] = [
