@@ -15,6 +15,8 @@ export type TournamentStatus = "planned" | "registered" | "maybe" | "withdrawn" 
 
 export type CalendarEventType = "training" | "tournament" | "match" | "travel" | "recovery";
 
+export type CalendarEventState = "requested" | "tentative" | "confirmed" | "cancelled" | "completed";
+
 export type FinanceCategory = "training" | "travel" | "tournament" | "equipment";
 
 export type EquipmentCategory = "racket" | "string" | "shoes" | "balls" | "accessories";
@@ -25,7 +27,19 @@ export type NotificationType =
   | "request_approval"
   | "finance_update"
   | "ai_insight"
-  | "system";
+  | "system"
+  | "training_request_created"
+  | "training_request_approved"
+  | "training_request_rejected"
+  | "training_request_rescheduled"
+  | "training_created"
+  | "training_updated"
+  | "training_deleted"
+  | "calendar_event_created"
+  | "calendar_event_updated"
+  | "calendar_event_deleted";
+
+export type TrainingRequestStatus = "pending" | "approved" | "rejected" | "reschedule_proposed" | "cancelled";
 
 // --- Core Entities ---
 
@@ -111,21 +125,19 @@ export interface CalendarEvent {
   id: string;
   title: string;
   type: CalendarEventType;
+  state?: CalendarEventState;
   startDate: string;
   endDate: string;
   location?: string;
   description?: string;
-  /** Owner player ID — used for scoping visibility */
   playerId?: string;
-  /** Owner player name — for coach calendar labels */
   playerName?: string;
   teamId?: string;
   tournamentId?: string;
-  /** Coach-only private notes (hidden from observer) */
   coachNotes?: string;
-  /** Who created this event */
   createdBy?: string;
   createdByRole?: UserRole;
+  trainingRequestId?: string;
 }
 
 // --- Tournaments ---
@@ -202,7 +214,6 @@ export interface TrainingSession {
   description?: string;
   trainingType: TrainingType;
   coachId: string;
-  /** Assigned player IDs (must be connected) */
   playerIds: string[];
   teamId?: string;
   startDate: string;
@@ -211,9 +222,36 @@ export interface TrainingSession {
   goal?: string;
   intensity?: "low" | "medium" | "high";
   notes?: string;
-  /** Coach-only private notes */
   coachNotes?: string;
   createdAt: string;
+}
+
+// --- Training Requests (Player → Coach) ---
+
+export interface TrainingRequest {
+  id: string;
+  playerId: string;
+  playerName: string;
+  coachId: string;
+  coachName?: string;
+  status: TrainingRequestStatus;
+  preferredDate: string;
+  preferredStartTime: string;
+  preferredEndTime: string;
+  trainingType: TrainingType;
+  location?: string;
+  notes?: string;
+  priority?: "normal" | "high";
+  /** Coach message when approving/rejecting/rescheduling */
+  coachMessage?: string;
+  /** Proposed reschedule fields */
+  proposedDate?: string;
+  proposedStartTime?: string;
+  proposedEndTime?: string;
+  /** Linked calendar event ID after approval */
+  calendarEventId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // --- Notifications ---
@@ -225,6 +263,8 @@ export interface Notification {
   title: string;
   message: string;
   read: boolean;
+  /** Link to related entity for click-through */
+  linkTo?: string;
   createdAt: string;
 }
 
