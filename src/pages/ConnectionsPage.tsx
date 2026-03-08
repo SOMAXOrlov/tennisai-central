@@ -3,6 +3,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { mockConnectionRequests } from "@/mock/data";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { NewConnectionDialog } from "@/components/connections/NewConnectionDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import type { ConnectionRequest, ConnectionStatus } from "@/types";
+import type { DirectoryEntry } from "@/mock/directory";
 import { format } from "date-fns";
 
 // ─── Helpers ───
@@ -128,6 +130,23 @@ export default function ConnectionsPage() {
 
   const [requests, setRequests] = useState<ConnectionRequest[]>(mockConnectionRequests);
   const [search, setSearch] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleNewRequest = (entry: DirectoryEntry) => {
+    const newReq: ConnectionRequest = {
+      id: `cr-${Date.now()}`,
+      fromUserId: userId,
+      fromUserName: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
+      fromUserRole: user?.role ?? "player",
+      toUserId: entry.id,
+      toUserName: `${entry.firstName} ${entry.lastName}`,
+      toUserRole: entry.role,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setRequests((prev) => [newReq, ...prev]);
+  };
 
   const sent = useMemo(
     () =>
@@ -173,11 +192,17 @@ export default function ConnectionsPage() {
             Manage your connection requests with players, coaches, and fans.
           </p>
         </div>
-        <Button className="gap-2 self-start">
+        <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
           <UserPlus className="h-4 w-4" />
           New Request
         </Button>
       </div>
+
+      <NewConnectionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onRequestSent={handleNewRequest}
+      />
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
