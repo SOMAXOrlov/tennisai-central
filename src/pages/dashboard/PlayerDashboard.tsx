@@ -52,7 +52,7 @@ export default function PlayerDashboard() {
   const { requests } = useConnections();
   const [copied, setCopied] = useState(false);
 
-  const playerPublicId = (user as any)?.playerPublicId ?? "TAI-2025-001";
+  const playerPublicId = "playerPublicId" in (user ?? {}) ? (user as any).playerPublicId : "TAI-2025-001";
 
   // Incoming pending requests for this player
   const pendingRequests = requests.filter(
