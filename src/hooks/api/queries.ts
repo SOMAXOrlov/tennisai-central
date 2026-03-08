@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { trainingsApi } from "@/api/endpoints/trainings";
+import { trainingRequestsApi } from "@/api/endpoints/trainingRequests";
 import { teamsApi } from "@/api/endpoints/teams";
 import { calendarApi } from "@/api/endpoints/calendar";
 import { tournamentsApi } from "@/api/endpoints/tournaments";
@@ -12,12 +13,13 @@ import { financeApi } from "@/api/endpoints/finance";
 import { equipmentApi } from "@/api/endpoints/equipment";
 import { notificationsApi } from "@/api/endpoints/notifications";
 import { profileApi } from "@/api/endpoints/profile";
-import type { TrainingSession, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, NotificationSettings, ConnectedPlayer, User } from "@/types";
+import type { TrainingSession, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, NotificationSettings, ConnectedPlayer, User } from "@/types";
 import { toast } from "sonner";
 
 // ─── Query Keys ───
 export const queryKeys = {
   trainings: ["trainings"] as const,
+  trainingRequests: ["trainingRequests"] as const,
   teams: ["teams"] as const,
   calendarEvents: ["calendarEvents"] as const,
   tournaments: ["tournaments"] as const,
@@ -29,13 +31,17 @@ export const queryKeys = {
   notificationPrefs: ["notificationPrefs"] as const,
 };
 
-// Helper to invalidate all data related to a domain change
 function useInvalidateRelated() {
   const qc = useQueryClient();
   return {
     training: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trainings });
       qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+    },
+    trainingRequest: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.trainingRequests });
+      qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
     },
     calendar: () => {
       qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
@@ -93,6 +99,61 @@ export function useDeleteTraining() {
     mutationFn: (id: string) => trainingsApi.deleteTraining(id),
     onSuccess: () => { inv.training(); toast.success("Training deleted"); },
     onError: (e: any) => toast.error(e?.message ?? "Failed to delete training"),
+  });
+}
+
+// ─── Training Request Hooks ───
+
+export function useTrainingRequests() {
+  return useQuery({
+    queryKey: queryKeys.trainingRequests,
+    queryFn: async () => (await trainingRequestsApi.getRequests()).data,
+  });
+}
+
+export function useCreateTrainingRequest() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (data: Omit<TrainingRequest, "id" | "createdAt" | "updatedAt" | "status">) => trainingRequestsApi.createRequest(data),
+    onSuccess: () => { inv.trainingRequest(); toast.success("Training request sent"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to send request"),
+  });
+}
+
+export function useApproveTrainingRequest() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, coachMessage }: { id: string; coachMessage?: string }) => trainingRequestsApi.approve(id, coachMessage),
+    onSuccess: () => { inv.trainingRequest(); toast.success("Request approved"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to approve"),
+  });
+}
+
+export function useRejectTrainingRequest() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, coachMessage }: { id: string; coachMessage?: string }) => trainingRequestsApi.reject(id, coachMessage),
+    onSuccess: () => { inv.trainingRequest(); toast.success("Request declined"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to decline"),
+  });
+}
+
+export function useRescheduleTrainingRequest() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { proposedDate: string; proposedStartTime: string; proposedEndTime: string; coachMessage?: string } }) =>
+      trainingRequestsApi.reschedule(id, data),
+    onSuccess: () => { inv.trainingRequest(); toast.success("New time proposed"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to reschedule"),
+  });
+}
+
+export function useCancelTrainingRequest() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (id: string) => trainingRequestsApi.cancel(id),
+    onSuccess: () => { inv.trainingRequest(); toast.success("Request cancelled"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to cancel"),
   });
 }
 

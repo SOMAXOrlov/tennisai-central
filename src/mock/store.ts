@@ -9,6 +9,8 @@ import type {
   CalendarEvent,
   Team,
   TrainingSession,
+  TrainingRequest,
+  TrainingRequestStatus,
   PlayerTournament,
   FinanceEntry,
   FinanceSummary,
@@ -16,9 +18,6 @@ import type {
   Notification,
   NotificationSettings,
   ConnectedPlayer,
-  ConnectionRequest,
-  RelationshipStatus,
-  UserRole,
 } from "@/types";
 import {
   mockCalendarEvents,
@@ -29,10 +28,8 @@ import {
   mockEquipment,
   mockNotifications,
   mockNotificationSettings,
-  mockConnectedPlayers,
 } from "@/mock/data";
 
-// Deep clone helpers to avoid mutation leaks
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 
 class MockStore {
@@ -45,13 +42,17 @@ class MockStore {
     { id: "tr4", title: "Team Fitness Block", trainingType: "fitness", coachId: "c1", playerIds: ["p1", "p2", "p5"], teamId: "t1", startDate: "2026-03-18T07:00:00Z", endDate: "2026-03-18T09:00:00Z", location: "Gym", goal: "Endurance baseline for tournament week", intensity: "high", createdAt: "2026-03-05T00:00:00Z" },
     { id: "tr5", title: "Match Practice — Sam vs Lena", trainingType: "match_practice", coachId: "c1", playerIds: ["p2", "p3"], startDate: "2026-03-20T14:00:00Z", endDate: "2026-03-20T16:00:00Z", location: "Center Court", goal: "Simulate competitive pressure", intensity: "high", createdAt: "2026-03-08T00:00:00Z" },
   ];
+  trainingRequests: TrainingRequest[] = [
+    { id: "treq1", playerId: "p1", playerName: "Alex Rivera", coachId: "c1", coachName: "Jordan Smith", status: "pending", preferredDate: "2026-03-14", preferredStartTime: "09:00", preferredEndTime: "11:00", trainingType: "individual", location: "Court A", notes: "Want to focus on backhand improvement before City Open", priority: "high", createdAt: "2026-03-07T10:00:00Z", updatedAt: "2026-03-07T10:00:00Z" },
+    { id: "treq2", playerId: "p2", playerName: "Sam Chen", coachId: "c1", coachName: "Jordan Smith", status: "pending", preferredDate: "2026-03-16", preferredStartTime: "14:00", preferredEndTime: "15:30", trainingType: "tactical", notes: "Need help with net approach patterns", createdAt: "2026-03-07T14:00:00Z", updatedAt: "2026-03-07T14:00:00Z" },
+    { id: "treq3", playerId: "p1", playerName: "Alex Rivera", coachId: "c1", coachName: "Jordan Smith", status: "approved", preferredDate: "2026-03-10", preferredStartTime: "08:00", preferredEndTime: "10:00", trainingType: "fitness", location: "Gym", coachMessage: "Great idea, let's do it!", calendarEventId: "e6", createdAt: "2026-03-05T08:00:00Z", updatedAt: "2026-03-06T09:00:00Z" },
+  ];
   playerTournaments: PlayerTournament[] = clone(mockPlayerTournaments);
   financeEntries: FinanceEntry[] = clone(mockFinanceEntries);
   equipment: EquipmentItem[] = clone(mockEquipment);
   notifications: Notification[] = clone(mockNotifications);
   notificationSettings: NotificationSettings = clone(mockNotificationSettings);
 
-  // Generate unique IDs
   private nextId(prefix: string) {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   }
@@ -121,6 +122,75 @@ class MockStore {
     return clone(this.trainings[idx]);
   }
   deleteTraining(id: string) { this.trainings = this.trainings.filter((t) => t.id !== id); }
+
+  // ─── Training Requests ───
+  getTrainingRequests() { return clone(this.trainingRequests); }
+  getTrainingRequest(id: string) { return clone(this.trainingRequests.find((r) => r.id === id)); }
+  createTrainingRequest(data: Omit<TrainingRequest, "id" | "createdAt" | "updatedAt" | "status">) {
+    const req: TrainingRequest = { ...data, id: this.nextId("treq"), status: "pending", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    this.trainingRequests.push(req);
+    // Notification for coach
+    this.addNotification({ userId: data.coachId, type: "training_request_created", title: "New Training Request", message: `${data.playerName} requested a ${data.trainingType} session on ${data.preferredDate}`, read: false, linkTo: "/training-requests" });
+    return clone(req);
+  }
+  approveTrainingRequest(id: string, coachMessage?: string) {
+    const idx = this.trainingRequests.findIndex((r) => r.id === id);
+    if (idx === -1) throw new Error("Request not found");
+    const req = this.trainingRequests[idx];
+    req.status = "approved";
+    req.coachMessage = coachMessage;
+    req.updatedAt = new Date().toISOString();
+    // Create calendar event
+    const startDate = new Date(`${req.preferredDate}T${req.preferredStartTime}:00Z`).toISOString();
+    const endDate = new Date(`${req.preferredDate}T${req.preferredEndTime}:00Z`).toISOString();
+    const event = this.createCalendarEvent({
+      title: `Training: ${req.playerName}`,
+      type: "training",
+      state: "confirmed",
+      startDate,
+      endDate,
+      location: req.location,
+      playerId: req.playerId,
+      playerName: req.playerName,
+      createdBy: req.coachId,
+      createdByRole: "coach",
+      trainingRequestId: id,
+    });
+    req.calendarEventId = event.id;
+    // Notification for player
+    this.addNotification({ userId: req.playerId, type: "training_request_approved", title: "Training Request Approved", message: `Your ${req.trainingType} request for ${req.preferredDate} was approved${coachMessage ? `: "${coachMessage}"` : ""}`, read: false, linkTo: "/calendar" });
+    return clone(req);
+  }
+  rejectTrainingRequest(id: string, coachMessage?: string) {
+    const idx = this.trainingRequests.findIndex((r) => r.id === id);
+    if (idx === -1) throw new Error("Request not found");
+    const req = this.trainingRequests[idx];
+    req.status = "rejected";
+    req.coachMessage = coachMessage;
+    req.updatedAt = new Date().toISOString();
+    this.addNotification({ userId: req.playerId, type: "training_request_rejected", title: "Training Request Declined", message: `Your ${req.trainingType} request for ${req.preferredDate} was declined${coachMessage ? `: "${coachMessage}"` : ""}`, read: false, linkTo: "/training-requests" });
+    return clone(req);
+  }
+  rescheduleTrainingRequest(id: string, data: { proposedDate: string; proposedStartTime: string; proposedEndTime: string; coachMessage?: string }) {
+    const idx = this.trainingRequests.findIndex((r) => r.id === id);
+    if (idx === -1) throw new Error("Request not found");
+    const req = this.trainingRequests[idx];
+    req.status = "reschedule_proposed";
+    req.proposedDate = data.proposedDate;
+    req.proposedStartTime = data.proposedStartTime;
+    req.proposedEndTime = data.proposedEndTime;
+    req.coachMessage = data.coachMessage;
+    req.updatedAt = new Date().toISOString();
+    this.addNotification({ userId: req.playerId, type: "training_request_rescheduled", title: "New Time Proposed", message: `Coach proposed ${data.proposedDate} ${data.proposedStartTime}–${data.proposedEndTime} for your ${req.trainingType} session`, read: false, linkTo: "/training-requests" });
+    return clone(req);
+  }
+  cancelTrainingRequest(id: string) {
+    const idx = this.trainingRequests.findIndex((r) => r.id === id);
+    if (idx === -1) throw new Error("Request not found");
+    this.trainingRequests[idx].status = "cancelled";
+    this.trainingRequests[idx].updatedAt = new Date().toISOString();
+    return clone(this.trainingRequests[idx]);
+  }
 
   // ─── Player Tournaments ───
   getPlayerTournaments() { return clone(this.playerTournaments); }
@@ -199,5 +269,4 @@ class MockStore {
   }
 }
 
-// Singleton instance
 export const mockStore = new MockStore();
