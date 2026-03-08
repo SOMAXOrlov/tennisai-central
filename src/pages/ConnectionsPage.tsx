@@ -3,6 +3,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { mockConnectionRequests } from "@/mock/data";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { NewConnectionDialog } from "@/components/connections/NewConnectionDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import type { ConnectionRequest, ConnectionStatus } from "@/types";
+import type { DirectoryEntry } from "@/mock/directory";
 import { format } from "date-fns";
 
 // ─── Helpers ───
