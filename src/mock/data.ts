@@ -78,8 +78,14 @@ export const mockTournaments: Tournament[] = [
 ];
 
 export const mockPlayerTournaments: PlayerTournament[] = [
-  { id: "pt1", tournamentId: "t1", tournament: mockTournaments[0], playerId: "p1", status: "registered" },
-  { id: "pt2", tournamentId: "t3", tournament: mockTournaments[2], playerId: "p1", status: "planned" },
+  { id: "pt1", tournamentId: "t1", tournament: mockTournaments[0], playerId: "p1", playerName: "Alex Rivera", status: "registered" },
+  { id: "pt2", tournamentId: "t3", tournament: mockTournaments[2], playerId: "p1", playerName: "Alex Rivera", status: "planned" },
+  { id: "pt3", tournamentId: "t2", tournament: mockTournaments[1], playerId: "p2", playerName: "Sam Chen", status: "registered" },
+  { id: "pt4", tournamentId: "t5", tournament: mockTournaments[4], playerId: "p2", playerName: "Sam Chen", status: "maybe" },
+  { id: "pt5", tournamentId: "t3", tournament: mockTournaments[2], playerId: "p3", playerName: "Lena Petrova", status: "registered" },
+  { id: "pt6", tournamentId: "t8", tournament: mockTournaments[7], playerId: "p3", playerName: "Lena Petrova", status: "planned" },
+  { id: "pt7", tournamentId: "t6", tournament: mockTournaments[5], playerId: "p5", playerName: "Sofia Navarro", status: "planned" },
+  { id: "pt8", tournamentId: "t7", tournament: mockTournaments[6], playerId: "p6", playerName: "Enzo Moretti", status: "withdrawn" },
 ];
 
 export const mockFinanceEntries: FinanceEntry[] = [

@@ -379,11 +379,13 @@ function MonthlyView({
   currentDate,
   events,
   onSelectEvent,
+  onDayClick,
   showPlayerLabel,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (e: CalendarEvent) => void;
+  onDayClick?: (day: Date) => void;
   showPlayerLabel?: boolean;
 }) {
   const monthStart = startOfMonth(currentDate);
@@ -408,9 +410,10 @@ function MonthlyView({
           return (
             <div
               key={idx}
+              onClick={() => onDayClick?.(day)}
               className={`min-h-[100px] border-b border-r border-border p-1.5 transition-colors ${
                 !isCurrentMonth ? "bg-muted/30" : "bg-card"
-              } ${idx % 7 === 6 ? "border-r-0" : ""}`}
+              } ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/20" : ""}`}
             >
               <div
                 className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
@@ -441,11 +444,13 @@ function WeeklyView({
   currentDate,
   events,
   onSelectEvent,
+  onDayClick,
   showPlayerLabel,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (e: CalendarEvent) => void;
+  onDayClick?: (day: Date) => void;
   showPlayerLabel?: boolean;
 }) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -460,7 +465,11 @@ function WeeklyView({
           const dayEvents = getEventsForDay(events, day);
           const isToday = isSameDay(day, today);
           return (
-            <div key={idx} className={`min-h-[280px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card`}>
+            <div
+              key={idx}
+              onClick={() => onDayClick?.(day)}
+              className={`min-h-[280px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/20" : ""}`}
+            >
               <div className="mb-3 text-center">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
                 <div className={`mx-auto mt-1 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${isToday ? "bg-primary text-primary-foreground" : "text-foreground"}`}>
@@ -614,6 +623,22 @@ export default function CalendarPage() {
     setSelectedEvent(e);
     setDrawerOpen(true);
   };
+
+  const handleDayClick = canEdit ? (day: Date) => {
+    // Pre-fill form with clicked date at 9:00 AM
+    const start = new Date(day);
+    start.setHours(9, 0, 0, 0);
+    const end = new Date(day);
+    end.setHours(10, 0, 0, 0);
+    setEditingEvent({
+      id: "",
+      title: "",
+      type: "training",
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    } as CalendarEvent);
+    setFormOpen(true);
+  } : undefined;
 
   const handleAdd = () => {
     setEditingEvent(undefined);
@@ -804,9 +829,9 @@ export default function CalendarPage() {
 
       {scopedEvents.length > 0 && (
         view === "month" ? (
-          <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} showPlayerLabel={showPlayerLabels} />
+          <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />
         ) : (
-          <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} showPlayerLabel={showPlayerLabels} />
+          <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />
         )
       )}
 

@@ -194,10 +194,13 @@ export interface EquipmentItem {
 
 // --- Training ---
 
+export type TrainingType = "individual" | "team" | "match_practice" | "fitness" | "recovery" | "tactical";
+
 export interface TrainingSession {
   id: string;
   title: string;
   description?: string;
+  trainingType: TrainingType;
   coachId: string;
   /** Assigned player IDs (must be connected) */
   playerIds: string[];
@@ -205,6 +208,8 @@ export interface TrainingSession {
   startDate: string;
   endDate: string;
   location?: string;
+  goal?: string;
+  intensity?: "low" | "medium" | "high";
   notes?: string;
   /** Coach-only private notes */
   coachNotes?: string;
