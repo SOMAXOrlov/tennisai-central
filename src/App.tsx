@@ -44,6 +44,10 @@ import NotificationsPage from "./pages/NotificationsPage";
 import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AdminPage from "./pages/AdminPage";
+import ProfilePage from "./pages/ProfilePage";
+import PlayersPage from "./pages/PlayersPage";
+import TrainingsPage from "./pages/TrainingsPage";
+import StatsPage from "./pages/StatsPage";
 
 const queryClient = new QueryClient();
 
@@ -74,22 +78,39 @@ const App = () => (
               {/* Protected dashboard routes */}
               <Route element={<RouteGuard><DashboardLayout /></RouteGuard>}>
                 <Route path="/dashboard" element={<DashboardRedirect />} />
-                <Route path="/dashboard/player" element={<RouteGuard allowedRoles={["player"]}><PlayerDashboard /></RouteGuard>} />
-                <Route path="/dashboard/coach" element={<RouteGuard allowedRoles={["coach"]}><CoachDashboard /></RouteGuard>} />
-                <Route path="/dashboard/observer" element={<RouteGuard allowedRoles={["observer"]}><ObserverDashboard /></RouteGuard>} />
-                <Route path="/dashboard/admin" element={<RouteGuard allowedRoles={["admin"]}><AdminDashboard /></RouteGuard>} />
-                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/dashboard/player" element={<RouteGuard allowedRoles={["player"]} showDenied><PlayerDashboard /></RouteGuard>} />
+                <Route path="/dashboard/coach" element={<RouteGuard allowedRoles={["coach"]} showDenied><CoachDashboard /></RouteGuard>} />
+                <Route path="/dashboard/observer" element={<RouteGuard allowedRoles={["observer"]} showDenied><ObserverDashboard /></RouteGuard>} />
+                <Route path="/dashboard/admin" element={<RouteGuard allowedRoles={["admin"]} showDenied><AdminDashboard /></RouteGuard>} />
+
+                {/* Shared */}
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/calendar" element={<RouteGuard allowedRoles={["player", "coach", "observer"]} showDenied><CalendarPage /></RouteGuard>} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
                 <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
                 <Route path="/connections" element={<ConnectionsPage />} />
-                <Route path="/teams" element={<RouteGuard allowedRoles={["coach"]}><TeamsPage /></RouteGuard>} />
-                <Route path="/finance" element={<RouteGuard allowedRoles={["player", "observer"]}><FinancePage /></RouteGuard>} />
-                <Route path="/equipment" element={<RouteGuard allowedRoles={["player", "coach"]}><EquipmentPage /></RouteGuard>} />
-                <Route path="/ai-insights" element={<RouteGuard allowedRoles={["player", "coach"]}><AIInsightsPage /></RouteGuard>} />
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/notifications/settings" element={<NotificationSettingsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/admin" element={<RouteGuard allowedRoles={["admin"]}><AdminPage /></RouteGuard>} />
+
+                {/* Player only */}
+                <Route path="/stats" element={<RouteGuard allowedRoles={["player"]} showDenied><StatsPage /></RouteGuard>} />
+                <Route path="/equipment" element={<RouteGuard allowedRoles={["player"]} showDenied><EquipmentPage /></RouteGuard>} />
+                <Route path="/finance" element={<RouteGuard allowedRoles={["player", "observer"]} showDenied><FinancePage /></RouteGuard>} />
+
+                {/* Coach only */}
+                <Route path="/players" element={<RouteGuard allowedRoles={["coach"]} showDenied><PlayersPage /></RouteGuard>} />
+                <Route path="/teams" element={<RouteGuard allowedRoles={["coach"]} showDenied><TeamsPage /></RouteGuard>} />
+                <Route path="/trainings" element={<RouteGuard allowedRoles={["coach"]} showDenied><TrainingsPage /></RouteGuard>} />
+
+                {/* Coach + Player */}
+                <Route path="/ai-insights" element={<RouteGuard allowedRoles={["player", "coach"]} showDenied><AIInsightsPage /></RouteGuard>} />
+
+                {/* Admin */}
+                <Route path="/admin" element={<RouteGuard allowedRoles={["admin"]} showDenied><AdminPage /></RouteGuard>} />
+                <Route path="/admin/users" element={<RouteGuard allowedRoles={["admin"]} showDenied><AdminPage /></RouteGuard>} />
+                <Route path="/admin/relationships" element={<RouteGuard allowedRoles={["admin"]} showDenied><AdminPage /></RouteGuard>} />
+                <Route path="/admin/alerts" element={<RouteGuard allowedRoles={["admin"]} showDenied><AdminPage /></RouteGuard>} />
               </Route>
 
               {/* Catch-all */}
