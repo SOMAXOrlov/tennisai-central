@@ -91,7 +91,7 @@ function RequestRow({
             <Button
               size="sm"
               variant="outline"
-              className="h-8 gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400"
+              className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
               onClick={() => onApprove(req.id)}
             >
               <Check className="h-3.5 w-3.5" />
