@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,7 +30,12 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" />
+        Back to home
+      </Link>
+      <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2 text-center">
         <h2 className="text-xl font-semibold text-foreground">Welcome back</h2>
         <p className="text-sm text-muted-foreground">Sign in to your account</p>
@@ -53,5 +59,6 @@ export default function LoginPage() {
         <Link to="/signup" className="text-primary hover:underline">Create account</Link>
       </div>
     </form>
+    </div>
   );
 }
