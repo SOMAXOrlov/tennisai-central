@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { RoleBadge, StatusBadge } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,13 +15,13 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  ArrowRight,
+  Link2,
 } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
+import { useConnections } from "@/store/ConnectionStore";
+import type { UserRole } from "@/types";
 
-// ──────────────────────────────────────────────
-// Mock admin data
-// ──────────────────────────────────────────────
+// ── Mock admin data ──
 
 const mockUserCounts = {
   total: 1248,
@@ -35,7 +35,7 @@ interface RecentUser {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: UserRole;
   status: "active" | "pending" | "suspended";
   registeredAt: string;
 }
@@ -56,7 +56,7 @@ interface AdminTournament {
   city: string;
   country: string;
   startDate: string;
-  status: "upcoming" | "active" | "completed" | "cancelled";
+  status: string;
   participants: number;
 }
 
@@ -84,9 +84,7 @@ const mockAlerts: SystemAlert[] = [
   { id: "a4", type: "warning", title: "Unusual Signup Spike", message: "50% increase in registrations detected from a single IP range.", timestamp: "2026-03-06T15:30:00Z", resolved: true },
 ];
 
-// ──────────────────────────────────────────────
-// Helpers
-// ──────────────────────────────────────────────
+// ── Helpers ──
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -121,12 +119,11 @@ const alertBorders: Record<string, string> = {
   info: "border-blue-500/20",
 };
 
-// ──────────────────────────────────────────────
-// Component
-// ──────────────────────────────────────────────
+// ── Component ──
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { requests } = useConnections();
   const [userSearch, setUserSearch] = useState("");
 
   const filteredUsers = mockRecentUsers.filter(
@@ -137,6 +134,8 @@ export default function AdminDashboard() {
   );
 
   const unresolvedAlerts = mockAlerts.filter((a) => !a.resolved);
+  const pendingRelationships = requests.filter((r) => r.status === "pending");
+  const activeRelationships = requests.filter((r) => r.status === "active");
 
   return (
     <div className="space-y-6">
@@ -155,49 +154,76 @@ export default function AdminDashboard() {
         <StatCard label="Admins" value={mockUserCounts.admins} icon={<Shield className="h-4 w-4" />} />
       </div>
 
-      {/* System Alerts */}
-      <DashboardCard
-        title="System Alerts"
-        description={`${unresolvedAlerts.length} unresolved`}
-        icon={<AlertTriangle className="h-4 w-4" />}
-        badge={
-          unresolvedAlerts.length > 0 ? (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-              {unresolvedAlerts.length}
-            </span>
-          ) : undefined
-        }
-      >
-        <div className="space-y-3">
-          {mockAlerts.map((alert) => (
-            <div
-              key={alert.id}
-              className={`flex items-start gap-3 rounded-lg border bg-card p-3 ${alert.resolved ? "border-border opacity-60" : alertBorders[alert.type]}`}
-            >
-              <div className="mt-0.5 shrink-0">{alertIcons[alert.type]}</div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className={`text-sm font-medium ${alert.resolved ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                    {alert.title}
-                  </p>
-                  {alert.resolved && (
-                    <span className="flex items-center gap-1 text-[10px] text-primary">
-                      <CheckCircle className="h-3 w-3" /> Resolved
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{alert.message}</p>
-                <p className="mt-1 text-[10px] text-muted-foreground">{formatDateTime(alert.timestamp)}</p>
-              </div>
-              {!alert.resolved && (
-                <Button variant="ghost" size="sm" className="shrink-0 text-xs">
-                  Resolve
-                </Button>
-              )}
+      {/* Relationship overview + System Alerts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DashboardCard
+          title="Relationships"
+          description="All role connections across the platform"
+          icon={<Link2 className="h-4 w-4" />}
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-border bg-secondary/30 p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{activeRelationships.length}</p>
+              <p className="text-xs text-muted-foreground">Active</p>
             </div>
-          ))}
-        </div>
-      </DashboardCard>
+            <div className="rounded-lg border border-border bg-secondary/30 p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{pendingRelationships.length}</p>
+              <p className="text-xs text-muted-foreground">Pending</p>
+            </div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{requests.filter((r) => r.status === "rejected").length}</p>
+              <p className="text-xs text-muted-foreground">Rejected</p>
+            </div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{requests.filter((r) => r.status === "revoked").length}</p>
+              <p className="text-xs text-muted-foreground">Revoked</p>
+            </div>
+          </div>
+        </DashboardCard>
+
+        <DashboardCard
+          title="System Alerts"
+          description={`${unresolvedAlerts.length} unresolved`}
+          icon={<AlertTriangle className="h-4 w-4" />}
+          badge={
+            unresolvedAlerts.length > 0 ? (
+              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                {unresolvedAlerts.length}
+              </span>
+            ) : undefined
+          }
+        >
+          <div className="space-y-3">
+            {mockAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                className={`flex items-start gap-3 rounded-lg border bg-card p-3 ${alert.resolved ? "border-border opacity-60" : alertBorders[alert.type]}`}
+              >
+                <div className="mt-0.5 shrink-0">{alertIcons[alert.type]}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className={`text-sm font-medium ${alert.resolved ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                      {alert.title}
+                    </p>
+                    {alert.resolved && (
+                      <span className="flex items-center gap-1 text-[10px] text-primary">
+                        <CheckCircle className="h-3 w-3" /> Resolved
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{alert.message}</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">{formatDateTime(alert.timestamp)}</p>
+                </div>
+                {!alert.resolved && (
+                  <Button variant="ghost" size="sm" className="shrink-0 text-xs">
+                    Resolve
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </DashboardCard>
+      </div>
 
       {/* User Management Table */}
       <DashboardCard
@@ -238,7 +264,7 @@ export default function AdminDashboard() {
                     </div>
                   </td>
                   <td className="px-5 py-3">
-                    <span className="capitalize text-muted-foreground">{u.role}</span>
+                    <RoleBadge role={u.role} />
                   </td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${userStatusStyles[u.status]}`}>
