@@ -24,8 +24,15 @@ export const mockConnectedPlayers: ConnectedPlayer[] = [
 ];
 
 export const mockConnectionRequests: ConnectionRequest[] = [
-  { id: "cr1", fromUserId: "c1", fromUserName: "Jordan Smith", fromUserRole: "coach", toUserId: "p1", toUserName: "Alex Rivera", toUserRole: "player", status: "pending", createdAt: "2025-06-01T00:00:00Z", updatedAt: "2025-06-01T00:00:00Z" },
-  { id: "cr2", fromUserId: "o1", fromUserName: "Morgan Lee", fromUserRole: "observer", toUserId: "p1", toUserName: "Alex Rivera", toUserRole: "player", status: "accepted", createdAt: "2025-05-15T00:00:00Z", updatedAt: "2025-05-16T00:00:00Z" },
+  // Sent by current user (coach c1)
+  { id: "cr1", fromUserId: "c1", fromUserName: "Jordan Smith", fromUserRole: "coach", toUserId: "p1", toUserName: "Alex Rivera", toUserRole: "player", status: "pending", createdAt: "2026-03-06T10:00:00Z", updatedAt: "2026-03-06T10:00:00Z" },
+  { id: "cr2", fromUserId: "c1", fromUserName: "Jordan Smith", fromUserRole: "coach", toUserId: "p3", toUserName: "Lena Petrova", toUserRole: "player", status: "accepted", createdAt: "2026-02-20T08:00:00Z", updatedAt: "2026-02-21T14:30:00Z" },
+  { id: "cr3", fromUserId: "c1", fromUserName: "Jordan Smith", fromUserRole: "coach", toUserId: "p4", toUserName: "Kai Tanaka", toUserRole: "player", status: "rejected", createdAt: "2026-02-10T12:00:00Z", updatedAt: "2026-02-11T09:00:00Z" },
+  // Received by current user
+  { id: "cr4", fromUserId: "p5", fromUserName: "Sofia Navarro", fromUserRole: "player", toUserId: "c1", toUserName: "Jordan Smith", toUserRole: "coach", status: "pending", createdAt: "2026-03-07T15:00:00Z", updatedAt: "2026-03-07T15:00:00Z" },
+  { id: "cr5", fromUserId: "o1", fromUserName: "Morgan Lee", fromUserRole: "observer", toUserId: "c1", toUserName: "Jordan Smith", toUserRole: "coach", status: "pending", createdAt: "2026-03-05T09:00:00Z", updatedAt: "2026-03-05T09:00:00Z" },
+  { id: "cr6", fromUserId: "p6", fromUserName: "Enzo Moretti", fromUserRole: "player", toUserId: "c1", toUserName: "Jordan Smith", toUserRole: "coach", status: "accepted", createdAt: "2026-01-15T11:00:00Z", updatedAt: "2026-01-16T08:00:00Z" },
+  { id: "cr7", fromUserId: "o2", fromUserName: "Casey Brooks", fromUserRole: "observer", toUserId: "c1", toUserName: "Jordan Smith", toUserRole: "coach", status: "revoked", createdAt: "2025-12-01T10:00:00Z", updatedAt: "2026-01-05T16:00:00Z" },
 ];
 
 export const mockTeams: Team[] = [
