@@ -5,14 +5,17 @@
 import { Navigate, useLocation } from "react-router-dom";
 import type { UserRole } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
+import { AccessDeniedState } from "@/components/ui/shared";
 
 interface RouteGuardProps {
   children: React.ReactNode;
   allowedRoles?: UserRole[];
+  /** Show AccessDenied instead of redirect */
+  showDenied?: boolean;
 }
 
-/** Protects routes — redirects to /login if not authenticated, /dashboard if wrong role */
-export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
+/** Protects routes — redirects to /login if not authenticated */
+export function RouteGuard({ children, allowedRoles, showDenied }: RouteGuardProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
@@ -29,6 +32,9 @@ export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    if (showDenied) {
+      return <AccessDeniedState />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -37,7 +43,7 @@ export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
 
 /** Redirects authenticated users away from auth pages */
 export function GuestGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -47,7 +53,7 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isAuthenticated && user) {
+  if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 

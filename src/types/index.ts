@@ -6,7 +6,10 @@
 
 export type UserRole = "player" | "coach" | "observer" | "admin";
 
-export type ConnectionStatus = "pending" | "accepted" | "rejected" | "revoked";
+export type RelationshipStatus = "pending" | "active" | "rejected" | "revoked";
+
+/** @deprecated Use RelationshipStatus — kept for backward compat */
+export type ConnectionStatus = RelationshipStatus;
 
 export type TournamentStatus = "planned" | "registered" | "maybe" | "withdrawn" | "played";
 
@@ -67,7 +70,7 @@ export interface AdminProfile extends User {
 
 export type AnyProfile = PlayerProfile | CoachProfile | ObserverProfile | AdminProfile;
 
-// --- Connections ---
+// --- Relationships / Connections ---
 
 export interface ConnectionRequest {
   id: string;
@@ -77,7 +80,7 @@ export interface ConnectionRequest {
   toUserId: string;
   toUserName: string;
   toUserRole: UserRole;
-  status: ConnectionStatus;
+  status: RelationshipStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,9 +115,17 @@ export interface CalendarEvent {
   endDate: string;
   location?: string;
   description?: string;
+  /** Owner player ID — used for scoping visibility */
   playerId?: string;
+  /** Owner player name — for coach calendar labels */
+  playerName?: string;
   teamId?: string;
   tournamentId?: string;
+  /** Coach-only private notes (hidden from observer) */
+  coachNotes?: string;
+  /** Who created this event */
+  createdBy?: string;
+  createdByRole?: UserRole;
 }
 
 // --- Tournaments ---
@@ -141,6 +152,7 @@ export interface PlayerTournament {
   tournamentId: string;
   tournament: Tournament;
   playerId: string;
+  playerName?: string;
   status: TournamentStatus;
   notes?: string;
 }
@@ -178,6 +190,25 @@ export interface EquipmentItem {
   notes?: string;
   acquiredDate?: string;
   condition?: string;
+}
+
+// --- Training ---
+
+export interface TrainingSession {
+  id: string;
+  title: string;
+  description?: string;
+  coachId: string;
+  /** Assigned player IDs (must be connected) */
+  playerIds: string[];
+  teamId?: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  notes?: string;
+  /** Coach-only private notes */
+  coachNotes?: string;
+  createdAt: string;
 }
 
 // --- Notifications ---
@@ -258,7 +289,6 @@ export interface SignUpRequest {
   lastName: string;
   ageConfirmed: boolean;
   termsAccepted: boolean;
-  // Role-specific optional fields
   dateOfBirth?: string;
   country?: string;
   dominantHand?: "left" | "right";

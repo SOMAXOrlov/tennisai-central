@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { StatusBadge, RoleBadge, EmptyState } from "@/components/ui/shared";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { NewConnectionDialog } from "@/components/connections/NewConnectionDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,29 +16,11 @@ import {
   UserPlus,
   Users,
   Clock,
+  LinkIcon,
+  Unlink,
 } from "lucide-react";
-import type { ConnectionStatus } from "@/types";
+import type { RelationshipStatus } from "@/types";
 import { format } from "date-fns";
-
-// ─── Helpers ───
-
-function roleBadge(role: string) {
-  const styles: Record<string, string> = {
-    player: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    coach: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-    observer: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    admin: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  };
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${
-        styles[role] || "bg-muted text-muted-foreground"
-      }`}
-    >
-      {role === "observer" ? "Fan" : role}
-    </span>
-  );
-}
 
 function formatDate(iso: string) {
   return format(new Date(iso), "MMM d, yyyy");
@@ -51,16 +33,19 @@ function RequestRow({
   perspective,
   onApprove,
   onReject,
+  onRevoke,
 }: {
-  req: { id: string; fromUserName: string; fromUserRole: string; toUserName: string; toUserRole: string; status: ConnectionStatus; createdAt: string };
+  req: { id: string; fromUserId: string; fromUserName: string; fromUserRole: string; toUserId: string; toUserName: string; toUserRole: string; status: RelationshipStatus; createdAt: string };
   perspective: "sent" | "received";
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  onRevoke?: (id: string) => void;
 }) {
   const isSent = perspective === "sent";
   const name = isSent ? req.toUserName : req.fromUserName;
   const role = isSent ? req.toUserRole : req.fromUserRole;
   const isPending = req.status === "pending";
+  const isActive = req.status === "active";
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/30">
@@ -70,7 +55,7 @@ function RequestRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-medium text-foreground">{name}</span>
-          {roleBadge(role)}
+          <RoleBadge role={role as any} />
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           {isSent ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
@@ -78,7 +63,7 @@ function RequestRow({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {isPending && !isSent ? (
+        {isPending && !isSent && onApprove && onReject ? (
           <>
             <Button size="sm" variant="outline" className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => onApprove(req.id)}>
               <Check className="h-3.5 w-3.5" /> Approve
@@ -90,6 +75,13 @@ function RequestRow({
         ) : isPending && isSent ? (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock className="h-3.5 w-3.5" /> Awaiting response
+          </div>
+        ) : isActive && onRevoke ? (
+          <div className="flex items-center gap-2">
+            <StatusBadge status="active" />
+            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => onRevoke(req.id)}>
+              <Unlink className="h-3.5 w-3.5" /> Revoke
+            </Button>
           </div>
         ) : (
           <StatusBadge status={req.status} />
@@ -104,55 +96,75 @@ function RequestRow({
 export default function ConnectionsPage() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const { requests, sendRequest, updateStatus } = useConnections();
+  const role = user?.role ?? "player";
+  const { requests, sendRequest, updateStatus, revokeRelationship } = useConnections();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const matchesSearch = (name: string) => !search || name.toLowerCase().includes(search.toLowerCase());
+
+  const incoming = useMemo(
+    () => requests.filter((r) => r.toUserId === userId && r.status === "pending" && matchesSearch(r.fromUserName)),
+    [requests, userId, search]
+  );
+
   const sent = useMemo(
-    () =>
-      requests
-        .filter((r) => r.fromUserId === userId)
-        .filter((r) => !search || r.toUserName.toLowerCase().includes(search.toLowerCase())),
+    () => requests.filter((r) => r.fromUserId === userId && r.status === "pending" && matchesSearch(r.toUserName)),
     [requests, userId, search]
   );
 
-  const received = useMemo(
-    () =>
-      requests
-        .filter((r) => r.toUserId === userId)
-        .filter((r) => !search || r.fromUserName.toLowerCase().includes(search.toLowerCase())),
+  const active = useMemo(
+    () => requests.filter((r) => r.status === "active" && (r.fromUserId === userId || r.toUserId === userId))
+      .filter((r) => matchesSearch(r.fromUserId === userId ? r.toUserName : r.fromUserName)),
     [requests, userId, search]
   );
 
-  const pendingReceivedCount = received.filter((r) => r.status === "pending").length;
+  const revoked = useMemo(
+    () => requests.filter((r) => r.status === "revoked" && (r.fromUserId === userId || r.toUserId === userId))
+      .filter((r) => matchesSearch(r.fromUserId === userId ? r.toUserName : r.fromUserName)),
+    [requests, userId, search]
+  );
+
+  const rejected = useMemo(
+    () => requests.filter((r) => r.status === "rejected" && (r.fromUserId === userId || r.toUserId === userId))
+      .filter((r) => matchesSearch(r.fromUserId === userId ? r.toUserName : r.fromUserName)),
+    [requests, userId, search]
+  );
+
+  // Role-based: Player only sees incoming. Coach/Observer can send.
+  const canSend = role === "coach" || role === "observer";
+  const pageTitle = role === "admin" ? "Relationship Management" : "Connections & Requests";
+  const pageDesc = role === "player"
+    ? "Approve or reject connection requests from coaches and fans."
+    : role === "coach"
+    ? "Send requests to players and manage your active connections."
+    : role === "observer"
+    ? "Request access to follow a player's progress."
+    : "View all platform relationship records.";
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Connections</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your connection requests with players, coaches, and fans.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{pageTitle}</h1>
+          <p className="text-sm text-muted-foreground">{pageDesc}</p>
         </div>
-        <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
-          <UserPlus className="h-4 w-4" /> New Request
-        </Button>
+        {(canSend || role === "player") && (
+          <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
+            <UserPlus className="h-4 w-4" /> New Request
+          </Button>
+        )}
       </div>
 
-      <NewConnectionDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onRequestSent={sendRequest}
-      />
+      <NewConnectionDialog open={dialogOpen} onOpenChange={setDialogOpen} onRequestSent={sendRequest} />
 
-      {/* Stats row */}
+      {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "Total Sent", value: sent.length, icon: ArrowUpRight },
-          { label: "Total Received", value: received.length, icon: ArrowDownLeft },
-          { label: "Pending Approval", value: pendingReceivedCount, icon: Clock },
-          { label: "Active Connections", value: requests.filter((r) => r.status === "accepted").length, icon: Users },
+          { label: "Incoming", value: incoming.length, icon: ArrowDownLeft },
+          { label: "Sent", value: sent.length, icon: ArrowUpRight },
+          { label: "Active", value: active.length, icon: LinkIcon },
+          { label: "Revoked", value: revoked.length, icon: Unlink },
         ].map((s) => (
           <div key={s.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -173,35 +185,35 @@ export default function ConnectionsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="received" className="space-y-4">
+      <Tabs defaultValue="incoming" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="received" className="gap-1.5">
-            <ArrowDownLeft className="h-3.5 w-3.5" /> Received
-            {pendingReceivedCount > 0 && (
+          <TabsTrigger value="incoming" className="gap-1.5">
+            <ArrowDownLeft className="h-3.5 w-3.5" /> Incoming
+            {incoming.length > 0 && (
               <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                {pendingReceivedCount}
+                {incoming.length}
               </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-1.5">
             <ArrowUpRight className="h-3.5 w-3.5" /> Sent
           </TabsTrigger>
+          <TabsTrigger value="active" className="gap-1.5">
+            <LinkIcon className="h-3.5 w-3.5" /> Active
+          </TabsTrigger>
+          <TabsTrigger value="revoked" className="gap-1.5">
+            <Unlink className="h-3.5 w-3.5" /> Revoked
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="received">
-          <DashboardCard title="Received Requests" description={`${received.length} request${received.length !== 1 ? "s" : ""}`}>
-            {received.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No received requests{search ? " matching your search" : ""}.</p>
+        <TabsContent value="incoming">
+          <DashboardCard title="Incoming Requests" description={`${incoming.length} pending`}>
+            {incoming.length === 0 ? (
+              <EmptyState title="No incoming requests" description={search ? "No results matching your search." : "You have no pending requests."} />
             ) : (
               <div className="space-y-3">
-                {received.map((req) => (
-                  <RequestRow
-                    key={req.id}
-                    req={req}
-                    perspective="received"
-                    onApprove={(id) => updateStatus(id, "accepted")}
-                    onReject={(id) => updateStatus(id, "rejected")}
-                  />
+                {incoming.map((req) => (
+                  <RequestRow key={req.id} req={req} perspective="received" onApprove={(id) => updateStatus(id, "active")} onReject={(id) => updateStatus(id, "rejected")} />
                 ))}
               </div>
             )}
@@ -209,19 +221,41 @@ export default function ConnectionsPage() {
         </TabsContent>
 
         <TabsContent value="sent">
-          <DashboardCard title="Sent Requests" description={`${sent.length} request${sent.length !== 1 ? "s" : ""}`}>
+          <DashboardCard title="Sent Requests" description={`${sent.length} pending`}>
             {sent.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No sent requests{search ? " matching your search" : ""}.</p>
+              <EmptyState title="No sent requests" description={search ? "No results matching your search." : "You haven't sent any pending requests."} />
             ) : (
               <div className="space-y-3">
                 {sent.map((req) => (
-                  <RequestRow
-                    key={req.id}
-                    req={req}
-                    perspective="sent"
-                    onApprove={(id) => updateStatus(id, "accepted")}
-                    onReject={(id) => updateStatus(id, "rejected")}
-                  />
+                  <RequestRow key={req.id} req={req} perspective="sent" />
+                ))}
+              </div>
+            )}
+          </DashboardCard>
+        </TabsContent>
+
+        <TabsContent value="active">
+          <DashboardCard title="Active Relationships" description={`${active.length} active connection${active.length !== 1 ? "s" : ""}`}>
+            {active.length === 0 ? (
+              <EmptyState title="No active connections" description="Approved connections will appear here." />
+            ) : (
+              <div className="space-y-3">
+                {active.map((req) => (
+                  <RequestRow key={req.id} req={req} perspective={req.fromUserId === userId ? "sent" : "received"} onRevoke={revokeRelationship} />
+                ))}
+              </div>
+            )}
+          </DashboardCard>
+        </TabsContent>
+
+        <TabsContent value="revoked">
+          <DashboardCard title="Revoked & Rejected" description={`${revoked.length + rejected.length} relationship${revoked.length + rejected.length !== 1 ? "s" : ""}`}>
+            {revoked.length + rejected.length === 0 ? (
+              <EmptyState title="No revoked or rejected connections" />
+            ) : (
+              <div className="space-y-3">
+                {[...revoked, ...rejected].map((req) => (
+                  <RequestRow key={req.id} req={req} perspective={req.fromUserId === userId ? "sent" : "received"} />
                 ))}
               </div>
             )}

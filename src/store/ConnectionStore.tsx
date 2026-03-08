@@ -1,25 +1,26 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { mockConnectionRequests, mockConnectedPlayers as seedConnectedPlayers } from "@/mock/data";
-import type { ConnectionRequest, ConnectionStatus, ConnectedPlayer, UserRole } from "@/types";
+import type { ConnectionRequest, RelationshipStatus, ConnectedPlayer, UserRole } from "@/types";
 import type { DirectoryEntry } from "@/mock/directory";
 
 // ─── Types ───
 
 interface ConnectionStore {
-  /** All connection requests */
   requests: ConnectionRequest[];
-  /** Players connected to the current user (accepted connections where counterpart is a player) */
+  /** Players with active (approved) relationship to the current user */
   connectedPlayers: ConnectedPlayer[];
-  /** Create a new outgoing request */
+  /** All active relationships (including non-player connections) */
+  activeRelationships: ConnectionRequest[];
   sendRequest: (entry: DirectoryEntry) => void;
-  /** Update request status (approve / reject / revoke) */
-  updateStatus: (id: string, status: ConnectionStatus) => void;
+  updateStatus: (id: string, status: RelationshipStatus) => void;
+  /** Revoke an active relationship */
+  revokeRelationship: (id: string) => void;
 }
 
 const ConnectionContext = createContext<ConnectionStore | null>(null);
 
-// ─── Seed requests: pre-accept the hardcoded connected players for coach c1 ───
+// ─── Seed data: pre-active connected players for coach c1 ───
 
 function buildSeedRequests(coachId: string): ConnectionRequest[] {
   return seedConnectedPlayers.map((p, i) => ({
@@ -30,7 +31,7 @@ function buildSeedRequests(coachId: string): ConnectionRequest[] {
     toUserId: p.id,
     toUserName: `${p.firstName} ${p.lastName}`,
     toUserRole: "player" as UserRole,
-    status: "accepted" as ConnectionStatus,
+    status: "active" as RelationshipStatus,
     createdAt: p.connectedSince,
     updatedAt: p.connectedSince,
   }));
@@ -67,7 +68,7 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
     [user, userId]
   );
 
-  const updateStatus = useCallback((id: string, status: ConnectionStatus) => {
+  const updateStatus = useCallback((id: string, status: RelationshipStatus) => {
     setRequests((prev) =>
       prev.map((r) =>
         r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
@@ -75,10 +76,26 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
     );
   }, []);
 
-  // Derive connected players from accepted requests where the OTHER party is a player
+  const revokeRelationship = useCallback((id: string) => {
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === id && r.status === "active"
+          ? { ...r, status: "revoked" as RelationshipStatus, updatedAt: new Date().toISOString() }
+          : r
+      )
+    );
+  }, []);
+
+  // Active relationships involving current user
+  const activeRelationships = useMemo(
+    () => requests.filter((r) => r.status === "active" && (r.fromUserId === userId || r.toUserId === userId)),
+    [requests, userId]
+  );
+
+  // Derive connected players from active requests where the OTHER party is a player
   const connectedPlayers = useMemo<ConnectedPlayer[]>(() => {
     return requests
-      .filter((r) => r.status === "accepted")
+      .filter((r) => r.status === "active")
       .map((r) => {
         const isFrom = r.fromUserId === userId;
         const otherId = isFrom ? r.toUserId : r.fromUserId;
@@ -95,13 +112,12 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
         } as ConnectedPlayer;
       })
       .filter((p): p is ConnectedPlayer => p !== null)
-      // Deduplicate by id
       .filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i);
   }, [requests, userId]);
 
   const value = useMemo<ConnectionStore>(
-    () => ({ requests, connectedPlayers, sendRequest, updateStatus }),
-    [requests, connectedPlayers, sendRequest, updateStatus]
+    () => ({ requests, connectedPlayers, activeRelationships, sendRequest, updateStatus, revokeRelationship }),
+    [requests, connectedPlayers, activeRelationships, sendRequest, updateStatus, revokeRelationship]
   );
 
   return (

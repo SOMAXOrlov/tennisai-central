@@ -1,0 +1,153 @@
+// ============================================================
+// Reusable UI Components — Role, Status, State indicators
+// ============================================================
+
+import { cn } from "@/lib/utils";
+import type { UserRole, RelationshipStatus } from "@/types";
+import { Eye, Lock, AlertTriangle, Loader2, Inbox, ShieldX } from "lucide-react";
+
+// ─── RoleBadge ───
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  player: "Player",
+  coach: "Coach",
+  observer: "Fan",
+  admin: "Admin",
+};
+
+const ROLE_STYLES: Record<UserRole, string> = {
+  player: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  coach: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  observer: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  admin: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+};
+
+export function RoleBadge({ role, className }: { role: UserRole; className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium", ROLE_STYLES[role], className)}>
+      {ROLE_LABELS[role]}
+    </span>
+  );
+}
+
+// ─── StatusBadge (relationship + tournament statuses) ───
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  active: "bg-primary/10 text-primary",
+  accepted: "bg-primary/10 text-primary",
+  rejected: "bg-destructive/10 text-destructive",
+  revoked: "bg-muted text-muted-foreground",
+  planned: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  registered: "bg-primary/10 text-primary",
+  maybe: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  withdrawn: "bg-muted text-muted-foreground",
+  played: "bg-primary/10 text-primary",
+};
+
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize", STATUS_STYLES[status] || "bg-muted text-muted-foreground", className)}>
+      {status}
+    </span>
+  );
+}
+
+// ─── ReadOnlyBadge ───
+
+export function ReadOnlyBadge({ className }: { className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400", className)}>
+      <Eye className="h-3 w-3" />
+      Read-only
+    </span>
+  );
+}
+
+// ─── ReadOnlyBanner ───
+
+export function ReadOnlyBanner({ message, className }: { message?: string; className?: string }) {
+  return (
+    <div className={cn("flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5", className)}>
+      <Lock className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+      <p className="text-sm text-amber-700 dark:text-amber-300">
+        {message ?? <>You have <strong>read-only</strong> access. You can view but not edit any data.</>}
+      </p>
+    </div>
+  );
+}
+
+// ─── AccessDeniedState ───
+
+export function AccessDeniedState({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex flex-col items-center gap-4 py-20 text-center", className)}>
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+        <ShieldX className="h-7 w-7 text-destructive" />
+      </div>
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
+        <p className="mt-1 text-sm text-muted-foreground">You don't have permission to view this page.</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── EmptyState ───
+
+export function EmptyState({ icon, title, description, children, className }: {
+  icon?: React.ReactNode;
+  title: string;
+  description?: string;
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center", className)}>
+      {icon ? (
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">{icon}</div>
+      ) : (
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <Inbox className="h-6 w-6 text-muted-foreground" />
+        </div>
+      )}
+      <div>
+        <p className="font-medium text-foreground">{title}</p>
+        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ─── LoadingState ───
+
+export function LoadingState({ message, className }: { message?: string; className?: string }) {
+  return (
+    <div className={cn("flex flex-col items-center gap-3 py-20", className)}>
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      {message && <p className="text-sm text-muted-foreground">{message}</p>}
+    </div>
+  );
+}
+
+// ─── ErrorState ───
+
+export function ErrorState({ message, onRetry, className }: { message?: string; onRetry?: () => void; className?: string }) {
+  return (
+    <div className={cn("flex flex-col items-center gap-4 py-20 text-center", className)}>
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+        <AlertTriangle className="h-6 w-6 text-destructive" />
+      </div>
+      <div>
+        <p className="font-medium text-foreground">Something went wrong</p>
+        <p className="mt-1 text-sm text-muted-foreground">{message ?? "An unexpected error occurred. Please try again."}</p>
+      </div>
+      {onRetry && (
+        <button onClick={onRetry} className="text-sm font-medium text-primary hover:underline">
+          Try again
+        </button>
+      )}
+    </div>
+  );
+}
