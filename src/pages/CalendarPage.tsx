@@ -379,11 +379,13 @@ function MonthlyView({
   currentDate,
   events,
   onSelectEvent,
+  onDayClick,
   showPlayerLabel,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (e: CalendarEvent) => void;
+  onDayClick?: (day: Date) => void;
   showPlayerLabel?: boolean;
 }) {
   const monthStart = startOfMonth(currentDate);
@@ -408,9 +410,10 @@ function MonthlyView({
           return (
             <div
               key={idx}
+              onClick={() => onDayClick?.(day)}
               className={`min-h-[100px] border-b border-r border-border p-1.5 transition-colors ${
                 !isCurrentMonth ? "bg-muted/30" : "bg-card"
-              } ${idx % 7 === 6 ? "border-r-0" : ""}`}
+              } ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/20" : ""}`}
             >
               <div
                 className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
