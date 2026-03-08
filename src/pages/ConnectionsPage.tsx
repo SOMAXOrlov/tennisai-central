@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
-import { mockConnectionRequests } from "@/mock/data";
+import { useConnections } from "@/store/ConnectionStore";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { NewConnectionDialog } from "@/components/connections/NewConnectionDialog";
@@ -17,8 +17,7 @@ import {
   Users,
   Clock,
 } from "lucide-react";
-import type { ConnectionRequest, ConnectionStatus } from "@/types";
-import type { DirectoryEntry } from "@/mock/directory";
+import type { ConnectionStatus } from "@/types";
 import { format } from "date-fns";
 
 // ─── Helpers ───
@@ -53,7 +52,7 @@ function RequestRow({
   onApprove,
   onReject,
 }: {
-  req: ConnectionRequest;
+  req: { id: string; fromUserName: string; fromUserRole: string; toUserName: string; toUserRole: string; status: ConnectionStatus; createdAt: string };
   perspective: "sent" | "received";
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
@@ -65,54 +64,32 @@ function RequestRow({
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/30">
-      {/* Avatar placeholder */}
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
         {name.split(" ").map((n) => n[0]).join("")}
       </div>
-
-      {/* Info */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-medium text-foreground">{name}</span>
           {roleBadge(role)}
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          {isSent ? (
-            <ArrowUpRight className="h-3 w-3" />
-          ) : (
-            <ArrowDownLeft className="h-3 w-3" />
-          )}
+          {isSent ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
           <span>{isSent ? "Sent" : "Received"} {formatDate(req.createdAt)}</span>
         </div>
       </div>
-
-      {/* Status / Actions */}
       <div className="flex items-center gap-2">
         {isPending && !isSent ? (
           <>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
-              onClick={() => onApprove(req.id)}
-            >
-              <Check className="h-3.5 w-3.5" />
-              Approve
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => onApprove(req.id)}>
+              <Check className="h-3.5 w-3.5" /> Approve
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
-              onClick={() => onReject(req.id)}
-            >
-              <X className="h-3.5 w-3.5" />
-              Reject
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => onReject(req.id)}>
+              <X className="h-3.5 w-3.5" /> Reject
             </Button>
           </>
         ) : isPending && isSent ? (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
-            Awaiting response
+            <Clock className="h-3.5 w-3.5" /> Awaiting response
           </div>
         ) : (
           <StatusBadge status={req.status} />
@@ -127,36 +104,15 @@ function RequestRow({
 export default function ConnectionsPage() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
-
-  const [requests, setRequests] = useState<ConnectionRequest[]>(mockConnectionRequests);
+  const { requests, sendRequest, updateStatus } = useConnections();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleNewRequest = (entry: DirectoryEntry) => {
-    const newReq: ConnectionRequest = {
-      id: `cr-${Date.now()}`,
-      fromUserId: userId,
-      fromUserName: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
-      fromUserRole: user?.role ?? "player",
-      toUserId: entry.id,
-      toUserName: `${entry.firstName} ${entry.lastName}`,
-      toUserRole: entry.role,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setRequests((prev) => [newReq, ...prev]);
-  };
 
   const sent = useMemo(
     () =>
       requests
         .filter((r) => r.fromUserId === userId)
-        .filter(
-          (r) =>
-            !search ||
-            r.toUserName.toLowerCase().includes(search.toLowerCase())
-        ),
+        .filter((r) => !search || r.toUserName.toLowerCase().includes(search.toLowerCase())),
     [requests, userId, search]
   );
 
@@ -164,27 +120,14 @@ export default function ConnectionsPage() {
     () =>
       requests
         .filter((r) => r.toUserId === userId)
-        .filter(
-          (r) =>
-            !search ||
-            r.fromUserName.toLowerCase().includes(search.toLowerCase())
-        ),
+        .filter((r) => !search || r.fromUserName.toLowerCase().includes(search.toLowerCase())),
     [requests, userId, search]
   );
 
   const pendingReceivedCount = received.filter((r) => r.status === "pending").length;
 
-  const updateStatus = (id: string, status: ConnectionStatus) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
-      )
-    );
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Connections</h1>
@@ -193,15 +136,14 @@ export default function ConnectionsPage() {
           </p>
         </div>
         <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
-          <UserPlus className="h-4 w-4" />
-          New Request
+          <UserPlus className="h-4 w-4" /> New Request
         </Button>
       </div>
 
       <NewConnectionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onRequestSent={handleNewRequest}
+        onRequestSent={sendRequest}
       />
 
       {/* Stats row */}
@@ -209,21 +151,10 @@ export default function ConnectionsPage() {
         {[
           { label: "Total Sent", value: sent.length, icon: ArrowUpRight },
           { label: "Total Received", value: received.length, icon: ArrowDownLeft },
-          {
-            label: "Pending Approval",
-            value: pendingReceivedCount,
-            icon: Clock,
-          },
-          {
-            label: "Active Connections",
-            value: requests.filter((r) => r.status === "accepted").length,
-            icon: Users,
-          },
+          { label: "Pending Approval", value: pendingReceivedCount, icon: Clock },
+          { label: "Active Connections", value: requests.filter((r) => r.status === "accepted").length, icon: Users },
         ].map((s) => (
-          <div
-            key={s.label}
-            className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"
-          >
+          <div key={s.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <s.icon className="h-4 w-4" />
             </div>
@@ -238,20 +169,14 @@ export default function ConnectionsPage() {
       {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search by name…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+        <Input placeholder="Search by name…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="received" className="space-y-4">
         <TabsList>
           <TabsTrigger value="received" className="gap-1.5">
-            <ArrowDownLeft className="h-3.5 w-3.5" />
-            Received
+            <ArrowDownLeft className="h-3.5 w-3.5" /> Received
             {pendingReceivedCount > 0 && (
               <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                 {pendingReceivedCount}
@@ -259,20 +184,14 @@ export default function ConnectionsPage() {
             )}
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-1.5">
-            <ArrowUpRight className="h-3.5 w-3.5" />
-            Sent
+            <ArrowUpRight className="h-3.5 w-3.5" /> Sent
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="received">
-          <DashboardCard
-            title="Received Requests"
-            description={`${received.length} request${received.length !== 1 ? "s" : ""}`}
-          >
+          <DashboardCard title="Received Requests" description={`${received.length} request${received.length !== 1 ? "s" : ""}`}>
             {received.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                No received requests{search ? " matching your search" : ""}.
-              </p>
+              <p className="py-8 text-center text-sm text-muted-foreground">No received requests{search ? " matching your search" : ""}.</p>
             ) : (
               <div className="space-y-3">
                 {received.map((req) => (
@@ -290,14 +209,9 @@ export default function ConnectionsPage() {
         </TabsContent>
 
         <TabsContent value="sent">
-          <DashboardCard
-            title="Sent Requests"
-            description={`${sent.length} request${sent.length !== 1 ? "s" : ""}`}
-          >
+          <DashboardCard title="Sent Requests" description={`${sent.length} request${sent.length !== 1 ? "s" : ""}`}>
             {sent.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                No sent requests{search ? " matching your search" : ""}.
-              </p>
+              <p className="py-8 text-center text-sm text-muted-foreground">No sent requests{search ? " matching your search" : ""}.</p>
             ) : (
               <div className="space-y-3">
                 {sent.map((req) => (
