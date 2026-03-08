@@ -624,6 +624,22 @@ export default function CalendarPage() {
     setDrawerOpen(true);
   };
 
+  const handleDayClick = canEdit ? (day: Date) => {
+    // Pre-fill form with clicked date at 9:00 AM
+    const start = new Date(day);
+    start.setHours(9, 0, 0, 0);
+    const end = new Date(day);
+    end.setHours(10, 0, 0, 0);
+    setEditingEvent({
+      id: "",
+      title: "",
+      type: "training",
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    } as CalendarEvent);
+    setFormOpen(true);
+  } : undefined;
+
   const handleAdd = () => {
     setEditingEvent(undefined);
     setFormOpen(true);
