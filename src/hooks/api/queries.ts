@@ -1,0 +1,330 @@
+// ============================================================
+// TennisAI — React Query Hooks for all domain services
+// Centralized data fetching, mutation, and cache invalidation
+// ============================================================
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { trainingsApi } from "@/api/endpoints/trainings";
+import { teamsApi } from "@/api/endpoints/teams";
+import { calendarApi } from "@/api/endpoints/calendar";
+import { tournamentsApi } from "@/api/endpoints/tournaments";
+import { financeApi } from "@/api/endpoints/finance";
+import { equipmentApi } from "@/api/endpoints/equipment";
+import { notificationsApi } from "@/api/endpoints/notifications";
+import { profileApi } from "@/api/endpoints/profile";
+import type { TrainingSession, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, NotificationSettings, ConnectedPlayer, User } from "@/types";
+import { toast } from "sonner";
+
+// ─── Query Keys ───
+export const queryKeys = {
+  trainings: ["trainings"] as const,
+  teams: ["teams"] as const,
+  calendarEvents: ["calendarEvents"] as const,
+  tournaments: ["tournaments"] as const,
+  playerTournaments: ["playerTournaments"] as const,
+  finance: (playerId: string) => ["finance", playerId] as const,
+  financeSummary: (playerId: string) => ["financeSummary", playerId] as const,
+  equipment: (playerId: string) => ["equipment", playerId] as const,
+  notifications: (userId: string) => ["notifications", userId] as const,
+  notificationPrefs: ["notificationPrefs"] as const,
+};
+
+// Helper to invalidate all data related to a domain change
+function useInvalidateRelated() {
+  const qc = useQueryClient();
+  return {
+    training: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.trainings });
+      qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+    },
+    calendar: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+    },
+    team: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.teams });
+    },
+    tournament: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.playerTournaments });
+      qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+    },
+    finance: (playerId: string) => {
+      qc.invalidateQueries({ queryKey: queryKeys.finance(playerId) });
+      qc.invalidateQueries({ queryKey: queryKeys.financeSummary(playerId) });
+    },
+    equipment: (playerId: string) => {
+      qc.invalidateQueries({ queryKey: queryKeys.equipment(playerId) });
+    },
+    notifications: (userId: string) => {
+      qc.invalidateQueries({ queryKey: queryKeys.notifications(userId) });
+    },
+  };
+}
+
+// ─── Training Hooks ───
+
+export function useTrainings() {
+  return useQuery({
+    queryKey: queryKeys.trainings,
+    queryFn: async () => (await trainingsApi.getTrainings()).data,
+  });
+}
+
+export function useCreateTraining() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (data: Omit<TrainingSession, "id" | "createdAt">) => trainingsApi.createTraining(data),
+    onSuccess: () => { inv.training(); toast.success("Training created"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to create training"),
+  });
+}
+
+export function useUpdateTraining() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<TrainingSession> }) => trainingsApi.updateTraining(id, data),
+    onSuccess: () => { inv.training(); toast.success("Training updated"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to update training"),
+  });
+}
+
+export function useDeleteTraining() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (id: string) => trainingsApi.deleteTraining(id),
+    onSuccess: () => { inv.training(); toast.success("Training deleted"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to delete training"),
+  });
+}
+
+// ─── Team Hooks ───
+
+export function useTeams() {
+  return useQuery({
+    queryKey: queryKeys.teams,
+    queryFn: async () => (await teamsApi.getTeams()).data,
+  });
+}
+
+export function useCreateTeam() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (data: { name: string; coachId: string; description?: string }) => teamsApi.createTeam(data),
+    onSuccess: () => { inv.team(); toast.success("Team created"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to create team"),
+  });
+}
+
+export function useUpdateTeam() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Team> }) => teamsApi.updateTeam(id, data),
+    onSuccess: () => { inv.team(); toast.success("Team updated"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to update team"),
+  });
+}
+
+export function useDeleteTeam() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (id: string) => teamsApi.deleteTeam(id),
+    onSuccess: () => { inv.team(); toast.success("Team deleted"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to delete team"),
+  });
+}
+
+export function useAddTeamMember() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ teamId, player }: { teamId: string; player: ConnectedPlayer }) => teamsApi.addTeamMember(teamId, player),
+    onSuccess: () => { inv.team(); toast.success("Player added to team"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to add player"),
+  });
+}
+
+export function useRemoveTeamMember() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ teamId, playerId }: { teamId: string; playerId: string }) => teamsApi.removeTeamMember(teamId, playerId),
+    onSuccess: () => { inv.team(); toast.success("Player removed from team"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to remove player"),
+  });
+}
+
+// ─── Calendar Hooks ───
+
+export function useCalendarEvents() {
+  return useQuery({
+    queryKey: queryKeys.calendarEvents,
+    queryFn: async () => (await calendarApi.getEvents()).data,
+  });
+}
+
+export function useCreateCalendarEvent() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (data: Omit<CalendarEvent, "id">) => calendarApi.createEvent(data),
+    onSuccess: () => { inv.calendar(); toast.success("Event created"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to create event"),
+  });
+}
+
+export function useUpdateCalendarEvent() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CalendarEvent> }) => calendarApi.updateEvent(id, data),
+    onSuccess: () => { inv.calendar(); toast.success("Event updated"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to update event"),
+  });
+}
+
+export function useDeleteCalendarEvent() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (id: string) => calendarApi.deleteEvent(id),
+    onSuccess: () => { inv.calendar(); toast.success("Event deleted"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to delete event"),
+  });
+}
+
+// ─── Tournament Hooks ───
+
+export function useTournaments() {
+  return useQuery({
+    queryKey: queryKeys.tournaments,
+    queryFn: async () => (await tournamentsApi.getTournaments()).data,
+  });
+}
+
+export function usePlayerTournaments() {
+  return useQuery({
+    queryKey: queryKeys.playerTournaments,
+    queryFn: async () => (await tournamentsApi.getPlayerTournaments()).data,
+  });
+}
+
+export function useUpdatePlayerTournament() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<PlayerTournament> }) => tournamentsApi.updatePlayerTournament(id, data),
+    onSuccess: () => { inv.tournament(); toast.success("Tournament status updated"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to update"),
+  });
+}
+
+// ─── Finance Hooks ───
+
+export function useFinanceEntries(playerId: string) {
+  return useQuery({
+    queryKey: queryKeys.finance(playerId),
+    queryFn: async () => (await financeApi.getEntries(playerId)).data,
+    enabled: !!playerId,
+  });
+}
+
+export function useFinanceSummary(playerId: string) {
+  return useQuery({
+    queryKey: queryKeys.financeSummary(playerId),
+    queryFn: async () => (await financeApi.getSummary(playerId)).data,
+    enabled: !!playerId,
+  });
+}
+
+export function useCreateFinanceEntry() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ playerId, data }: { playerId: string; data: Omit<FinanceEntry, "id" | "createdAt" | "playerId"> }) =>
+      financeApi.createEntry(playerId, data),
+    onSuccess: (_, vars) => { inv.finance(vars.playerId); toast.success("Expense added"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to add expense"),
+  });
+}
+
+// ─── Equipment Hooks ───
+
+export function useEquipment(playerId: string) {
+  return useQuery({
+    queryKey: queryKeys.equipment(playerId),
+    queryFn: async () => (await equipmentApi.getItems(playerId)).data,
+    enabled: !!playerId,
+  });
+}
+
+export function useCreateEquipment() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (data: Omit<EquipmentItem, "id">) => equipmentApi.createItem(data),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toast.success("Equipment added"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to add equipment"),
+  });
+}
+
+export function useUpdateEquipment() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data, playerId }: { id: string; data: Partial<EquipmentItem>; playerId: string }) =>
+      equipmentApi.updateItem(id, data),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toast.success("Equipment updated"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to update"),
+  });
+}
+
+export function useDeleteEquipment() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, playerId }: { id: string; playerId: string }) => equipmentApi.deleteItem(id),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toast.success("Equipment removed"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to delete"),
+  });
+}
+
+// ─── Notification Hooks ───
+
+export function useNotifications(userId: string) {
+  return useQuery({
+    queryKey: queryKeys.notifications(userId),
+    queryFn: async () => (await notificationsApi.getNotifications(userId)).data,
+    enabled: !!userId,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => notificationsApi.markRead(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["notifications"] }); },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => notificationsApi.markAllRead(userId),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["notifications"] }); toast.success("All marked as read"); },
+  });
+}
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: queryKeys.notificationPrefs,
+    queryFn: async () => (await notificationsApi.getPreferences()).data,
+  });
+}
+
+export function useUpdateNotificationPreferences() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<NotificationSettings>) => notificationsApi.updatePreferences(data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.notificationPrefs }); toast.success("Preferences saved"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to save preferences"),
+  });
+}
+
+// ─── Profile Hooks ───
+
+export function useUpdateProfile() {
+  return useMutation({
+    mutationFn: (data: Partial<User>) => profileApi.updateProfile(data),
+    onSuccess: () => toast.success("Profile updated"),
+    onError: (e: any) => toast.error(e?.message ?? "Failed to update profile"),
+  });
+}
