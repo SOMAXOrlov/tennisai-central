@@ -49,6 +49,7 @@ export interface PlayerProfile extends User {
 
 export interface CoachProfile extends User {
   role: "coach";
+  coachPublicId: string;
   organization?: string;
   certifications?: string[];
   country?: string;
@@ -56,6 +57,7 @@ export interface CoachProfile extends User {
 
 export interface ObserverProfile extends User {
   role: "observer";
+  observerPublicId: string;
   relationToPlayer?: string;
 }
 
