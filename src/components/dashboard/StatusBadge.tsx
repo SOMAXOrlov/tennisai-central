@@ -7,6 +7,7 @@ interface StatusBadgeProps {
 
 const statusStyles: Record<string, string> = {
   pending: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  active: "bg-primary/10 text-primary",
   accepted: "bg-primary/10 text-primary",
   rejected: "bg-destructive/10 text-destructive",
   revoked: "bg-muted text-muted-foreground",
