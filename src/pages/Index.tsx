@@ -114,7 +114,7 @@ const features = [
 
 const stats = [
   { value: "50+", label: "Tournament filters" },
-  { value: "4", label: "User roles" },
+  { value: "3", label: "User roles" },
   { value: "AI", label: "Powered insights" },
   { value: "100%", label: "Privacy-first" },
 ];
@@ -291,7 +291,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
             {roles.map((role, i) => (
               <motion.div
                 key={role.title}
