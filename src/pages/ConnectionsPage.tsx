@@ -242,7 +242,7 @@ export default function ConnectionsPage() {
         <TabsContent value="received">
           <DashboardCard
             title="Received Requests"
-            subtitle={`${received.length} request${received.length !== 1 ? "s" : ""}`}
+            description={`${received.length} request${received.length !== 1 ? "s" : ""}`}
           >
             {received.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
@@ -267,7 +267,7 @@ export default function ConnectionsPage() {
         <TabsContent value="sent">
           <DashboardCard
             title="Sent Requests"
-            subtitle={`${sent.length} request${sent.length !== 1 ? "s" : ""}`}
+            description={`${sent.length} request${sent.length !== 1 ? "s" : ""}`}
           >
             {sent.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
