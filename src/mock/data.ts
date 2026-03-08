@@ -19,14 +19,18 @@ import type {
 } from "@/types";
 
 export const mockConnectedPlayers: ConnectedPlayer[] = [
-  { id: "p1", playerPublicId: "TAI-2025-001", firstName: "Alex", lastName: "Rivera", connectedSince: "2025-02-01T00:00:00Z" },
-  { id: "p2", playerPublicId: "TAI-2025-002", firstName: "Sam", lastName: "Chen", connectedSince: "2025-03-01T00:00:00Z" },
+  { id: "p1", playerPublicId: "TAI-P-001", firstName: "Alex", lastName: "Rivera", connectedSince: "2025-02-01T00:00:00Z" },
+  { id: "p2", playerPublicId: "TAI-P-002", firstName: "Sam", lastName: "Chen", connectedSince: "2025-03-01T00:00:00Z" },
+  { id: "p3", playerPublicId: "TAI-P-003", firstName: "Lena", lastName: "Petrova", connectedSince: "2025-04-15T00:00:00Z" },
+  { id: "p5", playerPublicId: "TAI-P-005", firstName: "Sofia", lastName: "Navarro", connectedSince: "2025-05-10T00:00:00Z" },
+  { id: "p6", playerPublicId: "TAI-P-006", firstName: "Enzo", lastName: "Moretti", connectedSince: "2025-06-20T00:00:00Z" },
 ];
 
 export const mockConnectionRequests: ConnectionRequest[] = [];
 
 export const mockTeams: Team[] = [
-  { id: "t1", name: "Junior Elite Squad", coachId: "c1", players: mockConnectedPlayers, createdAt: "2025-04-01T00:00:00Z", updatedAt: "2025-04-01T00:00:00Z" },
+  { id: "t1", name: "Junior Elite Squad", coachId: "c1", players: [mockConnectedPlayers[0], mockConnectedPlayers[1]], createdAt: "2025-04-01T00:00:00Z", updatedAt: "2025-04-01T00:00:00Z" },
+  { id: "t2", name: "Clay Court Specialists", coachId: "c1", players: [mockConnectedPlayers[2]], createdAt: "2025-06-01T00:00:00Z", updatedAt: "2025-06-01T00:00:00Z" },
 ];
 
 export const mockCalendarEvents: CalendarEvent[] = [
