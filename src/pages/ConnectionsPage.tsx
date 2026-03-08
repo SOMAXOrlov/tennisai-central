@@ -130,6 +130,23 @@ export default function ConnectionsPage() {
 
   const [requests, setRequests] = useState<ConnectionRequest[]>(mockConnectionRequests);
   const [search, setSearch] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleNewRequest = (entry: DirectoryEntry) => {
+    const newReq: ConnectionRequest = {
+      id: `cr-${Date.now()}`,
+      fromUserId: userId,
+      fromUserName: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
+      fromUserRole: user?.role ?? "player",
+      toUserId: entry.id,
+      toUserName: `${entry.firstName} ${entry.lastName}`,
+      toUserRole: entry.role,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setRequests((prev) => [newReq, ...prev]);
+  };
 
   const sent = useMemo(
     () =>
