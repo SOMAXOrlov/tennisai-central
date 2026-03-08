@@ -1,19 +1,273 @@
-// TODO: Build full coach dashboard
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import {
+  Users,
+  UserPlus,
+  Calendar,
+  Trophy,
+  Dumbbell,
+  ArrowRight,
+  Clock,
+  Plus,
+  Shield,
+} from "lucide-react";
+import { useAuth } from "@/auth/AuthContext";
+import {
+  mockConnectedPlayers,
+  mockConnectionRequests,
+  mockCalendarEvents,
+  mockTeams,
+  mockPlayerTournaments,
+} from "@/mock/data";
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+const eventTypeColor: Record<string, string> = {
+  training: "bg-blue-500",
+  tournament: "bg-primary",
+  match: "bg-orange-500",
+  travel: "bg-purple-500",
+  recovery: "bg-muted-foreground",
+};
+
 export default function CoachDashboard() {
+  const { user } = useAuth();
+
+  const pendingRequests = mockConnectionRequests.filter(
+    (r) => r.status === "pending" && r.fromUserRole === "coach"
+  );
+  const upcomingEvents = mockCalendarEvents.slice(0, 4);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Coach Dashboard</h1>
-        <p className="text-muted-foreground">Manage your players and teams.</p>
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Welcome back, Coach {user?.lastName}
+          </h1>
+          <p className="text-muted-foreground">Manage your players, teams, and training schedule.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" asChild>
+            <Link to="/teams"><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Team</Link>
+          </Button>
+          <Button size="sm" variant="outline">
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New Training
+          </Button>
+        </div>
       </div>
+
+      {/* Top stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {["Connected Players", "Pending Requests", "Teams", "Upcoming Trainings"].map((title) => (
-          <div key={title} className="rounded-lg border border-border bg-card p-6">
-            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-            <p className="mt-2 text-2xl font-bold text-foreground">—</p>
-          </div>
-        ))}
+        <StatCard label="Connected Players" value={mockConnectedPlayers.length} icon={<Users className="h-4 w-4" />} />
+        <StatCard label="Pending Requests" value={pendingRequests.length} icon={<UserPlus className="h-4 w-4" />} />
+        <StatCard label="Teams" value={mockTeams.length} icon={<Shield className="h-4 w-4" />} />
+        <StatCard label="Upcoming Events" value={upcomingEvents.length} icon={<Calendar className="h-4 w-4" />} />
       </div>
+
+      {/* Connected Players + Pending Requests */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DashboardCard
+          title="Connected Players"
+          description={`${mockConnectedPlayers.length} players in your network`}
+          icon={<Users className="h-4 w-4" />}
+          action={
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/connections">Manage <ArrowRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          }
+        >
+          <div className="space-y-3">
+            {mockConnectedPlayers.map((player) => (
+              <div key={player.id} className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                  {player.firstName[0]}{player.lastName[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">{player.firstName} {player.lastName}</p>
+                  <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
+                </div>
+                <Button size="sm" variant="ghost" className="text-xs">
+                  View <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </DashboardCard>
+
+        <DashboardCard
+          title="Pending Requests"
+          description="Connection requests you've sent"
+          icon={<UserPlus className="h-4 w-4" />}
+          action={
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/connections">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          }
+        >
+          {pendingRequests.length === 0 ? (
+            <div className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">No pending requests</p>
+              <Button size="sm" variant="outline" className="mt-3">
+                <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Send Request
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingRequests.map((req) => (
+                <div key={req.id} className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{req.toUserName}</p>
+                    <p className="text-xs text-muted-foreground">Sent {formatDate(req.createdAt)}</p>
+                  </div>
+                  <StatusBadge status={req.status} />
+                </div>
+              ))}
+            </div>
+          )}
+        </DashboardCard>
+      </div>
+
+      {/* Teams */}
+      <DashboardCard
+        title="My Teams"
+        description={`${mockTeams.length} team${mockTeams.length !== 1 ? "s" : ""}`}
+        icon={<Shield className="h-4 w-4" />}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/teams">Manage <ArrowRight className="ml-1 h-3 w-3" /></Link>
+          </Button>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          {mockTeams.map((team) => (
+            <div key={team.id} className="rounded-lg border border-border bg-secondary/30 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-foreground">{team.name}</h4>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                  {team.players.length} players
+                </span>
+              </div>
+              <div className="flex -space-x-2">
+                {team.players.slice(0, 5).map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-primary/10 text-[10px] font-bold text-primary"
+                    title={`${p.firstName} ${p.lastName}`}
+                  >
+                    {p.firstName[0]}{p.lastName[0]}
+                  </div>
+                ))}
+                {team.players.length > 5 && (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-muted text-[10px] font-medium text-muted-foreground">
+                    +{team.players.length - 5}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Create team CTA */}
+          <Link
+            to="/teams"
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border p-4 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            <Plus className="h-5 w-5" />
+            <span className="text-sm font-medium">Create New Team</span>
+          </Link>
+        </div>
+      </DashboardCard>
+
+      {/* Calendar + Tournament Visibility */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DashboardCard
+          title="Upcoming Schedule"
+          description="Your training sessions and events"
+          icon={<Calendar className="h-4 w-4" />}
+          action={
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/calendar">Full calendar <ArrowRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          }
+        >
+          <div className="space-y-3">
+            {upcomingEvents.map((event) => (
+              <div key={event.id} className="flex items-start gap-3">
+                <div className="mt-1.5 flex flex-col items-center">
+                  <div className={`h-2.5 w-2.5 rounded-full ${eventTypeColor[event.type] || "bg-muted"}`} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">{event.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {formatDate(event.startDate)}
+                    {event.location && <span>· {event.location}</span>}
+                  </div>
+                </div>
+                <span className="mt-0.5 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+                  {event.type}
+                </span>
+              </div>
+            ))}
+          </div>
+        </DashboardCard>
+
+        <DashboardCard
+          title="Player Tournaments"
+          description="Tournaments your connected players are in"
+          icon={<Trophy className="h-4 w-4" />}
+          action={
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/tournaments">Explore <ArrowRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
+          }
+        >
+          <div className="space-y-3">
+            {mockPlayerTournaments.map((pt) => (
+              <div key={pt.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{pt.tournament.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {pt.tournament.city}, {pt.tournament.country} · {pt.tournament.surface}
+                  </p>
+                </div>
+                <StatusBadge status={pt.status} />
+              </div>
+            ))}
+          </div>
+        </DashboardCard>
+      </div>
+
+      {/* Quick actions */}
+      <DashboardCard
+        title="Quick Actions"
+        icon={<Dumbbell className="h-4 w-4" />}
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
+            <Link to="/connections">
+              <UserPlus className="h-5 w-5 text-primary" />
+              <span className="text-sm">Connect Player</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
+            <Link to="/teams">
+              <Shield className="h-5 w-5 text-primary" />
+              <span className="text-sm">Manage Teams</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+            <Dumbbell className="h-5 w-5 text-primary" />
+            <span className="text-sm">Schedule Training</span>
+          </Button>
+        </div>
+      </DashboardCard>
     </div>
   );
 }
