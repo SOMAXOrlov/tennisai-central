@@ -1,4 +1,4 @@
-// Tournaments — with React Query and player status management
+// Tournaments — with React Query, team filter, and player detail
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Search, MapPin, Calendar, Sun, Warehouse, Mountain, X, Users, Trophy } from "lucide-react";
@@ -11,8 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTournaments, usePlayerTournaments, useUpdatePlayerTournament } from "@/hooks/api/queries";
-import type { TournamentStatus } from "@/types";
+import { TeamFilterSelect } from "@/components/TeamFilterSelect";
+import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
+import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
+import { useTournaments, usePlayerTournaments, useUpdatePlayerTournament, useTeams } from "@/hooks/api/queries";
+import type { TournamentStatus, ConnectedPlayer } from "@/types";
 
 const ALL = "__all__";
 const surfaceColor: Record<string, string> = {
@@ -32,6 +35,7 @@ export default function TournamentsPage() {
 
   const { data: tournaments = [], isLoading: loadingT, error: errorT } = useTournaments();
   const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT } = usePlayerTournaments();
+  const { data: teams = [] } = useTeams();
   const updatePT = useUpdatePlayerTournament();
 
   const connectedIds = new Set(connectedPlayers.map((p) => p.id));
@@ -46,14 +50,32 @@ export default function TournamentsPage() {
   const [category, setCategory] = useState(ALL);
   const [country, setCountry] = useState(ALL);
   const [playerFilter, setPlayerFilter] = useState(ALL);
+  const [teamFilter, setTeamFilter] = useState(ALL);
   const [statusFilter, setStatusFilter] = useState(ALL);
   const [viewMode, setViewMode] = useState<"tournaments" | "players">(showPlayerTournaments ? "players" : "tournaments");
+
+  // Player detail drawer
+  const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
+  const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
+
+  // Team filter → restrict player filter
+  const teamPlayerIds = useMemo(() => {
+    if (teamFilter === ALL) return null;
+    const team = teams.find((t) => t.id === teamFilter);
+    return new Set(team?.players.map((p) => p.id) ?? []);
+  }, [teamFilter, teams]);
+
+  const filteredPlayers = useMemo(() => {
+    if (!teamPlayerIds) return connectedPlayers;
+    return connectedPlayers.filter((p) => teamPlayerIds.has(p.id));
+  }, [connectedPlayers, teamPlayerIds]);
 
   const filteredPlayerTournaments = useMemo(() => {
     return playerTournaments.filter((pt) => {
       if (isCoach && !connectedIds.has(pt.playerId)) return false;
       if (isObserver && !connectedIds.has(pt.playerId)) return false;
       if (isPlayer && pt.playerId !== user?.id && pt.playerId !== "p1") return false;
+      if (teamPlayerIds && !teamPlayerIds.has(pt.playerId)) return false;
       const t = pt.tournament;
       const q = search.toLowerCase();
       if (q && !t.name.toLowerCase().includes(q) && !t.city.toLowerCase().includes(q) && !t.country.toLowerCase().includes(q)) return false;
@@ -64,7 +86,7 @@ export default function TournamentsPage() {
       if (statusFilter !== ALL && pt.status !== statusFilter) return false;
       return true;
     });
-  }, [playerTournaments, search, surface, category, country, playerFilter, statusFilter, isCoach, isObserver, isPlayer, connectedIds, user?.id]);
+  }, [playerTournaments, search, surface, category, country, playerFilter, statusFilter, teamFilter, isCoach, isObserver, isPlayer, connectedIds, user?.id, teamPlayerIds]);
 
   const filteredTournaments = useMemo(() => {
     return tournaments.filter((t) => {
@@ -77,8 +99,13 @@ export default function TournamentsPage() {
     });
   }, [tournaments, search, surface, category, country]);
 
-  const hasFilters = surface !== ALL || category !== ALL || country !== ALL || playerFilter !== ALL || statusFilter !== ALL || search !== "";
-  const clearFilters = () => { setSearch(""); setSurface(ALL); setCategory(ALL); setCountry(ALL); setPlayerFilter(ALL); setStatusFilter(ALL); };
+  const hasFilters = surface !== ALL || category !== ALL || country !== ALL || playerFilter !== ALL || teamFilter !== ALL || statusFilter !== ALL || search !== "";
+  const clearFilters = () => { setSearch(""); setSurface(ALL); setCategory(ALL); setCountry(ALL); setPlayerFilter(ALL); setTeamFilter(ALL); setStatusFilter(ALL); };
+
+  const handleViewPlayerDetail = (player: ConnectedPlayer) => {
+    setDetailPlayer(player);
+    setPlayerDetailOpen(true);
+  };
 
   if (loadingT || loadingPT) return <LoadingState message="Loading tournaments…" />;
   if (errorT || errorPT) return <ErrorState message="Failed to load tournaments" onRetry={() => window.location.reload()} />;
@@ -102,7 +129,8 @@ export default function TournamentsPage() {
         <Select value={country} onValueChange={setCountry}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Country" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Countries</SelectItem>{countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
         {(showPlayerTournaments && viewMode === "players") && (
           <>
-            <Select value={playerFilter} onValueChange={setPlayerFilter}><SelectTrigger className="w-[160px]"><SelectValue placeholder="All Players" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Players</SelectItem>{connectedPlayers.map((p) => (<SelectItem key={p.id} value={p.id}>{p.firstName} {p.lastName}</SelectItem>))}</SelectContent></Select>
+            {isCoach && <TeamFilterSelect teams={teams} value={teamFilter} onValueChange={(v) => { setTeamFilter(v); setPlayerFilter(ALL); }} />}
+            <PlayerFilterSelect players={filteredPlayers} value={playerFilter} onValueChange={setPlayerFilter} onViewDetail={isCoach ? handleViewPlayerDetail : undefined} />
             <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[150px]"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Statuses</SelectItem>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>))}</SelectContent></Select>
           </>
         )}
@@ -115,12 +143,13 @@ export default function TournamentsPage() {
           {surface !== ALL && <Badge variant="secondary" className="gap-1">{surface} <X className="h-3 w-3 cursor-pointer" onClick={() => setSurface(ALL)} /></Badge>}
           {category !== ALL && <Badge variant="secondary" className="gap-1">{category} <X className="h-3 w-3 cursor-pointer" onClick={() => setCategory(ALL)} /></Badge>}
           {country !== ALL && <Badge variant="secondary" className="gap-1">{country} <X className="h-3 w-3 cursor-pointer" onClick={() => setCountry(ALL)} /></Badge>}
+          {teamFilter !== ALL && <Badge variant="secondary" className="gap-1">{teams.find((t) => t.id === teamFilter)?.name ?? "Team"}<X className="h-3 w-3 cursor-pointer" onClick={() => setTeamFilter(ALL)} /></Badge>}
           {playerFilter !== ALL && <Badge variant="secondary" className="gap-1">{connectedPlayers.find((p) => p.id === playerFilter)?.firstName ?? "Player"}<X className="h-3 w-3 cursor-pointer" onClick={() => setPlayerFilter(ALL)} /></Badge>}
           {statusFilter !== ALL && <Badge variant="secondary" className="gap-1 capitalize">{statusFilter} <X className="h-3 w-3 cursor-pointer" onClick={() => setStatusFilter(ALL)} /></Badge>}
         </div>
       )}
 
-      {/* Player tournament view with inline status editing for players */}
+      {/* Player tournament view */}
       {(showPlayerTournaments || isPlayer) && (viewMode === "players" || isPlayer) && (
         filteredPlayerTournaments.length === 0 ? (
           <EmptyState icon={<Trophy className="h-6 w-6 text-muted-foreground" />} title="No player tournaments" description={hasFilters ? "No results match your filters." : "No tournament entries yet."} />
@@ -140,7 +169,18 @@ export default function TournamentsPage() {
                   {filteredPlayerTournaments.map((pt) => (
                     <tr key={pt.id} className="transition-colors hover:bg-secondary/20">
                       <td className="px-4 py-3"><div><p className="font-medium text-foreground">{pt.tournament.name}</p>{pt.tournament.category && <p className="text-xs text-muted-foreground">{pt.tournament.category}</p>}</div></td>
-                      {!isPlayer && <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">{(pt.playerName ?? "?")[0]}</div><span className="text-foreground">{pt.playerName ?? pt.playerId}</span></div></td>}
+                      {!isPlayer && <td className="px-4 py-3">
+                        <button
+                          className="flex items-center gap-2 hover:opacity-80"
+                          onClick={() => {
+                            const p = connectedPlayers.find((cp) => cp.id === pt.playerId);
+                            if (p && isCoach) handleViewPlayerDetail(p);
+                          }}
+                        >
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">{(pt.playerName ?? "?")[0]}</div>
+                          <span className="text-foreground">{pt.playerName ?? pt.playerId}</span>
+                        </button>
+                      </td>}
                       <td className="px-4 py-3 text-muted-foreground">{pt.tournament.city}, {pt.tournament.country}</td>
                       <td className="px-4 py-3 text-muted-foreground">{format(new Date(pt.tournament.startDate), "MMM d")} – {format(new Date(pt.tournament.endDate), "MMM d")}</td>
                       <td className="px-4 py-3"><Badge variant="outline" className={surfaceColor[pt.tournament.surface] ?? ""}>{pt.tournament.surface}</Badge></td>
@@ -199,6 +239,8 @@ export default function TournamentsPage() {
           </div>
         )
       )}
+
+      <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
     </div>
   );
 }
