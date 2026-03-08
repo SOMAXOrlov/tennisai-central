@@ -1,0 +1,270 @@
+import { useState } from "react";
+import { useAuth } from "@/auth/AuthContext";
+import { mockDirectoryService, type DirectoryEntry } from "@/mock/directory";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Search,
+  UserPlus,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
+import type { UserRole } from "@/types";
+
+// ─── Role labels ───
+
+const ROLE_LABEL: Record<UserRole, string> = {
+  player: "Player",
+  coach: "Coach",
+  observer: "Fan",
+  admin: "Admin",
+};
+
+const ROLE_STYLE: Record<string, string> = {
+  player: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  coach: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  observer: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+};
+
+// ─── Allowed connection info per role ───
+
+function getHelpText(role: UserRole): string {
+  switch (role) {
+    case "coach":
+      return "Enter a Player ID (e.g. TAI-P-001) to request a connection.";
+    case "player":
+      return "Enter a Coach ID (e.g. TAI-C-001) or Fan ID (e.g. TAI-F-001) to connect.";
+    case "observer":
+      return "Enter a Player ID (e.g. TAI-P-001) to follow their progress.";
+    default:
+      return "Enter a public ID to connect.";
+  }
+}
+
+function getIdPlaceholder(role: UserRole): string {
+  switch (role) {
+    case "coach":
+      return "TAI-P-001";
+    case "player":
+      return "TAI-C-001 or TAI-F-001";
+    case "observer":
+      return "TAI-P-001";
+    default:
+      return "TAI-X-000";
+  }
+}
+
+// ─── Component ───
+
+interface NewConnectionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onRequestSent: (entry: DirectoryEntry) => void;
+}
+
+export function NewConnectionDialog({
+  open,
+  onOpenChange,
+  onRequestSent,
+}: NewConnectionDialogProps) {
+  const { user } = useAuth();
+  const myRole = user?.role ?? "player";
+
+  const [publicId, setPublicId] = useState("");
+  const [lookupResult, setLookupResult] = useState<DirectoryEntry | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const reset = () => {
+    setPublicId("");
+    setLookupResult(null);
+    setError("");
+    setLoading(false);
+    setSent(false);
+  };
+
+  const handleClose = (v: boolean) => {
+    if (!v) reset();
+    onOpenChange(v);
+  };
+
+  const handleLookup = async () => {
+    if (!publicId.trim()) return;
+    setError("");
+    setLookupResult(null);
+    setLoading(true);
+
+    try {
+      const entry = await mockDirectoryService.lookupByPublicId(publicId);
+      if (!entry) {
+        setError("No user found with that ID. Please double-check and try again.");
+        return;
+      }
+
+      // Self-check
+      if (entry.id === user?.id) {
+        setError("You cannot send a connection request to yourself.");
+        return;
+      }
+
+      // Role validation
+      const validation = mockDirectoryService.validateConnection(myRole, entry.role);
+      if (!validation.valid) {
+        setError(validation.reason!);
+        return;
+      }
+
+      setLookupResult(entry);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendRequest = () => {
+    if (!lookupResult) return;
+    onRequestSent(lookupResult);
+    setSent(true);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5 text-primary" />
+            New Connection Request
+          </DialogTitle>
+          <DialogDescription>{getHelpText(myRole)}</DialogDescription>
+        </DialogHeader>
+
+        {sent ? (
+          /* ─── Success state ─── */
+          <div className="flex flex-col items-center gap-4 py-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <CheckCircle2 className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Request Sent!</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Your connection request to{" "}
+                <span className="font-medium text-foreground">
+                  {lookupResult?.firstName} {lookupResult?.lastName}
+                </span>{" "}
+                has been sent. They'll be notified and can approve or decline.
+              </p>
+            </div>
+            <Button onClick={() => handleClose(false)}>Done</Button>
+          </div>
+        ) : (
+          /* ─── Lookup form ─── */
+          <div className="space-y-4">
+            {/* ID Input */}
+            <div className="space-y-2">
+              <Label htmlFor="publicId">Public ID</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="publicId"
+                    value={publicId}
+                    onChange={(e) => {
+                      setPublicId(e.target.value.toUpperCase());
+                      setError("");
+                      setLookupResult(null);
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleLookup()}
+                    placeholder={getIdPlaceholder(myRole)}
+                    className="pl-9 font-mono"
+                  />
+                </div>
+                <Button
+                  onClick={handleLookup}
+                  disabled={!publicId.trim() || loading}
+                  variant="outline"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Lookup"
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Lookup Result */}
+            {lookupResult && (
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                    {lookupResult.firstName[0]}
+                    {lookupResult.lastName[0]}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">
+                        {lookupResult.firstName} {lookupResult.lastName}
+                      </span>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                          ROLE_STYLE[lookupResult.role] ?? "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {ROLE_LABEL[lookupResult.role]}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                      {lookupResult.publicId}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Allowed connections hint */}
+            <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+              <span className="font-semibold">Allowed connections: </span>
+              {mockDirectoryService
+                .getAllowedTargetRoles(myRole)
+                .map((r) => ROLE_LABEL[r])
+                .join(", ") || "None"}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => handleClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSendRequest}
+                disabled={!lookupResult}
+                className="gap-1.5"
+              >
+                Send Request
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
