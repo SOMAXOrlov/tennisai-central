@@ -53,10 +53,22 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
   });
 }
 
-function EventChip({ event, onClick, showPlayer, compact }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean }) {
+function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   return (
-    <button onClick={(e) => { e.stopPropagation(); onClick(); }} className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${cfg.bg} ${compact ? "py-px" : ""}`}>
+    <button
+      draggable={draggable}
+      onDragStart={(e) => {
+        if (!draggable) return;
+        e.stopPropagation();
+        e.dataTransfer.setData("application/calendar-event-id", event.id);
+        e.dataTransfer.setData("application/calendar-event-start", event.startDate);
+        e.dataTransfer.setData("application/calendar-event-end", event.endDate);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${cfg.bg} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
+    >
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
     </button>
