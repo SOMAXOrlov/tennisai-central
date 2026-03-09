@@ -199,8 +199,9 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
 
 // ─── Month View ───
 
-function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel }: {
+function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel, onDropEvent, canDrag }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
+  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean;
 }) {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -208,6 +209,7 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
   const today = new Date();
+  const [dragOverDay, setDragOverDay] = useState<number | null>(null);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border shadow-sm">
@@ -221,11 +223,26 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
           const dayEvents = getEventsForDay(events, day);
           const isCurrentMonth = isSameMonth(day, currentDate);
           const isToday = isSameDay(day, today);
+          const isDragOver = dragOverDay === idx;
           return (
-            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[110px] border-b border-r border-border p-1.5 transition-colors ${!isCurrentMonth ? "bg-muted/20" : "bg-card"} ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""}`}>
+            <div
+              key={idx}
+              onClick={() => onDayClick?.(day)}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverDay(idx); }}
+              onDragLeave={() => setDragOverDay(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverDay(null);
+                const eventId = e.dataTransfer.getData("application/calendar-event-id");
+                const oldStart = e.dataTransfer.getData("application/calendar-event-start");
+                const oldEnd = e.dataTransfer.getData("application/calendar-event-end");
+                if (eventId && onDropEvent) onDropEvent(eventId, oldStart, oldEnd, day);
+              }}
+              className={`min-h-[110px] border-b border-r border-border p-1.5 transition-colors ${!isCurrentMonth ? "bg-muted/20" : "bg-card"} ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""} ${isDragOver ? "ring-2 ring-inset ring-primary/50 bg-primary/10" : ""}`}
+            >
               <div className={`mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : isCurrentMonth ? "text-foreground" : "text-muted-foreground/40"}`}>{format(day, "d")}</div>
               <div className="flex flex-col gap-0.5">
-                {dayEvents.slice(0, 3).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact />))}
+                {dayEvents.slice(0, 3).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact draggable={canDrag} />))}
                 {dayEvents.length > 3 && <span className="pl-1 text-[10px] font-medium text-muted-foreground">+{dayEvents.length - 3} more</span>}
               </div>
             </div>
@@ -238,8 +255,9 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
 
 // ─── Week View ───
 
-function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel }: {
+function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel, onDropEvent, canDrag }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
+  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean;
 }) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
