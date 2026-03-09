@@ -1,5 +1,5 @@
 // Calendar — Professional planning tool with month/week/day views
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { ReadOnlyBanner, ReadOnlyBadge, EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
@@ -53,10 +53,22 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
   });
 }
 
-function EventChip({ event, onClick, showPlayer, compact }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean }) {
+function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   return (
-    <button onClick={(e) => { e.stopPropagation(); onClick(); }} className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${cfg.bg} ${compact ? "py-px" : ""}`}>
+    <button
+      draggable={draggable}
+      onDragStart={(e) => {
+        if (!draggable) return;
+        e.stopPropagation();
+        e.dataTransfer.setData("application/calendar-event-id", event.id);
+        e.dataTransfer.setData("application/calendar-event-start", event.startDate);
+        e.dataTransfer.setData("application/calendar-event-end", event.endDate);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${cfg.bg} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
+    >
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
     </button>
@@ -187,8 +199,9 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
 
 // ─── Month View ───
 
-function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel }: {
+function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel, onDropEvent, canDrag }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
+  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean;
 }) {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -196,6 +209,7 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
   const today = new Date();
+  const [dragOverDay, setDragOverDay] = useState<number | null>(null);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border shadow-sm">
@@ -209,11 +223,26 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
           const dayEvents = getEventsForDay(events, day);
           const isCurrentMonth = isSameMonth(day, currentDate);
           const isToday = isSameDay(day, today);
+          const isDragOver = dragOverDay === idx;
           return (
-            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[110px] border-b border-r border-border p-1.5 transition-colors ${!isCurrentMonth ? "bg-muted/20" : "bg-card"} ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""}`}>
+            <div
+              key={idx}
+              onClick={() => onDayClick?.(day)}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverDay(idx); }}
+              onDragLeave={() => setDragOverDay(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverDay(null);
+                const eventId = e.dataTransfer.getData("application/calendar-event-id");
+                const oldStart = e.dataTransfer.getData("application/calendar-event-start");
+                const oldEnd = e.dataTransfer.getData("application/calendar-event-end");
+                if (eventId && onDropEvent) onDropEvent(eventId, oldStart, oldEnd, day);
+              }}
+              className={`min-h-[110px] border-b border-r border-border p-1.5 transition-colors ${!isCurrentMonth ? "bg-muted/20" : "bg-card"} ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""} ${isDragOver ? "ring-2 ring-inset ring-primary/50 bg-primary/10" : ""}`}
+            >
               <div className={`mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : isCurrentMonth ? "text-foreground" : "text-muted-foreground/40"}`}>{format(day, "d")}</div>
               <div className="flex flex-col gap-0.5">
-                {dayEvents.slice(0, 3).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact />))}
+                {dayEvents.slice(0, 3).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact draggable={canDrag} />))}
                 {dayEvents.length > 3 && <span className="pl-1 text-[10px] font-medium text-muted-foreground">+{dayEvents.length - 3} more</span>}
               </div>
             </div>
@@ -226,13 +255,15 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
 
 // ─── Week View ───
 
-function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel }: {
+function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel, onDropEvent, canDrag }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
+  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean;
 }) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
   const today = new Date();
+  const [dragOverDay, setDragOverDay] = useState<number | null>(null);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border shadow-sm">
@@ -240,13 +271,28 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
         {days.map((day, idx) => {
           const dayEvents = getEventsForDay(events, day);
           const isToday = isSameDay(day, today);
+          const isDragOver = dragOverDay === idx;
           return (
-            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""}`}>
+            <div
+              key={idx}
+              onClick={() => onDayClick?.(day)}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverDay(idx); }}
+              onDragLeave={() => setDragOverDay(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverDay(null);
+                const eventId = e.dataTransfer.getData("application/calendar-event-id");
+                const oldStart = e.dataTransfer.getData("application/calendar-event-start");
+                const oldEnd = e.dataTransfer.getData("application/calendar-event-end");
+                if (eventId && onDropEvent) onDropEvent(eventId, oldStart, oldEnd, day);
+              }}
+              className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""} ${isDragOver ? "ring-2 ring-inset ring-primary/50 bg-primary/10" : ""}`}
+            >
               <div className="mb-3 text-center">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
                 <div className={`mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"}`}>{format(day, "d")}</div>
               </div>
-              <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} />))}</div>
+              <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} draggable={canDrag} />))}</div>
             </div>
           );
         })}
@@ -429,6 +475,18 @@ export default function CalendarPage() {
     setView("day");
   };
 
+  const handleDropEvent = useCallback((eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => {
+    const start = parseISO(oldStart);
+    const end = parseISO(oldEnd);
+    const dayDiff = targetDay.getTime() - new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+    if (dayDiff === 0) return;
+    const newStart = new Date(start.getTime() + dayDiff);
+    const newEnd = new Date(end.getTime() + dayDiff);
+    updateMut.mutate({ id: eventId, data: { startDate: newStart.toISOString(), endDate: newEnd.toISOString() } }, {
+      onSuccess: () => toast.success("Event rescheduled"),
+    });
+  }, [updateMut]);
+
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
   const handleDelete = () => {
@@ -546,8 +604,8 @@ export default function CalendarPage() {
       {/* Calendar body */}
       {scopedEvents.length === 0 && view !== "day" && <EmptyState icon={<CalendarIcon className="h-6 w-6 text-muted-foreground" />} title="No events found" description="No events match your current filters." />}
 
-      {view === "month" && scopedEvents.length > 0 && <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />}
-      {view === "week" && scopedEvents.length > 0 && <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />}
+      {view === "month" && scopedEvents.length > 0 && <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} onDropEvent={canEdit ? handleDropEvent : undefined} canDrag={canEdit} />}
+      {view === "week" && scopedEvents.length > 0 && <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} onDropEvent={canEdit ? handleDropEvent : undefined} canDrag={canEdit} />}
       {view === "day" && <DayView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} showPlayerLabel={showPlayerLabels} />}
 
       {/* Drawers & dialogs */}
