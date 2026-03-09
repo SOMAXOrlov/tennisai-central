@@ -475,6 +475,18 @@ export default function CalendarPage() {
     setView("day");
   };
 
+  const handleDropEvent = useCallback((eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => {
+    const start = parseISO(oldStart);
+    const end = parseISO(oldEnd);
+    const dayDiff = targetDay.getTime() - new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+    if (dayDiff === 0) return;
+    const newStart = new Date(start.getTime() + dayDiff);
+    const newEnd = new Date(end.getTime() + dayDiff);
+    updateMut.mutate({ id: eventId, data: { startDate: newStart.toISOString(), endDate: newEnd.toISOString() } }, {
+      onSuccess: () => toast.success("Event rescheduled"),
+    });
+  }, [updateMut]);
+
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
   const handleDelete = () => {
