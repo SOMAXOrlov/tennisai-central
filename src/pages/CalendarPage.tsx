@@ -1,4 +1,4 @@
-// Calendar — Full working planning tool via React Query
+// Calendar — Professional planning tool with month/week/day views
 import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
@@ -17,12 +18,14 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
+  LayoutGrid, List, Columns,
 } from "lucide-react";
-import type { CalendarEvent, CalendarEventType, ConnectedPlayer } from "@/types";
+import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
-  isSameMonth, isSameDay, addMonths, subMonths, addWeeks, subWeeks, parseISO, isWithinInterval,
+  isSameMonth, isSameDay, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,
+  parseISO, isWithinInterval, isToday as isDateToday, isBefore, isAfter,
 } from "date-fns";
 
 const EVENT_CONFIG: Record<CalendarEventType, { label: string; icon: React.ReactNode; dot: string; bg: string }> = {
@@ -34,6 +37,14 @@ const EVENT_CONFIG: Record<CalendarEventType, { label: string; icon: React.React
 };
 const EVENT_TYPES: CalendarEventType[] = ["training", "tournament", "match", "travel", "recovery"];
 
+const STATE_CONFIG: Record<CalendarEventState, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+  requested: { label: "Requested", variant: "outline" },
+  tentative: { label: "Tentative", variant: "secondary" },
+  confirmed: { label: "Confirmed", variant: "default" },
+  cancelled: { label: "Cancelled", variant: "destructive" },
+  completed: { label: "Completed", variant: "secondary" },
+};
+
 function getEventsForDay(events: CalendarEvent[], day: Date) {
   return events.filter((e) => {
     const start = parseISO(e.startDate);
@@ -42,14 +53,20 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
   });
 }
 
-function EventChip({ event, onClick, showPlayer }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean }) {
+function EventChip({ event, onClick, showPlayer, compact }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   return (
-    <button onClick={onClick} className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-colors hover:opacity-80 ${cfg.bg}`}>
+    <button onClick={(e) => { e.stopPropagation(); onClick(); }} className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${cfg.bg} ${compact ? "py-px" : ""}`}>
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
     </button>
   );
+}
+
+function StateBadge({ state }: { state?: CalendarEventState }) {
+  if (!state) return null;
+  const cfg = STATE_CONFIG[state];
+  return <Badge variant={cfg.variant} className="text-[10px] px-1.5 py-0">{cfg.label}</Badge>;
 }
 
 function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, readOnly, hideCoachNotes, deleting }: {
@@ -65,15 +82,29 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, readOn
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md">
-        <SheetHeader><SheetTitle className="flex items-center gap-2"><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>{readOnly && <ReadOnlyBadge />}</SheetTitle></SheetHeader>
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
+            <StateBadge state={event.state} />
+            {readOnly && <ReadOnlyBadge />}
+          </SheetTitle>
+        </SheetHeader>
         <div className="mt-4 space-y-5">
           <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
           <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4 shrink-0" />{multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}</div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-4 w-4 shrink-0" />
+              {multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}
+            </div>
             {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
             {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
             {event.description && <p className="text-muted-foreground">{event.description}</p>}
-            {!hideCoachNotes && event.coachNotes && <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div><p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p></div>}
+            {!hideCoachNotes && event.coachNotes && (
+              <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+                <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div>
+                <p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p>
+              </div>
+            )}
           </div>
           {!readOnly && (
             <div className="flex gap-2 border-t border-border pt-4">
@@ -87,7 +118,7 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, readOn
   );
 }
 
-interface EventFormData { title: string; type: CalendarEventType; startDate: string; endDate: string; location: string; description: string; playerId: string; coachNotes: string; }
+interface EventFormData { title: string; type: CalendarEventType; state: CalendarEventState; startDate: string; endDate: string; location: string; description: string; playerId: string; coachNotes: string; }
 
 function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, saving }: {
   open: boolean; onOpenChange: (o: boolean) => void; initial?: CalendarEvent;
@@ -95,19 +126,36 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
 }) {
   const toLocal = (iso: string) => format(parseISO(iso), "yyyy-MM-dd'T'HH:mm");
   const [form, setForm] = useState<EventFormData>(() =>
-    initial ? { title: initial.title, type: initial.type, startDate: toLocal(initial.startDate), endDate: toLocal(initial.endDate), location: initial.location ?? "", description: initial.description ?? "", playerId: initial.playerId ?? "", coachNotes: initial.coachNotes ?? "" }
-    : { title: "", type: "training", startDate: "", endDate: "", location: "", description: "", playerId: "", coachNotes: "" }
+    initial ? { title: initial.title, type: initial.type, state: initial.state ?? "confirmed", startDate: toLocal(initial.startDate), endDate: toLocal(initial.endDate), location: initial.location ?? "", description: initial.description ?? "", playerId: initial.playerId ?? "", coachNotes: initial.coachNotes ?? "" }
+    : { title: "", type: "training", state: "confirmed", startDate: "", endDate: "", location: "", description: "", playerId: "", coachNotes: "" }
   );
   const update = (field: keyof EventFormData, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
   const valid = form.title.trim() && form.startDate && form.endDate;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader><DialogTitle>{initial ? "Edit Event" : "New Event"}</DialogTitle></DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5"><Label>Title</Label><Input value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Event title" /></div>
-          <div className="space-y-1.5"><Label>Type</Label><Select value={form.type} onValueChange={(v) => update("type", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{EVENT_TYPES.map((t) => (<SelectItem key={t} value={t}>{EVENT_CONFIG[t].label}</SelectItem>))}</SelectContent></Select></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => update("type", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{EVENT_TYPES.map((t) => (<SelectItem key={t} value={t}><span className="flex items-center gap-2">{EVENT_CONFIG[t].icon}{EVENT_CONFIG[t].label}</span></SelectItem>))}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select value={form.state} onValueChange={(v) => update("state", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(STATE_CONFIG) as CalendarEventState[]).map((s) => (<SelectItem key={s} value={s}>{STATE_CONFIG[s].label}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {playerOptions && playerOptions.length > 0 && (
             <div className="space-y-1.5">
               <Label>Assign to Player</Label>
@@ -137,6 +185,8 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
   );
 }
 
+// ─── Month View ───
+
 function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
 }) {
@@ -148,19 +198,23 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
   const today = new Date();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <div className="grid grid-cols-7 border-b border-border bg-muted/50">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (<div key={d} className="px-2 py-2.5 text-center text-xs font-semibold text-muted-foreground">{d}</div>))}</div>
+    <div className="overflow-hidden rounded-xl border border-border shadow-sm">
+      <div className="grid grid-cols-7 border-b border-border bg-muted/40">
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+          <div key={d} className="px-2 py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">{d}</div>
+        ))}
+      </div>
       <div className="grid grid-cols-7">
         {days.map((day, idx) => {
           const dayEvents = getEventsForDay(events, day);
           const isCurrentMonth = isSameMonth(day, currentDate);
           const isToday = isSameDay(day, today);
           return (
-            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[100px] border-b border-r border-border p-1.5 transition-colors ${!isCurrentMonth ? "bg-muted/30" : "bg-card"} ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/20" : ""}`}>
-              <div className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${isToday ? "bg-primary text-primary-foreground" : isCurrentMonth ? "text-foreground" : "text-muted-foreground/50"}`}>{format(day, "d")}</div>
+            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[110px] border-b border-r border-border p-1.5 transition-colors ${!isCurrentMonth ? "bg-muted/20" : "bg-card"} ${idx % 7 === 6 ? "border-r-0" : ""} ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""}`}>
+              <div className={`mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : isCurrentMonth ? "text-foreground" : "text-muted-foreground/40"}`}>{format(day, "d")}</div>
               <div className="flex flex-col gap-0.5">
-                {dayEvents.slice(0, 2).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} />))}
-                {dayEvents.length > 2 && <span className="pl-1 text-[10px] font-medium text-muted-foreground">+{dayEvents.length - 2} more</span>}
+                {dayEvents.slice(0, 3).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact />))}
+                {dayEvents.length > 3 && <span className="pl-1 text-[10px] font-medium text-muted-foreground">+{dayEvents.length - 3} more</span>}
               </div>
             </div>
           );
@@ -169,6 +223,8 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, showPlaye
     </div>
   );
 }
+
+// ─── Week View ───
 
 function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
@@ -179,16 +235,16 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
   const today = new Date();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="overflow-hidden rounded-xl border border-border shadow-sm">
       <div className="grid grid-cols-7">
         {days.map((day, idx) => {
           const dayEvents = getEventsForDay(events, day);
           const isToday = isSameDay(day, today);
           return (
-            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[280px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/20" : ""}`}>
+            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""}`}>
               <div className="mb-3 text-center">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
-                <div className={`mx-auto mt-1 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${isToday ? "bg-primary text-primary-foreground" : "text-foreground"}`}>{format(day, "d")}</div>
+                <div className={`mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"}`}>{format(day, "d")}</div>
               </div>
               <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} />))}</div>
             </div>
@@ -198,6 +254,64 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
     </div>
   );
 }
+
+// ─── Day View ───
+
+function DayView({ currentDate, events, onSelectEvent, showPlayerLabel }: {
+  currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; showPlayerLabel?: boolean;
+}) {
+  const dayEvents = getEventsForDay(events, currentDate).sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
+  const isToday = isDateToday(currentDate);
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border shadow-sm">
+      <div className={`border-b border-border px-6 py-4 ${isToday ? "bg-primary/5 dark:bg-primary/10" : "bg-muted/30"}`}>
+        <div className="flex items-center gap-3">
+          <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-foreground"}`}>{format(currentDate, "d")}</div>
+          <div>
+            <div className="text-lg font-semibold text-foreground">{format(currentDate, "EEEE")}</div>
+            <div className="text-sm text-muted-foreground">{format(currentDate, "MMMM yyyy")} · {dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}</div>
+          </div>
+        </div>
+      </div>
+      <div className="divide-y divide-border">
+        {dayEvents.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+            <CalendarIcon className="mb-2 h-8 w-8 opacity-40" />
+            <p className="text-sm font-medium">No events scheduled</p>
+          </div>
+        )}
+        {dayEvents.map((event) => {
+          const cfg = EVENT_CONFIG[event.type];
+          const start = parseISO(event.startDate);
+          const end = parseISO(event.endDate);
+          return (
+            <button key={event.id} onClick={() => onSelectEvent(event)} className="flex w-full items-start gap-4 px-6 py-4 text-left transition-colors hover:bg-accent/10">
+              <div className="flex shrink-0 flex-col items-center pt-0.5">
+                <span className="text-sm font-semibold text-foreground">{format(start, "h:mm")}</span>
+                <span className="text-[10px] text-muted-foreground">{format(start, "a")}</span>
+                <div className={`mt-1.5 h-8 w-0.5 rounded-full ${cfg.dot}`} />
+                <span className="mt-1.5 text-[10px] text-muted-foreground">{format(end, "h:mm a")}</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
+                  <StateBadge state={event.state} />
+                </div>
+                <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
+                {showPlayerLabel && event.playerName && <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1"><User className="h-3 w-3" />{event.playerName}</p>}
+                {event.location && <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</p>}
+                {event.description && <p className="mt-1 text-xs text-muted-foreground/80 line-clamp-2">{event.description}</p>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Filter Components ───
 
 function FilterChip({ type, active, onToggle }: { type: CalendarEventType; active: boolean; onToggle: () => void }) {
   const cfg = EVENT_CONFIG[type];
@@ -214,6 +328,15 @@ function PlayerFilterChip({ label, active, onClick, icon }: { label: string; act
   );
 }
 
+// ─── Main Page ───
+
+type ViewMode = "month" | "week" | "day";
+const VIEW_ICONS: Record<ViewMode, React.ReactNode> = {
+  month: <LayoutGrid className="h-3.5 w-3.5" />,
+  week: <Columns className="h-3.5 w-3.5" />,
+  day: <List className="h-3.5 w-3.5" />,
+};
+
 export default function CalendarPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
@@ -229,7 +352,7 @@ export default function CalendarPage() {
   const updateMut = useUpdateCalendarEvent();
   const deleteMut = useDeleteCalendarEvent();
 
-  const [view, setView] = useState<"month" | "week">("month");
+  const [view, setView] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
   const [activeFilters, setActiveFilters] = useState<Set<CalendarEventType>>(new Set(EVENT_TYPES));
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -241,14 +364,12 @@ export default function CalendarPage() {
   const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
   const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
 
-  // Sync player scope when team filter changes
   const teamPlayerIds = useMemo(() => {
     if (teamScope === "__all__") return null;
     const team = teams.find((t) => t.id === teamScope);
     return new Set(team?.players.map((p) => p.id) ?? []);
   }, [teamScope, teams]);
 
-  // Filter players visible in scope chips based on team
   const visiblePlayers = useMemo(() => {
     if (!teamPlayerIds) return connectedPlayers;
     return connectedPlayers.filter((p) => teamPlayerIds.has(p.id));
@@ -282,17 +403,31 @@ export default function CalendarPage() {
   };
 
   const navigate = (dir: 1 | -1) => {
-    setCurrentDate((d) => view === "month" ? (dir === 1 ? addMonths(d, 1) : subMonths(d, 1)) : (dir === 1 ? addWeeks(d, 1) : subWeeks(d, 1)));
+    setCurrentDate((d) => {
+      if (view === "month") return dir === 1 ? addMonths(d, 1) : subMonths(d, 1);
+      if (view === "week") return dir === 1 ? addWeeks(d, 1) : subWeeks(d, 1);
+      return dir === 1 ? addDays(d, 1) : subDays(d, 1);
+    });
   };
 
   const handleSelectEvent = (e: CalendarEvent) => { setSelectedEvent(e); setDrawerOpen(true); };
 
   const handleDayClick = canEdit ? (day: Date) => {
+    if (view !== "day") {
+      // In month/week view, clicking a day switches to day view
+      setCurrentDate(day);
+      setView("day");
+      return;
+    }
     const start = new Date(day); start.setHours(9, 0, 0, 0);
     const end = new Date(day); end.setHours(10, 0, 0, 0);
-    setEditingEvent({ id: "", title: "", type: "training", startDate: start.toISOString(), endDate: end.toISOString() } as CalendarEvent);
+    setEditingEvent({ id: "", title: "", type: "training", state: "confirmed", startDate: start.toISOString(), endDate: end.toISOString() } as CalendarEvent);
     setFormOpen(true);
-  } : undefined;
+  } : (day: Date) => {
+    // For observers: just switch to day view
+    setCurrentDate(day);
+    setView("day");
+  };
 
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
@@ -303,12 +438,19 @@ export default function CalendarPage() {
   };
 
   const handleSave = (data: EventFormData) => {
-    const playerName = data.playerId ? connectedPlayers.find((p) => p.id === data.playerId) ? `${connectedPlayers.find((p) => p.id === data.playerId)!.firstName} ${connectedPlayers.find((p) => p.id === data.playerId)!.lastName}` : undefined : undefined;
+    const player = data.playerId ? connectedPlayers.find((p) => p.id === data.playerId) : undefined;
+    const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
+    const payload = {
+      title: data.title, type: data.type, state: data.state as CalendarEventState,
+      startDate: new Date(data.startDate).toISOString(), endDate: new Date(data.endDate).toISOString(),
+      location: data.location || undefined, description: data.description || undefined,
+      playerId: data.playerId || undefined, playerName, coachNotes: data.coachNotes || undefined,
+    };
 
     if (editingEvent && editingEvent.id) {
-      updateMut.mutate({ id: editingEvent.id, data: { title: data.title, type: data.type, startDate: new Date(data.startDate).toISOString(), endDate: new Date(data.endDate).toISOString(), location: data.location || undefined, description: data.description || undefined, playerId: data.playerId || undefined, playerName, coachNotes: data.coachNotes || undefined } });
+      updateMut.mutate({ id: editingEvent.id, data: payload });
     } else {
-      createMut.mutate({ title: data.title, type: data.type, startDate: new Date(data.startDate).toISOString(), endDate: new Date(data.endDate).toISOString(), location: data.location || undefined, description: data.description || undefined, playerId: data.playerId || undefined, playerName, coachNotes: data.coachNotes || undefined, createdBy: user?.id, createdByRole: user?.role });
+      createMut.mutate({ ...payload, createdBy: user?.id, createdByRole: user?.role });
     }
   };
 
@@ -317,25 +459,50 @@ export default function CalendarPage() {
     setPlayerDetailOpen(true);
   };
 
-  const heading = view === "month" ? format(currentDate, "MMMM yyyy") : `Week of ${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d")} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d, yyyy")}`;
+  const heading = view === "month"
+    ? format(currentDate, "MMMM yyyy")
+    : view === "week"
+    ? `Week of ${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d")} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d, yyyy")}`
+    : format(currentDate, "EEEE, MMMM d, yyyy");
+
   const showPlayerLabels = isCoach && playerScope === "all";
   const playerOptions = isCoach ? connectedPlayers.map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}` })) : undefined;
+
+  // Event summary counts
+  const eventCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    EVENT_TYPES.forEach((t) => { counts[t] = scopedEvents.filter((e) => e.type === t).length; });
+    return counts;
+  }, [scopedEvents]);
 
   if (isLoading) return <LoadingState message="Loading calendar…" />;
   if (error) return <ErrorState message="Failed to load calendar" onRetry={() => window.location.reload()} />;
 
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Calendar</h1>{isObserver && <ReadOnlyBadge />}</div>
-          <p className="text-sm text-muted-foreground">{isPlayer ? "Your unified schedule." : isCoach ? "View your schedule and connected player events." : isObserver ? "Read-only view of the connected player's schedule." : "Platform-wide calendar overview."}</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Calendar</h1>
+            {isObserver && <ReadOnlyBadge />}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {isPlayer ? "Your unified schedule — trainings, matches, tournaments & more." : isCoach ? "Manage your schedule and connected player events." : isObserver ? "Read-only view of the connected player's schedule." : "Platform-wide calendar overview."}
+          </p>
         </div>
-        {canEdit && <Button size="sm" onClick={handleAdd} className="gap-1.5"><Plus className="h-4 w-4" />Add Event</Button>}
+        <div className="flex items-center gap-2">
+          {/* Summary chips */}
+          <div className="hidden items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-xs font-medium text-muted-foreground md:flex">
+            <span className="font-semibold text-foreground">{scopedEvents.length}</span> events
+          </div>
+          {canEdit && <Button size="sm" onClick={handleAdd} className="gap-1.5 shadow-sm"><Plus className="h-4 w-4" />Add Event</Button>}
+        </div>
       </div>
 
       {isObserver && <ReadOnlyBanner />}
 
+      {/* Coach scoping filters */}
       {isCoach && connectedPlayers.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs font-medium text-muted-foreground">Scope:</span>
@@ -348,7 +515,6 @@ export default function CalendarPage() {
               active={playerScope === p.id}
               onClick={() => {
                 setPlayerScope(p.id);
-                // Double-click or already selected → open detail
                 if (playerScope === p.id) handleViewPlayerDetail(p);
               }}
             />
@@ -357,23 +523,34 @@ export default function CalendarPage() {
         </div>
       )}
 
+      {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Tabs value={view} onValueChange={(v) => setView(v as "month" | "week")}><TabsList><TabsTrigger value="month" className="gap-1.5"><CalendarIcon className="h-3.5 w-3.5" />Month</TabsTrigger><TabsTrigger value="week" className="gap-1.5"><CalendarIcon className="h-3.5 w-3.5" />Week</TabsTrigger></TabsList></Tabs>
+          <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
+            <TabsList>
+              {(["month", "week", "day"] as ViewMode[]).map((v) => (
+                <TabsTrigger key={v} value={v} className="gap-1.5 capitalize">{VIEW_ICONS[v]}{v}</TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-            <span className="min-w-[180px] text-center text-sm font-semibold text-foreground">{heading}</span>
+            <span className="min-w-[200px] text-center text-sm font-semibold text-foreground">{heading}</span>
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(1)}><ChevronRight className="h-4 w-4" /></Button>
           </div>
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => setCurrentDate(new Date(2026, 2, 8))}>Today</Button>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setCurrentDate(new Date())}>Today</Button>
         </div>
         <div className="flex flex-wrap gap-2">{EVENT_TYPES.map((type) => (<FilterChip key={type} type={type} active={activeFilters.has(type)} onToggle={() => toggleFilter(type)} />))}</div>
       </div>
 
-      {scopedEvents.length === 0 && <EmptyState icon={<CalendarIcon className="h-6 w-6 text-muted-foreground" />} title="No events found" description="No events match your current filters." />}
+      {/* Calendar body */}
+      {scopedEvents.length === 0 && view !== "day" && <EmptyState icon={<CalendarIcon className="h-6 w-6 text-muted-foreground" />} title="No events found" description="No events match your current filters." />}
 
-      {scopedEvents.length > 0 && (view === "month" ? <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} /> : <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />)}
+      {view === "month" && scopedEvents.length > 0 && <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />}
+      {view === "week" && scopedEvents.length > 0 && <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} />}
+      {view === "day" && <DayView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} showPlayerLabel={showPlayerLabels} />}
 
+      {/* Drawers & dialogs */}
       <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
