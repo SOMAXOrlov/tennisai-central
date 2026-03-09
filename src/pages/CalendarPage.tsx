@@ -263,6 +263,7 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
   const today = new Date();
+  const [dragOverDay, setDragOverDay] = useState<number | null>(null);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border shadow-sm">
@@ -270,13 +271,28 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
         {days.map((day, idx) => {
           const dayEvents = getEventsForDay(events, day);
           const isToday = isSameDay(day, today);
+          const isDragOver = dragOverDay === idx;
           return (
-            <div key={idx} onClick={() => onDayClick?.(day)} className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""}`}>
+            <div
+              key={idx}
+              onClick={() => onDayClick?.(day)}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverDay(idx); }}
+              onDragLeave={() => setDragOverDay(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverDay(null);
+                const eventId = e.dataTransfer.getData("application/calendar-event-id");
+                const oldStart = e.dataTransfer.getData("application/calendar-event-start");
+                const oldEnd = e.dataTransfer.getData("application/calendar-event-end");
+                if (eventId && onDropEvent) onDropEvent(eventId, oldStart, oldEnd, day);
+              }}
+              className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""} ${isDragOver ? "ring-2 ring-inset ring-primary/50 bg-primary/10" : ""}`}
+            >
               <div className="mb-3 text-center">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
                 <div className={`mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"}`}>{format(day, "d")}</div>
               </div>
-              <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} />))}</div>
+              <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} draggable={canDrag} />))}</div>
             </div>
           );
         })}
