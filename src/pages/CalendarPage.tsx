@@ -416,7 +416,7 @@ function MiniCalendarSidebar({ currentDate, events, onSelectDate, onMonthChange 
   const miniDays = eachDayOfInterval({ start: miniCalStart, end: miniCalEnd });
 
   return (
-    <div className="hidden w-[260px] shrink-0 space-y-4 lg:block">
+    <div className="w-[260px] shrink-0 space-y-4">
       {/* Mini month grid */}
       <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
