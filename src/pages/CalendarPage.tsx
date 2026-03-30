@@ -720,12 +720,14 @@ export default function CalendarPage() {
   const handleDeleteSingle = () => {
     if (selectedEvent) {
       const parentId = selectedEvent.recurrenceParentId ?? selectedEvent.id;
-      const { mockStore } = require("@/mock/store");
       const occDate = format(parseISO(selectedEvent.startDate), "yyyy-MM-dd");
-      mockStore.addRecurrenceException(parentId, occDate);
-      // Force refetch
-      updateMut.mutate({ id: parentId, data: {} }, {
-        onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("This occurrence removed"); },
+      // Import mockStore at the top won't cause issues since it's already used indirectly
+      import("@/mock/store").then(({ mockStore: store }) => {
+        store.addRecurrenceException(parentId, occDate);
+        // Force refetch by doing a no-op update
+        updateMut.mutate({ id: parentId, data: {} }, {
+          onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("This occurrence removed"); },
+        });
       });
     }
   };
@@ -887,7 +889,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Drawers & dialogs */}
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
     </div>
