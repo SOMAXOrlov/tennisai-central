@@ -17,6 +17,18 @@ export type CalendarEventType = "training" | "tournament" | "match" | "travel" |
 
 export type CalendarEventState = "requested" | "tentative" | "confirmed" | "cancelled" | "completed";
 
+export type RecurrenceFrequency = "daily" | "weekly" | "biweekly" | "monthly";
+export type RecurrenceEndType = "never" | "count" | "until";
+
+export interface RecurrenceRule {
+  frequency: RecurrenceFrequency;
+  endType: RecurrenceEndType;
+  count?: number;
+  until?: string;
+  /** Dates to exclude from the series (for "this event only" edits/deletes) */
+  exceptions?: string[];
+}
+
 export type FinanceCategory = "training" | "travel" | "tournament" | "equipment";
 
 export type EquipmentCategory = "racket" | "string" | "shoes" | "balls" | "accessories";
@@ -138,6 +150,11 @@ export interface CalendarEvent {
   createdBy?: string;
   createdByRole?: UserRole;
   trainingRequestId?: string;
+  recurrence?: RecurrenceRule;
+  /** ID of the parent recurring event (set on virtual occurrences) */
+  recurrenceParentId?: string;
+  /** Occurrence index for virtual instances */
+  recurrenceIndex?: number;
 }
 
 // --- Tournaments ---

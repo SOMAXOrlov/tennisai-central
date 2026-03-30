@@ -18,9 +18,9 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
-  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen,
+  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat,
 } from "lucide-react";
-import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer } from "@/types";
+import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -55,6 +55,7 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
 
 function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
+  const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
   return (
     <button
       draggable={draggable}
@@ -71,6 +72,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: 
     >
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
+      {isRecurring && <Repeat className="h-2.5 w-2.5 shrink-0 opacity-60" />}
     </button>
   );
 }
@@ -81,56 +83,82 @@ function StateBadge({ state }: { state?: CalendarEventState }) {
   return <Badge variant={cfg.variant} className="text-[10px] px-1.5 py-0">{cfg.label}</Badge>;
 }
 
-function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, readOnly, hideCoachNotes, deleting }: {
+const FREQ_LABELS: Record<RecurrenceFrequency, string> = { daily: "Daily", weekly: "Weekly", biweekly: "Every 2 weeks", monthly: "Monthly" };
+
+function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting }: {
   event: CalendarEvent | null; open: boolean; onOpenChange: (o: boolean) => void;
-  onEdit: () => void; onDelete: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
+  onEdit: () => void; onDelete: () => void; onDeleteSingle?: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
 }) {
+  const [showRecurringChoice, setShowRecurringChoice] = useState(false);
   if (!event) return null;
   const cfg = EVENT_CONFIG[event.type];
   const start = parseISO(event.startDate);
   const end = parseISO(event.endDate);
   const multiDay = !isSameDay(start, end);
+  const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
-            <StateBadge state={event.state} />
-            {readOnly && <ReadOnlyBadge />}
-          </SheetTitle>
-        </SheetHeader>
-        <div className="mt-4 space-y-5">
-          <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4 shrink-0" />
-              {multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
+              <StateBadge state={event.state} />
+              {isRecurring && <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0"><Repeat className="h-3 w-3" />Recurring</Badge>}
+              {readOnly && <ReadOnlyBadge />}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4 shrink-0" />
+                {multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}
+              </div>
+              {isRecurring && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Repeat className="h-4 w-4 shrink-0" />
+                  <span>Repeats {event.recurrence ? FREQ_LABELS[event.recurrence.frequency] : "as part of a series"}{event.recurrence?.endType === "count" ? ` · ${event.recurrence.count} times` : event.recurrence?.endType === "until" ? ` · until ${format(parseISO(event.recurrence.until!), "MMM d, yyyy")}` : ""}</span>
+                </div>
+              )}
+              {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
+              {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
+              {event.description && <p className="text-muted-foreground">{event.description}</p>}
+              {!hideCoachNotes && event.coachNotes && (
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div>
+                  <p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p>
+                </div>
+              )}
             </div>
-            {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
-            {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
-            {event.description && <p className="text-muted-foreground">{event.description}</p>}
-            {!hideCoachNotes && event.coachNotes && (
-              <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-                <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div>
-                <p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p>
+            {!readOnly && (
+              <div className="flex gap-2 border-t border-border pt-4">
+                <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                <Button size="sm" variant="outline" onClick={() => { if (isRecurring) { setShowRecurringChoice(true); } else { onDelete(); } }} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
               </div>
             )}
           </div>
-          {!readOnly && (
-            <div className="flex gap-2 border-t border-border pt-4">
-              <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-              <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
-            </div>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+
+      {/* Recurring delete choice dialog */}
+      <Dialog open={showRecurringChoice} onOpenChange={setShowRecurringChoice}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Delete Recurring Event</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">This is a recurring event. What would you like to delete?</p>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button variant="outline" className="w-full" onClick={() => { setShowRecurringChoice(false); onDeleteSingle?.(); }}>This event only</Button>
+            <Button variant="destructive" className="w-full" onClick={() => { setShowRecurringChoice(false); onDelete(); }}>All events in series</Button>
+            <Button variant="ghost" className="w-full" onClick={() => setShowRecurringChoice(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
-interface EventFormData { title: string; type: CalendarEventType; state: CalendarEventState; startDate: string; endDate: string; location: string; description: string; playerId: string; coachNotes: string; }
+interface EventFormData { title: string; type: CalendarEventType; state: CalendarEventState; startDate: string; endDate: string; location: string; description: string; playerId: string; coachNotes: string; recurrenceFrequency: RecurrenceFrequency | "none"; recurrenceEndType: RecurrenceEndType; recurrenceCount: string; recurrenceUntil: string; }
 
 function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, saving }: {
   open: boolean; onOpenChange: (o: boolean) => void; initial?: CalendarEvent;
@@ -138,8 +166,14 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
 }) {
   const toLocal = (iso: string) => format(parseISO(iso), "yyyy-MM-dd'T'HH:mm");
   const [form, setForm] = useState<EventFormData>(() =>
-    initial ? { title: initial.title, type: initial.type, state: initial.state ?? "confirmed", startDate: toLocal(initial.startDate), endDate: toLocal(initial.endDate), location: initial.location ?? "", description: initial.description ?? "", playerId: initial.playerId ?? "", coachNotes: initial.coachNotes ?? "" }
-    : { title: "", type: "training", state: "confirmed", startDate: "", endDate: "", location: "", description: "", playerId: "", coachNotes: "" }
+    initial ? {
+      title: initial.title, type: initial.type, state: initial.state ?? "confirmed", startDate: toLocal(initial.startDate), endDate: toLocal(initial.endDate), location: initial.location ?? "", description: initial.description ?? "", playerId: initial.playerId ?? "", coachNotes: initial.coachNotes ?? "",
+      recurrenceFrequency: initial.recurrence?.frequency ?? "none",
+      recurrenceEndType: initial.recurrence?.endType ?? "never",
+      recurrenceCount: String(initial.recurrence?.count ?? 10),
+      recurrenceUntil: initial.recurrence?.until ? format(parseISO(initial.recurrence.until), "yyyy-MM-dd") : "",
+    }
+    : { title: "", type: "training", state: "confirmed", startDate: "", endDate: "", location: "", description: "", playerId: "", coachNotes: "", recurrenceFrequency: "none", recurrenceEndType: "never", recurrenceCount: "10", recurrenceUntil: "" }
   );
   const update = (field: keyof EventFormData, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
   const valid = form.title.trim() && form.startDate && form.endDate;
@@ -186,6 +220,52 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
           </div>
           <div className="space-y-1.5"><Label>Location</Label><Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Optional" /></div>
           <div className="space-y-1.5"><Label>Description</Label><Input value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Optional" /></div>
+
+          {/* Recurrence section */}
+          <div className="space-y-3 rounded-lg border border-border p-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground"><Repeat className="h-4 w-4" /> Recurrence</div>
+            <div className="space-y-1.5">
+              <Label>Frequency</Label>
+              <Select value={form.recurrenceFrequency} onValueChange={(v) => update("recurrenceFrequency", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (single event)</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.recurrenceFrequency !== "none" && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>Ends</Label>
+                  <Select value={form.recurrenceEndType} onValueChange={(v) => update("recurrenceEndType", v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="never">Never</SelectItem>
+                      <SelectItem value="count">After N occurrences</SelectItem>
+                      <SelectItem value="until">On a specific date</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.recurrenceEndType === "count" && (
+                  <div className="space-y-1.5">
+                    <Label>Number of occurrences</Label>
+                    <Input type="number" min="2" max="100" value={form.recurrenceCount} onChange={(e) => update("recurrenceCount", e.target.value)} />
+                  </div>
+                )}
+                {form.recurrenceEndType === "until" && (
+                  <div className="space-y-1.5">
+                    <Label>End date</Label>
+                    <Input type="date" value={form.recurrenceUntil} onChange={(e) => update("recurrenceUntil", e.target.value)} />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
           {playerOptions && <div className="space-y-1.5"><Label>Coach Notes <span className="text-muted-foreground">(private)</span></Label><Input value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder="Not visible to observers" /></div>}
         </div>
         <DialogFooter>
@@ -633,18 +713,42 @@ export default function CalendarPage() {
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
   const handleDelete = () => {
     if (selectedEvent) {
-      deleteMut.mutate(selectedEvent.id, { onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); } });
+      const parentId = selectedEvent.recurrenceParentId ?? selectedEvent.id;
+      deleteMut.mutate(parentId, { onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("All events in series deleted"); } });
+    }
+  };
+  const handleDeleteSingle = () => {
+    if (selectedEvent) {
+      const parentId = selectedEvent.recurrenceParentId ?? selectedEvent.id;
+      const occDate = format(parseISO(selectedEvent.startDate), "yyyy-MM-dd");
+      // Import mockStore at the top won't cause issues since it's already used indirectly
+      import("@/mock/store").then(({ mockStore: store }) => {
+        store.addRecurrenceException(parentId, occDate);
+        // Force refetch by doing a no-op update
+        updateMut.mutate({ id: parentId, data: {} }, {
+          onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("This occurrence removed"); },
+        });
+      });
     }
   };
 
   const handleSave = (data: EventFormData) => {
     const player = data.playerId ? connectedPlayers.find((p) => p.id === data.playerId) : undefined;
     const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
+
+    const recurrence = data.recurrenceFrequency !== "none" ? {
+      frequency: data.recurrenceFrequency as RecurrenceFrequency,
+      endType: data.recurrenceEndType as RecurrenceEndType,
+      ...(data.recurrenceEndType === "count" ? { count: parseInt(data.recurrenceCount, 10) || 10 } : {}),
+      ...(data.recurrenceEndType === "until" && data.recurrenceUntil ? { until: new Date(data.recurrenceUntil).toISOString() } : {}),
+    } : undefined;
+
     const payload = {
       title: data.title, type: data.type, state: data.state as CalendarEventState,
       startDate: new Date(data.startDate).toISOString(), endDate: new Date(data.endDate).toISOString(),
       location: data.location || undefined, description: data.description || undefined,
       playerId: data.playerId || undefined, playerName, coachNotes: data.coachNotes || undefined,
+      recurrence,
     };
 
     if (editingEvent && editingEvent.id) {
@@ -785,7 +889,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Drawers & dialogs */}
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
     </div>
