@@ -550,6 +550,7 @@ export default function CalendarPage() {
   const [teamScope, setTeamScope] = useState<string>("__all__");
   const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
   const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const teamPlayerIds = useMemo(() => {
     if (teamScope === "__all__") return null;
