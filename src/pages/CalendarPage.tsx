@@ -158,7 +158,7 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
   );
 }
 
-interface EventFormData { title: string; type: CalendarEventType; state: CalendarEventState; startDate: string; endDate: string; location: string; description: string; playerId: string; coachNotes: string; }
+interface EventFormData { title: string; type: CalendarEventType; state: CalendarEventState; startDate: string; endDate: string; location: string; description: string; playerId: string; coachNotes: string; recurrenceFrequency: RecurrenceFrequency | "none"; recurrenceEndType: RecurrenceEndType; recurrenceCount: string; recurrenceUntil: string; }
 
 function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, saving }: {
   open: boolean; onOpenChange: (o: boolean) => void; initial?: CalendarEvent;
@@ -166,8 +166,14 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
 }) {
   const toLocal = (iso: string) => format(parseISO(iso), "yyyy-MM-dd'T'HH:mm");
   const [form, setForm] = useState<EventFormData>(() =>
-    initial ? { title: initial.title, type: initial.type, state: initial.state ?? "confirmed", startDate: toLocal(initial.startDate), endDate: toLocal(initial.endDate), location: initial.location ?? "", description: initial.description ?? "", playerId: initial.playerId ?? "", coachNotes: initial.coachNotes ?? "" }
-    : { title: "", type: "training", state: "confirmed", startDate: "", endDate: "", location: "", description: "", playerId: "", coachNotes: "" }
+    initial ? {
+      title: initial.title, type: initial.type, state: initial.state ?? "confirmed", startDate: toLocal(initial.startDate), endDate: toLocal(initial.endDate), location: initial.location ?? "", description: initial.description ?? "", playerId: initial.playerId ?? "", coachNotes: initial.coachNotes ?? "",
+      recurrenceFrequency: initial.recurrence?.frequency ?? "none",
+      recurrenceEndType: initial.recurrence?.endType ?? "never",
+      recurrenceCount: String(initial.recurrence?.count ?? 10),
+      recurrenceUntil: initial.recurrence?.until ? format(parseISO(initial.recurrence.until), "yyyy-MM-dd") : "",
+    }
+    : { title: "", type: "training", state: "confirmed", startDate: "", endDate: "", location: "", description: "", playerId: "", coachNotes: "", recurrenceFrequency: "none", recurrenceEndType: "never", recurrenceCount: "10", recurrenceUntil: "" }
   );
   const update = (field: keyof EventFormData, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
   const valid = form.title.trim() && form.startDate && form.endDate;
