@@ -83,52 +83,78 @@ function StateBadge({ state }: { state?: CalendarEventState }) {
   return <Badge variant={cfg.variant} className="text-[10px] px-1.5 py-0">{cfg.label}</Badge>;
 }
 
-function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, readOnly, hideCoachNotes, deleting }: {
+const FREQ_LABELS: Record<RecurrenceFrequency, string> = { daily: "Daily", weekly: "Weekly", biweekly: "Every 2 weeks", monthly: "Monthly" };
+
+function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting }: {
   event: CalendarEvent | null; open: boolean; onOpenChange: (o: boolean) => void;
-  onEdit: () => void; onDelete: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
+  onEdit: () => void; onDelete: () => void; onDeleteSingle?: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
 }) {
+  const [showRecurringChoice, setShowRecurringChoice] = useState(false);
   if (!event) return null;
   const cfg = EVENT_CONFIG[event.type];
   const start = parseISO(event.startDate);
   const end = parseISO(event.endDate);
   const multiDay = !isSameDay(start, end);
+  const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
-            <StateBadge state={event.state} />
-            {readOnly && <ReadOnlyBadge />}
-          </SheetTitle>
-        </SheetHeader>
-        <div className="mt-4 space-y-5">
-          <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4 shrink-0" />
-              {multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
+              <StateBadge state={event.state} />
+              {isRecurring && <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0"><Repeat className="h-3 w-3" />Recurring</Badge>}
+              {readOnly && <ReadOnlyBadge />}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4 shrink-0" />
+                {multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}
+              </div>
+              {isRecurring && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Repeat className="h-4 w-4 shrink-0" />
+                  <span>Repeats {event.recurrence ? FREQ_LABELS[event.recurrence.frequency] : "as part of a series"}{event.recurrence?.endType === "count" ? ` · ${event.recurrence.count} times` : event.recurrence?.endType === "until" ? ` · until ${format(parseISO(event.recurrence.until!), "MMM d, yyyy")}` : ""}</span>
+                </div>
+              )}
+              {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
+              {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
+              {event.description && <p className="text-muted-foreground">{event.description}</p>}
+              {!hideCoachNotes && event.coachNotes && (
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div>
+                  <p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p>
+                </div>
+              )}
             </div>
-            {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
-            {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
-            {event.description && <p className="text-muted-foreground">{event.description}</p>}
-            {!hideCoachNotes && event.coachNotes && (
-              <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-                <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div>
-                <p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p>
+            {!readOnly && (
+              <div className="flex gap-2 border-t border-border pt-4">
+                <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                <Button size="sm" variant="outline" onClick={() => { if (isRecurring) { setShowRecurringChoice(true); } else { onDelete(); } }} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
               </div>
             )}
           </div>
-          {!readOnly && (
-            <div className="flex gap-2 border-t border-border pt-4">
-              <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-              <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
-            </div>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+
+      {/* Recurring delete choice dialog */}
+      <Dialog open={showRecurringChoice} onOpenChange={setShowRecurringChoice}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Delete Recurring Event</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">This is a recurring event. What would you like to delete?</p>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button variant="outline" className="w-full" onClick={() => { setShowRecurringChoice(false); onDeleteSingle?.(); }}>This event only</Button>
+            <Button variant="destructive" className="w-full" onClick={() => { setShowRecurringChoice(false); onDelete(); }}>All events in series</Button>
+            <Button variant="ghost" className="w-full" onClick={() => setShowRecurringChoice(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
