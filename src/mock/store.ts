@@ -61,19 +61,93 @@ class MockStore {
   }
 
   // ─── Calendar ───
-  getCalendarEvents() { return clone(this.calendarEvents); }
-  getCalendarEvent(id: string) { return clone(this.calendarEvents.find((e) => e.id === id)); }
+
+  /** Expand a single recurring event into virtual occurrences */
+  private expandRecurrence(event: CalendarEvent): CalendarEvent[] {
+    if (!event.recurrence) return [event];
+
+    const { frequency, endType, count, until, exceptions = [] } = event.recurrence;
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+    const duration = end.getTime() - start.getTime();
+    const maxOccurrences = endType === "count" ? (count ?? 30) : 90;
+    const untilDate = endType === "until" && until ? new Date(until) : addDays(new Date(), 180);
+
+    const advanceFn = (d: Date, n: number) => {
+      switch (frequency) {
+        case "daily": return addDays(d, n);
+        case "weekly": return addWeeks(d, n);
+        case "biweekly": return addWeeks(d, n * 2);
+        case "monthly": return addMonths(d, n);
+      }
+    };
+
+    const results: CalendarEvent[] = [];
+    for (let i = 0; i < maxOccurrences; i++) {
+      const occStart = advanceFn(start, i);
+      if (isBefore(untilDate, occStart)) break;
+
+      const occDateKey = format(occStart, "yyyy-MM-dd");
+      if (exceptions.includes(occDateKey)) continue;
+
+      const occEnd = new Date(occStart.getTime() + duration);
+      results.push({
+        ...event,
+        id: i === 0 ? event.id : `${event.id}_occ_${i}`,
+        startDate: occStart.toISOString(),
+        endDate: occEnd.toISOString(),
+        recurrenceParentId: i === 0 ? undefined : event.id,
+        recurrenceIndex: i,
+      });
+    }
+    return results;
+  }
+
+  getCalendarEvents() {
+    const expanded: CalendarEvent[] = [];
+    for (const event of this.calendarEvents) {
+      expanded.push(...this.expandRecurrence(event));
+    }
+    return clone(expanded);
+  }
+
+  getCalendarEvent(id: string) {
+    // Check direct match first
+    const direct = this.calendarEvents.find((e) => e.id === id);
+    if (direct) return clone(direct);
+    // Check if it's a virtual occurrence
+    const allExpanded = this.getCalendarEvents();
+    return clone(allExpanded.find((e) => e.id === id));
+  }
+
   createCalendarEvent(event: Omit<CalendarEvent, "id">) {
-    const newEvent = { ...event, id: this.nextId("e") };
+    const newEvent = { ...event, id: this.nextId("e") } as CalendarEvent;
     this.calendarEvents.push(newEvent);
     return clone(newEvent);
   }
+
   updateCalendarEvent(id: string, updates: Partial<CalendarEvent>) {
-    const idx = this.calendarEvents.findIndex((e) => e.id === id);
+    // If it's a virtual occurrence, find the parent
+    const parentId = id.includes("_occ_") ? id.split("_occ_")[0] : id;
+    const idx = this.calendarEvents.findIndex((e) => e.id === parentId);
     if (idx === -1) throw new Error("Event not found");
     this.calendarEvents[idx] = { ...this.calendarEvents[idx], ...updates };
     return clone(this.calendarEvents[idx]);
   }
+
+  /** Add an exception date to a recurring event (for "this event only" delete) */
+  addRecurrenceException(parentId: string, exceptionDate: string) {
+    const idx = this.calendarEvents.findIndex((e) => e.id === parentId);
+    if (idx === -1) throw new Error("Event not found");
+    const event = this.calendarEvents[idx];
+    if (!event.recurrence) return;
+    const exceptions = event.recurrence.exceptions ?? [];
+    if (!exceptions.includes(exceptionDate)) {
+      exceptions.push(exceptionDate);
+    }
+    event.recurrence = { ...event.recurrence, exceptions };
+  }
+
   deleteCalendarEvent(id: string) {
     this.calendarEvents = this.calendarEvents.filter((e) => e.id !== id);
   }
