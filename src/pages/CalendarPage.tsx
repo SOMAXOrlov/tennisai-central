@@ -18,9 +18,9 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
-  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen,
+  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat,
 } from "lucide-react";
-import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer } from "@/types";
+import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -55,6 +55,7 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
 
 function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
+  const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
   return (
     <button
       draggable={draggable}
@@ -71,6 +72,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: 
     >
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
+      {isRecurring && <Repeat className="h-2.5 w-2.5 shrink-0 opacity-60" />}
     </button>
   );
 }
