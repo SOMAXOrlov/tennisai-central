@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
-  LayoutGrid, List, Columns,
+  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
@@ -416,7 +416,7 @@ function MiniCalendarSidebar({ currentDate, events, onSelectDate, onMonthChange 
   const miniDays = eachDayOfInterval({ start: miniCalStart, end: miniCalEnd });
 
   return (
-    <div className="hidden w-[260px] shrink-0 space-y-4 lg:block">
+    <div className="w-[260px] shrink-0 space-y-4">
       {/* Mini month grid */}
       <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
@@ -550,6 +550,7 @@ export default function CalendarPage() {
   const [teamScope, setTeamScope] = useState<string>("__all__");
   const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
   const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const teamPlayerIds = useMemo(() => {
     if (teamScope === "__all__") return null;
@@ -744,13 +745,34 @@ export default function CalendarPage() {
 
       {/* Calendar body with mini sidebar */}
       <div className="flex gap-5">
-        {/* Mini calendar sidebar */}
-        <MiniCalendarSidebar
-          currentDate={currentDate}
-          events={scopedEvents}
-          onSelectDate={(day) => { setCurrentDate(day); setView("day"); }}
-          onMonthChange={setCurrentDate}
-        />
+        {/* Sidebar toggle + sidebar */}
+        <div className="hidden lg:flex lg:shrink-0">
+          {sidebarOpen ? (
+            <div className="relative w-[260px]">
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="absolute -right-3 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+                title="Collapse sidebar"
+              >
+                <PanelLeftClose className="h-3.5 w-3.5" />
+              </button>
+              <MiniCalendarSidebar
+                currentDate={currentDate}
+                events={scopedEvents}
+                onSelectDate={(day) => { setCurrentDate(day); setView("day"); }}
+                onMonthChange={setCurrentDate}
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+              title="Show mini calendar"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+          )}
+        </div>
 
         {/* Main calendar */}
         <div className="min-w-0 flex-1">
