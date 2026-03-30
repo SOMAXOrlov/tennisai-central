@@ -713,18 +713,40 @@ export default function CalendarPage() {
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
   const handleDelete = () => {
     if (selectedEvent) {
-      deleteMut.mutate(selectedEvent.id, { onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); } });
+      const parentId = selectedEvent.recurrenceParentId ?? selectedEvent.id;
+      deleteMut.mutate(parentId, { onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("All events in series deleted"); } });
+    }
+  };
+  const handleDeleteSingle = () => {
+    if (selectedEvent) {
+      const parentId = selectedEvent.recurrenceParentId ?? selectedEvent.id;
+      const { mockStore } = require("@/mock/store");
+      const occDate = format(parseISO(selectedEvent.startDate), "yyyy-MM-dd");
+      mockStore.addRecurrenceException(parentId, occDate);
+      // Force refetch
+      updateMut.mutate({ id: parentId, data: {} }, {
+        onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("This occurrence removed"); },
+      });
     }
   };
 
   const handleSave = (data: EventFormData) => {
     const player = data.playerId ? connectedPlayers.find((p) => p.id === data.playerId) : undefined;
     const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
+
+    const recurrence = data.recurrenceFrequency !== "none" ? {
+      frequency: data.recurrenceFrequency as RecurrenceFrequency,
+      endType: data.recurrenceEndType as RecurrenceEndType,
+      ...(data.recurrenceEndType === "count" ? { count: parseInt(data.recurrenceCount, 10) || 10 } : {}),
+      ...(data.recurrenceEndType === "until" && data.recurrenceUntil ? { until: new Date(data.recurrenceUntil).toISOString() } : {}),
+    } : undefined;
+
     const payload = {
       title: data.title, type: data.type, state: data.state as CalendarEventState,
       startDate: new Date(data.startDate).toISOString(), endDate: new Date(data.endDate).toISOString(),
       location: data.location || undefined, description: data.description || undefined,
       playerId: data.playerId || undefined, playerName, coachNotes: data.coachNotes || undefined,
+      recurrence,
     };
 
     if (editingEvent && editingEvent.id) {
