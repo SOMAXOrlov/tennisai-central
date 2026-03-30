@@ -220,6 +220,52 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
           </div>
           <div className="space-y-1.5"><Label>Location</Label><Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Optional" /></div>
           <div className="space-y-1.5"><Label>Description</Label><Input value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Optional" /></div>
+
+          {/* Recurrence section */}
+          <div className="space-y-3 rounded-lg border border-border p-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground"><Repeat className="h-4 w-4" /> Recurrence</div>
+            <div className="space-y-1.5">
+              <Label>Frequency</Label>
+              <Select value={form.recurrenceFrequency} onValueChange={(v) => update("recurrenceFrequency", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (single event)</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.recurrenceFrequency !== "none" && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>Ends</Label>
+                  <Select value={form.recurrenceEndType} onValueChange={(v) => update("recurrenceEndType", v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="never">Never</SelectItem>
+                      <SelectItem value="count">After N occurrences</SelectItem>
+                      <SelectItem value="until">On a specific date</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.recurrenceEndType === "count" && (
+                  <div className="space-y-1.5">
+                    <Label>Number of occurrences</Label>
+                    <Input type="number" min="2" max="100" value={form.recurrenceCount} onChange={(e) => update("recurrenceCount", e.target.value)} />
+                  </div>
+                )}
+                {form.recurrenceEndType === "until" && (
+                  <div className="space-y-1.5">
+                    <Label>End date</Label>
+                    <Input type="date" value={form.recurrenceUntil} onChange={(e) => update("recurrenceUntil", e.target.value)} />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
           {playerOptions && <div className="space-y-1.5"><Label>Coach Notes <span className="text-muted-foreground">(private)</span></Label><Input value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder="Not visible to observers" /></div>}
         </div>
         <DialogFooter>
