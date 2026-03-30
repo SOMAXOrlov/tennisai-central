@@ -374,6 +374,147 @@ function PlayerFilterChip({ label, active, onClick, icon }: { label: string; act
   );
 }
 
+// ─── Mini Calendar Sidebar ───
+
+function MiniCalendarSidebar({ currentDate, events, onSelectDate, onMonthChange }: {
+  currentDate: Date; events: CalendarEvent[]; onSelectDate: (day: Date) => void; onMonthChange: (date: Date) => void;
+}) {
+  const [miniMonth, setMiniMonth] = useState(currentDate);
+
+  // Track which days have events
+  const eventDays = useMemo(() => {
+    const days = new Map<string, number>();
+    events.forEach((e) => {
+      const start = parseISO(e.startDate);
+      const end = parseISO(e.endDate);
+      const interval = eachDayOfInterval({ start: new Date(start.toDateString()), end: new Date(end.toDateString()) });
+      interval.forEach((d) => {
+        const key = format(d, "yyyy-MM-dd");
+        days.set(key, (days.get(key) ?? 0) + 1);
+      });
+    });
+    return days;
+  }, [events]);
+
+  // Upcoming events (next 7 from currentDate)
+  const upcoming = useMemo(() => {
+    const now = currentDate;
+    return events
+      .filter((e) => !isBefore(parseISO(e.startDate), now))
+      .sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime())
+      .slice(0, 5);
+  }, [events, currentDate]);
+
+  const handleMiniNav = (dir: 1 | -1) => {
+    setMiniMonth((prev) => dir === 1 ? addMonths(prev, 1) : subMonths(prev, 1));
+  };
+
+  const miniStart = startOfMonth(miniMonth);
+  const miniEnd = endOfMonth(miniMonth);
+  const miniCalStart = startOfWeek(miniStart, { weekStartsOn: 1 });
+  const miniCalEnd = endOfWeek(miniEnd, { weekStartsOn: 1 });
+  const miniDays = eachDayOfInterval({ start: miniCalStart, end: miniCalEnd });
+
+  return (
+    <div className="hidden w-[260px] shrink-0 space-y-4 lg:block">
+      {/* Mini month grid */}
+      <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <button onClick={() => handleMiniNav(-1)} className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="text-sm font-semibold text-foreground">{format(miniMonth, "MMM yyyy")}</span>
+          <button onClick={() => handleMiniNav(1)} className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-0.5">
+          {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+            <div key={i} className="flex h-7 items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground">{d}</div>
+          ))}
+          {miniDays.map((day, idx) => {
+            const key = format(day, "yyyy-MM-dd");
+            const count = eventDays.get(key) ?? 0;
+            const isCurrentMonth = isSameMonth(day, miniMonth);
+            const isSelected = isSameDay(day, currentDate);
+            const isToday = isDateToday(day);
+
+            return (
+              <button
+                key={idx}
+                onClick={() => { onSelectDate(day); onMonthChange(day); }}
+                className={`relative flex h-7 w-full items-center justify-center rounded-md text-xs font-medium transition-all
+                  ${!isCurrentMonth ? "text-muted-foreground/30" : "text-foreground"}
+                  ${isSelected ? "bg-primary text-primary-foreground shadow-sm" : ""}
+                  ${isToday && !isSelected ? "ring-1 ring-primary/50" : ""}
+                  ${!isSelected ? "hover:bg-accent/50" : ""}
+                `}
+              >
+                {format(day, "d")}
+                {count > 0 && isCurrentMonth && !isSelected && (
+                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 rounded-full ${count >= 3 ? "h-1.5 w-1.5 bg-primary" : "h-1 w-1 bg-primary/60"}`} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => { const today = new Date(); setMiniMonth(today); onSelectDate(today); onMonthChange(today); }}
+          className="mt-2 w-full rounded-md py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+        >
+          Today
+        </button>
+      </div>
+
+      {/* Upcoming events */}
+      {upcoming.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+          <h3 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Upcoming</h3>
+          <div className="space-y-2">
+            {upcoming.map((event) => {
+              const cfg = EVENT_CONFIG[event.type];
+              const start = parseISO(event.startDate);
+              return (
+                <button
+                  key={event.id}
+                  onClick={() => { onSelectDate(start); onMonthChange(start); }}
+                  className="flex w-full items-start gap-2.5 rounded-lg p-2 text-left transition-colors hover:bg-accent/30"
+                >
+                  <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-foreground">{event.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{format(start, "EEE, MMM d · h:mm a")}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Event type legend */}
+      <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Legend</h3>
+        <div className="space-y-1.5">
+          {EVENT_TYPES.map((type) => {
+            const cfg = EVENT_CONFIG[type];
+            const count = events.filter((e) => e.type === type).length;
+            return (
+              <div key={type} className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-2 text-foreground">
+                  <span className={`h-2 w-2 rounded-full ${cfg.dot}`} />
+                  {cfg.label}
+                </span>
+                <span className="font-medium text-muted-foreground">{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ───
 
 type ViewMode = "month" | "week" | "day";
