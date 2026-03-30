@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
-  LayoutGrid, List, Columns,
+  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
