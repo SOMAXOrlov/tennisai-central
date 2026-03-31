@@ -44,14 +44,16 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2 mt-1"><RoleBadge role={user?.role ?? "player"} /><span className="text-sm text-muted-foreground">{user?.email}</span></div>
             </div>
           </div>
-          <div className="rounded-lg border border-border bg-secondary/30 p-4">
-            <Label className="text-xs text-muted-foreground">Your Public ID</Label>
-            <div className="mt-1 flex items-center gap-2">
-              <code className="flex-1 font-mono text-lg font-bold tracking-wider text-foreground">{publicId}</code>
-              <Button variant="outline" size="icon" onClick={copyId}>{copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}</Button>
+          {user?.role === "player" && (
+            <div className="rounded-lg border border-border bg-secondary/30 p-4">
+              <Label className="text-xs text-muted-foreground">Your Public ID</Label>
+              <div className="mt-1 flex items-center gap-2">
+                <code className="flex-1 font-mono text-lg font-bold tracking-wider text-foreground">{publicId}</code>
+                <Button variant="outline" size="icon" onClick={copyId}>{copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}</Button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Share this ID so others can connect with you.</p>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Share this ID so others can connect with you.</p>
-          </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5"><Label>First Name</Label><Input value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Last Name</Label><Input value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
