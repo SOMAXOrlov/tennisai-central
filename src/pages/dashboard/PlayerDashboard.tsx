@@ -98,62 +98,6 @@ export default function PlayerDashboard() {
         />
       </div>
 
-      {/* Player ID + Pending Requests row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Player Public ID */}
-        <DashboardCard
-          title="My Player ID"
-          description="Share this ID so coaches and observers can connect with you"
-          icon={<BarChart3 className="h-4 w-4" />}
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex-1 rounded-lg border border-dashed border-border bg-secondary/50 px-4 py-3">
-              <p className="font-mono text-lg font-bold tracking-wider text-foreground">
-                {playerPublicId}
-              </p>
-            </div>
-            <Button variant="outline" size="icon" onClick={copyPlayerId}>
-              {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-        </DashboardCard>
-
-        {/* Pending Connection Requests */}
-        <DashboardCard
-          title="Pending Requests"
-          description={`${pendingRequests.length} awaiting your response`}
-          icon={<UserPlus className="h-4 w-4" />}
-          action={
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/connections">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
-            </Button>
-          }
-        >
-          {pendingRequests.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No pending requests</p>
-          ) : (
-            <div className="space-y-3">
-              {pendingRequests.slice(0, 4).map((req) => (
-                <div key={req.id} className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{req.fromUserName}</p>
-                    <RoleBadge role={req.fromUserRole} />
-                  </div>
-                  <div className="flex gap-1.5">
-                    <Button size="sm" variant="outline" className="h-7 w-7 p-0">
-                      <Check className="h-3.5 w-3.5 text-primary" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 w-7 p-0">
-                      <X className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </DashboardCard>
-      </div>
-
       {/* Calendar + Tournaments row */}
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardCard
