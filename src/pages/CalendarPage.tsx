@@ -872,6 +872,20 @@ export default function CalendarPage() {
           <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setCurrentDate(new Date())}>Today</Button>
         </div>
         <div className="flex flex-wrap gap-2">{EVENT_TYPES.map((type) => (<FilterChip key={type} type={type} active={activeFilters.has(type)} onToggle={() => toggleFilter(type)} />))}</div>
+        {showPlayerLabels && connectedPlayers.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-[11px] font-medium text-muted-foreground">Players:</span>
+            {connectedPlayers.map((p) => {
+              const pc = getPlayerColor(p.id);
+              return (
+                <span key={p.id} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+                  <span className={`h-2.5 w-2.5 rounded-full ${pc.dot}`} />
+                  {p.firstName} {p.lastName}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Calendar body with mini sidebar */}
