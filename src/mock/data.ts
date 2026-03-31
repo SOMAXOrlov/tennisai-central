@@ -105,8 +105,11 @@ export const mockFinanceSummary: FinanceSummary = {
 
 export const mockEquipment: EquipmentItem[] = [
   { id: "eq1", playerId: "p1", category: "racket", name: "Wilson Pro Staff 97", brand: "Wilson", model: "Pro Staff 97", condition: "Good", acquiredDate: "2025-09-01" },
-  { id: "eq2", playerId: "p1", category: "string", name: "Luxilon ALU Power", brand: "Luxilon", model: "ALU Power 125", notes: "Tension: 52 lbs" },
+  { id: "eq2", playerId: "p1", category: "string", name: "Luxilon ALU Power", brand: "Luxilon", model: "ALU Power 125", condition: "Fraying", notes: "Tension: 52 lbs" },
   { id: "eq3", playerId: "p1", category: "shoes", name: "Nike Vapor Pro 2", brand: "Nike", model: "Vapor Pro 2", condition: "New" },
+  { id: "eq4", playerId: "p1", category: "racket", name: "Babolat Pure Drive", brand: "Babolat", model: "Pure Drive 2024", condition: "Fair", acquiredDate: "2024-06-15" },
+  { id: "eq5", playerId: "p1", category: "accessories", name: "Wilson Pro Overgrip (3-pack)", brand: "Wilson", condition: "Worn" },
+  { id: "eq6", playerId: "p1", category: "balls", name: "Wilson US Open Balls", brand: "Wilson", condition: "Practice", notes: "Can of 4" },
 ];
 
 export const mockNotifications: Notification[] = [
