@@ -438,7 +438,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel }: {
               <div className="flex shrink-0 flex-col items-center pt-0.5">
                 <span className="text-sm font-semibold text-foreground">{format(start, "h:mm")}</span>
                 <span className="text-[10px] text-muted-foreground">{format(start, "a")}</span>
-                <div className={`mt-1.5 h-8 w-0.5 rounded-full ${cfg.dot}`} />
+                <div className={`mt-1.5 h-8 w-0.5 rounded-full ${showPlayerLabel && event.playerId ? getPlayerColor(event.playerId).dot : cfg.dot}`} />
                 <span className="mt-1.5 text-[10px] text-muted-foreground">{format(end, "h:mm a")}</span>
               </div>
               <div className="min-w-0 flex-1">
