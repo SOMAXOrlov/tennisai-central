@@ -447,7 +447,12 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel }: {
                   <StateBadge state={event.state} />
                 </div>
                 <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
-                {showPlayerLabel && event.playerName && <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1"><User className="h-3 w-3" />{event.playerName}</p>}
+                {showPlayerLabel && event.playerName && event.playerId && (
+                  <p className="mt-0.5 text-xs flex items-center gap-1">
+                    <span className={`inline-block h-2 w-2 rounded-full ${getPlayerColor(event.playerId).dot}`} />
+                    <span className="text-muted-foreground">{event.playerName}</span>
+                  </p>
+                )}
                 {event.location && <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</p>}
                 {event.description && <p className="mt-1 text-xs text-muted-foreground/80 line-clamp-2">{event.description}</p>}
               </div>
