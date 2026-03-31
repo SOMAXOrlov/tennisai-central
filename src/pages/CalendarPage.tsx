@@ -37,6 +37,26 @@ const EVENT_CONFIG: Record<CalendarEventType, { label: string; icon: React.React
 };
 const EVENT_TYPES: CalendarEventType[] = ["training", "tournament", "match", "travel", "recovery"];
 
+// Player color palette for coach view color-coding
+const PLAYER_COLORS: { bg: string; dot: string }[] = [
+  { bg: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20", dot: "bg-sky-500" },
+  { bg: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20", dot: "bg-rose-500" },
+  { bg: "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20", dot: "bg-teal-500" },
+  { bg: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20", dot: "bg-orange-500" },
+  { bg: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20", dot: "bg-violet-500" },
+  { bg: "bg-lime-500/10 text-lime-700 dark:text-lime-300 border-lime-500/20", dot: "bg-lime-500" },
+  { bg: "bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/20", dot: "bg-fuchsia-500" },
+  { bg: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20", dot: "bg-cyan-500" },
+];
+
+const playerColorCache = new Map<string, { bg: string; dot: string }>();
+function getPlayerColor(playerId: string): { bg: string; dot: string } {
+  if (!playerColorCache.has(playerId)) {
+    playerColorCache.set(playerId, PLAYER_COLORS[playerColorCache.size % PLAYER_COLORS.length]);
+  }
+  return playerColorCache.get(playerId)!;
+}
+
 const STATE_CONFIG: Record<CalendarEventState, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
   requested: { label: "Requested", variant: "outline" },
   tentative: { label: "Tentative", variant: "secondary" },
@@ -56,6 +76,8 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
 function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
+  const playerColor = showPlayer && event.playerId ? getPlayerColor(event.playerId) : null;
+  const chipBg = playerColor ? playerColor.bg : cfg.bg;
   return (
     <button
       draggable={draggable}
@@ -68,7 +90,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: 
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${cfg.bg} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
+      className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${chipBg} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
@@ -416,7 +438,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel }: {
               <div className="flex shrink-0 flex-col items-center pt-0.5">
                 <span className="text-sm font-semibold text-foreground">{format(start, "h:mm")}</span>
                 <span className="text-[10px] text-muted-foreground">{format(start, "a")}</span>
-                <div className={`mt-1.5 h-8 w-0.5 rounded-full ${cfg.dot}`} />
+                <div className={`mt-1.5 h-8 w-0.5 rounded-full ${showPlayerLabel && event.playerId ? getPlayerColor(event.playerId).dot : cfg.dot}`} />
                 <span className="mt-1.5 text-[10px] text-muted-foreground">{format(end, "h:mm a")}</span>
               </div>
               <div className="min-w-0 flex-1">
@@ -425,7 +447,12 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel }: {
                   <StateBadge state={event.state} />
                 </div>
                 <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
-                {showPlayerLabel && event.playerName && <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1"><User className="h-3 w-3" />{event.playerName}</p>}
+                {showPlayerLabel && event.playerName && event.playerId && (
+                  <p className="mt-0.5 text-xs flex items-center gap-1">
+                    <span className={`inline-block h-2 w-2 rounded-full ${getPlayerColor(event.playerId).dot}`} />
+                    <span className="text-muted-foreground">{event.playerName}</span>
+                  </p>
+                )}
                 {event.location && <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</p>}
                 {event.description && <p className="mt-1 text-xs text-muted-foreground/80 line-clamp-2">{event.description}</p>}
               </div>
@@ -845,6 +872,20 @@ export default function CalendarPage() {
           <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setCurrentDate(new Date())}>Today</Button>
         </div>
         <div className="flex flex-wrap gap-2">{EVENT_TYPES.map((type) => (<FilterChip key={type} type={type} active={activeFilters.has(type)} onToggle={() => toggleFilter(type)} />))}</div>
+        {showPlayerLabels && connectedPlayers.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-[11px] font-medium text-muted-foreground">Players:</span>
+            {connectedPlayers.map((p) => {
+              const pc = getPlayerColor(p.id);
+              return (
+                <span key={p.id} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+                  <span className={`h-2.5 w-2.5 rounded-full ${pc.dot}`} />
+                  {p.firstName} {p.lastName}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Calendar body with mini sidebar */}
