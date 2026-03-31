@@ -79,12 +79,7 @@ export default function PlayerDashboard() {
       </div>
 
       {/* Top stats row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Pending Requests"
-          value={pendingRequests.length}
-          icon={<UserPlus className="h-4 w-4" />}
-        />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label="Upcoming Events"
           value={upcomingEvents.length}
