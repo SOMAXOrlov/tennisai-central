@@ -37,6 +37,26 @@ const EVENT_CONFIG: Record<CalendarEventType, { label: string; icon: React.React
 };
 const EVENT_TYPES: CalendarEventType[] = ["training", "tournament", "match", "travel", "recovery"];
 
+// Player color palette for coach view color-coding
+const PLAYER_COLORS: { bg: string; dot: string }[] = [
+  { bg: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20", dot: "bg-sky-500" },
+  { bg: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20", dot: "bg-rose-500" },
+  { bg: "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20", dot: "bg-teal-500" },
+  { bg: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20", dot: "bg-orange-500" },
+  { bg: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20", dot: "bg-violet-500" },
+  { bg: "bg-lime-500/10 text-lime-700 dark:text-lime-300 border-lime-500/20", dot: "bg-lime-500" },
+  { bg: "bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/20", dot: "bg-fuchsia-500" },
+  { bg: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20", dot: "bg-cyan-500" },
+];
+
+const playerColorCache = new Map<string, { bg: string; dot: string }>();
+function getPlayerColor(playerId: string): { bg: string; dot: string } {
+  if (!playerColorCache.has(playerId)) {
+    playerColorCache.set(playerId, PLAYER_COLORS[playerColorCache.size % PLAYER_COLORS.length]);
+  }
+  return playerColorCache.get(playerId)!;
+}
+
 const STATE_CONFIG: Record<CalendarEventState, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
   requested: { label: "Requested", variant: "outline" },
   tentative: { label: "Tentative", variant: "secondary" },
