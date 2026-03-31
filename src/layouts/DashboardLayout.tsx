@@ -54,10 +54,10 @@ const navItems: NavItem[] = [
   { to: "/players", label: "Players", icon: <Users className="h-4 w-4" />, roles: ["coach"] },
   { to: "/teams", label: "Teams", icon: <Shield className="h-4 w-4" />, roles: ["coach"] },
   { to: "/trainings", label: "Trainings", icon: <Dumbbell className="h-4 w-4" />, roles: ["coach"] },
-  { to: "/training-requests", label: "Requests", icon: <UserPlus className="h-4 w-4" />, roles: ["coach", "player"] },
+  { to: "/training-requests", label: "Requests", icon: <UserPlus className="h-4 w-4" />, roles: ["coach"] },
 
   // Shared
-  { to: "/connections", label: "Requests", icon: <Link2 className="h-4 w-4" />, roles: ["player", "coach", "observer"] },
+  { to: "/connections", label: "Requests", icon: <Link2 className="h-4 w-4" />, roles: ["player", "observer"] },
   { to: "/ai-insights", label: "AI Insights", icon: <Brain className="h-4 w-4" />, roles: ["player", "coach"] },
   { to: "/notifications", label: "Notifications", icon: <Bell className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
 
