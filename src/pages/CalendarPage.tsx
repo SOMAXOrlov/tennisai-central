@@ -743,13 +743,32 @@ export default function CalendarPage() {
     });
   }, [updateMut]);
 
+  const [reassignPending, setReassignPending] = useState<{ eventId: string; newPlayerId: string | null } | null>(null);
+
+  const reassignTarget = reassignPending
+    ? reassignPending.newPlayerId
+      ? connectedPlayers.find((p) => p.id === reassignPending.newPlayerId)
+      : null
+    : null;
+  const reassignEventName = reassignPending
+    ? events?.find((e) => e.id === reassignPending.eventId)?.title ?? "this event"
+    : "";
+  const reassignTargetName = reassignTarget ? `${reassignTarget.firstName} ${reassignTarget.lastName}` : "your schedule";
+
   const handleReassignToPlayer = useCallback((eventId: string, newPlayerId: string | null) => {
+    setReassignPending({ eventId, newPlayerId });
+  }, []);
+
+  const confirmReassign = useCallback(() => {
+    if (!reassignPending) return;
+    const { eventId, newPlayerId } = reassignPending;
     const player = newPlayerId ? connectedPlayers.find((p) => p.id === newPlayerId) : undefined;
     const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
     updateMut.mutate({ id: eventId, data: { playerId: newPlayerId ?? undefined, playerName: playerName ?? undefined } }, {
       onSuccess: () => toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule"),
     });
-  }, [updateMut, connectedPlayers]);
+    setReassignPending(null);
+  }, [reassignPending, updateMut, connectedPlayers]);
 
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
