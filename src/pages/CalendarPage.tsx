@@ -475,9 +475,16 @@ function FilterChip({ type, active, onToggle }: { type: CalendarEventType; activ
   );
 }
 
-function PlayerFilterChip({ label, active, onClick, icon }: { label: string; active: boolean; onClick: () => void; icon?: React.ReactNode }) {
+function PlayerFilterChip({ label, active, onClick, icon, onDropAssign }: { label: string; active: boolean; onClick: () => void; icon?: React.ReactNode; onDropAssign?: (eventId: string) => void }) {
+  const [isDragOver, setIsDragOver] = useState(false);
   return (
-    <button onClick={onClick} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${active ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground hover:bg-muted"}`}>{icon}{label}</button>
+    <button
+      onClick={onClick}
+      onDragOver={onDropAssign ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setIsDragOver(true); } : undefined}
+      onDragLeave={onDropAssign ? () => setIsDragOver(false) : undefined}
+      onDrop={onDropAssign ? (e) => { e.preventDefault(); setIsDragOver(false); const id = e.dataTransfer.getData("application/calendar-event-id"); if (id) onDropAssign(id); } : undefined}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${active ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground hover:bg-muted"} ${isDragOver ? "ring-2 ring-primary scale-105 bg-primary/15" : ""}`}
+    >{icon}{label}</button>
   );
 }
 
