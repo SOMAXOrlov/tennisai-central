@@ -853,7 +853,7 @@ export default function CalendarPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs font-medium text-muted-foreground">Scope:</span>
           <PlayerFilterChip label="All Players" active={playerScope === "all"} onClick={() => setPlayerScope("all")} icon={<Users className="h-3 w-3" />} />
-          <PlayerFilterChip label="My Schedule" active={playerScope === "mine"} onClick={() => setPlayerScope("mine")} icon={<User className="h-3 w-3" />} />
+          <PlayerFilterChip label="My Schedule" active={playerScope === "mine"} onClick={() => setPlayerScope("mine")} icon={<User className="h-3 w-3" />} onDropAssign={(eventId) => handleReassignToPlayer(eventId, null)} />
           {visiblePlayers.map((p) => (
             <PlayerFilterChip
               key={p.id}
@@ -863,6 +863,7 @@ export default function CalendarPage() {
                 setPlayerScope(p.id);
                 if (playerScope === p.id) handleViewPlayerDetail(p);
               }}
+              onDropAssign={(eventId) => handleReassignToPlayer(eventId, p.id)}
             />
           ))}
           <TeamFilterSelect teams={teams} value={teamScope} onValueChange={(v) => { setTeamScope(v); setPlayerScope("all"); }} className="h-8 w-[150px] text-xs" />
