@@ -743,6 +743,14 @@ export default function CalendarPage() {
     });
   }, [updateMut]);
 
+  const handleReassignToPlayer = useCallback((eventId: string, newPlayerId: string | null) => {
+    const player = newPlayerId ? connectedPlayers.find((p) => p.id === newPlayerId) : undefined;
+    const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
+    updateMut.mutate({ id: eventId, data: { playerId: newPlayerId ?? undefined, playerName: playerName ?? undefined } }, {
+      onSuccess: () => toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule"),
+    });
+  }, [updateMut, connectedPlayers]);
+
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
   const handleDelete = () => {
