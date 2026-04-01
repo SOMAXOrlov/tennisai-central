@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { TeamFilterSelect } from "@/components/TeamFilterSelect";
@@ -743,13 +744,32 @@ export default function CalendarPage() {
     });
   }, [updateMut]);
 
+  const [reassignPending, setReassignPending] = useState<{ eventId: string; newPlayerId: string | null } | null>(null);
+
+  const reassignTarget = reassignPending
+    ? reassignPending.newPlayerId
+      ? connectedPlayers.find((p) => p.id === reassignPending.newPlayerId)
+      : null
+    : null;
+  const reassignEventName = reassignPending
+    ? events?.find((e) => e.id === reassignPending.eventId)?.title ?? "this event"
+    : "";
+  const reassignTargetName = reassignTarget ? `${reassignTarget.firstName} ${reassignTarget.lastName}` : "your schedule";
+
   const handleReassignToPlayer = useCallback((eventId: string, newPlayerId: string | null) => {
+    setReassignPending({ eventId, newPlayerId });
+  }, []);
+
+  const confirmReassign = useCallback(() => {
+    if (!reassignPending) return;
+    const { eventId, newPlayerId } = reassignPending;
     const player = newPlayerId ? connectedPlayers.find((p) => p.id === newPlayerId) : undefined;
     const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
     updateMut.mutate({ id: eventId, data: { playerId: newPlayerId ?? undefined, playerName: playerName ?? undefined } }, {
       onSuccess: () => toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule"),
     });
-  }, [updateMut, connectedPlayers]);
+    setReassignPending(null);
+  }, [reassignPending, updateMut, connectedPlayers]);
 
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
@@ -949,6 +969,21 @@ export default function CalendarPage() {
       <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
+
+      <AlertDialog open={!!reassignPending} onOpenChange={(open) => { if (!open) setReassignPending(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reassign Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to reassign <span className="font-semibold">"{reassignEventName}"</span> to <span className="font-semibold">{reassignTargetName}</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReassign}>Reassign</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
