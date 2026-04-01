@@ -475,9 +475,16 @@ function FilterChip({ type, active, onToggle }: { type: CalendarEventType; activ
   );
 }
 
-function PlayerFilterChip({ label, active, onClick, icon }: { label: string; active: boolean; onClick: () => void; icon?: React.ReactNode }) {
+function PlayerFilterChip({ label, active, onClick, icon, onDropAssign }: { label: string; active: boolean; onClick: () => void; icon?: React.ReactNode; onDropAssign?: (eventId: string) => void }) {
+  const [isDragOver, setIsDragOver] = useState(false);
   return (
-    <button onClick={onClick} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${active ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground hover:bg-muted"}`}>{icon}{label}</button>
+    <button
+      onClick={onClick}
+      onDragOver={onDropAssign ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setIsDragOver(true); } : undefined}
+      onDragLeave={onDropAssign ? () => setIsDragOver(false) : undefined}
+      onDrop={onDropAssign ? (e) => { e.preventDefault(); setIsDragOver(false); const id = e.dataTransfer.getData("application/calendar-event-id"); if (id) onDropAssign(id); } : undefined}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${active ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-muted/50 text-muted-foreground hover:bg-muted"} ${isDragOver ? "ring-2 ring-primary scale-105 bg-primary/15" : ""}`}
+    >{icon}{label}</button>
   );
 }
 
@@ -736,6 +743,14 @@ export default function CalendarPage() {
     });
   }, [updateMut]);
 
+  const handleReassignToPlayer = useCallback((eventId: string, newPlayerId: string | null) => {
+    const player = newPlayerId ? connectedPlayers.find((p) => p.id === newPlayerId) : undefined;
+    const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
+    updateMut.mutate({ id: eventId, data: { playerId: newPlayerId ?? undefined, playerName: playerName ?? undefined } }, {
+      onSuccess: () => toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule"),
+    });
+  }, [updateMut, connectedPlayers]);
+
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
   const handleDelete = () => {
@@ -838,7 +853,7 @@ export default function CalendarPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs font-medium text-muted-foreground">Scope:</span>
           <PlayerFilterChip label="All Players" active={playerScope === "all"} onClick={() => setPlayerScope("all")} icon={<Users className="h-3 w-3" />} />
-          <PlayerFilterChip label="My Schedule" active={playerScope === "mine"} onClick={() => setPlayerScope("mine")} icon={<User className="h-3 w-3" />} />
+          <PlayerFilterChip label="My Schedule" active={playerScope === "mine"} onClick={() => setPlayerScope("mine")} icon={<User className="h-3 w-3" />} onDropAssign={(eventId) => handleReassignToPlayer(eventId, null)} />
           {visiblePlayers.map((p) => (
             <PlayerFilterChip
               key={p.id}
@@ -848,6 +863,7 @@ export default function CalendarPage() {
                 setPlayerScope(p.id);
                 if (playerScope === p.id) handleViewPlayerDetail(p);
               }}
+              onDropAssign={(eventId) => handleReassignToPlayer(eventId, p.id)}
             />
           ))}
           <TeamFilterSelect teams={teams} value={teamScope} onValueChange={(v) => { setTeamScope(v); setPlayerScope("all"); }} className="h-8 w-[150px] text-xs" />
