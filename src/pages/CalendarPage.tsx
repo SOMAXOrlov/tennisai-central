@@ -763,13 +763,27 @@ export default function CalendarPage() {
   const confirmReassign = useCallback(() => {
     if (!reassignPending) return;
     const { eventId, newPlayerId } = reassignPending;
+    const event = events?.find((e) => e.id === eventId);
+    const prevPlayerId = event?.playerId ?? null;
+    const prevPlayerName = event?.playerName ?? undefined;
     const player = newPlayerId ? connectedPlayers.find((p) => p.id === newPlayerId) : undefined;
     const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
     updateMut.mutate({ id: eventId, data: { playerId: newPlayerId ?? undefined, playerName: playerName ?? undefined } }, {
-      onSuccess: () => toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule"),
+      onSuccess: () => {
+        toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule", {
+          action: {
+            label: "Undo",
+            onClick: () => {
+              updateMut.mutate({ id: eventId, data: { playerId: prevPlayerId ?? undefined, playerName: prevPlayerName ?? undefined } }, {
+                onSuccess: () => toast.success("Reassignment undone"),
+              });
+            },
+          },
+        });
+      },
     });
     setReassignPending(null);
-  }, [reassignPending, updateMut, connectedPlayers]);
+  }, [reassignPending, updateMut, connectedPlayers, events]);
 
   const handleAdd = () => { setEditingEvent(undefined); setFormOpen(true); };
   const handleEdit = () => { if (selectedEvent) { setEditingEvent(selectedEvent); setDrawerOpen(false); setFormOpen(true); } };
