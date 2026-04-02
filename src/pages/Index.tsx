@@ -38,9 +38,7 @@ const features = [
 ];
 
 const stats = [
-  { value: "10K+", label: "Active Players" },
   { value: "500+", label: "Tournaments" },
-  { value: "98%", label: "Satisfaction" },
   { value: "24/7", label: "AI Support" },
 ];
 
