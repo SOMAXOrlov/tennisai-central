@@ -696,9 +696,14 @@ export default function CalendarPage() {
   }, [connectedPlayers, teamPlayerIds]);
 
   const scopedEvents = useMemo(() => {
+    // If only showing international tournaments
+    if (calendarSource === "international") {
+      return internationalEvents.filter((e) => activeFilters.has(e.type));
+    }
+
     const connectedIds = new Set(connectedPlayers.map((p) => p.id));
 
-    return events.filter((e) => {
+    const myEvents = events.filter((e) => {
       if (!activeFilters.has(e.type)) return false;
 
       if (isPlayer) return !e.playerId || e.playerId === user?.id || e.playerId === "p1";
@@ -716,7 +721,14 @@ export default function CalendarPage() {
       if (isObserver) return e.playerId ? connectedIds.has(e.playerId) : false;
       return true;
     });
-  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds]);
+
+    if (calendarSource === "mine") return myEvents;
+
+    // "all" — merge personal + international (dedup by checking if tournament already exists as personal event)
+    const personalTournamentTitles = new Set(myEvents.filter((e) => e.type === "tournament").map((e) => e.title));
+    const uniqueIntl = internationalEvents.filter((e) => !personalTournamentTitles.has(e.title) && activeFilters.has(e.type));
+    return [...myEvents, ...uniqueIntl];
+  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds, calendarSource, internationalEvents]);
 
   const toggleFilter = (type: CalendarEventType) => {
     setActiveFilters((prev) => { const next = new Set(prev); next.has(type) ? next.delete(type) : next.add(type); return next; });
