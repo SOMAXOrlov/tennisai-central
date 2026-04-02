@@ -1028,7 +1028,14 @@ export default function CalendarPage() {
       </div>
 
       {/* Drawers & dialogs */}
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} registering={registerMut.isPending} onRegister={selectedEvent?.id.startsWith("intl-") && isPlayer ? () => {
+        const tournamentId = selectedEvent!.id.replace("intl-", "");
+        const tournament = tournaments.find(t => t.id === tournamentId);
+        if (!tournament) return;
+        const alreadyRegistered = playerTournaments.some(pt => pt.tournamentId === tournamentId);
+        if (alreadyRegistered) { toast.info("You're already registered for this tournament"); return; }
+        registerMut.mutate({ tournamentId, tournament, playerId: user!.id, playerName: `${user!.firstName} ${user!.lastName}`, status: "registered" } as any, { onSuccess: () => { setDrawerOpen(false); setSelectedEvent(null); } });
+      } : undefined} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
 
