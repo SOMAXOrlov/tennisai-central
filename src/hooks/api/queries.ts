@@ -272,6 +272,15 @@ export function useUpdatePlayerTournament() {
   });
 }
 
+export function useAddPlayerTournament() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (data: Omit<PlayerTournament, "id">) => tournamentsApi.addPlayerTournament(data),
+    onSuccess: () => { inv.tournament(); toast.success("Registered for tournament"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to register"),
+  });
+}
+
 // ─── Finance Hooks ───
 
 export function useFinanceEntries(playerId: string) {

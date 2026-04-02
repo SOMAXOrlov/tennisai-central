@@ -22,7 +22,7 @@ import {
   LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe,
 } from "lucide-react";
 import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, Tournament } from "@/types";
-import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments } from "@/hooks/api/queries";
+import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments, useAddPlayerTournament, usePlayerTournaments } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
   isSameMonth, isSameDay, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,
@@ -108,9 +108,10 @@ function StateBadge({ state }: { state?: CalendarEventState }) {
 
 const FREQ_LABELS: Record<RecurrenceFrequency, string> = { daily: "Daily", weekly: "Weekly", biweekly: "Every 2 weeks", monthly: "Monthly" };
 
-function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting }: {
+function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting, onRegister, registering }: {
   event: CalendarEvent | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onDeleteSingle?: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
+  onRegister?: () => void; registering?: boolean;
 }) {
   const [showRecurringChoice, setShowRecurringChoice] = useState(false);
   if (!event) return null;
@@ -155,6 +156,13 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
                 </div>
               )}
             </div>
+            {onRegister && event.id.startsWith("intl-") && (
+              <div className="border-t border-border pt-4">
+                <Button size="sm" onClick={onRegister} disabled={registering} className="gap-1.5 w-full">
+                  <Trophy className="h-3.5 w-3.5" /> {registering ? "Registering…" : "Register for Tournament"}
+                </Button>
+              </div>
+            )}
             {!readOnly && (
               <div className="flex gap-2 border-t border-border pt-4">
                 <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
@@ -651,9 +659,11 @@ export default function CalendarPage() {
   const { data: events = [], isLoading, error } = useCalendarEvents();
   const { data: teams = [] } = useTeams();
   const { data: tournaments = [] } = useTournaments();
+  const { data: playerTournaments = [] } = usePlayerTournaments();
   const createMut = useCreateCalendarEvent();
   const updateMut = useUpdateCalendarEvent();
   const deleteMut = useDeleteCalendarEvent();
+  const registerMut = useAddPlayerTournament();
 
   const [view, setView] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
@@ -1018,7 +1028,14 @@ export default function CalendarPage() {
       </div>
 
       {/* Drawers & dialogs */}
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} registering={registerMut.isPending} onRegister={selectedEvent?.id.startsWith("intl-") && isPlayer ? () => {
+        const tournamentId = selectedEvent!.id.replace("intl-", "");
+        const tournament = tournaments.find(t => t.id === tournamentId);
+        if (!tournament) return;
+        const alreadyRegistered = playerTournaments.some(pt => pt.tournamentId === tournamentId);
+        if (alreadyRegistered) { toast.info("You're already registered for this tournament"); return; }
+        registerMut.mutate({ tournamentId, tournament, playerId: user!.id, playerName: `${user!.firstName} ${user!.lastName}`, status: "registered" } as any, { onSuccess: () => { setDrawerOpen(false); setSelectedEvent(null); } });
+      } : undefined} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
 
