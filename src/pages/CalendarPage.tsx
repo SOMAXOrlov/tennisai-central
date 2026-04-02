@@ -659,9 +659,11 @@ export default function CalendarPage() {
   const { data: events = [], isLoading, error } = useCalendarEvents();
   const { data: teams = [] } = useTeams();
   const { data: tournaments = [] } = useTournaments();
+  const { data: playerTournaments = [] } = usePlayerTournaments();
   const createMut = useCreateCalendarEvent();
   const updateMut = useUpdateCalendarEvent();
   const deleteMut = useDeleteCalendarEvent();
+  const registerMut = useAddPlayerTournament();
 
   const [view, setView] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
