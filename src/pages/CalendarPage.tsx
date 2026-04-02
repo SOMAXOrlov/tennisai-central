@@ -19,10 +19,10 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
-  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat,
+  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe,
 } from "lucide-react";
-import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType } from "@/types";
-import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams } from "@/hooks/api/queries";
+import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, Tournament } from "@/types";
+import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
   isSameMonth, isSameDay, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,
@@ -650,6 +650,7 @@ export default function CalendarPage() {
 
   const { data: events = [], isLoading, error } = useCalendarEvents();
   const { data: teams = [] } = useTeams();
+  const { data: tournaments = [] } = useTournaments();
   const createMut = useCreateCalendarEvent();
   const updateMut = useUpdateCalendarEvent();
   const deleteMut = useDeleteCalendarEvent();
@@ -666,6 +667,22 @@ export default function CalendarPage() {
   const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
   const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [calendarSource, setCalendarSource] = useState<"all" | "mine" | "international">("all");
+
+  // Convert international tournaments to calendar events
+  const internationalEvents: CalendarEvent[] = useMemo(() => {
+    return tournaments.map((t) => ({
+      id: `intl-${t.id}`,
+      title: t.name,
+      type: "tournament" as CalendarEventType,
+      startDate: t.startDate,
+      endDate: t.endDate,
+      location: `${t.city}, ${t.country}`,
+      description: `${t.category} · ${t.level} · ${t.surface} (${t.indoorOutdoor})${t.weatherSummary ? ` · ${t.weatherSummary}` : ""}`,
+      state: "confirmed" as CalendarEventState,
+      _isInternational: true,
+    })) as (CalendarEvent & { _isInternational?: boolean })[];
+  }, [tournaments]);
 
   const teamPlayerIds = useMemo(() => {
     if (teamScope === "__all__") return null;
@@ -679,9 +696,14 @@ export default function CalendarPage() {
   }, [connectedPlayers, teamPlayerIds]);
 
   const scopedEvents = useMemo(() => {
+    // If only showing international tournaments
+    if (calendarSource === "international") {
+      return internationalEvents.filter((e) => activeFilters.has(e.type));
+    }
+
     const connectedIds = new Set(connectedPlayers.map((p) => p.id));
 
-    return events.filter((e) => {
+    const myEvents = events.filter((e) => {
       if (!activeFilters.has(e.type)) return false;
 
       if (isPlayer) return !e.playerId || e.playerId === user?.id || e.playerId === "p1";
@@ -699,7 +721,14 @@ export default function CalendarPage() {
       if (isObserver) return e.playerId ? connectedIds.has(e.playerId) : false;
       return true;
     });
-  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds]);
+
+    if (calendarSource === "mine") return myEvents;
+
+    // "all" — merge personal + international (dedup by checking if tournament already exists as personal event)
+    const personalTournamentTitles = new Set(myEvents.filter((e) => e.type === "tournament").map((e) => e.title));
+    const uniqueIntl = internationalEvents.filter((e) => !personalTournamentTitles.has(e.title) && activeFilters.has(e.type));
+    return [...myEvents, ...uniqueIntl];
+  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds, calendarSource, internationalEvents]);
 
   const toggleFilter = (type: CalendarEventType) => {
     setActiveFilters((prev) => { const next = new Set(prev); next.has(type) ? next.delete(type) : next.add(type); return next; });
@@ -882,6 +911,15 @@ export default function CalendarPage() {
 
       {isObserver && <ReadOnlyBanner />}
 
+      {/* Calendar source filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-xs font-medium text-muted-foreground">Source:</span>
+        <PlayerFilterChip label="All" active={calendarSource === "all"} onClick={() => setCalendarSource("all")} />
+        <PlayerFilterChip label="My Calendar" active={calendarSource === "mine"} onClick={() => setCalendarSource("mine")} icon={<CalendarIcon className="h-3 w-3" />} />
+        <PlayerFilterChip label="International Tournaments" active={calendarSource === "international"} onClick={() => setCalendarSource("international")} icon={<Globe className="h-3 w-3" />} />
+      </div>
+
       {/* Coach scoping filters */}
       {isCoach && connectedPlayers.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
@@ -980,7 +1018,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Drawers & dialogs */}
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />
 
