@@ -156,6 +156,13 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
                 </div>
               )}
             </div>
+            {onRegister && event.id.startsWith("intl-") && (
+              <div className="border-t border-border pt-4">
+                <Button size="sm" onClick={onRegister} disabled={registering} className="gap-1.5 w-full">
+                  <Trophy className="h-3.5 w-3.5" /> {registering ? "Registering…" : "Register for Tournament"}
+                </Button>
+              </div>
+            )}
             {!readOnly && (
               <div className="flex gap-2 border-t border-border pt-4">
                 <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
