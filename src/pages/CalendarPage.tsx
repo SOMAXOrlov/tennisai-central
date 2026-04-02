@@ -650,6 +650,7 @@ export default function CalendarPage() {
 
   const { data: events = [], isLoading, error } = useCalendarEvents();
   const { data: teams = [] } = useTeams();
+  const { data: tournaments = [] } = useTournaments();
   const createMut = useCreateCalendarEvent();
   const updateMut = useUpdateCalendarEvent();
   const deleteMut = useDeleteCalendarEvent();
@@ -666,6 +667,22 @@ export default function CalendarPage() {
   const [playerDetailOpen, setPlayerDetailOpen] = useState(false);
   const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [calendarSource, setCalendarSource] = useState<"all" | "mine" | "international">("all");
+
+  // Convert international tournaments to calendar events
+  const internationalEvents: CalendarEvent[] = useMemo(() => {
+    return tournaments.map((t) => ({
+      id: `intl-${t.id}`,
+      title: t.name,
+      type: "tournament" as CalendarEventType,
+      startDate: t.startDate,
+      endDate: t.endDate,
+      location: `${t.city}, ${t.country}`,
+      description: `${t.category} · ${t.level} · ${t.surface} (${t.indoorOutdoor})${t.weatherSummary ? ` · ${t.weatherSummary}` : ""}`,
+      state: "confirmed" as CalendarEventState,
+      _isInternational: true,
+    })) as (CalendarEvent & { _isInternational?: boolean })[];
+  }, [tournaments]);
 
   const teamPlayerIds = useMemo(() => {
     if (teamScope === "__all__") return null;
