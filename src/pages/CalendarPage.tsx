@@ -108,9 +108,10 @@ function StateBadge({ state }: { state?: CalendarEventState }) {
 
 const FREQ_LABELS: Record<RecurrenceFrequency, string> = { daily: "Daily", weekly: "Weekly", biweekly: "Every 2 weeks", monthly: "Monthly" };
 
-function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting }: {
+function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting, onRegister, registering }: {
   event: CalendarEvent | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onDeleteSingle?: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
+  onRegister?: () => void; registering?: boolean;
 }) {
   const [showRecurringChoice, setShowRecurringChoice] = useState(false);
   if (!event) return null;
