@@ -154,7 +154,7 @@ const Index = () => {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={stagger}
-            className="grid grid-cols-2 divide-x divide-border sm:grid-cols-4"
+            className="grid grid-cols-2 divide-x divide-border"
           >
             {stats.map((s) => (
               <motion.div key={s.label} variants={scaleIn} className="flex flex-col items-center gap-1 py-8 sm:py-10">
