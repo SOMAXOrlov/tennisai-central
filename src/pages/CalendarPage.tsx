@@ -911,6 +911,15 @@ export default function CalendarPage() {
 
       {isObserver && <ReadOnlyBanner />}
 
+      {/* Calendar source filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-xs font-medium text-muted-foreground">Source:</span>
+        <PlayerFilterChip label="All" active={calendarSource === "all"} onClick={() => setCalendarSource("all")} />
+        <PlayerFilterChip label="My Calendar" active={calendarSource === "mine"} onClick={() => setCalendarSource("mine")} icon={<CalendarIcon className="h-3 w-3" />} />
+        <PlayerFilterChip label="International Tournaments" active={calendarSource === "international"} onClick={() => setCalendarSource("international")} icon={<Globe className="h-3 w-3" />} />
+      </div>
+
       {/* Coach scoping filters */}
       {isCoach && connectedPlayers.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
