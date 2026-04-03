@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
-  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe,
+  LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe, CheckCircle2,
 } from "lucide-react";
 import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, Tournament } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments, useAddPlayerTournament, usePlayerTournaments } from "@/hooks/api/queries";
