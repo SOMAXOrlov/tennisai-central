@@ -415,8 +415,8 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
 
 // ─── Day View ───
 
-function DayView({ currentDate, events, onSelectEvent, showPlayerLabel }: {
-  currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; showPlayerLabel?: boolean;
+function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, registeredIntlIds }: {
+  currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; showPlayerLabel?: boolean; registeredIntlIds?: Set<string>;
 }) {
   const dayEvents = getEventsForDay(events, currentDate).sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
   const isToday = isDateToday(currentDate);
