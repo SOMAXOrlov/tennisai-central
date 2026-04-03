@@ -131,6 +131,7 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
               <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
               <StateBadge state={event.state} />
               {isRecurring && <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0"><Repeat className="h-3 w-3" />Recurring</Badge>}
+              {alreadyRegistered && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3 w-3" />Registered</span>}
               {readOnly && <ReadOnlyBadge />}
             </SheetTitle>
           </SheetHeader>
