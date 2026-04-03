@@ -456,6 +456,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
                   <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
                    <StateBadge state={event.state} />
                    {registeredIntlIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3 w-3" />Registered</span>}
+                </div>
                 <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
                 {showPlayerLabel && event.playerName && event.playerId && (
                   <p className="mt-0.5 text-xs flex items-center gap-1">
