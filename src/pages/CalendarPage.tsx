@@ -158,11 +158,18 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
                 </div>
               )}
             </div>
-            {onRegister && event.id.startsWith("intl-") && (
+            {onRegister && event.id.startsWith("intl-") && !alreadyRegistered && (
               <div className="border-t border-border pt-4">
                 <Button size="sm" onClick={onRegister} disabled={registering} className="gap-1.5 w-full">
                   <Trophy className="h-3.5 w-3.5" /> {registering ? "Registering…" : "Register for Tournament"}
                 </Button>
+              </div>
+            )}
+            {alreadyRegistered && event.id.startsWith("intl-") && (
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  <CheckCircle2 className="h-4 w-4" /> You're registered for this tournament
+                </div>
               </div>
             )}
             {!readOnly && (
