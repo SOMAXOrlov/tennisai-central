@@ -74,7 +74,7 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
   });
 }
 
-function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean }) {
+function EventChip({ event, onClick, showPlayer, compact, draggable, registered }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean; registered?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
   const playerColor = showPlayer && event.playerId ? getPlayerColor(event.playerId) : null;
@@ -96,6 +96,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable }: { event: 
       {cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
       {isRecurring && <Repeat className="h-2.5 w-2.5 shrink-0 opacity-60" />}
+      {registered && <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />}
     </button>
   );
 }
