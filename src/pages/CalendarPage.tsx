@@ -696,6 +696,12 @@ export default function CalendarPage() {
     })) as (CalendarEvent & { _isInternational?: boolean })[];
   }, [tournaments]);
 
+  const registeredIntlIds = useMemo(() => {
+    const ids = new Set<string>();
+    playerTournaments.forEach(pt => ids.add(`intl-${pt.tournamentId}`));
+    return ids;
+  }, [playerTournaments]);
+
   const teamPlayerIds = useMemo(() => {
     if (teamScope === "__all__") return null;
     const team = teams.find((t) => t.id === teamScope);
