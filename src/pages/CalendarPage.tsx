@@ -95,7 +95,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable, registered 
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-all hover:shadow-sm hover:opacity-90 ${chipBg} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
-      {cfg.icon}
+      {isIntl ? <Globe className="h-3.5 w-3.5" /> : cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
       {isRecurring && <Repeat className="h-2.5 w-2.5 shrink-0 opacity-60" />}
       {registered && <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />}
