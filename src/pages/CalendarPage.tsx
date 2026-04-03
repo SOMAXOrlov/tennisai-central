@@ -1044,7 +1044,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Drawers & dialogs */}
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} registering={registerMut.isPending} onRegister={selectedEvent?.id.startsWith("intl-") && isPlayer ? () => {
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || selectedEvent?.id.startsWith("intl-")} hideCoachNotes={isObserver} deleting={deleteMut.isPending} registering={registerMut.isPending} alreadyRegistered={selectedEvent ? registeredIntlIds.has(selectedEvent.id) : false} onRegister={selectedEvent?.id.startsWith("intl-") && isPlayer ? () => {
         const tournamentId = selectedEvent!.id.replace("intl-", "");
         const tournament = tournaments.find(t => t.id === tournamentId);
         if (!tournament) return;
