@@ -77,8 +77,10 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
 function EventChip({ event, onClick, showPlayer, compact, draggable, registered }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean; registered?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
+  const isIntl = event.id.startsWith("intl-");
+  const intlBg = "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20";
   const playerColor = showPlayer && event.playerId ? getPlayerColor(event.playerId) : null;
-  const chipBg = playerColor ? playerColor.bg : cfg.bg;
+  const chipBg = isIntl ? intlBg : playerColor ? playerColor.bg : cfg.bg;
   return (
     <button
       draggable={draggable}
