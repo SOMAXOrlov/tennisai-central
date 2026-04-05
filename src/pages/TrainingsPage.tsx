@@ -297,6 +297,7 @@ export default function TrainingsPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<TrainingSession | null>(null);
   const [preselectedPlayerIds, setPreselectedPlayerIds] = useState<string[]>([]);
+  const [reviewTarget, setReviewTarget] = useState<TrainingSession | null>(null);
 
   const [search, setSearch] = useState("");
   const [playerFilter, setPlayerFilter] = useState("__all__");
@@ -418,6 +419,14 @@ export default function TrainingsPage() {
                     <h3 className="font-semibold text-foreground">{t.title}</h3>
                     <span className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{TRAINING_TYPE_LABELS[t.trainingType]}</span>
                     {intensityCfg && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${intensityCfg.color}`}>{intensityCfg.label}</span>}
+                    {t.review && (
+                      <span className="flex items-center gap-0.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                        <Star className="h-2.5 w-2.5 fill-current" /> {t.review.rating}
+                      </span>
+                    )}
+                    {past && !t.review && isCoach && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Unreviewed</span>
+                    )}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(parseISO(t.startDate), "MMM d, h:mm a")} – {format(parseISO(t.endDate), "h:mm a")}</span>
@@ -428,6 +437,9 @@ export default function TrainingsPage() {
                 </div>
                 {isCoach && (
                   <div className="flex items-center gap-1 shrink-0">
+                    {past && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setReviewTarget(t); }} title="Review session"><ClipboardCheck className="h-3.5 w-3.5" /></Button>
+                    )}
                     <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(t); }}><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(t); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
@@ -439,8 +451,9 @@ export default function TrainingsPage() {
       )}
 
       {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
-      <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} readOnly={readOnly} deleting={deleteMut.isPending} />
+      <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} onReview={isCoach ? () => { if (detailTarget) { setReviewTarget(detailTarget); } } : undefined} readOnly={readOnly} deleting={deleteMut.isPending} />
       {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
+      {reviewTarget && <TrainingReviewDialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }} training={reviewTarget} onSave={(review) => { updateMut.mutate({ id: reviewTarget.id, data: { review } }); setReviewTarget(null); }} saving={updateMut.isPending} />}
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} onCreateTraining={(pid) => handleCreate([pid])} />
     </div>
   );
