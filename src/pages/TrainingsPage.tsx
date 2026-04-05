@@ -16,8 +16,9 @@ import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
   Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
-  Target, Zap, StickyNote, Search,
+  Target, Zap, StickyNote, Search, Star, ClipboardCheck,
 } from "lucide-react";
+import { TrainingReviewDialog } from "@/components/training/TrainingReviewDialog";
 import type { TrainingSession, TrainingType, ConnectedPlayer } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams } from "@/hooks/api/queries";
@@ -190,19 +191,20 @@ function TrainingFormDialog({
 // ─── Training Detail Drawer ───
 
 function TrainingDetailDrawer({
-  training, open, onOpenChange, onEdit, onDelete, readOnly, deleting,
+  training, open, onOpenChange, onEdit, onDelete, onReview, readOnly, deleting,
 }: {
   training: TrainingSession | null; open: boolean; onOpenChange: (o: boolean) => void;
-  onEdit: () => void; onDelete: () => void; readOnly?: boolean; deleting?: boolean;
+  onEdit: () => void; onDelete: () => void; onReview?: () => void; readOnly?: boolean; deleting?: boolean;
 }) {
   const { connectedPlayers } = useConnections();
   if (!training) return null;
   const players = connectedPlayers.filter((p) => training.playerIds.includes(p.id));
   const intensityCfg = INTENSITY_OPTIONS.find((o) => o.value === training.intensity);
+  const past = isPast(parseISO(training.endDate));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader><SheetTitle className="flex items-center gap-2"><Dumbbell className="h-4 w-4 text-primary" />Training Detail</SheetTitle></SheetHeader>
         <div className="mt-4 space-y-5">
           <h3 className="text-lg font-semibold text-foreground">{training.title}</h3>
@@ -218,8 +220,36 @@ function TrainingDetailDrawer({
             {training.notes && <div className="rounded-lg border border-border bg-secondary/30 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><StickyNote className="h-3 w-3" /> Notes</div><p className="text-sm text-foreground">{training.notes}</p></div>}
             {!readOnly && training.coachNotes && <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" /> Coach Notes (private)</div><p className="text-sm text-blue-700/80 dark:text-blue-300/80">{training.coachNotes}</p></div>}
           </div>
+
+          {/* Training Review Section */}
+          {training.review && (
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+                  <ClipboardCheck className="h-3 w-3" /> Session Review
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className={`h-3 w-3 ${s <= training.review!.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/20"}`} />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">Worked on:</span> {training.review.workedOn}</p>
+                {training.review.nextSteps && <p className="text-xs text-primary"><span className="font-medium">Next steps:</span> {training.review.nextSteps}</p>}
+                {training.review.playerFeedback && <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">Player feedback:</span> {training.review.playerFeedback}</p>}
+              </div>
+              <p className="text-[10px] text-muted-foreground">Reviewed {format(parseISO(training.review.reviewedAt), "MMM d, yyyy 'at' h:mm a")}</p>
+            </div>
+          )}
+
           {!readOnly && (
-            <div className="flex gap-2 border-t border-border pt-4">
+            <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+              {past && onReview && (
+                <Button size="sm" variant="outline" onClick={onReview} className="gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> {training.review ? "Edit Review" : "Review Session"}
+                </Button>
+              )}
               <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
               <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
             </div>
