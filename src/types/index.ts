@@ -225,6 +225,14 @@ export interface EquipmentItem {
 
 export type TrainingType = "individual" | "team" | "match_practice" | "fitness" | "recovery" | "tactical";
 
+export interface TrainingReview {
+  rating: number; // 1-5
+  workedOn: string;
+  nextSteps: string;
+  playerFeedback?: string;
+  reviewedAt: string;
+}
+
 export interface TrainingSession {
   id: string;
   title: string;
@@ -240,6 +248,7 @@ export interface TrainingSession {
   intensity?: "low" | "medium" | "high";
   notes?: string;
   coachNotes?: string;
+  review?: TrainingReview;
   createdAt: string;
 }
 
