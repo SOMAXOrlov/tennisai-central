@@ -4,13 +4,16 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EmptyState, StatusBadge } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Search, ArrowRight, UserPlus } from "lucide-react";
+import { Users, Search, ArrowRight, UserPlus, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
+import type { ConnectedPlayer } from "@/types";
 
 export default function PlayersPage() {
   const { connectedPlayers } = useConnections();
   const [search, setSearch] = useState("");
+  const [statsPlayer, setStatsPlayer] = useState<ConnectedPlayer | null>(null);
 
   const filtered = connectedPlayers.filter((p) =>
     !search || `${p.firstName} ${p.lastName}`.toLowerCase().includes(search.toLowerCase())
@@ -56,7 +59,15 @@ export default function PlayersPage() {
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <StatusBadge status="active" />
-                <Button size="sm" variant="ghost" className="ml-auto gap-1 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-auto gap-1 text-xs"
+                  onClick={() => setStatsPlayer(player)}
+                >
+                  <BarChart3 className="h-3 w-3" /> Stats
+                </Button>
+                <Button size="sm" variant="ghost" className="gap-1 text-xs">
                   View <ArrowRight className="h-3 w-3" />
                 </Button>
               </div>
@@ -64,6 +75,8 @@ export default function PlayersPage() {
           ))}
         </div>
       )}
+
+      <PlayerStatsDrawer player={statsPlayer} open={!!statsPlayer} onOpenChange={(o) => { if (!o) setStatsPlayer(null); }} />
     </div>
   );
 }
