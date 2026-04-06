@@ -505,9 +505,10 @@ export default function TrainingsPage() {
       )}
 
       {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
-      <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} onReview={isCoach ? () => { if (detailTarget) { setReviewTarget(detailTarget); } } : undefined} readOnly={readOnly} deleting={deleteMut.isPending} />
+      <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} onReview={isCoach ? () => { if (detailTarget) { setReviewTarget(detailTarget); } } : undefined} onPlayerFeedback={!isCoach ? () => { if (detailTarget) setFeedbackTarget(detailTarget); } : undefined} readOnly={readOnly} isPlayer={!isCoach} deleting={deleteMut.isPending} />
       {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
       {reviewTarget && <TrainingReviewDialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }} training={reviewTarget} onSave={(review) => { updateMut.mutate({ id: reviewTarget.id, data: { review } }); setReviewTarget(null); }} saving={updateMut.isPending} />}
+      {feedbackTarget && <PlayerFeedbackDialog open={!!feedbackTarget} onOpenChange={(o) => { if (!o) setFeedbackTarget(null); }} training={feedbackTarget} onSave={(feedback) => { updateMut.mutate({ id: feedbackTarget.id, data: { playerSessionFeedback: feedback } }); setFeedbackTarget(null); }} saving={updateMut.isPending} />}
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} onCreateTraining={(pid) => handleCreate([pid])} />
     </div>
   );
