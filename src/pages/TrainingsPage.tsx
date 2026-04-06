@@ -493,6 +493,11 @@ export default function TrainingsPage() {
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(t); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
                 )}
+                {!isCoach && past && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setFeedbackTarget(t); }} title="Leave feedback"><MessageCircle className="h-3.5 w-3.5" /></Button>
+                  </div>
+                )}
               </button>
             );
           })}
