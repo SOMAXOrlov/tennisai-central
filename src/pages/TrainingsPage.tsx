@@ -468,6 +468,14 @@ export default function TrainingsPage() {
                     {past && !t.review && isCoach && (
                       <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Unreviewed</span>
                     )}
+                    {t.playerSessionFeedback && (
+                      <span className="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        {({ awful: "😫", bad: "😕", okay: "😐", good: "🙂", great: "🤩" })[t.playerSessionFeedback.feeling]}
+                      </span>
+                    )}
+                    {!isCoach && past && !t.playerSessionFeedback && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Give feedback</span>
+                    )}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(parseISO(t.startDate), "MMM d, h:mm a")} – {format(parseISO(t.endDate), "h:mm a")}</span>
