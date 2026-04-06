@@ -192,16 +192,19 @@ function TrainingFormDialog({
 // ─── Training Detail Drawer ───
 
 function TrainingDetailDrawer({
-  training, open, onOpenChange, onEdit, onDelete, onReview, readOnly, deleting,
+  training, open, onOpenChange, onEdit, onDelete, onReview, onPlayerFeedback, readOnly, isPlayer, deleting,
 }: {
   training: TrainingSession | null; open: boolean; onOpenChange: (o: boolean) => void;
-  onEdit: () => void; onDelete: () => void; onReview?: () => void; readOnly?: boolean; deleting?: boolean;
+  onEdit: () => void; onDelete: () => void; onReview?: () => void; onPlayerFeedback?: () => void;
+  readOnly?: boolean; isPlayer?: boolean; deleting?: boolean;
 }) {
   const { connectedPlayers } = useConnections();
   if (!training) return null;
   const players = connectedPlayers.filter((p) => training.playerIds.includes(p.id));
   const intensityCfg = INTENSITY_OPTIONS.find((o) => o.value === training.intensity);
   const past = isPast(parseISO(training.endDate));
+
+  const FEELING_EMOJI: Record<string, string> = { awful: "😫", bad: "😕", okay: "😐", good: "🙂", great: "🤩" };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -219,7 +222,7 @@ function TrainingDetailDrawer({
             {training.goal && <div className="flex items-center gap-2 text-muted-foreground"><Target className="h-4 w-4 shrink-0" />{training.goal}</div>}
             <div className="flex items-start gap-2 text-muted-foreground"><Users className="h-4 w-4 shrink-0 mt-0.5" /><div>{players.length > 0 ? players.map((p) => `${p.firstName} ${p.lastName}`).join(", ") : "No players assigned"}</div></div>
             {training.notes && <div className="rounded-lg border border-border bg-secondary/30 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><StickyNote className="h-3 w-3" /> Notes</div><p className="text-sm text-foreground">{training.notes}</p></div>}
-            {!readOnly && training.coachNotes && <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" /> Coach Notes (private)</div><p className="text-sm text-blue-700/80 dark:text-blue-300/80">{training.coachNotes}</p></div>}
+            {!readOnly && training.coachNotes && <div className="rounded-lg border border-border bg-primary/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary"><StickyNote className="h-3 w-3" /> Coach Notes (private)</div><p className="text-sm text-primary/80">{training.coachNotes}</p></div>}
           </div>
 
           {/* Training Review Section */}
@@ -244,6 +247,33 @@ function TrainingDetailDrawer({
             </div>
           )}
 
+          {/* Player Session Feedback */}
+          {training.playerSessionFeedback && (
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <MessageCircle className="h-3 w-3" /> Player Feedback
+                </div>
+                <span className="text-lg">{FEELING_EMOJI[training.playerSessionFeedback.feeling] ?? ""}</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Energy: {training.playerSessionFeedback.energyLevel}/5</span>
+              </div>
+              {training.playerSessionFeedback.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {training.playerSessionFeedback.tags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{tag}</span>
+                  ))}
+                </div>
+              )}
+              {training.playerSessionFeedback.note && (
+                <p className="text-xs text-foreground italic">"{training.playerSessionFeedback.note}"</p>
+              )}
+              <p className="text-[10px] text-muted-foreground">Submitted {format(parseISO(training.playerSessionFeedback.submittedAt), "MMM d, yyyy")}</p>
+            </div>
+          )}
+
+          {/* Coach actions */}
           {!readOnly && (
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
               {past && onReview && (
@@ -253,6 +283,15 @@ function TrainingDetailDrawer({
               )}
               <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
               <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
+            </div>
+          )}
+
+          {/* Player feedback action */}
+          {isPlayer && past && onPlayerFeedback && (
+            <div className="border-t border-border pt-4">
+              <Button size="sm" variant="outline" onClick={onPlayerFeedback} className="gap-1.5">
+                <MessageCircle className="h-3.5 w-3.5" /> {training.playerSessionFeedback ? "Edit Feedback" : "Leave Feedback"}
+              </Button>
             </div>
           )}
         </div>
