@@ -277,6 +277,7 @@ export interface TrainingSession {
   notes?: string;
   coachNotes?: string;
   review?: TrainingReview;
+  playerSessionFeedback?: PlayerSessionFeedback;
   createdAt: string;
 }
 
