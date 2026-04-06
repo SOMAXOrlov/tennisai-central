@@ -233,6 +233,34 @@ export interface TrainingReview {
   reviewedAt: string;
 }
 
+// Structured player feedback — designed for AI analysis
+export type PlayerFeeling = "awful" | "bad" | "okay" | "good" | "great";
+
+export const PLAYER_FEEDBACK_TAGS = [
+  "Too easy",
+  "Too hard",
+  "Good pace",
+  "Learned a lot",
+  "Need more practice",
+  "Fun session",
+  "Felt tired",
+  "Great coaching",
+  "Too long",
+  "Too short",
+  "Want more of this",
+  "Felt confused",
+] as const;
+
+export type PlayerFeedbackTag = typeof PLAYER_FEEDBACK_TAGS[number];
+
+export interface PlayerSessionFeedback {
+  feeling: PlayerFeeling;
+  energyLevel: number; // 1-5
+  tags: PlayerFeedbackTag[];
+  note?: string; // max 200 chars, optional
+  submittedAt: string;
+}
+
 export interface TrainingSession {
   id: string;
   title: string;
@@ -249,6 +277,7 @@ export interface TrainingSession {
   notes?: string;
   coachNotes?: string;
   review?: TrainingReview;
+  playerSessionFeedback?: PlayerSessionFeedback;
   createdAt: string;
 }
 
