@@ -16,10 +16,11 @@ import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
   Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
-  Target, Zap, StickyNote, Search, Star, ClipboardCheck,
+  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle,
 } from "lucide-react";
 import { TrainingReviewDialog } from "@/components/training/TrainingReviewDialog";
-import type { TrainingSession, TrainingType, ConnectedPlayer } from "@/types";
+import { PlayerFeedbackDialog } from "@/components/training/PlayerFeedbackDialog";
+import type { TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
