@@ -299,6 +299,7 @@ export default function TrainingsPage() {
   const [deleteTarget, setDeleteTarget] = useState<TrainingSession | null>(null);
   const [preselectedPlayerIds, setPreselectedPlayerIds] = useState<string[]>([]);
   const [reviewTarget, setReviewTarget] = useState<TrainingSession | null>(null);
+  const [feedbackTarget, setFeedbackTarget] = useState<TrainingSession | null>(null);
 
   const [search, setSearch] = useState("");
   const [playerFilter, setPlayerFilter] = useState("__all__");
