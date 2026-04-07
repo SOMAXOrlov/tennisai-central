@@ -79,6 +79,13 @@ export function DashboardLayout() {
   const role = user?.role ?? "player";
   const isObserver = role === "observer";
 
+  const { data: trainings = [] } = useTrainings();
+  const unreviewedCount = useMemo(() => {
+    if (role !== "coach") return 0;
+    const now = new Date();
+    return trainings.filter((t) => isBefore(new Date(t.endDate), now) && !t.review).length;
+  }, [trainings, role]);
+
   const visibleItems = navItems.filter((item) => item.roles.includes(role));
 
   const handleLogout = async () => {
