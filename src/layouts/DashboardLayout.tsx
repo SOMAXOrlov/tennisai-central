@@ -26,7 +26,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserRole } from "@/types";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useTrainings } from "@/hooks/api/queries";
+import { isBefore } from "date-fns";
 
 interface NavItem {
   to: string;
