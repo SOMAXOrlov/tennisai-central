@@ -42,6 +42,13 @@ const eventTypeColor: Record<string, string> = {
 export default function CoachDashboard() {
   const { user } = useAuth();
   const { connectedPlayers, requests } = useConnections();
+  const { data: trainings = [] } = useTrainings();
+
+  const now = new Date();
+  const unreviewedSessions = trainings
+    .filter((t) => isBefore(new Date(t.endDate), now) && !t.review)
+    .sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime())
+    .slice(0, 5);
 
   const pendingRequests = requests.filter(
     (r) => r.status === "pending" && r.fromUserId === user?.id
