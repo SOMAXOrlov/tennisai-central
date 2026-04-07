@@ -14,9 +14,13 @@ import {
   Plus,
   Shield,
   Brain,
+  AlertCircle,
+  Star,
 } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
+import { useTrainings } from "@/hooks/api/queries";
+import { isBefore } from "date-fns";
 import {
   mockCalendarEvents,
   mockTeams,
