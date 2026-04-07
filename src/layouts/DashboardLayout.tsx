@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
   // Coach nav
   { to: "/players", label: "Players", icon: <Users className="h-4 w-4" />, roles: ["coach"] },
   { to: "/teams", label: "Teams", icon: <Shield className="h-4 w-4" />, roles: ["coach"] },
-  { to: "/trainings", label: "Trainings", icon: <Dumbbell className="h-4 w-4" />, roles: ["coach"] },
+  { to: "/trainings", label: "Trainings", icon: <Dumbbell className="h-4 w-4" />, roles: ["coach", "player"] },
   { to: "/training-requests", label: "Requests", icon: <UserPlus className="h-4 w-4" />, roles: ["coach"] },
 
   // Shared
