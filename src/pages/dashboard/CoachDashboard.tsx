@@ -203,6 +203,47 @@ export default function CoachDashboard() {
         </div>
       </DashboardCard>
 
+      {/* Unreviewed Training Sessions */}
+      <DashboardCard
+        title="Needs Review"
+        description={`${unreviewedSessions.length} past session${unreviewedSessions.length !== 1 ? "s" : ""} without a review`}
+        icon={<AlertCircle className="h-4 w-4" />}
+        action={
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/trainings">All trainings <ArrowRight className="ml-1 h-3 w-3" /></Link>
+          </Button>
+        }
+      >
+        {unreviewedSessions.length === 0 ? (
+          <div className="py-4 text-center">
+            <Star className="mx-auto mb-2 h-8 w-8 text-primary/30" />
+            <p className="text-sm font-medium text-foreground">All caught up!</p>
+            <p className="text-xs text-muted-foreground">Every past session has been reviewed</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {unreviewedSessions.map((session) => (
+              <div key={session.id} className="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{session.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {formatDate(session.endDate)}
+                    {session.location && <span>· {session.location}</span>}
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="shrink-0 text-xs" asChild>
+                  <Link to="/trainings">Review</Link>
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </DashboardCard>
+
       {/* Calendar + Tournament Visibility + AI Insights */}
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardCard
