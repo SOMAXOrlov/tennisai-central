@@ -1,20 +1,21 @@
 // ============================================================
 // TennisAI — Lightweight i18n utility
-// Shared translation helper. Swap `LOCALE` or back this with
-// react-i18next later without changing call sites.
+// Shared translation helper. Message bundles live in
+// `src/locales/<locale>.json`. To add a new language, drop in a
+// new JSON file and register it in the `messages` map below.
 // ============================================================
+
+import en from "@/locales/en.json";
 
 type Primitive = string | number;
 type Vars = Record<string, Primitive>;
+type MessageBundle = Record<string, string>;
 
-export const LOCALE = "en";
+export const DEFAULT_LOCALE = "en";
+export const LOCALE: string = DEFAULT_LOCALE;
 
-const messages: Record<string, Record<string, string>> = {
-  en: {
-    "nav.trainings.unreviewedBadge": "{count}",
-    "nav.trainings.unreviewedAria":
-      "{count, plural, one {# session needs review} other {# sessions need review}}",
-  },
+const messages: Record<string, MessageBundle> = {
+  en: en as MessageBundle,
 };
 
 /** Format an ICU-lite plural: `{var, plural, one {…} other {…}}`. `#` is replaced with the value. */
