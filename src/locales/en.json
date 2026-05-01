@@ -1,4 +1,8 @@
 {
-  "nav.trainings.unreviewedBadge": "{count}",
-  "nav.trainings.unreviewedAria": "{count, plural, one {# session needs review} other {# sessions need review}}"
+  "nav": {
+    "trainings": {
+      "unreviewedBadge": "{count}",
+      "unreviewedAria": "{count, plural, one {# session needs review} other {# sessions need review}}"
+    }
+  }
 }
