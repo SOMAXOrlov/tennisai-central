@@ -5,4 +5,36 @@
       "unreviewedAria": "{count, plural, one {# session needs review} other {# sessions need review}}"
     }
   }
+  ,
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "profile": "My Profile",
+      "calendar": "Calendar",
+      "tournaments": "Tournaments",
+      "stats": "Stats",
+      "equipment": "Equipment",
+      "finance": "Finance",
+      "players": "Players",
+      "teams": "Teams",
+      "trainings": "Trainings",
+      "trainingRequests": "Requests",
+      "connections": "Requests",
+      "aiInsights": "AI Insights",
+      "notifications": "Notifications",
+      "adminUsers": "Users",
+      "adminRelationships": "Relationships",
+      "adminAlerts": "System Alerts",
+      "settings": "Settings"
+    },
+    "actions": {
+      "logout": "Log out"
+    },
+    "role": {
+      "player": "player",
+      "coach": "coach",
+      "observer": "Fan",
+      "admin": "admin"
+    }
+  }
 }
