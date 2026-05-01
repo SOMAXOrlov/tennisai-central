@@ -9,7 +9,8 @@ import en from "@/locales/en.json";
 
 type Primitive = string | number;
 type Vars = Record<string, Primitive>;
-type MessageBundle = Record<string, string>;
+type MessageNode = string | { [key: string]: MessageNode };
+type MessageBundle = Record<string, MessageNode>;
 
 export const DEFAULT_LOCALE = "en";
 export const LOCALE: string = DEFAULT_LOCALE;
@@ -29,15 +30,38 @@ function warnMissingKey(locale: string, key: string): void {
   console.warn(`[i18n] Missing translation for key "${key}" in locale "${locale}".`);
 }
 
+/**
+ * Look up a dot-delimited key in a bundle.
+ * Supports both nested objects (`{ dashboard: { nav: { trainings: "..." } } }`)
+ * and flat keys (`{ "dashboard.nav.trainings": "..." }`) for backward compatibility.
+ * Flat keys take precedence so existing bundles keep working unchanged.
+ */
+function lookup(bundle: MessageBundle | undefined, key: string): string | undefined {
+  if (!bundle) return undefined;
+
+  // Flat-key shortcut (back-compat with existing en.json).
+  const flat = bundle[key];
+  if (typeof flat === "string") return flat;
+
+  // Nested traversal.
+  const segments = key.split(".");
+  let node: MessageNode | undefined = bundle as MessageNode;
+  for (const segment of segments) {
+    if (node === undefined || typeof node === "string") return undefined;
+    node = (node as { [k: string]: MessageNode })[segment];
+  }
+  return typeof node === "string" ? node : undefined;
+}
+
 /** Resolve a key to a template, falling back to the default locale, then the key itself. */
 function resolveTemplate(key: string): string {
-  const current = messages[LOCALE]?.[key];
+  const current = lookup(messages[LOCALE], key);
   if (current !== undefined) return current;
 
   warnMissingKey(LOCALE, key);
 
   if (LOCALE !== DEFAULT_LOCALE) {
-    const fallback = messages[DEFAULT_LOCALE]?.[key];
+    const fallback = lookup(messages[DEFAULT_LOCALE], key);
     if (fallback !== undefined) return fallback;
     warnMissingKey(DEFAULT_LOCALE, key);
   }
