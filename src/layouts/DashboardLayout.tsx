@@ -33,7 +33,7 @@ import { t, formatBadgeCount } from "@/lib/i18n";
 
 interface NavItem {
   to: string;
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
   roles: UserRole[];
   readOnly?: boolean;
@@ -43,34 +43,34 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   // All roles
-  { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
-  { to: "/profile", label: "My Profile", icon: <User className="h-4 w-4" />, roles: ["player", "coach", "observer"] },
+  { to: "/dashboard", labelKey: "dashboard.nav.dashboard", icon: <LayoutDashboard className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
+  { to: "/profile", labelKey: "dashboard.nav.profile", icon: <User className="h-4 w-4" />, roles: ["player", "coach", "observer"] },
 
   // Player nav
-  { to: "/calendar", label: "Calendar", icon: <Calendar className="h-4 w-4" />, roles: ["player", "coach", "observer"] },
-  { to: "/tournaments", label: "Tournaments", icon: <Trophy className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
-  { to: "/stats", label: "Stats", icon: <BarChart3 className="h-4 w-4" />, roles: ["player"] },
-  { to: "/equipment", label: "Equipment", icon: <Package className="h-4 w-4" />, roles: ["player"] },
-  { to: "/finance", label: "Finance", icon: <Wallet className="h-4 w-4" />, roles: ["player", "observer"] },
+  { to: "/calendar", labelKey: "dashboard.nav.calendar", icon: <Calendar className="h-4 w-4" />, roles: ["player", "coach", "observer"] },
+  { to: "/tournaments", labelKey: "dashboard.nav.tournaments", icon: <Trophy className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
+  { to: "/stats", labelKey: "dashboard.nav.stats", icon: <BarChart3 className="h-4 w-4" />, roles: ["player"] },
+  { to: "/equipment", labelKey: "dashboard.nav.equipment", icon: <Package className="h-4 w-4" />, roles: ["player"] },
+  { to: "/finance", labelKey: "dashboard.nav.finance", icon: <Wallet className="h-4 w-4" />, roles: ["player", "observer"] },
 
   // Coach nav
-  { to: "/players", label: "Players", icon: <Users className="h-4 w-4" />, roles: ["coach"] },
-  { to: "/teams", label: "Teams", icon: <Shield className="h-4 w-4" />, roles: ["coach"] },
-  { to: "/trainings", label: "Trainings", icon: <Dumbbell className="h-4 w-4" />, roles: ["coach", "player"] },
-  { to: "/training-requests", label: "Requests", icon: <UserPlus className="h-4 w-4" />, roles: ["coach"] },
+  { to: "/players", labelKey: "dashboard.nav.players", icon: <Users className="h-4 w-4" />, roles: ["coach"] },
+  { to: "/teams", labelKey: "dashboard.nav.teams", icon: <Shield className="h-4 w-4" />, roles: ["coach"] },
+  { to: "/trainings", labelKey: "dashboard.nav.trainings", icon: <Dumbbell className="h-4 w-4" />, roles: ["coach", "player"] },
+  { to: "/training-requests", labelKey: "dashboard.nav.trainingRequests", icon: <UserPlus className="h-4 w-4" />, roles: ["coach"] },
 
   // Shared
-  { to: "/connections", label: "Requests", icon: <Link2 className="h-4 w-4" />, roles: ["player", "observer"] },
-  { to: "/ai-insights", label: "AI Insights", icon: <Brain className="h-4 w-4" />, roles: ["player", "coach"] },
-  { to: "/notifications", label: "Notifications", icon: <Bell className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
+  { to: "/connections", labelKey: "dashboard.nav.connections", icon: <Link2 className="h-4 w-4" />, roles: ["player", "observer"] },
+  { to: "/ai-insights", labelKey: "dashboard.nav.aiInsights", icon: <Brain className="h-4 w-4" />, roles: ["player", "coach"] },
+  { to: "/notifications", labelKey: "dashboard.nav.notifications", icon: <Bell className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
 
   // Admin nav
-  { to: "/admin/users", label: "Users", icon: <Users className="h-4 w-4" />, roles: ["admin"] },
-  { to: "/admin/relationships", label: "Relationships", icon: <Link2 className="h-4 w-4" />, roles: ["admin"] },
-  { to: "/admin/alerts", label: "System Alerts", icon: <AlertTriangle className="h-4 w-4" />, roles: ["admin"] },
+  { to: "/admin/users", labelKey: "dashboard.nav.adminUsers", icon: <Users className="h-4 w-4" />, roles: ["admin"] },
+  { to: "/admin/relationships", labelKey: "dashboard.nav.adminRelationships", icon: <Link2 className="h-4 w-4" />, roles: ["admin"] },
+  { to: "/admin/alerts", labelKey: "dashboard.nav.adminAlerts", icon: <AlertTriangle className="h-4 w-4" />, roles: ["admin"] },
 
   // Settings for all
-  { to: "/settings", label: "Settings", icon: <Settings className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
+  { to: "/settings", labelKey: "dashboard.nav.settings", icon: <Settings className="h-4 w-4" />, roles: ["player", "coach", "observer", "admin"] },
 ];
 
 export function DashboardLayout() {
@@ -118,7 +118,7 @@ export function DashboardLayout() {
             }
           >
             {item.icon}
-            <span className="flex-1">{item.label}</span>
+            <span className="flex-1">{t(item.labelKey)}</span>
             {item.to === "/trainings" && unreviewedCount > 0 && (
               <span
                 className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground"
@@ -137,12 +137,12 @@ export function DashboardLayout() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-foreground">{user?.firstName} {user?.lastName}</p>
-            <p className="truncate text-xs capitalize text-muted-foreground">{role === "observer" ? "Fan" : role}</p>
+            <p className="truncate text-xs capitalize text-muted-foreground">{t(`dashboard.role.${role}`)}</p>
           </div>
           <ThemeToggle />
         </div>
         <Button variant="ghost" className="w-full justify-start gap-3" onClick={handleLogout}>
-          <LogOut className="h-4 w-4" /> Log out
+          <LogOut className="h-4 w-4" /> {t("dashboard.actions.logout")}
         </Button>
       </div>
     </>
