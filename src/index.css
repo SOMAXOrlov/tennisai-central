@@ -43,6 +43,14 @@
     --surface-elevated: 0 0% 100%;
     --surface-sunken: 220 20% 97%;
 
+    /* Tennis-themed accents */
+    --tennis-ball: 72 95% 60%;
+    --court-clay: 14 65% 55%;
+    --court-grass: 110 40% 38%;
+    --court-hard: 210 70% 45%;
+    --court-line: 0 0% 100%;
+    --net-shadow: 220 30% 12%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 152 60% 42%;
@@ -93,6 +101,13 @@
     --sidebar-accent-foreground: 210 20% 95%;
     --sidebar-border: 222 20% 16%;
     --sidebar-ring: 152 55% 48%;
+
+    --tennis-ball: 72 90% 58%;
+    --court-clay: 14 60% 48%;
+    --court-grass: 110 35% 32%;
+    --court-hard: 210 65% 40%;
+    --court-line: 210 20% 92%;
+    --net-shadow: 0 0% 0%;
   }
 }
 
@@ -108,5 +123,86 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Tennis court line pattern */
+  .court-lines {
+    background-image:
+      linear-gradient(hsl(var(--court-line) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--court-line) / 0.08) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .court-surface {
+    background:
+      radial-gradient(ellipse at 50% 0%, hsl(var(--primary) / 0.18), transparent 60%),
+      linear-gradient(180deg, hsl(var(--court-grass) / 0.08), transparent 70%);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Felt-like ball with fuzz */
+  .tennis-ball {
+    background:
+      radial-gradient(circle at 32% 30%, hsl(72 100% 78%) 0%, hsl(var(--tennis-ball)) 40%, hsl(70 80% 42%) 100%);
+    box-shadow:
+      inset -8px -10px 20px hsl(70 70% 30% / 0.45),
+      inset 6px 6px 14px hsl(72 100% 85% / 0.6),
+      0 20px 40px -10px hsl(var(--tennis-ball) / 0.5),
+      0 0 60px hsl(var(--tennis-ball) / 0.25);
+  }
+
+  .tennis-seam::before,
+  .tennis-seam::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid hsl(0 0% 100% / 0.95);
+    pointer-events: none;
+  }
+  .tennis-seam::before {
+    clip-path: polygon(0 35%, 100% 15%, 100% 25%, 0 45%);
+    transform: rotate(-12deg);
+  }
+  .tennis-seam::after {
+    clip-path: polygon(0 65%, 100% 55%, 100% 65%, 0 75%);
+    transform: rotate(8deg);
+  }
+
+  @keyframes ball-bounce {
+    0%, 100% { transform: translateY(-30%) rotate(0deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 1); }
+    50% { transform: translateY(30%) rotate(180deg); animation-timing-function: cubic-bezier(0, 0, 0.5, 1); }
+  }
+  .animate-ball-bounce { animation: ball-bounce 2.4s infinite; }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee { animation: marquee 40s linear infinite; }
+
+  @keyframes shine {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .text-shine {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--foreground)) 0%,
+      hsl(var(--foreground)) 40%,
+      hsl(var(--primary)) 50%,
+      hsl(var(--foreground)) 60%,
+      hsl(var(--foreground)) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 6s linear infinite;
   }
 }
