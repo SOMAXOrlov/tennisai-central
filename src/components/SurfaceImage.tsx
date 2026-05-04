@@ -31,6 +31,7 @@ export function SurfaceImage({
   eager = false,
 }: SurfaceImageProps) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (failed) {
     return (
@@ -51,17 +52,36 @@ export function SurfaceImage({
   }
 
   return (
-    <img
-      src={src}
-      alt={`${name} tennis court surface`}
-      loading={eager ? "eager" : "lazy"}
-      decoding="async"
-      fetchPriority={eager ? "high" : "low"}
-      width={width}
-      height={height}
-      sizes={sizes}
-      onError={() => setFailed(true)}
-      className={cn("h-full w-full object-cover", className)}
-    />
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Themed skeleton: tinted court color + painted lines + shimmer.
+          Sits behind the image and fades out once loaded. */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "court-fallback court-skeleton absolute inset-0 transition-opacity duration-500",
+          loaded ? "opacity-0" : "opacity-100",
+        )}
+        style={{ backgroundColor: color }}
+      />
+      <img
+        src={src}
+        alt={`${name} tennis court surface`}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={eager ? "high" : "low"}
+        width={width}
+        height={height}
+        sizes={sizes}
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+        className={cn(
+          "h-full w-full object-cover transition-opacity duration-700",
+          loaded ? "opacity-100" : "opacity-0",
+          className,
+        )}
+      />
+    </div>
+  );
+}
   );
 }
