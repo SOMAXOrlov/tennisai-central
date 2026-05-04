@@ -167,6 +167,28 @@
     pointer-events: none;
   }
 
+  /* Shimmer overlay used while a SurfaceImage is loading. Layered on top
+     of .court-fallback so the painted lines remain visible underneath. */
+  .court-skeleton::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      hsl(0 0% 100% / 0) 20%,
+      hsl(0 0% 100% / 0.18) 50%,
+      hsl(0 0% 100% / 0) 80%
+    );
+    background-size: 220% 100%;
+    animation: court-shimmer 1.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes court-shimmer {
+    0%   { background-position: 120% 0; }
+    100% { background-position: -20% 0; }
+  }
+
   .court-surface {
     background:
       radial-gradient(ellipse at 50% 0%, hsl(var(--primary) / 0.18), transparent 60%),
