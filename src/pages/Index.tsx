@@ -22,6 +22,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useRef } from "react";
+import surfaceClay from "@/assets/surface-clay.jpg";
+import surfaceGrass from "@/assets/surface-grass.jpg";
+import surfaceHard from "@/assets/surface-hard.jpg";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
@@ -63,9 +66,9 @@ const stats = [
 ];
 
 const surfaces = [
-  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style" },
-  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style" },
-  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style" },
+  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style", image: surfaceClay },
+  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style", image: surfaceGrass },
+  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style", image: surfaceHard },
 ];
 
 const workflow = [
