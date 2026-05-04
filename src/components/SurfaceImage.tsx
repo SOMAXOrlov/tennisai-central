@@ -38,12 +38,12 @@ export function SurfaceImage({
         role="img"
         aria-label={`${name} tennis court surface`}
         className={cn(
-          "flex h-full w-full items-center justify-center court-lines",
+          "court-fallback flex h-full w-full items-center justify-center",
           className,
         )}
-        style={{ background: color }}
+        style={{ backgroundColor: color }}
       >
-        <span className="rounded-full bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-foreground backdrop-blur">
+        <span className="relative z-10 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-foreground shadow-sm backdrop-blur">
           {name}
         </span>
       </div>
