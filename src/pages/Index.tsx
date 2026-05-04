@@ -25,6 +25,7 @@ import { useRef } from "react";
 import surfaceClay from "@/assets/surface-clay.jpg";
 import surfaceGrass from "@/assets/surface-grass.jpg";
 import surfaceHard from "@/assets/surface-hard.jpg";
+import { SurfaceImage } from "@/components/SurfaceImage";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
@@ -310,13 +311,11 @@ const Index = () => {
                 className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
+                  <SurfaceImage
                     src={s.image}
-                    alt={`${s.name} tennis court surface`}
-                    loading="lazy"
-                    width={768}
-                    height={576}
-                    className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
+                    name={s.name}
+                    color={s.color}
+                    className="transition-transform duration-[1200ms] ease-out group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/20 to-transparent" />
                   <span
