@@ -22,6 +22,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useRef } from "react";
+import surfaceClay from "@/assets/surface-clay.jpg";
+import surfaceGrass from "@/assets/surface-grass.jpg";
+import surfaceHard from "@/assets/surface-hard.jpg";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
@@ -63,9 +66,9 @@ const stats = [
 ];
 
 const surfaces = [
-  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style" },
-  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style" },
-  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style" },
+  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style", image: surfaceClay },
+  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style", image: surfaceGrass },
+  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style", image: surfaceHard },
 ];
 
 const workflow = [
@@ -282,27 +285,56 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* ─────────── Logo / surface marquee ─────────── */}
-      <section className="relative z-10 border-y border-border bg-card/60 py-6 backdrop-blur">
+      {/* ─────────── Surface showcase ─────────── */}
+      <section className="relative z-10 border-y border-border bg-card/60 py-14 backdrop-blur">
         <div className="container">
-          <div className="flex items-center gap-6 overflow-hidden">
-            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-              Built for every surface
-            </span>
-            <div className="relative flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)]">
-              <div className="flex w-max animate-marquee gap-10 pr-10">
-                {[...surfaces, ...surfaces, ...surfaces, ...surfaces].map((s, i) => (
-                  <div key={i} className="flex shrink-0 items-center gap-3">
+          <div className="mb-8 flex items-end justify-between gap-6">
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                Built for every surface
+              </span>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Clay, grass, hard — one platform.
+              </h2>
+            </div>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {surfaces.map((s, i) => (
+              <motion.div
+                key={s.name}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-80px" }}
+                custom={i}
+                variants={fade}
+                className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={s.image}
+                    alt={`${s.name} tennis court surface`}
+                    loading="lazy"
+                    width={768}
+                    height={576}
+                    className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/20 to-transparent" />
+                  <span
+                    className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-foreground backdrop-blur"
+                  >
                     <span
-                      className="h-2.5 w-2.5 rounded-full ring-2 ring-background"
+                      className="h-2 w-2 rounded-full"
                       style={{ background: s.color }}
                     />
-                    <span className="text-sm font-medium text-foreground">{s.name}</span>
-                    <span className="text-xs text-muted-foreground">{s.desc}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    {s.name}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <p className="text-base font-semibold text-foreground">{s.name} courts</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
