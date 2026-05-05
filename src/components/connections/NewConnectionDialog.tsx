@@ -21,6 +21,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import type { UserRole } from "@/types";
+import type { SendResult } from "@/store/ConnectionStore";
 
 // ─── Role labels ───
 
@@ -70,7 +71,7 @@ function getIdPlaceholder(role: UserRole): string {
 interface NewConnectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRequestSent: (entry: DirectoryEntry) => void;
+  onRequestSent: (entry: DirectoryEntry) => SendResult | void;
 }
 
 export function NewConnectionDialog({
@@ -134,7 +135,11 @@ export function NewConnectionDialog({
 
   const handleSendRequest = () => {
     if (!lookupResult) return;
-    onRequestSent(lookupResult);
+    const res = onRequestSent(lookupResult);
+    if (res && "ok" in res && !res.ok) {
+      setError(res.reason);
+      return;
+    }
     setSent(true);
   };
 
