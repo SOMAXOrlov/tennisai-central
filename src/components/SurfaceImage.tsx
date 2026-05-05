@@ -19,6 +19,48 @@ interface SurfaceImageProps {
 /**
  * Responsive court-surface image with lazy-loading and a graceful
  * CSS-only fallback (tinted court-line pattern) when the asset fails.
+ *
+ * ## Aspect ratio
+ *
+ * The wrapper applies an intrinsic `aspect-ratio` derived from the
+ * `width` / `height` props (defaults to 768×576 → 4/3) so space is
+ * reserved before the image loads — preventing CLS at every breakpoint.
+ *
+ * To override the ratio, choose ONE of these approaches:
+ *
+ * 1. **Parent-driven ratio** (recommended for grids):
+ *    Wrap `<SurfaceImage />` in a parent with a Tailwind aspect class
+ *    and let it stretch to fill. The inner wrapper's intrinsic ratio
+ *    is harmlessly overridden because it sizes to `h-full w-full`.
+ *
+ *    ```tsx
+ *    <div className="aspect-[4/3] overflow-hidden rounded-xl">
+ *      <SurfaceImage src={clay} name="Clay" color="hsl(var(--court-clay))" />
+ *    </div>
+ *    ```
+ *
+ * 2. **Custom intrinsic dimensions**:
+ *    Pass `width` / `height` to set both the rendered `<img>` size hints
+ *    and the wrapper's `aspect-ratio` (e.g. 16:9 banner).
+ *
+ *    ```tsx
+ *    <SurfaceImage
+ *      src={grass}
+ *      name="Grass"
+ *      color="hsl(var(--court-grass))"
+ *      width={1920}
+ *      height={1080}
+ *      eager
+ *      sizes="100vw"
+ *    />
+ *    ```
+ *
+ * 3. **Above-the-fold hero**:
+ *    Set `eager` to skip lazy-loading and bump fetch priority.
+ *
+ *    ```tsx
+ *    <SurfaceImage src={hard} name="Hard" color="hsl(var(--court-hard))" eager />
+ *    ```
  */
 export function SurfaceImage({
   src,
