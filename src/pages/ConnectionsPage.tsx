@@ -7,6 +7,7 @@ import { NewConnectionDialog } from "@/components/connections/NewConnectionDialo
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -213,7 +214,21 @@ export default function ConnectionsPage() {
             ) : (
               <div className="space-y-3">
                 {incoming.map((req) => (
-                  <RequestRow key={req.id} req={req} perspective="received" onApprove={(id) => updateStatus(id, "active")} onReject={(id) => updateStatus(id, "rejected")} />
+              <RequestRow
+                key={req.id}
+                req={req}
+                perspective="received"
+                onApprove={(id) => {
+                  const res = updateStatus(id, "active");
+                  if (res.ok) toast({ title: "Connection approved" });
+                  else toast({ title: "Could not approve", description: res.reason, variant: "destructive" });
+                }}
+                onReject={(id) => {
+                  const res = updateStatus(id, "rejected");
+                  if (res.ok) toast({ title: "Request rejected" });
+                  else toast({ title: "Could not reject", description: res.reason, variant: "destructive" });
+                }}
+              />
                 ))}
               </div>
             )}
@@ -241,7 +256,16 @@ export default function ConnectionsPage() {
             ) : (
               <div className="space-y-3">
                 {active.map((req) => (
-                  <RequestRow key={req.id} req={req} perspective={req.fromUserId === userId ? "sent" : "received"} onRevoke={revokeRelationship} />
+                  <RequestRow
+                    key={req.id}
+                    req={req}
+                    perspective={req.fromUserId === userId ? "sent" : "received"}
+                    onRevoke={(id) => {
+                      const res = revokeRelationship(id);
+                      if (res.ok) toast({ title: "Connection revoked" });
+                      else toast({ title: "Could not revoke", description: res.reason, variant: "destructive" });
+                    }}
+                  />
                 ))}
               </div>
             )}
