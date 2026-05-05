@@ -7,7 +7,7 @@ import { DIRECTORY, type DirectoryEntry } from "@/mock/directory";
 // ─── Types ───
 
 export type SendResult =
-  | { ok: true; request: ConnectionRequest }
+  | { ok: true; request: ConnectionRequest; reason?: undefined }
   | { ok: false; reason: string };
 
 export type ApprovalResult =
