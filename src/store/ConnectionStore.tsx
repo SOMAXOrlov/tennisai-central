@@ -11,7 +11,7 @@ export type SendResult =
   | { ok: false; reason: string };
 
 export type ApprovalResult =
-  | { ok: true }
+  | { ok: true; reason?: undefined }
   | { ok: false; reason: string };
 
 interface ConnectionStore {
