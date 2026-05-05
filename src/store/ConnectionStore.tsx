@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
 import { useAuth } from "@/auth/AuthContext";
-import { mockConnectionRequests, mockConnectedPlayers as seedConnectedPlayers } from "@/mock/data";
+import { mockConnectionRequests } from "@/mock/data";
 import type { ConnectionRequest, RelationshipStatus, ConnectedPlayer, UserRole } from "@/types";
-import type { DirectoryEntry } from "@/mock/directory";
+import { DIRECTORY, type DirectoryEntry } from "@/mock/directory";
 
 // ─── Types ───
 
@@ -20,21 +20,33 @@ interface ConnectionStore {
 
 const ConnectionContext = createContext<ConnectionStore | null>(null);
 
-// ─── Seed data: pre-active connected players for coach c1 ───
+// ─── Seed data ───
+// Every player ↔ every coach is pre-connected and fully active so that
+// whichever demo account logs in (player or coach) sees the full set of
+// counterpart relationships already approved on both sides.
 
-function buildSeedRequests(coachId: string): ConnectionRequest[] {
-  return seedConnectedPlayers.map((p, i) => ({
-    id: `seed-cr-${i}`,
-    fromUserId: coachId,
-    fromUserName: "Jordan Smith",
-    fromUserRole: "coach" as UserRole,
-    toUserId: p.id,
-    toUserName: `${p.firstName} ${p.lastName}`,
-    toUserRole: "player" as UserRole,
-    status: "active" as RelationshipStatus,
-    createdAt: p.connectedSince,
-    updatedAt: p.connectedSince,
-  }));
+function buildSeedRequests(): ConnectionRequest[] {
+  const coaches = DIRECTORY.filter((u) => u.role === "coach");
+  const players = DIRECTORY.filter((u) => u.role === "player");
+  const seedDate = "2025-01-15T00:00:00Z";
+  const out: ConnectionRequest[] = [];
+  for (const coach of coaches) {
+    for (const player of players) {
+      out.push({
+        id: `seed-cr-${coach.id}-${player.id}`,
+        fromUserId: coach.id,
+        fromUserName: `${coach.firstName} ${coach.lastName}`,
+        fromUserRole: "coach" as UserRole,
+        toUserId: player.id,
+        toUserName: `${player.firstName} ${player.lastName}`,
+        toUserRole: "player" as UserRole,
+        status: "active" as RelationshipStatus,
+        createdAt: seedDate,
+        updatedAt: seedDate,
+      });
+    }
+  }
+  return out;
 }
 
 // ─── Provider ───
@@ -44,7 +56,7 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
   const userId = user?.id ?? "";
 
   const [requests, setRequests] = useState<ConnectionRequest[]>(() => [
-    ...buildSeedRequests("c1"),
+    ...buildSeedRequests(),
     ...mockConnectionRequests,
   ]);
 
