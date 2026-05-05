@@ -32,6 +32,11 @@ export function SurfaceImage({
 }: SurfaceImageProps) {
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Intrinsic aspect ratio derived from width/height so the wrapper
+  // reserves space even when a parent doesn't constrain height. This
+  // prevents CLS at every breakpoint while still allowing a parent
+  // (e.g. `aspect-[4/3]`) to override via `h-full`.
+  const aspectRatio = `${width} / ${height}`;
 
   if (failed) {
     return (
@@ -42,7 +47,7 @@ export function SurfaceImage({
           "court-fallback flex h-full w-full items-center justify-center",
           className,
         )}
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: color, aspectRatio }}
       >
         <span className="relative z-10 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-foreground shadow-sm backdrop-blur">
           {name}
@@ -52,7 +57,10 @@ export function SurfaceImage({
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={{ aspectRatio }}
+    >
       {/* Themed skeleton: tinted court color + painted lines + shimmer.
           Sits behind the image and fades out once loaded. */}
       <div
