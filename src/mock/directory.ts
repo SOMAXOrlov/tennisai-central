@@ -14,7 +14,7 @@ export interface DirectoryEntry {
 }
 
 // All discoverable users in the platform
-const DIRECTORY: DirectoryEntry[] = [
+export const DIRECTORY: DirectoryEntry[] = [
   // Players
   { id: "p1", publicId: "TAI-P-001", firstName: "Alex", lastName: "Rivera", role: "player" },
   { id: "p2", publicId: "TAI-P-002", firstName: "Sam", lastName: "Chen", role: "player" },
