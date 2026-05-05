@@ -6,16 +6,34 @@ import { DIRECTORY, type DirectoryEntry } from "@/mock/directory";
 
 // ─── Types ───
 
+export type SendResult =
+  | { ok: true; request: ConnectionRequest }
+  | { ok: false; reason: string };
+
+export type ApprovalResult =
+  | { ok: true }
+  | { ok: false; reason: string };
+
 interface ConnectionStore {
   requests: ConnectionRequest[];
   /** Players with active (approved) relationship to the current user */
   connectedPlayers: ConnectedPlayer[];
   /** All active relationships (including non-player connections) */
   activeRelationships: ConnectionRequest[];
-  sendRequest: (entry: DirectoryEntry) => void;
-  updateStatus: (id: string, status: RelationshipStatus) => void;
+  /**
+   * Send a new connection request. Rejects duplicates: an existing
+   * pending request OR an already-active relationship between the
+   * same two users (regardless of direction) blocks creation.
+   */
+  sendRequest: (entry: DirectoryEntry) => SendResult;
+  /**
+   * Transition a pending request. Only `pending → active` or
+   * `pending → rejected` are valid. Other transitions are no-ops
+   * and return `{ ok: false }`.
+   */
+  updateStatus: (id: string, status: RelationshipStatus) => ApprovalResult;
   /** Revoke an active relationship */
-  revokeRelationship: (id: string) => void;
+  revokeRelationship: (id: string) => ApprovalResult;
 }
 
 const ConnectionContext = createContext<ConnectionStore | null>(null);
@@ -61,8 +79,24 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
   ]);
 
   const sendRequest = useCallback(
-    (entry: DirectoryEntry) => {
-      if (!user) return;
+    (entry: DirectoryEntry): SendResult => {
+      if (!user) return { ok: false, reason: "You must be signed in." };
+      if (entry.id === userId) {
+        return { ok: false, reason: "You cannot connect with yourself." };
+      }
+      // Duplicate guard — any active or pending request between the
+      // same two users (either direction) blocks a new one.
+      const between = (a: string, b: string) => (r: ConnectionRequest) =>
+        (r.fromUserId === a && r.toUserId === b) ||
+        (r.fromUserId === b && r.toUserId === a);
+      const existing = requests.find(between(userId, entry.id));
+      if (existing?.status === "active") {
+        return { ok: false, reason: "You're already connected with this user." };
+      }
+      if (existing?.status === "pending") {
+        return { ok: false, reason: "A pending request already exists between you." };
+      }
+      const now = new Date().toISOString();
       const newReq: ConnectionRequest = {
         id: `cr-${Date.now()}`,
         fromUserId: userId,
@@ -72,31 +106,60 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
         toUserName: `${entry.firstName} ${entry.lastName}`,
         toUserRole: entry.role,
         status: "pending",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       };
       setRequests((prev) => [newReq, ...prev]);
+      return { ok: true, request: newReq };
     },
-    [user, userId]
+    [user, userId, requests]
   );
 
-  const updateStatus = useCallback((id: string, status: RelationshipStatus) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
-      )
-    );
-  }, []);
+  const updateStatus = useCallback(
+    (id: string, status: RelationshipStatus): ApprovalResult => {
+      const target = requests.find((r) => r.id === id);
+      if (!target) return { ok: false, reason: "Request not found." };
+      // Only the recipient may approve/reject.
+      if (target.toUserId !== userId) {
+        return { ok: false, reason: "Only the recipient can act on this request." };
+      }
+      if (target.status !== "pending") {
+        return { ok: false, reason: `Request is already ${target.status}.` };
+      }
+      if (status !== "active" && status !== "rejected") {
+        return { ok: false, reason: "Invalid status transition." };
+      }
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
+        )
+      );
+      return { ok: true };
+    },
+    [requests, userId]
+  );
 
-  const revokeRelationship = useCallback((id: string) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === id && r.status === "active"
-          ? { ...r, status: "revoked" as RelationshipStatus, updatedAt: new Date().toISOString() }
-          : r
-      )
-    );
-  }, []);
+  const revokeRelationship = useCallback(
+    (id: string): ApprovalResult => {
+      const target = requests.find((r) => r.id === id);
+      if (!target) return { ok: false, reason: "Relationship not found." };
+      if (target.status !== "active") {
+        return { ok: false, reason: "Only active relationships can be revoked." };
+      }
+      if (target.fromUserId !== userId && target.toUserId !== userId) {
+        return { ok: false, reason: "You are not part of this relationship." };
+      }
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === id
+            ? { ...r, status: "revoked" as RelationshipStatus, updatedAt: new Date().toISOString() }
+            : r
+        )
+      );
+      return { ok: true };
+    },
+    [requests, userId]
+  );
 
   // Active relationships involving current user
   const activeRelationships = useMemo(
