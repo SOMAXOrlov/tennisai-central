@@ -188,13 +188,19 @@ describe("ConnectionsPage integration", () => {
     __setMockUser(asUser(COACH));
     const { apiRef } = renderPage();
 
-    // Coach sends to observer
-    const sendRes = apiRef.current!.sendRequest(OBSERVER);
+    // Coach sends to observer (wrap so React flushes & apiRef refreshes)
+    let sendRes!: SendResult;
+    act(() => {
+      sendRes = apiRef.current!.sendRequest(OBSERVER);
+    });
     expect(sendRes.ok).toBe(true);
     const reqId = sendRes.ok ? sendRes.request.id : "";
 
     // Still viewing as coach (sender) — try to approve their own outbound
-    const res: ApprovalResult = apiRef.current!.updateStatus(reqId, "active");
+    let res!: ApprovalResult;
+    act(() => {
+      res = apiRef.current!.updateStatus(reqId, "active");
+    });
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.reason).toMatch(/recipient/i);
   });
@@ -206,10 +212,16 @@ describe("ConnectionsPage integration", () => {
     const active = apiRef.current!.activeRelationships[0];
     expect(active).toBeTruthy();
 
-    const first = apiRef.current!.revokeRelationship(active.id);
+    let first!: ApprovalResult;
+    act(() => {
+      first = apiRef.current!.revokeRelationship(active.id);
+    });
     expect(first.ok).toBe(true);
 
-    const second = apiRef.current!.revokeRelationship(active.id);
+    let second!: ApprovalResult;
+    act(() => {
+      second = apiRef.current!.revokeRelationship(active.id);
+    });
     expect(second.ok).toBe(false);
     if (!second.ok) expect(second.reason).toMatch(/active relationships/i);
   });
