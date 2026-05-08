@@ -30,7 +30,7 @@ function formatDate(iso: string) {
 
 // ─── Request Row ───
 
-function RequestRow({
+export function RequestRow({
   req,
   perspective,
   currentUserId,
