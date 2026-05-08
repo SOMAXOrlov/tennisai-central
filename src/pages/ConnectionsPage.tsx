@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -32,12 +33,14 @@ function formatDate(iso: string) {
 function RequestRow({
   req,
   perspective,
+  currentUserId,
   onApprove,
   onReject,
   onRevoke,
 }: {
   req: { id: string; fromUserId: string; fromUserName: string; fromUserRole: string; toUserId: string; toUserName: string; toUserRole: string; status: RelationshipStatus; createdAt: string };
   perspective: "sent" | "received";
+  currentUserId: string;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;
   onRevoke?: (id: string) => void;
@@ -47,6 +50,10 @@ function RequestRow({
   const role = isSent ? req.toUserRole : req.fromUserRole;
   const isPending = req.status === "pending";
   const isActive = req.status === "active";
+  const isRecipient = req.toUserId === currentUserId;
+  const isParticipant = req.fromUserId === currentUserId || req.toUserId === currentUserId;
+  const canDecide = isPending && isRecipient;
+  const canRevoke = isActive && isParticipant;
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/30">
@@ -63,31 +70,78 @@ function RequestRow({
           <span>{isSent ? "Sent" : "Received"} {formatDate(req.createdAt)}</span>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {isPending && !isSent && onApprove && onReject ? (
-          <>
-            <Button size="sm" variant="outline" className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => onApprove(req.id)}>
-              <Check className="h-3.5 w-3.5" /> Approve
-            </Button>
-            <Button size="sm" variant="outline" className="h-8 gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => onReject(req.id)}>
-              <X className="h-3.5 w-3.5" /> Reject
-            </Button>
-          </>
-        ) : isPending && isSent ? (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" /> Awaiting response
-          </div>
-        ) : isActive && onRevoke ? (
-          <div className="flex items-center gap-2">
-            <StatusBadge status="active" />
-            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => onRevoke(req.id)}>
-              <Unlink className="h-3.5 w-3.5" /> Revoke
-            </Button>
-          </div>
-        ) : (
-          <StatusBadge status={req.status} />
-        )}
-      </div>
+      <TooltipProvider delayDuration={150}>
+        <div className="flex items-center gap-2">
+          {isPending && !isSent && onApprove && onReject ? (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!canDecide}
+                      className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => canDecide && onApprove(req.id)}
+                    >
+                      <Check className="h-3.5 w-3.5" /> Approve
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!canDecide && (
+                  <TooltipContent>Only the recipient can approve while pending.</TooltipContent>
+                )}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!canDecide}
+                      className="h-8 gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
+                      onClick={() => canDecide && onReject(req.id)}
+                    >
+                      <X className="h-3.5 w-3.5" /> Reject
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!canDecide && (
+                  <TooltipContent>Only the recipient can reject while pending.</TooltipContent>
+                )}
+              </Tooltip>
+            </>
+          ) : isPending && isSent ? (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" /> Awaiting response
+            </div>
+          ) : isActive && onRevoke ? (
+            <div className="flex items-center gap-2">
+              <StatusBadge status="active" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!canRevoke}
+                      className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => canRevoke && onRevoke(req.id)}
+                    >
+                      <Unlink className="h-3.5 w-3.5" /> Revoke
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!canRevoke && (
+                  <TooltipContent>Only an active participant can revoke this connection.</TooltipContent>
+                )}
+              </Tooltip>
+            </div>
+          ) : (
+            <StatusBadge status={req.status} />
+          )}
+        </div>
+      </TooltipProvider>
     </div>
   );
 }
@@ -218,6 +272,7 @@ export default function ConnectionsPage() {
                 key={req.id}
                 req={req}
                 perspective="received"
+                currentUserId={userId}
                 onApprove={(id) => {
                   const res = updateStatus(id, "active");
                   if (res.ok) toast({ title: "Connection approved" });
@@ -242,7 +297,7 @@ export default function ConnectionsPage() {
             ) : (
               <div className="space-y-3">
                 {sent.map((req) => (
-                  <RequestRow key={req.id} req={req} perspective="sent" />
+                  <RequestRow key={req.id} req={req} perspective="sent" currentUserId={userId} />
                 ))}
               </div>
             )}
@@ -260,6 +315,7 @@ export default function ConnectionsPage() {
                     key={req.id}
                     req={req}
                     perspective={req.fromUserId === userId ? "sent" : "received"}
+                    currentUserId={userId}
                     onRevoke={(id) => {
                       const res = revokeRelationship(id);
                       if (res.ok) toast({ title: "Connection revoked" });
@@ -279,7 +335,7 @@ export default function ConnectionsPage() {
             ) : (
               <div className="space-y-3">
                 {[...revoked, ...rejected].map((req) => (
-                  <RequestRow key={req.id} req={req} perspective={req.fromUserId === userId ? "sent" : "received"} />
+                  <RequestRow key={req.id} req={req} perspective={req.fromUserId === userId ? "sent" : "received"} currentUserId={userId} />
                 ))}
               </div>
             )}
