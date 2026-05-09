@@ -4,10 +4,10 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // ─── Mock the typed REST client BEFORE importing the store ──────────────────
-const sendMock = vi.fn(async () => ({ data: null }));
-const updateStatusMock = vi.fn(async () => ({ data: null }));
-const revokeMock = vi.fn(async () => ({ data: null }));
-const listMock = vi.fn(async () => ({ data: [] }));
+const sendMock = vi.fn<any[], Promise<any>>(async () => ({ data: null }));
+const updateStatusMock = vi.fn<any[], Promise<any>>(async () => ({ data: null }));
+const revokeMock = vi.fn<any[], Promise<any>>(async () => ({ data: null }));
+const listMock = vi.fn<any[], Promise<any>>(async () => ({ data: [] }));
 
 vi.mock("@/api/endpoints/connections", () => ({
   USE_MOCK_CONNECTIONS: true,
