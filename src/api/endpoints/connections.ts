@@ -16,6 +16,14 @@ import { apiClient } from "@/api/client";
 /** When true, network calls are skipped and a synthetic success is returned. */
 export const USE_MOCK_CONNECTIONS = true;
 
+/**
+ * Dynamic mock-mode check so tests can flip behaviour at runtime via
+ * `vi.stubEnv("VITE_USE_MOCK_CONNECTIONS", "false")`. Defaults to mock mode
+ * unless the env var is explicitly set to the string "false".
+ */
+export const isMockMode = (): boolean =>
+  import.meta.env.VITE_USE_MOCK_CONNECTIONS !== "false";
+
 export interface SendRequestPayload {
   toUserId: string;
   toPublicId: string;
@@ -28,7 +36,7 @@ export interface UpdateStatusPayload {
 export const connectionsApi = {
   /** GET /connections — list every request involving the current user */
   async list(): Promise<ApiResponse<ConnectionRequest[]>> {
-    if (USE_MOCK_CONNECTIONS) return { data: [] };
+    if (isMockMode()) return { data: [] };
     return apiClient.get<ApiResponse<ConnectionRequest[]>>("/connections");
   },
 
@@ -36,7 +44,7 @@ export const connectionsApi = {
   async send(
     payload: SendRequestPayload
   ): Promise<ApiResponse<ConnectionRequest | null>> {
-    if (USE_MOCK_CONNECTIONS) return { data: null };
+    if (isMockMode()) return { data: null };
     return apiClient.post<ApiResponse<ConnectionRequest>>(
       "/connections",
       payload
@@ -48,7 +56,7 @@ export const connectionsApi = {
     id: string,
     payload: UpdateStatusPayload
   ): Promise<ApiResponse<ConnectionRequest | null>> {
-    if (USE_MOCK_CONNECTIONS) return { data: null };
+    if (isMockMode()) return { data: null };
     return apiClient.patch<ApiResponse<ConnectionRequest>>(
       `/connections/${id}`,
       payload
@@ -57,7 +65,7 @@ export const connectionsApi = {
 
   /** DELETE /connections/:id — revoke an active relationship */
   async revoke(id: string): Promise<ApiResponse<null>> {
-    if (USE_MOCK_CONNECTIONS) return { data: null };
+    if (isMockMode()) return { data: null };
     return apiClient.delete<ApiResponse<null>>(`/connections/${id}`);
   },
 };
