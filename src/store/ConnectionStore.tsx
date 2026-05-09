@@ -3,6 +3,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { mockConnectionRequests } from "@/mock/data";
 import type { ConnectionRequest, RelationshipStatus, ConnectedPlayer, UserRole } from "@/types";
 import { DIRECTORY, type DirectoryEntry } from "@/mock/directory";
+import { connectionsApi } from "@/api/endpoints/connections";
 
 // ─── Types ───
 
@@ -110,6 +111,13 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
         updatedAt: now,
       };
       setRequests((prev) => [newReq, ...prev]);
+      // Fire-and-forget: notify backend. In mock mode this resolves to a
+      // synthetic success; in real mode the request is observable in tests.
+      void connectionsApi
+        .send({ toUserId: entry.id, toPublicId: entry.publicId })
+        .catch(() => {
+          /* Local state remains authoritative for the mock build. */
+        });
       return { ok: true, request: newReq };
     },
     [user, userId, requests]
@@ -134,6 +142,11 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
           r.id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
         )
       );
+      void connectionsApi
+        .updateStatus(id, { status: status as "active" | "rejected" })
+        .catch(() => {
+          /* ignore — local state is authoritative in mock mode */
+        });
       return { ok: true };
     },
     [requests, userId]
@@ -156,6 +169,9 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
             : r
         )
       );
+      void connectionsApi.revoke(id).catch(() => {
+        /* ignore — local state is authoritative in mock mode */
+      });
       return { ok: true };
     },
     [requests, userId]
