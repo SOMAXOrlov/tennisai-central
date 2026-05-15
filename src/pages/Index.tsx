@@ -182,15 +182,17 @@ const Index = () => {
           className="pointer-events-none absolute right-[-120px] top-1/3 h-[380px] w-[380px] rounded-full bg-[hsl(var(--tennis-ball))]/10 blur-[140px]"
         />
 
-        {/* Court diagram on the right */}
-        <div className="pointer-events-none absolute right-[-40px] top-1/2 hidden h-[720px] -translate-y-1/2 opacity-60 lg:block xl:right-8 xl:opacity-90">
+        {/* Court diagram + vertical rally — top-left of the hero */}
+        <div className="pointer-events-none absolute left-[-40px] top-16 hidden h-[640px] w-[380px] opacity-90 lg:block xl:left-8">
           <motion.div
-            initial={{ opacity: 0, x: 60 }}
+            initial={{ opacity: 0, x: -60 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full w-[420px]"
+            className="relative h-full w-full"
           >
             <CourtDiagram />
+            {/* Vertical 3D rally laid over the court */}
+            <TennisRallyScene className="absolute inset-0 h-full w-full" />
           </motion.div>
         </div>
 
@@ -199,7 +201,9 @@ const Index = () => {
           className="container relative flex min-h-screen flex-col justify-center py-28"
         >
           <div className="grid items-center gap-12 lg:grid-cols-12">
-            <div className="lg:col-span-7">
+            {/* Text column — pushed to the right on desktop so the
+                top-left court + 3D rally has room to breathe. */}
+            <div className="lg:col-span-7 lg:col-start-6">
               {/* Badge */}
               <motion.div initial="hidden" animate="visible" variants={fade} custom={0}>
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-medium text-primary backdrop-blur-sm">
@@ -289,15 +293,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* 3D rally scene — desktop (full-width banner near bottom of hero) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute inset-x-0 bottom-24 hidden lg:block"
-          >
-            <TennisRallyScene className="mx-auto h-64 w-full max-w-5xl" />
-          </motion.div>
+          {/* (Desktop rally is overlaid on the top-left court above.) */}
 
           {/* Scroll cue */}
           <motion.div
