@@ -122,14 +122,14 @@ function CourtDiagram() {
   // Outer doubles court 36×78ft → drawn 360×560 with 20px margin.
   // Singles sidelines inset by doubles alley (4.5ft → ~22.5px).
   // Service line 21ft from net → ~42.5% from net to baseline.
-  const L = "hsl(0 0% 100% / 0.92)"; // court line color
+  const L = "hsl(0 0% 100%)"; // court line color (fully opaque for visibility)
   return (
     <svg viewBox="0 0 400 620" className="h-full w-full" aria-hidden role="img">
       <defs>
         <linearGradient id="courtFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
-          <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.06" />
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.65" />
+          <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
         </linearGradient>
         <linearGradient id="courtSurround" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.06" />
@@ -147,23 +147,23 @@ function CourtDiagram() {
       <rect
         x="20" y="30" width="360" height="560" rx="4"
         fill="url(#courtFill)"
-        stroke={L} strokeWidth="2.5"
+        stroke={L} strokeWidth="3.5"
       />
 
       {/* Singles sidelines (inset by doubles alley) */}
-      <line x1="62.5" y1="30" x2="62.5" y2="590" stroke={L} strokeWidth="1.8" />
-      <line x1="337.5" y1="30" x2="337.5" y2="590" stroke={L} strokeWidth="1.8" />
+      <line x1="62.5" y1="30" x2="62.5" y2="590" stroke={L} strokeWidth="2.5" />
+      <line x1="337.5" y1="30" x2="337.5" y2="590" stroke={L} strokeWidth="2.5" />
 
       {/* Service lines (21ft from net) */}
-      <line x1="62.5" y1="190" x2="337.5" y2="190" stroke={L} strokeWidth="1.8" />
-      <line x1="62.5" y1="430" x2="337.5" y2="430" stroke={L} strokeWidth="1.8" />
+      <line x1="62.5" y1="190" x2="337.5" y2="190" stroke={L} strokeWidth="2.5" />
+      <line x1="62.5" y1="430" x2="337.5" y2="430" stroke={L} strokeWidth="2.5" />
 
       {/* Center service line (between service boxes only) */}
-      <line x1="200" y1="190" x2="200" y2="430" stroke={L} strokeWidth="1.8" />
+      <line x1="200" y1="190" x2="200" y2="430" stroke={L} strokeWidth="2.5" />
 
       {/* Center marks on baselines */}
-      <line x1="200" y1="30" x2="200" y2="38" stroke={L} strokeWidth="2" strokeLinecap="round" />
-      <line x1="200" y1="582" x2="200" y2="590" stroke={L} strokeWidth="2" strokeLinecap="round" />
+      <line x1="200" y1="30" x2="200" y2="40" stroke={L} strokeWidth="3" strokeLinecap="round" />
+      <line x1="200" y1="580" x2="200" y2="590" stroke={L} strokeWidth="3" strokeLinecap="round" />
 
       {/* Net cord band */}
       <rect x="10" y="307" width="380" height="6" fill="url(#netMesh)" opacity="0.85" />
