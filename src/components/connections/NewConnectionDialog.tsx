@@ -21,6 +21,7 @@ import {
   ArrowRight,
   Ban,
   Sparkles,
+  CornerDownLeft,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { SendResult } from "@/store/ConnectionStore";
@@ -101,6 +102,7 @@ export function NewConnectionDialog({
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [suggestedPrefix, setSuggestedPrefix] = useState<string | null>(null);
 
   const reset = () => {
     setPublicId("");
@@ -109,6 +111,7 @@ export function NewConnectionDialog({
     setRoleMismatch(null);
     setLoading(false);
     setSent(false);
+    setSuggestedPrefix(null);
   };
 
   const handleClose = (v: boolean) => {
@@ -190,7 +193,13 @@ export function NewConnectionDialog({
           </div>
         ) : (
           /* ─── Lookup form ─── */
-          <div className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLookup();
+            }}
+          >
             {/* ID Input */}
             <div className="space-y-2">
               <Label htmlFor="publicId">Public ID</Label>
@@ -206,14 +215,14 @@ export function NewConnectionDialog({
                       setError("");
                     setRoleMismatch(null);
                       setLookupResult(null);
+                      setSuggestedPrefix(null);
                     }}
-                    onKeyDown={(e) => e.key === "Enter" && handleLookup()}
                     placeholder={getIdPlaceholder(myRole)}
                     className="pl-9 font-mono"
                   />
                 </div>
                 <Button
-                  onClick={handleLookup}
+                  type="submit"
                   disabled={!publicId.trim() || loading}
                   variant="outline"
                 >
@@ -224,6 +233,16 @@ export function NewConnectionDialog({
                   )}
                 </Button>
               </div>
+              {suggestedPrefix && publicId === suggestedPrefix && (
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CornerDownLeft className="h-3 w-3" />
+                  Type the rest of the ID, then press
+                  <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-foreground">
+                    Enter
+                  </kbd>
+                  to search.
+                </p>
+              )}
             </div>
 
             {/* Error */}
