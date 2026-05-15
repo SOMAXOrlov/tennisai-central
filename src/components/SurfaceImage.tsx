@@ -14,6 +14,17 @@ interface SurfaceImageProps {
   height?: number;
   /** Set true for above-the-fold images to skip lazy loading. */
   eager?: boolean;
+  /**
+   * CSS color for the painted court-line overlay. Defaults to white. Pass
+   * a per-surface tint (slightly warm white for clay, cool white for grass,
+   * etc.) so the lines feel painted-on rather than drawn over the photo.
+   */
+  lineColor?: string;
+  /**
+   * Opacity for the line overlay (0–1). Lower values on high-contrast
+   * surfaces (clay) prevent the markings from looking overdrawn.
+   */
+  lineOpacity?: number;
 }
 
 /**
@@ -71,6 +82,8 @@ export function SurfaceImage({
   width = 768,
   height = 576,
   eager = false,
+  lineColor = "hsl(0 0% 100%)",
+  lineOpacity = 0.92,
 }: SurfaceImageProps) {
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -138,10 +151,11 @@ export function SurfaceImage({
         viewBox="0 0 400 300"
         preserveAspectRatio="xMidYMid slice"
         className="pointer-events-none absolute inset-0 h-full w-full"
+        style={{ opacity: lineOpacity }}
       >
         <g
           fill="none"
-          stroke="hsl(0 0% 100%)"
+          stroke={lineColor}
           strokeWidth={2.6}
           strokeLinecap="square"
           strokeLinejoin="miter"
