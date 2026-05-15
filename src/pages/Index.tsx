@@ -129,34 +129,54 @@ function TennisBall({ className = "" }: { className?: string }) {
         {/* Rim darkening for roundness */}
         <circle cx="50" cy="50" r="46" fill="url(#ballRim)" />
 
-        {/* Curved white seams — two mirrored S-curves wrapping the sphere */}
-        <path
-          d="M 8 46 C 28 30, 72 30, 92 46"
-          fill="none"
-          stroke="hsl(0 0% 100% / 0.95)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M 8 54 C 28 70, 72 70, 92 54"
-          fill="none"
-          stroke="hsl(0 0% 100% / 0.95)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-        {/* Subtle seam shadow for depth */}
-        <path
-          d="M 8 47.5 C 28 31.5, 72 31.5, 92 47.5"
-          fill="none"
-          stroke="hsl(70 60% 25% / 0.35)"
-          strokeWidth="1"
-        />
-        <path
-          d="M 8 55.5 C 28 71.5, 72 71.5, 92 55.5"
-          fill="none"
-          stroke="hsl(70 60% 25% / 0.35)"
-          strokeWidth="1"
-        />
+        {/* Authentic seam — single tilted "leaf" curve across the visible
+            face, plus the back-side seam wrapping at the opposite edges. */}
+        <g transform="rotate(-18 50 50)">
+          {/* Front seam: two arcs meeting at the same endpoints */}
+          <path
+            d="M 14 50 C 30 22, 70 22, 86 50"
+            fill="none"
+            stroke="hsl(70 55% 22% / 0.4)"
+            strokeWidth="3.6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 14 50 C 30 78, 70 78, 86 50"
+            fill="none"
+            stroke="hsl(70 55% 22% / 0.4)"
+            strokeWidth="3.6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 14 50 C 30 24, 70 24, 86 50"
+            fill="none"
+            stroke="hsl(0 0% 100% / 0.96)"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 14 50 C 30 76, 70 76, 86 50"
+            fill="none"
+            stroke="hsl(0 0% 100% / 0.96)"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          {/* Back-side seam hinted near the rim, opposite axis */}
+          <path
+            d="M 6 50 C 14 38, 14 62, 6 50"
+            fill="none"
+            stroke="hsl(0 0% 100% / 0.55)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 94 50 C 86 38, 86 62, 94 50"
+            fill="none"
+            stroke="hsl(0 0% 100% / 0.55)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </g>
 
         {/* Specular highlight */}
         <ellipse cx="34" cy="28" rx="14" ry="8" fill="hsl(0 0% 100% / 0.35)" />

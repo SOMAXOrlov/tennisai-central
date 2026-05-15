@@ -199,11 +199,29 @@
     text-wrap: balance;
   }
 
+  /* Tennis-ball bounce: squash on impact, stretch at apex, spin in flight */
   @keyframes ball-bounce {
-    0%, 100% { transform: translateY(-30%) rotate(0deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 1); }
-    50% { transform: translateY(30%) rotate(180deg); animation-timing-function: cubic-bezier(0, 0, 0.5, 1); }
+    0%   { transform: translateY(-55%) scale(1.04, 0.96) rotate(0deg);   animation-timing-function: cubic-bezier(0.55, 0, 1, 0.5); }
+    45%  { transform: translateY(28%)  scale(0.98, 1.02) rotate(160deg); animation-timing-function: cubic-bezier(0.4, 0.6, 0.6, 1); }
+    50%  { transform: translateY(34%)  scale(1.18, 0.78) rotate(180deg); animation-timing-function: cubic-bezier(0.4, 0, 0.5, 1); }
+    55%  { transform: translateY(28%)  scale(0.98, 1.02) rotate(200deg); animation-timing-function: cubic-bezier(0, 0.4, 0.4, 1); }
+    100% { transform: translateY(-55%) scale(1.04, 0.96) rotate(360deg); animation-timing-function: cubic-bezier(0, 0.4, 0.4, 1); }
   }
-  .animate-ball-bounce { animation: ball-bounce 2.4s infinite; }
+  .animate-ball-bounce {
+    animation: ball-bounce 2.2s infinite;
+    transform-origin: 50% 100%;
+    will-change: transform;
+  }
+
+  /* Optional ground shadow that scales with the bounce */
+  @keyframes ball-shadow {
+    0%, 100% { transform: scaleX(0.55); opacity: 0.25; }
+    50%      { transform: scaleX(1);    opacity: 0.6;  }
+  }
+  .animate-ball-shadow {
+    animation: ball-shadow 2.2s infinite cubic-bezier(0.5, 0, 0.5, 1);
+    transform-origin: 50% 50%;
+  }
 
   @keyframes marquee {
     from { transform: translateX(0); }
