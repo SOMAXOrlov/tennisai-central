@@ -1,7 +1,8 @@
 // Tournaments — with React Query, team filter, and player detail
 import { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Search, MapPin, Calendar, Sun, Warehouse, Mountain, X, Users, Trophy } from "lucide-react";
+import { Search, MapPin, Calendar, Sun, Warehouse, Mountain, X, Users, Trophy, RefreshCw } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { ReadOnlyBanner, ReadOnlyBadge, StatusBadge, EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
@@ -15,8 +16,9 @@ import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import { useTournaments, usePlayerTournaments, useUpdatePlayerTournament, useTeams } from "@/hooks/api/queries";
+import { queryKeys } from "@/hooks/api/queries";
 import type { TournamentStatus, ConnectedPlayer } from "@/types";
-
+import { toast } from "sonner";
 const ALL = "__all__";
 const surfaceColor: Record<string, string> = {
   Clay: "bg-orange-500/15 text-orange-700 dark:text-orange-400",
