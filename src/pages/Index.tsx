@@ -539,9 +539,7 @@ const Index = () => {
             variants={fade}
             className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-card/70 p-12 text-center shadow-2xl shadow-primary/10 backdrop-blur md:p-16"
           >
-            <div className="pointer-events-none absolute -right-10 -top-10">
-              <TennisBall className="h-24 w-24 opacity-90" />
-            </div>
+            <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[radial-gradient(circle_at_30%_30%,hsl(var(--tennis-ball)),hsl(var(--tennis-ball)/0.6))] opacity-90 shadow-[0_20px_40px_hsl(var(--tennis-ball)/0.35)]" />
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Ready up</span>
             <h2 className="mt-4 text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
               Step on court{" "}
