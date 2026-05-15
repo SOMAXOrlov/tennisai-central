@@ -130,9 +130,9 @@ export function SurfaceImage({
           className,
         )}
       />
-      {/* Painted court lines overlay — keeps the markings visible no matter
-          what photograph sits underneath. Uses a slight drop-shadow for
-          contrast on bright surfaces (grass) and dark ones (clay/hard). */}
+      {/* Painted court lines overlay — only the essential markings, drawn
+          in perspective so the surface photo underneath reads as a real
+          court. A subtle drop-shadow keeps lines legible on every surface. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 400 300"
@@ -142,36 +142,20 @@ export function SurfaceImage({
         <g
           fill="none"
           stroke="hsl(0 0% 100%)"
-          strokeWidth={2.4}
+          strokeWidth={2.6}
           strokeLinecap="square"
+          strokeLinejoin="miter"
           style={{ filter: "drop-shadow(0 1px 1.5px rgba(0,0,0,0.55))" }}
         >
-          {/* Outer doubles court — drawn in perspective (top edge narrower) */}
-          <path d="M 70 60 L 330 60 L 380 270 L 20 270 Z" />
-          {/* Singles sidelines */}
-          <line x1="92" y1="60" x2="56" y2="270" />
-          <line x1="308" y1="60" x2="344" y2="270" />
-          {/* Service lines */}
-          <line x1="105" y1="135" x2="295" y2="135" />
-          <line x1="80" y1="225" x2="320" y2="225" />
-          {/* Center service line */}
-          <line x1="200" y1="135" x2="200" y2="225" />
-          {/* Center marks on baselines */}
-          <line x1="200" y1="60" x2="200" y2="68" />
-          <line x1="200" y1="262" x2="200" y2="270" strokeWidth={3} />
-          {/* Net cord */}
-          <line x1="50" y1="180" x2="350" y2="180" strokeWidth={3} />
+          {/* Outer court (perspective trapezoid: far baseline narrower) */}
+          <path d="M 90 70 L 310 70 L 370 270 L 30 270 Z" />
+          {/* Net line (centered horizontally across the court) */}
+          <line x1="60" y1="170" x2="340" y2="170" strokeWidth={3} />
+          {/* Service line on the near (camera-side) half only */}
+          <line x1="50" y1="225" x2="350" y2="225" />
+          {/* Center service line — between net and near service line */}
+          <line x1="200" y1="170" x2="200" y2="225" />
         </g>
-        {/* Net mesh hint */}
-        <line
-          x1="50"
-          y1="180"
-          x2="350"
-          y2="180"
-          stroke="hsl(0 0% 100% / 0.3)"
-          strokeWidth={6}
-          strokeDasharray="2 3"
-        />
       </svg>
     </div>
   );

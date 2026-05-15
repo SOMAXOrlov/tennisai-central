@@ -182,10 +182,10 @@ const Index = () => {
           className="pointer-events-none absolute right-[-120px] top-1/3 h-[380px] w-[380px] rounded-full bg-[hsl(var(--tennis-ball))]/10 blur-[140px]"
         />
 
-        {/* Court diagram + vertical rally — top-left of the hero */}
-        <div className="pointer-events-none absolute left-[-40px] top-16 hidden h-[640px] w-[380px] opacity-90 lg:block xl:left-8">
+        {/* Court diagram + vertical rally — top-right of the hero */}
+        <div className="pointer-events-none absolute right-[-40px] top-16 hidden h-[640px] w-[380px] opacity-90 lg:block xl:right-8">
           <motion.div
-            initial={{ opacity: 0, x: -60 }}
+            initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
             className="relative h-full w-full"
@@ -201,9 +201,9 @@ const Index = () => {
           className="container relative flex min-h-screen flex-col justify-center py-28"
         >
           <div className="grid items-center gap-12 lg:grid-cols-12">
-            {/* Text column — pushed to the right on desktop so the
-                top-left court + 3D rally has room to breathe. */}
-            <div className="lg:col-span-7 lg:col-start-6">
+            {/* Text column on the left so the top-right court + 3D rally
+                has room to breathe. */}
+            <div className="lg:col-span-7">
               {/* Badge */}
               <motion.div initial="hidden" animate="visible" variants={fade} custom={0}>
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-medium text-primary backdrop-blur-sm">
