@@ -71,3 +71,31 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Troubleshooting
+
+### Stale component reference errors (e.g. `X is not defined`)
+
+If the preview shows a runtime error like `ReferenceError: SomeComponent is not defined` immediately after renaming or removing a component — and a code search confirms the symbol no longer exists in the source — Vite's HMR (Hot Module Replacement) cache is serving a stale module.
+
+**Quick fixes (in order of escalation):**
+
+1. **Hard reload** the preview tab: `Cmd/Ctrl + Shift + R`.
+2. **Restart the dev server**:
+    ```sh
+    # Stop with Ctrl+C, then:
+    npm run dev
+    ```
+3. **Clear Vite's on-disk cache** if a hard reload + restart still serves stale code:
+    ```sh
+    rm -rf node_modules/.vite
+    npm run dev
+    ```
+4. **Nuclear option** — wipe deps and reinstall:
+    ```sh
+    rm -rf node_modules/.vite node_modules/.cache
+    npm ci
+    npm run dev
+    ```
+
+> Working inside Lovable? Just ask the agent to "restart the dev server" — it has a dedicated tool for it and no manual cache clearing is required.
