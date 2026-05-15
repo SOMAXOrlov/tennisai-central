@@ -91,20 +91,29 @@ const workflow = [
 /* ──────────────────────────── Decorative bits ──────────────────────────── */
 
 function TennisBall({ className = "" }: { className?: string }) {
+  const sizes = "(min-width: 1024px) 112px, 96px";
+  const srcSetPng = `${tennisBallImg128} 1024w, ${tennisBallImg256} 1024w, ${tennisBallImg} 512w`;
+  const srcSetWebp = `${tennisBallImg128Webp} 1024w, ${tennisBallImg256Webp} 1024w, ${tennisBallImgWebp} 512w`;
+  const srcSetAvif = `${tennisBallImg128Avif} 1024w, ${tennisBallImg256Avif} 1024w, ${tennisBallImgAvif} 512w`;
+
   return (
-    <img
-      src={tennisBallImg}
-      srcSet={`${tennisBallImg128} 128w, ${tennisBallImg256} 256w, ${tennisBallImg} 512w`}
-      sizes="(min-width: 1024px) 112px, 96px"
-      alt=""
-      aria-hidden
-      width={512}
-      height={512}
-      loading="lazy"
-      decoding="async"
-      draggable={false}
-      className={`select-none object-contain drop-shadow-[0_24px_40px_hsl(var(--tennis-ball)/0.35)] ${className}`}
-    />
+    <picture>
+      <source type="image/avif" srcSet={srcSetAvif} sizes={sizes} />
+      <source type="image/webp" srcSet={srcSetWebp} sizes={sizes} />
+      <img
+        src={tennisBallImg}
+        srcSet={srcSetPng}
+        sizes={sizes}
+        alt=""
+        aria-hidden
+        width={512}
+        height={512}
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className={`select-none object-contain drop-shadow-[0_24px_40px_hsl(var(--tennis-ball)/0.35)] ${className}`}
+      />
+    </picture>
   );
 }
 
