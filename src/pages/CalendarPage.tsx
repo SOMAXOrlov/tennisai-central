@@ -707,6 +707,25 @@ export default function CalendarPage() {
     });
   };
 
+  const handleRefreshTournaments = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.tournaments });
+    const result = await refetchTournaments();
+    if (result.data) {
+      const federationsInData = new Set(
+        result.data
+          .map((t) => t.federation)
+          .filter((f): f is TournamentFederation => !!f),
+      );
+      // Add any newly discovered federations to the active set
+      setActiveFederations((prev) => {
+        const next = new Set(prev);
+        federationsInData.forEach((f) => next.add(f));
+        return next;
+      });
+      toast.success("Tournaments refreshed");
+    }
+  };
+
   // Convert international tournaments to calendar events
   const internationalEvents: CalendarEvent[] = useMemo(() => {
     return tournaments
