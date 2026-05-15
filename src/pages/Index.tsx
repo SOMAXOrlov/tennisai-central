@@ -26,6 +26,7 @@ import surfaceClay from "@/assets/surface-clay.jpg";
 import surfaceGrass from "@/assets/surface-grass.jpg";
 import surfaceHard from "@/assets/surface-hard.jpg";
 import { SurfaceImage } from "@/components/SurfaceImage";
+import tennisBallImg from "@/assets/tennis-ball.png";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
@@ -83,105 +84,17 @@ const workflow = [
 
 function TennisBall({ className = "" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 100 100"
-      className={className}
+    <img
+      src={tennisBallImg}
+      alt=""
       aria-hidden
-      role="img"
-    >
-      <defs>
-        {/* Felt body: bright highlight top-left → core yellow → shaded edge */}
-        <radialGradient id="ballBody" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor="hsl(72 100% 82%)" />
-          <stop offset="45%" stopColor="hsl(var(--tennis-ball))" />
-          <stop offset="100%" stopColor="hsl(70 75% 32%)" />
-        </radialGradient>
-        {/* Soft outer rim shadow for spherical depth */}
-        <radialGradient id="ballRim" cx="50%" cy="55%" r="55%">
-          <stop offset="70%" stopColor="hsl(0 0% 0% / 0)" />
-          <stop offset="100%" stopColor="hsl(0 0% 0% / 0.35)" />
-        </radialGradient>
-        {/* Procedural felt fuzz via tiny turbulence */}
-        <filter id="ballFuzz" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="7" />
-          <feColorMatrix
-            values="0 0 0 0 0.95
-                    0 0 0 0 1
-                    0 0 0 0 0.55
-                    0 0 0 0.18 0"
-          />
-          <feComposite in2="SourceGraphic" operator="in" />
-        </filter>
-        {/* Drop shadow under the ball */}
-        <filter id="ballShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-          <feOffset dy="4" />
-          <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
-          <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-
-      {/* Sphere body with shadow */}
-      <g filter="url(#ballShadow)">
-        <circle cx="50" cy="50" r="46" fill="url(#ballBody)" />
-        {/* Felt fuzz overlay */}
-        <circle cx="50" cy="50" r="46" fill="url(#ballBody)" filter="url(#ballFuzz)" opacity="0.7" />
-        {/* Rim darkening for roundness */}
-        <circle cx="50" cy="50" r="46" fill="url(#ballRim)" />
-
-        {/* Authentic seam — single tilted "leaf" curve across the visible
-            face, plus the back-side seam wrapping at the opposite edges. */}
-        <g transform="rotate(-18 50 50)">
-          {/* Front seam: two arcs meeting at the same endpoints */}
-          <path
-            d="M 14 50 C 30 22, 70 22, 86 50"
-            fill="none"
-            stroke="hsl(70 55% 22% / 0.4)"
-            strokeWidth="3.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 14 50 C 30 78, 70 78, 86 50"
-            fill="none"
-            stroke="hsl(70 55% 22% / 0.4)"
-            strokeWidth="3.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 14 50 C 30 24, 70 24, 86 50"
-            fill="none"
-            stroke="hsl(0 0% 100% / 0.96)"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 14 50 C 30 76, 70 76, 86 50"
-            fill="none"
-            stroke="hsl(0 0% 100% / 0.96)"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-          />
-          {/* Back-side seam hinted near the rim, opposite axis */}
-          <path
-            d="M 6 50 C 14 38, 14 62, 6 50"
-            fill="none"
-            stroke="hsl(0 0% 100% / 0.55)"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 94 50 C 86 38, 86 62, 94 50"
-            fill="none"
-            stroke="hsl(0 0% 100% / 0.55)"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </g>
-
-        {/* Specular highlight */}
-        <ellipse cx="34" cy="28" rx="14" ry="8" fill="hsl(0 0% 100% / 0.35)" />
-      </g>
-    </svg>
+      width={512}
+      height={512}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      className={`select-none object-contain drop-shadow-[0_24px_40px_hsl(var(--tennis-ball)/0.35)] ${className}`}
+    />
   );
 }
 
