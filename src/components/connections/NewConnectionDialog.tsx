@@ -305,6 +305,7 @@ export function NewConnectionDialog({
                       setError("");
                       setLookupResult(null);
                       setPublicId(prefix);
+                      setSuggestedPrefix(prefix);
                       // Focus input and place caret at the end
                       requestAnimationFrame(() => {
                         const el = inputRef.current;
