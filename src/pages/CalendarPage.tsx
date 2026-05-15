@@ -964,6 +964,28 @@ export default function CalendarPage() {
         <PlayerFilterChip label="International Tournaments" active={calendarSource === "international"} onClick={() => setCalendarSource("international")} icon={<Globe className="h-3 w-3" />} />
       </div>
 
+      {/* Federation filter — applies to international tournaments. Visible
+          for every role whenever international events can appear. */}
+      {(calendarSource === "international" || calendarSource === "all") && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Trophy className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground">Federation:</span>
+          <PlayerFilterChip
+            label="All"
+            active={activeFederations.size === ALL_FEDERATIONS.length}
+            onClick={() => setActiveFederations(new Set(ALL_FEDERATIONS))}
+          />
+          {ALL_FEDERATIONS.map((f) => (
+            <PlayerFilterChip
+              key={f}
+              label={f}
+              active={activeFederations.has(f)}
+              onClick={() => toggleFederation(f)}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Coach scoping filters */}
       {isCoach && connectedPlayers.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
