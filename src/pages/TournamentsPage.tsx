@@ -110,6 +110,12 @@ export default function TournamentsPage() {
     setPlayerDetailOpen(true);
   };
 
+  const handleRefreshTournaments = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.tournaments });
+    await refetchTournaments();
+    toast.success("Tournaments refreshed");
+  };
+
   if (loadingT || loadingPT) return <LoadingState message="Loading tournaments…" />;
   if (errorT || errorPT) return <ErrorState message="Failed to load tournaments" onRetry={() => window.location.reload()} />;
 
