@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/auth/AuthContext";
 import { ConnectionProvider } from "@/store/ConnectionStore";
 import { RouteGuard, GuestGuard } from "@/auth/RouteGuard";
+import { DevHmrBanner } from "@/components/DevHmrBanner";
 
 // Layouts
 import { PublicLayout } from "@/layouts/PublicLayout";
@@ -60,6 +61,7 @@ const App = () => (
           <TooltipProvider>
           <Toaster />
           <Sonner />
+          <DevHmrBanner />
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
