@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Loader2,
   ArrowRight,
+  Ban,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { SendResult } from "@/store/ConnectionStore";
@@ -85,6 +86,10 @@ export function NewConnectionDialog({
   const [publicId, setPublicId] = useState("");
   const [lookupResult, setLookupResult] = useState<DirectoryEntry | null>(null);
   const [error, setError] = useState("");
+  const [roleMismatch, setRoleMismatch] = useState<{
+    entry: DirectoryEntry;
+    reason: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -92,6 +97,7 @@ export function NewConnectionDialog({
     setPublicId("");
     setLookupResult(null);
     setError("");
+    setRoleMismatch(null);
     setLoading(false);
     setSent(false);
   };
@@ -104,6 +110,7 @@ export function NewConnectionDialog({
   const handleLookup = async () => {
     if (!publicId.trim()) return;
     setError("");
+    setRoleMismatch(null);
     setLookupResult(null);
     setLoading(true);
 
@@ -123,7 +130,7 @@ export function NewConnectionDialog({
       // Role validation
       const validation = mockDirectoryService.validateConnection(myRole, entry.role);
       if (!validation.valid) {
-        setError(validation.reason!);
+        setRoleMismatch({ entry, reason: validation.reason! });
         return;
       }
 
@@ -187,6 +194,7 @@ export function NewConnectionDialog({
                     onChange={(e) => {
                       setPublicId(e.target.value.toUpperCase());
                       setError("");
+                    setRoleMismatch(null);
                       setLookupResult(null);
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleLookup()}
@@ -213,6 +221,74 @@ export function NewConnectionDialog({
               <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {/* Role mismatch — clear inline messaging with reason + alternatives */}
+            {roleMismatch && (
+              <div
+                role="alert"
+                className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
+              >
+                <div className="flex items-start gap-2 text-destructive">
+                  <Ban className="mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-semibold">Connection not allowed</p>
+                    <p className="text-destructive/90">{roleMismatch.reason}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 rounded-lg bg-background/60 p-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
+                    {roleMismatch.entry.firstName[0]}
+                    {roleMismatch.entry.lastName[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-foreground">
+                      {roleMismatch.entry.firstName} {roleMismatch.entry.lastName}
+                    </p>
+                    <p className="font-mono text-[11px] text-muted-foreground">
+                      {roleMismatch.entry.publicId}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      ROLE_STYLE[roleMismatch.entry.role] ?? "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {ROLE_LABEL[roleMismatch.entry.role]}
+                  </span>
+                </div>
+
+                <div className="border-t border-destructive/20 pt-2 text-xs text-foreground">
+                  <p className="mb-1.5 font-medium">
+                    As a {ROLE_LABEL[myRole]}, you can connect with:
+                  </p>
+                  {(() => {
+                    const allowed = mockDirectoryService.getAllowedTargetRoles(myRole);
+                    if (allowed.length === 0) {
+                      return (
+                        <p className="text-muted-foreground">
+                          Your role does not support sending connection requests.
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="flex flex-wrap gap-1.5">
+                        {allowed.map((r) => (
+                          <span
+                            key={r}
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                              ROLE_STYLE[r] ?? "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {ROLE_LABEL[r]}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
 
