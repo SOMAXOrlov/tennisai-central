@@ -1,7 +1,8 @@
 // Tournaments — with React Query, team filter, and player detail
 import { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Search, MapPin, Calendar, Sun, Warehouse, Mountain, X, Users, Trophy } from "lucide-react";
+import { Search, MapPin, Calendar, Sun, Warehouse, Mountain, X, Users, Trophy, RefreshCw } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { ReadOnlyBanner, ReadOnlyBadge, StatusBadge, EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
@@ -15,8 +16,9 @@ import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import { useTournaments, usePlayerTournaments, useUpdatePlayerTournament, useTeams } from "@/hooks/api/queries";
+import { queryKeys } from "@/hooks/api/queries";
 import type { TournamentStatus, ConnectedPlayer } from "@/types";
-
+import { toast } from "sonner";
 const ALL = "__all__";
 const surfaceColor: Record<string, string> = {
   Clay: "bg-orange-500/15 text-orange-700 dark:text-orange-400",
@@ -28,12 +30,13 @@ const STATUS_OPTIONS: TournamentStatus[] = ["planned", "registered", "maybe", "w
 export default function TournamentsPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
+  const queryClient = useQueryClient();
   const role = user?.role ?? "player";
   const isCoach = role === "coach";
   const isObserver = role === "observer";
   const isPlayer = role === "player";
 
-  const { data: tournaments = [], isLoading: loadingT, error: errorT } = useTournaments();
+  const { data: tournaments = [], isLoading: loadingT, error: errorT, refetch: refetchTournaments, isFetching: isRefetchingTournaments } = useTournaments();
   const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT } = usePlayerTournaments();
   const { data: teams = [] } = useTeams();
   const updatePT = useUpdatePlayerTournament();
@@ -107,6 +110,12 @@ export default function TournamentsPage() {
     setPlayerDetailOpen(true);
   };
 
+  const handleRefreshTournaments = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.tournaments });
+    await refetchTournaments();
+    toast.success("Tournaments refreshed");
+  };
+
   if (loadingT || loadingPT) return <LoadingState message="Loading tournaments…" />;
   if (errorT || errorPT) return <ErrorState message="Failed to load tournaments" onRetry={() => window.location.reload()} />;
 
@@ -135,6 +144,16 @@ export default function TournamentsPage() {
           </>
         )}
         {hasFilters && <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground"><X className="mr-1 h-4 w-4" /> Reset</Button>}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefreshTournaments}
+          disabled={isRefetchingTournaments}
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isRefetchingTournaments ? "animate-spin" : ""}`} />
+          {isRefetchingTournaments ? "Refreshing…" : "Refresh tournaments"}
+        </Button>
       </div>
 
       {hasFilters && (
