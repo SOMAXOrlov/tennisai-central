@@ -27,8 +27,14 @@ import surfaceGrass from "@/assets/surface-grass.jpg";
 import surfaceHard from "@/assets/surface-hard.jpg";
 import { SurfaceImage } from "@/components/SurfaceImage";
 import tennisBallImg from "@/assets/tennis-ball.png";
-import tennisBallImg256 from "@/assets/tennis-ball-256.png";
 import tennisBallImg128 from "@/assets/tennis-ball-128.png";
+import tennisBallImg256 from "@/assets/tennis-ball-256.png";
+import tennisBallImgWebp from "@/assets/tennis-ball.webp";
+import tennisBallImg128Webp from "@/assets/tennis-ball-128.webp";
+import tennisBallImg256Webp from "@/assets/tennis-ball-256.webp";
+import tennisBallImgAvif from "@/assets/tennis-ball.avif";
+import tennisBallImg128Avif from "@/assets/tennis-ball-128.avif";
+import tennisBallImg256Avif from "@/assets/tennis-ball-256.avif";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
