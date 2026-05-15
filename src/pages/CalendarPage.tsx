@@ -21,7 +21,7 @@ import {
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
   LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe, CheckCircle2,
 } from "lucide-react";
-import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, Tournament } from "@/types";
+import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, Tournament, TournamentFederation } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments, useAddPlayerTournament, usePlayerTournaments } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -690,21 +690,37 @@ export default function CalendarPage() {
   const [detailPlayer, setDetailPlayer] = useState<ConnectedPlayer | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [calendarSource, setCalendarSource] = useState<"all" | "mine" | "international">("all");
+  // Sanctioning-body filter for international tournaments. Defaults to all on.
+  const ALL_FEDERATIONS: TournamentFederation[] = ["ITF", "WTA", "ATP", "UTR", "USTA"];
+  const [activeFederations, setActiveFederations] = useState<Set<TournamentFederation>>(
+    new Set(ALL_FEDERATIONS),
+  );
+  const toggleFederation = (f: TournamentFederation) => {
+    setActiveFederations((prev) => {
+      const next = new Set(prev);
+      next.has(f) ? next.delete(f) : next.add(f);
+      return next;
+    });
+  };
 
   // Convert international tournaments to calendar events
   const internationalEvents: CalendarEvent[] = useMemo(() => {
-    return tournaments.map((t) => ({
-      id: `intl-${t.id}`,
-      title: t.name,
-      type: "tournament" as CalendarEventType,
-      startDate: t.startDate,
-      endDate: t.endDate,
-      location: `${t.city}, ${t.country}`,
-      description: `${t.category} · ${t.level} · ${t.surface} (${t.indoorOutdoor})${t.weatherSummary ? ` · ${t.weatherSummary}` : ""}`,
-      state: "confirmed" as CalendarEventState,
-      _isInternational: true,
-    })) as (CalendarEvent & { _isInternational?: boolean })[];
-  }, [tournaments]);
+    return tournaments
+      // Hide tournaments whose federation is filtered off. Tournaments with
+      // no federation tagged are always shown so legacy data isn't dropped.
+      .filter((t) => !t.federation || activeFederations.has(t.federation))
+      .map((t) => ({
+        id: `intl-${t.id}`,
+        title: t.federation ? `[${t.federation}] ${t.name}` : t.name,
+        type: "tournament" as CalendarEventType,
+        startDate: t.startDate,
+        endDate: t.endDate,
+        location: `${t.city}, ${t.country}`,
+        description: `${t.category} · ${t.level} · ${t.surface} (${t.indoorOutdoor})${t.weatherSummary ? ` · ${t.weatherSummary}` : ""}`,
+        state: "confirmed" as CalendarEventState,
+        _isInternational: true,
+      })) as (CalendarEvent & { _isInternational?: boolean })[];
+  }, [tournaments, activeFederations]);
 
   const registeredIntlIds = useMemo(() => {
     const ids = new Set<string>();
