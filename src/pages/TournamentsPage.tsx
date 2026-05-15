@@ -30,12 +30,13 @@ const STATUS_OPTIONS: TournamentStatus[] = ["planned", "registered", "maybe", "w
 export default function TournamentsPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
+  const queryClient = useQueryClient();
   const role = user?.role ?? "player";
   const isCoach = role === "coach";
   const isObserver = role === "observer";
   const isPlayer = role === "player";
 
-  const { data: tournaments = [], isLoading: loadingT, error: errorT } = useTournaments();
+  const { data: tournaments = [], isLoading: loadingT, error: errorT, refetch: refetchTournaments, isFetching: isRefetchingTournaments } = useTournaments();
   const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT } = usePlayerTournaments();
   const { data: teams = [] } = useTeams();
   const updatePT = useUpdatePlayerTournament();
