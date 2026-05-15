@@ -27,6 +27,8 @@ import surfaceGrass from "@/assets/surface-grass.jpg";
 import surfaceHard from "@/assets/surface-hard.jpg";
 import { SurfaceImage } from "@/components/SurfaceImage";
 import tennisBallImg from "@/assets/tennis-ball.png";
+import tennisBallImg256 from "@/assets/tennis-ball-256.png";
+import tennisBallImg128 from "@/assets/tennis-ball-128.png";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
