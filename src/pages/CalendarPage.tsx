@@ -1006,6 +1006,16 @@ export default function CalendarPage() {
               onClick={() => toggleFederation(f)}
             />
           ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefreshTournaments}
+            disabled={isRefetchingTournaments}
+            className="ml-auto gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefetchingTournaments ? "animate-spin" : ""}`} />
+            {isRefetchingTournaments ? "Refreshing…" : "Refresh tournaments"}
+          </Button>
         </div>
       )}
 
