@@ -68,9 +68,33 @@ const stats = [
 ];
 
 const surfaces = [
-  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style", image: surfaceClay },
-  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style", image: surfaceGrass },
-  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style", image: surfaceHard },
+  // Per-surface line styling — clay lines are slightly warm/dimmed so they
+  // don't fight the orange photo; grass lines are crisp white (real chalk);
+  // hard-court lines are a touch cooler and slightly transparent.
+  {
+    name: "Clay",
+    color: "hsl(var(--court-clay))",
+    desc: "Roland-Garros style",
+    image: surfaceClay,
+    lineColor: "hsl(40 30% 96%)",
+    lineOpacity: 0.78,
+  },
+  {
+    name: "Grass",
+    color: "hsl(var(--court-grass))",
+    desc: "Wimbledon style",
+    image: surfaceGrass,
+    lineColor: "hsl(0 0% 100%)",
+    lineOpacity: 1,
+  },
+  {
+    name: "Hard",
+    color: "hsl(var(--court-hard))",
+    desc: "US/AO style",
+    image: surfaceHard,
+    lineColor: "hsl(210 25% 97%)",
+    lineOpacity: 0.85,
+  },
 ];
 
 const workflow = [
