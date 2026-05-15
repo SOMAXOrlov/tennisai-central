@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { mockDirectoryService, type DirectoryEntry } from "@/mock/directory";
 import {
@@ -20,6 +20,7 @@ import {
   Loader2,
   ArrowRight,
   Ban,
+  Sparkles,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { SendResult } from "@/store/ConnectionStore";
@@ -37,6 +38,13 @@ const ROLE_STYLE: Record<string, string> = {
   player: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   coach: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
   observer: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+};
+
+const ROLE_ID_PREFIX: Record<UserRole, string> = {
+  player: "TAI-P-",
+  coach: "TAI-C-",
+  observer: "TAI-F-",
+  admin: "TAI-A-",
 };
 
 // ─── Allowed connection info per role ───
@@ -92,6 +100,7 @@ export function NewConnectionDialog({
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
     setPublicId("");
@@ -190,6 +199,7 @@ export function NewConnectionDialog({
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="publicId"
+                    ref={inputRef}
                     value={publicId}
                     onChange={(e) => {
                       setPublicId(e.target.value.toUpperCase());
@@ -261,9 +271,6 @@ export function NewConnectionDialog({
                 </div>
 
                 <div className="border-t border-destructive/20 pt-2 text-xs text-foreground">
-                  <p className="mb-1.5 font-medium">
-                    As a {ROLE_LABEL[myRole]}, you can connect with:
-                  </p>
                   {(() => {
                     const allowed = mockDirectoryService.getAllowedTargetRoles(myRole);
                     if (allowed.length === 0) {
@@ -273,18 +280,41 @@ export function NewConnectionDialog({
                         </p>
                       );
                     }
+                    const handleSuggest = (target: UserRole) => {
+                      const prefix = ROLE_ID_PREFIX[target];
+                      setRoleMismatch(null);
+                      setError("");
+                      setLookupResult(null);
+                      setPublicId(prefix);
+                      // Focus input and place caret at the end
+                      requestAnimationFrame(() => {
+                        const el = inputRef.current;
+                        if (el) {
+                          el.focus();
+                          el.setSelectionRange(prefix.length, prefix.length);
+                        }
+                      });
+                    };
                     return (
-                      <div className="flex flex-wrap gap-1.5">
-                        {allowed.map((r) => (
-                          <span
-                            key={r}
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                              ROLE_STYLE[r] ?? "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {ROLE_LABEL[r]}
-                          </span>
-                        ))}
+                      <div className="space-y-2">
+                        <p className="font-medium">
+                          Try searching for a role you can connect with:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {allowed.map((r, i) => (
+                            <Button
+                              key={r}
+                              type="button"
+                              size="sm"
+                              variant={i === 0 ? "default" : "outline"}
+                              onClick={() => handleSuggest(r)}
+                              className="h-7 gap-1.5 text-xs"
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              Search a {ROLE_LABEL[r]}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     );
                   })()}
