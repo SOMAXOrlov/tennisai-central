@@ -26,15 +26,7 @@ import surfaceClay from "@/assets/surface-clay.jpg";
 import surfaceGrass from "@/assets/surface-grass.jpg";
 import surfaceHard from "@/assets/surface-hard.jpg";
 import { SurfaceImage } from "@/components/SurfaceImage";
-import tennisBallImg from "@/assets/tennis-ball.png";
-import tennisBallImg128 from "@/assets/tennis-ball-128.png";
-import tennisBallImg256 from "@/assets/tennis-ball-256.png";
-import tennisBallImgWebp from "@/assets/tennis-ball.webp";
-import tennisBallImg128Webp from "@/assets/tennis-ball-128.webp";
-import tennisBallImg256Webp from "@/assets/tennis-ball-256.webp";
-import tennisBallImgAvif from "@/assets/tennis-ball.avif";
-import tennisBallImg128Avif from "@/assets/tennis-ball-128.avif";
-import tennisBallImg256Avif from "@/assets/tennis-ball-256.avif";
+import { TennisRallyScene } from "@/components/TennisRallyScene";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
@@ -89,33 +81,6 @@ const workflow = [
 ];
 
 /* ──────────────────────────── Decorative bits ──────────────────────────── */
-
-function TennisBall({ className = "" }: { className?: string }) {
-  const sizes = "(min-width: 1024px) 112px, 96px";
-  const srcSetPng = `${tennisBallImg128} 1024w, ${tennisBallImg256} 1024w, ${tennisBallImg} 512w`;
-  const srcSetWebp = `${tennisBallImg128Webp} 1024w, ${tennisBallImg256Webp} 1024w, ${tennisBallImgWebp} 512w`;
-  const srcSetAvif = `${tennisBallImg128Avif} 1024w, ${tennisBallImg256Avif} 1024w, ${tennisBallImgAvif} 512w`;
-
-  return (
-    <picture>
-      <source type="image/avif" srcSet={srcSetAvif} sizes={sizes} />
-      <source type="image/webp" srcSet={srcSetWebp} sizes={sizes} />
-      <img
-        src={tennisBallImg}
-        srcSet={srcSetPng}
-        sizes={sizes}
-        alt=""
-        aria-hidden
-        width={512}
-        height={512}
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        className={`select-none object-contain drop-shadow-[0_24px_40px_hsl(var(--tennis-ball)/0.35)] ${className}`}
-      />
-    </picture>
-  );
-}
 
 function CourtDiagram() {
   // Top-down tennis court — accurate ITF proportions
@@ -318,23 +283,20 @@ const Index = () => {
               </motion.div>
             </div>
 
-            {/* Bouncing ball visual (right column on mobile) */}
+            {/* 3D rally scene — mobile (right column) */}
             <div className="relative lg:col-span-5 lg:hidden">
-              <div className="relative mx-auto flex h-64 w-64 items-end justify-center">
-                <TennisBall className="h-24 w-24 animate-ball-bounce" />
-                <div className="absolute bottom-2 h-2 w-32 rounded-full bg-foreground/20 blur-md" />
-              </div>
+              <TennisRallyScene className="mx-auto h-56 w-full max-w-md" />
             </div>
           </div>
 
-          {/* Floating ball (desktop) */}
+          {/* 3D rally scene — desktop (full-width banner near bottom of hero) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute right-[18%] top-[22%] hidden lg:block"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute inset-x-0 bottom-24 hidden lg:block"
           >
-            <TennisBall className="h-28 w-28 animate-ball-bounce" />
+            <TennisRallyScene className="mx-auto h-64 w-full max-w-5xl" />
           </motion.div>
 
           {/* Scroll cue */}
@@ -577,9 +539,7 @@ const Index = () => {
             variants={fade}
             className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-card/70 p-12 text-center shadow-2xl shadow-primary/10 backdrop-blur md:p-16"
           >
-            <div className="pointer-events-none absolute -right-10 -top-10">
-              <TennisBall className="h-24 w-24 opacity-90" />
-            </div>
+            <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-[radial-gradient(circle_at_30%_30%,hsl(var(--tennis-ball)),hsl(var(--tennis-ball)/0.6))] opacity-90 shadow-[0_20px_40px_hsl(var(--tennis-ball)/0.35)]" />
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Ready up</span>
             <h2 className="mt-4 text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
               Step on court{" "}
