@@ -27,6 +27,8 @@ import surfaceGrass from "@/assets/surface-grass.jpg";
 import surfaceHard from "@/assets/surface-hard.jpg";
 import { SurfaceImage } from "@/components/SurfaceImage";
 import tennisBallImg from "@/assets/tennis-ball.png";
+import tennisBallImg256 from "@/assets/tennis-ball-256.png";
+import tennisBallImg128 from "@/assets/tennis-ball-128.png";
 
 /* ──────────────────────────── Motion presets ──────────────────────────── */
 
@@ -86,6 +88,8 @@ function TennisBall({ className = "" }: { className?: string }) {
   return (
     <img
       src={tennisBallImg}
+      srcSet={`${tennisBallImg128} 128w, ${tennisBallImg256} 256w, ${tennisBallImg} 512w`}
+      sizes="(min-width: 1024px) 112px, 96px"
       alt=""
       aria-hidden
       width={512}
