@@ -201,7 +201,9 @@ const Index = () => {
           className="container relative flex min-h-screen flex-col justify-center py-28"
         >
           <div className="grid items-center gap-12 lg:grid-cols-12">
-            <div className="lg:col-span-7">
+            {/* Text column — pushed to the right on desktop so the
+                top-left court + 3D rally has room to breathe. */}
+            <div className="lg:col-span-7 lg:col-start-6">
               {/* Badge */}
               <motion.div initial="hidden" animate="visible" variants={fade} custom={0}>
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-medium text-primary backdrop-blur-sm">
