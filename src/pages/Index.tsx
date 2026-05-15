@@ -182,15 +182,17 @@ const Index = () => {
           className="pointer-events-none absolute right-[-120px] top-1/3 h-[380px] w-[380px] rounded-full bg-[hsl(var(--tennis-ball))]/10 blur-[140px]"
         />
 
-        {/* Court diagram on the right */}
-        <div className="pointer-events-none absolute right-[-40px] top-1/2 hidden h-[720px] -translate-y-1/2 opacity-60 lg:block xl:right-8 xl:opacity-90">
+        {/* Court diagram + vertical rally — top-left of the hero */}
+        <div className="pointer-events-none absolute left-[-40px] top-16 hidden h-[640px] w-[380px] opacity-90 lg:block xl:left-8">
           <motion.div
-            initial={{ opacity: 0, x: 60 }}
+            initial={{ opacity: 0, x: -60 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full w-[420px]"
+            className="relative h-full w-full"
           >
             <CourtDiagram />
+            {/* Vertical 3D rally laid over the court */}
+            <TennisRallyScene className="absolute inset-0 h-full w-full" />
           </motion.div>
         </div>
 
