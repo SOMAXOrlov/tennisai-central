@@ -283,23 +283,20 @@ const Index = () => {
               </motion.div>
             </div>
 
-            {/* Bouncing ball visual (right column on mobile) */}
+            {/* 3D rally scene — mobile (right column) */}
             <div className="relative lg:col-span-5 lg:hidden">
-              <div className="relative mx-auto flex h-64 w-64 items-end justify-center">
-                <TennisBall className="h-24 w-24 animate-ball-bounce" />
-                <div className="absolute bottom-2 h-2 w-32 rounded-full bg-foreground/20 blur-md" />
-              </div>
+              <TennisRallyScene className="mx-auto h-56 w-full max-w-md" />
             </div>
           </div>
 
-          {/* Floating ball (desktop) */}
+          {/* 3D rally scene — desktop (full-width banner near bottom of hero) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute right-[18%] top-[22%] hidden lg:block"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute inset-x-0 bottom-24 hidden lg:block"
           >
-            <TennisBall className="h-28 w-28 animate-ball-bounce" />
+            <TennisRallyScene className="mx-auto h-64 w-full max-w-5xl" />
           </motion.div>
 
           {/* Scroll cue */}
