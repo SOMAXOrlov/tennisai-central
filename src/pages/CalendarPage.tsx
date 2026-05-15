@@ -665,6 +665,7 @@ const VIEW_ICONS: Record<ViewMode, React.ReactNode> = {
 export default function CalendarPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
+  const queryClient = useQueryClient();
   const role = user?.role ?? "player";
   const isPlayer = role === "player";
   const isCoach = role === "coach";
@@ -673,7 +674,7 @@ export default function CalendarPage() {
 
   const { data: events = [], isLoading, error } = useCalendarEvents();
   const { data: teams = [] } = useTeams();
-  const { data: tournaments = [] } = useTournaments();
+  const { data: tournaments = [], refetch: refetchTournaments, isFetching: isRefetchingTournaments } = useTournaments();
   const { data: playerTournaments = [] } = usePlayerTournaments();
   const createMut = useCreateCalendarEvent();
   const updateMut = useUpdateCalendarEvent();
