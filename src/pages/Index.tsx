@@ -83,33 +83,149 @@ const workflow = [
 
 function TennisBall({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative rounded-full tennis-ball tennis-seam ${className}`} aria-hidden />
+    <svg
+      viewBox="0 0 100 100"
+      className={className}
+      aria-hidden
+      role="img"
+    >
+      <defs>
+        {/* Felt body: bright highlight top-left → core yellow → shaded edge */}
+        <radialGradient id="ballBody" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stopColor="hsl(72 100% 82%)" />
+          <stop offset="45%" stopColor="hsl(var(--tennis-ball))" />
+          <stop offset="100%" stopColor="hsl(70 75% 32%)" />
+        </radialGradient>
+        {/* Soft outer rim shadow for spherical depth */}
+        <radialGradient id="ballRim" cx="50%" cy="55%" r="55%">
+          <stop offset="70%" stopColor="hsl(0 0% 0% / 0)" />
+          <stop offset="100%" stopColor="hsl(0 0% 0% / 0.35)" />
+        </radialGradient>
+        {/* Procedural felt fuzz via tiny turbulence */}
+        <filter id="ballFuzz" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="7" />
+          <feColorMatrix
+            values="0 0 0 0 0.95
+                    0 0 0 0 1
+                    0 0 0 0 0.55
+                    0 0 0 0.18 0"
+          />
+          <feComposite in2="SourceGraphic" operator="in" />
+        </filter>
+        {/* Drop shadow under the ball */}
+        <filter id="ballShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+          <feOffset dy="4" />
+          <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
+          <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      {/* Sphere body with shadow */}
+      <g filter="url(#ballShadow)">
+        <circle cx="50" cy="50" r="46" fill="url(#ballBody)" />
+        {/* Felt fuzz overlay */}
+        <circle cx="50" cy="50" r="46" fill="url(#ballBody)" filter="url(#ballFuzz)" opacity="0.7" />
+        {/* Rim darkening for roundness */}
+        <circle cx="50" cy="50" r="46" fill="url(#ballRim)" />
+
+        {/* Curved white seams — two mirrored S-curves wrapping the sphere */}
+        <path
+          d="M 8 46 C 28 30, 72 30, 92 46"
+          fill="none"
+          stroke="hsl(0 0% 100% / 0.95)"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 8 54 C 28 70, 72 70, 92 54"
+          fill="none"
+          stroke="hsl(0 0% 100% / 0.95)"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        {/* Subtle seam shadow for depth */}
+        <path
+          d="M 8 47.5 C 28 31.5, 72 31.5, 92 47.5"
+          fill="none"
+          stroke="hsl(70 60% 25% / 0.35)"
+          strokeWidth="1"
+        />
+        <path
+          d="M 8 55.5 C 28 71.5, 72 71.5, 92 55.5"
+          fill="none"
+          stroke="hsl(70 60% 25% / 0.35)"
+          strokeWidth="1"
+        />
+
+        {/* Specular highlight */}
+        <ellipse cx="34" cy="28" rx="14" ry="8" fill="hsl(0 0% 100% / 0.35)" />
+      </g>
+    </svg>
   );
 }
 
 function CourtDiagram() {
-  // Stylized top-down tennis court SVG
+  // Top-down tennis court — accurate ITF proportions
+  // Outer doubles court 36×78ft → drawn 360×560 with 20px margin.
+  // Singles sidelines inset by doubles alley (4.5ft → ~22.5px).
+  // Service line 21ft from net → ~42.5% from net to baseline.
+  const L = "hsl(0 0% 100% / 0.92)"; // court line color
   return (
-    <svg viewBox="0 0 400 600" className="h-full w-full" aria-hidden>
+    <svg viewBox="0 0 400 620" className="h-full w-full" aria-hidden role="img">
       <defs>
         <linearGradient id="courtFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
+          <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.06" />
         </linearGradient>
+        <linearGradient id="courtSurround" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+        </linearGradient>
+        <pattern id="netMesh" width="6" height="6" patternUnits="userSpaceOnUse">
+          <path d="M 0 0 L 6 6 M 6 0 L 0 6" stroke="hsl(var(--foreground) / 0.55)" strokeWidth="0.6" />
+        </pattern>
       </defs>
-      <rect x="20" y="20" width="360" height="560" rx="10" fill="url(#courtFill)" stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" />
-      {/* singles sidelines */}
-      <line x1="60" y1="20" x2="60" y2="580" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1" />
-      <line x1="340" y1="20" x2="340" y2="580" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1" />
-      {/* service boxes */}
-      <line x1="60" y1="180" x2="340" y2="180" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1" />
-      <line x1="60" y1="420" x2="340" y2="420" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1" />
-      <line x1="200" y1="180" x2="200" y2="420" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1" />
-      {/* net */}
-      <line x1="20" y1="300" x2="380" y2="300" stroke="hsl(var(--foreground) / 0.55)" strokeWidth="2" strokeDasharray="3 3" />
-      {/* baseline ticks */}
-      <line x1="200" y1="20" x2="200" y2="40" stroke="hsl(var(--primary) / 0.6)" strokeWidth="1.2" />
-      <line x1="200" y1="560" x2="200" y2="580" stroke="hsl(var(--primary) / 0.6)" strokeWidth="1.2" />
+
+      {/* Surrounding playing area */}
+      <rect x="0" y="0" width="400" height="620" fill="url(#courtSurround)" />
+
+      {/* Court playing surface (doubles court) */}
+      <rect
+        x="20" y="30" width="360" height="560" rx="4"
+        fill="url(#courtFill)"
+        stroke={L} strokeWidth="2.5"
+      />
+
+      {/* Singles sidelines (inset by doubles alley) */}
+      <line x1="62.5" y1="30" x2="62.5" y2="590" stroke={L} strokeWidth="1.8" />
+      <line x1="337.5" y1="30" x2="337.5" y2="590" stroke={L} strokeWidth="1.8" />
+
+      {/* Service lines (21ft from net) */}
+      <line x1="62.5" y1="190" x2="337.5" y2="190" stroke={L} strokeWidth="1.8" />
+      <line x1="62.5" y1="430" x2="337.5" y2="430" stroke={L} strokeWidth="1.8" />
+
+      {/* Center service line (between service boxes only) */}
+      <line x1="200" y1="190" x2="200" y2="430" stroke={L} strokeWidth="1.8" />
+
+      {/* Center marks on baselines */}
+      <line x1="200" y1="30" x2="200" y2="38" stroke={L} strokeWidth="2" strokeLinecap="round" />
+      <line x1="200" y1="582" x2="200" y2="590" stroke={L} strokeWidth="2" strokeLinecap="round" />
+
+      {/* Net cord band */}
+      <rect x="10" y="307" width="380" height="6" fill="url(#netMesh)" opacity="0.85" />
+      <line x1="10" y1="307" x2="390" y2="307" stroke="hsl(var(--foreground) / 0.7)" strokeWidth="1.2" />
+      <line x1="10" y1="313" x2="390" y2="313" stroke="hsl(var(--foreground) / 0.7)" strokeWidth="1.2" />
+      {/* White net tape on top */}
+      <line x1="10" y1="305.5" x2="390" y2="305.5" stroke={L} strokeWidth="2.2" />
+
+      {/* Net posts */}
+      <circle cx="10" cy="310" r="3.5" fill="hsl(var(--foreground) / 0.75)" />
+      <circle cx="390" cy="310" r="3.5" fill="hsl(var(--foreground) / 0.75)" />
+
+      {/* Subtle ball mark hint near service T (decorative) */}
+      <circle cx="200" cy="190" r="2.2" fill="hsl(var(--tennis-ball))" opacity="0.85" />
     </svg>
   );
 }
