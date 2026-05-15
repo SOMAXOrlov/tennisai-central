@@ -1,5 +1,6 @@
 // Calendar — Professional planning tool with month/week/day views
 import { useState, useMemo, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { ReadOnlyBanner, ReadOnlyBadge, EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
@@ -20,9 +21,11 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
   LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe, CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, Tournament, TournamentFederation } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments, useAddPlayerTournament, usePlayerTournaments } from "@/hooks/api/queries";
+import { queryKeys } from "@/hooks/api/queries";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
   isSameMonth, isSameDay, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,
@@ -662,6 +665,7 @@ const VIEW_ICONS: Record<ViewMode, React.ReactNode> = {
 export default function CalendarPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
+  const queryClient = useQueryClient();
   const role = user?.role ?? "player";
   const isPlayer = role === "player";
   const isCoach = role === "coach";
@@ -670,7 +674,7 @@ export default function CalendarPage() {
 
   const { data: events = [], isLoading, error } = useCalendarEvents();
   const { data: teams = [] } = useTeams();
-  const { data: tournaments = [] } = useTournaments();
+  const { data: tournaments = [], refetch: refetchTournaments, isFetching: isRefetchingTournaments } = useTournaments();
   const { data: playerTournaments = [] } = usePlayerTournaments();
   const createMut = useCreateCalendarEvent();
   const updateMut = useUpdateCalendarEvent();
@@ -701,6 +705,25 @@ export default function CalendarPage() {
       next.has(f) ? next.delete(f) : next.add(f);
       return next;
     });
+  };
+
+  const handleRefreshTournaments = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.tournaments });
+    const result = await refetchTournaments();
+    if (result.data) {
+      const federationsInData = new Set(
+        result.data
+          .map((t) => t.federation)
+          .filter((f): f is TournamentFederation => !!f),
+      );
+      // Add any newly discovered federations to the active set
+      setActiveFederations((prev) => {
+        const next = new Set(prev);
+        federationsInData.forEach((f) => next.add(f));
+        return next;
+      });
+      toast.success("Tournaments refreshed");
+    }
   };
 
   // Convert international tournaments to calendar events
@@ -983,6 +1006,16 @@ export default function CalendarPage() {
               onClick={() => toggleFederation(f)}
             />
           ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefreshTournaments}
+            disabled={isRefetchingTournaments}
+            className="ml-auto gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefetchingTournaments ? "animate-spin" : ""}`} />
+            {isRefetchingTournaments ? "Refreshing…" : "Refresh tournaments"}
+          </Button>
         </div>
       )}
 
