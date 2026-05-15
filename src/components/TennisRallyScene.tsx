@@ -12,8 +12,12 @@ import * as THREE from "three";
  */
 
 const PERIOD = 1.6;        // seconds per one-way trip
-const COURT_HALF_Y = 3.0;  // ball travels y ∈ [-COURT_HALF_Y, +COURT_HALF_Y]
-const ARC_HEIGHT = 1.4;    // peak of ball arc (out-of-court / camera-toward axis)
+// Travel range and racket positions are sized to fit inside the camera
+// frustum (camera at z=7.5, fov=42 → visible half-height ≈ 2.88). Keeping
+// everything inside ~2.4 ensures the ball never leaves the frame.
+const COURT_HALF_Y = 2.1;  // ball travels y ∈ [-COURT_HALF_Y, +COURT_HALF_Y]
+const RACKET_Y = 2.4;      // racket baseline position on the Y axis
+const ARC_HEIGHT = 1.0;    // peak of ball arc (toward camera, +Z)
 
 function easeInOutSine(t: number) {
   return -(Math.cos(Math.PI * t) - 1) / 2;
@@ -51,18 +55,21 @@ function Ball() {
 
   return (
     <>
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[0.18, 48, 48]} />
+      {/* Ball — rendered late + with depthTest off so it always sits on
+          top of the rackets / strings and stays visible at every phase. */}
+      <mesh ref={meshRef} renderOrder={10}>
+        <sphereGeometry args={[0.24, 48, 48]} />
         <meshStandardMaterial
           color="#d8f24a"
           roughness={0.85}
           metalness={0.02}
-          emissive="#9bbf28"
-          emissiveIntensity={0.15}
+          emissive="#bfe233"
+          emissiveIntensity={0.35}
+          depthTest={false}
         />
       </mesh>
-      <mesh ref={shadowRef}>
-        <circleGeometry args={[0.26, 32]} />
+      <mesh ref={shadowRef} renderOrder={9}>
+        <circleGeometry args={[0.28, 32]} />
         <meshBasicMaterial color="#000000" transparent opacity={0.35} />
       </mesh>
     </>
@@ -105,7 +112,7 @@ function Racket({ end }: { end: "top" | "bottom" }) {
   return (
     <group
       ref={groupRef}
-      position={[0, sign * 3.4, 0.2]}
+      position={[0, sign * RACKET_Y, 0.2]}
       rotation={[0, 0, end === "bottom" ? Math.PI : 0]}
     >
       {/* handle */}

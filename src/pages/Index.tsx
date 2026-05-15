@@ -206,8 +206,8 @@ const Index = () => {
           className="pointer-events-none absolute right-[-120px] top-1/3 h-[380px] w-[380px] rounded-full bg-[hsl(var(--tennis-ball))]/10 blur-[140px]"
         />
 
-        {/* Court diagram + vertical rally — top-right of the hero */}
-        <div className="pointer-events-none absolute right-[-40px] top-16 hidden h-[640px] w-[380px] opacity-90 lg:block xl:right-8">
+        {/* Court diagram + vertical rally — top-right of the hero (compact) */}
+        <div className="pointer-events-none absolute right-0 top-16 hidden h-[480px] w-[300px] opacity-90 lg:block xl:right-8">
           <motion.div
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
