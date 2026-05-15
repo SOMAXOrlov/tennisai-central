@@ -291,15 +291,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* 3D rally scene — desktop (full-width banner near bottom of hero) */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute inset-x-0 bottom-24 hidden lg:block"
-          >
-            <TennisRallyScene className="mx-auto h-64 w-full max-w-5xl" />
-          </motion.div>
+          {/* (Desktop rally is overlaid on the top-left court above.) */}
 
           {/* Scroll cue */}
           <motion.div
