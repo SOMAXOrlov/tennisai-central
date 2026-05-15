@@ -365,6 +365,8 @@ const Index = () => {
                     src={s.image}
                     name={s.name}
                     color={s.color}
+                    lineColor={s.lineColor}
+                    lineOpacity={s.lineOpacity}
                     className="transition-transform duration-[1200ms] ease-out group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/20 to-transparent" />
