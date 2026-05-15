@@ -144,6 +144,16 @@ export default function TournamentsPage() {
           </>
         )}
         {hasFilters && <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground"><X className="mr-1 h-4 w-4" /> Reset</Button>}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefreshTournaments}
+          disabled={isRefetchingTournaments}
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isRefetchingTournaments ? "animate-spin" : ""}`} />
+          {isRefetchingTournaments ? "Refreshing…" : "Refresh tournaments"}
+        </Button>
       </div>
 
       {hasFilters && (
