@@ -115,18 +115,6 @@ function Racket({ side }: { side: "left" | "right" }) {
   );
 }
 
-function CourtFloor() {
-  const tex = useMemo(() => null, []);
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.6, 0]} receiveShadow>
-      <planeGeometry args={[10, 4]} />
-      <meshStandardMaterial color="hsl(212 35% 14%)" roughness={1} transparent opacity={0.0} />
-      {/* invisible — we only want the shadow disc on the ball's ground projection */}
-      <primitive object={tex ?? new THREE.Object3D()} attach="userData-noop" />
-    </mesh>
-  );
-}
-
 export function TennisRallyScene({ className = "" }: { className?: string }) {
   return (
     <div className={className}>
@@ -143,7 +131,6 @@ export function TennisRallyScene({ className = "" }: { className?: string }) {
           <Racket side="left" />
           <Racket side="right" />
           <Ball />
-          <CourtFloor />
         </Suspense>
       </Canvas>
     </div>
