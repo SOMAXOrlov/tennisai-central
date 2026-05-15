@@ -159,6 +159,9 @@ export interface CalendarEvent {
 
 // --- Tournaments ---
 
+/** Sanctioning body / tour. WTF is not a tennis federation — assumed WTA. */
+export type TournamentFederation = "ITF" | "WTA" | "ATP" | "UTR" | "USTA";
+
 export interface Tournament {
   id: string;
   name: string;
@@ -174,6 +177,8 @@ export interface Tournament {
   startDate: string;
   endDate: string;
   description?: string;
+  /** Sanctioning body — used for the calendar federation filter. */
+  federation?: TournamentFederation;
 }
 
 export interface PlayerTournament {
