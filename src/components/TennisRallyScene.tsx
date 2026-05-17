@@ -15,8 +15,8 @@ const PERIOD = 1.6;        // seconds per one-way trip
 // Travel range and racket positions are sized to fit inside the camera
 // frustum (camera at z=7.5, fov=42 → visible half-height ≈ 2.88). Keeping
 // everything inside ~2.4 ensures the ball never leaves the frame.
-const COURT_HALF_Y = 2.1;  // ball travels y ∈ [-COURT_HALF_Y, +COURT_HALF_Y]
-const RACKET_Y = 2.4;      // racket baseline position on the Y axis
+const COURT_HALF_Y = 1.55; // ball travels y ∈ [-COURT_HALF_Y, +COURT_HALF_Y]
+const RACKET_Y = 0.7;      // baseline so racket HEAD sits near visible edge
 const ARC_HEIGHT = 1.0;    // peak of ball arc (toward camera, +Z)
 
 function easeInOutSine(t: number) {
