@@ -266,6 +266,12 @@ export interface PlayerSessionFeedback {
   submittedAt: string;
 }
 
+export interface TrainingAnalysis {
+  summary: string;
+  generatedAt: string;
+  model?: string;
+}
+
 export interface TrainingSession {
   id: string;
   title: string;
@@ -283,6 +289,7 @@ export interface TrainingSession {
   coachNotes?: string;
   review?: TrainingReview;
   playerSessionFeedback?: PlayerSessionFeedback;
+  analysis?: TrainingAnalysis;
   createdAt: string;
 }
 

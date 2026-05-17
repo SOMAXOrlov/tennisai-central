@@ -102,6 +102,15 @@ export function useDeleteTraining() {
   });
 }
 
+export function useAnalyzeTraining() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: (id: string) => trainingsApi.analyzeTraining(id),
+    onSuccess: () => { inv.training(); toast.success("Analysis ready"); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to analyze training"),
+  });
+}
+
 // ─── Training Request Hooks ───
 
 export function useTrainingRequests() {

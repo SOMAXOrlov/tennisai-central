@@ -16,13 +16,13 @@ import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
   Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
-  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle,
+  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle, Sparkles, RefreshCw,
 } from "lucide-react";
 import { TrainingReviewDialog } from "@/components/training/TrainingReviewDialog";
 import { PlayerFeedbackDialog } from "@/components/training/PlayerFeedbackDialog";
 import type { TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
-import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams } from "@/hooks/api/queries";
+import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams, useAnalyzeTraining } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
 
 const TRAINING_TYPES: { value: TrainingType; label: string }[] = [
@@ -193,10 +193,12 @@ function TrainingFormDialog({
 
 function TrainingDetailDrawer({
   training, open, onOpenChange, onEdit, onDelete, onReview, onPlayerFeedback, readOnly, isPlayer, deleting,
+  onAnalyze, analyzing,
 }: {
   training: TrainingSession | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onReview?: () => void; onPlayerFeedback?: () => void;
   readOnly?: boolean; isPlayer?: boolean; deleting?: boolean;
+  onAnalyze?: () => void; analyzing?: boolean;
 }) {
   const { connectedPlayers } = useConnections();
   if (!training) return null;
@@ -273,6 +275,42 @@ function TrainingDetailDrawer({
             </div>
           )}
 
+          {/* AI Analysis */}
+          {(training.analysis || (past && onAnalyze)) && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <Sparkles className="h-3 w-3" /> AI Performance Summary
+                </div>
+                {onAnalyze && past && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 gap-1 px-2 text-xs"
+                    onClick={onAnalyze}
+                    disabled={analyzing}
+                  >
+                    <RefreshCw className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`} />
+                    {analyzing ? "Analyzing…" : training.analysis ? "Re-analyze" : "Analyze"}
+                  </Button>
+                )}
+              </div>
+              {training.analysis ? (
+                <>
+                  <p className="text-xs leading-relaxed text-foreground">{training.analysis.summary}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Generated {format(parseISO(training.analysis.generatedAt), "MMM d, yyyy 'at' h:mm a")}
+                    {training.analysis.model ? ` · ${training.analysis.model}` : ""}
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Generate an AI-powered performance summary of this session from the backend.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Coach actions */}
           {!readOnly && (
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
@@ -330,6 +368,7 @@ export default function TrainingsPage() {
   const createMut = useCreateTraining();
   const updateMut = useUpdateTraining();
   const deleteMut = useDeleteTraining();
+  const analyzeMut = useAnalyzeTraining();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<TrainingSession | undefined>(undefined);
@@ -505,7 +544,7 @@ export default function TrainingsPage() {
       )}
 
       {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
-      <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} onReview={isCoach ? () => { if (detailTarget) { setReviewTarget(detailTarget); } } : undefined} onPlayerFeedback={!isCoach ? () => { if (detailTarget) setFeedbackTarget(detailTarget); } : undefined} readOnly={readOnly} isPlayer={!isCoach} deleting={deleteMut.isPending} />
+      <TrainingDetailDrawer training={detailTarget} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) setDetailTarget(null); }} onEdit={() => detailTarget && openEdit(detailTarget)} onDelete={() => detailTarget && setDeleteTarget(detailTarget)} onReview={isCoach ? () => { if (detailTarget) { setReviewTarget(detailTarget); } } : undefined} onPlayerFeedback={!isCoach ? () => { if (detailTarget) setFeedbackTarget(detailTarget); } : undefined} readOnly={readOnly} isPlayer={!isCoach} deleting={deleteMut.isPending} onAnalyze={detailTarget ? () => analyzeMut.mutate(detailTarget.id) : undefined} analyzing={analyzeMut.isPending} />
       {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
       {reviewTarget && <TrainingReviewDialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }} training={reviewTarget} onSave={(review) => { updateMut.mutate({ id: reviewTarget.id, data: { review } }); setReviewTarget(null); }} saving={updateMut.isPending} />}
       {feedbackTarget && <PlayerFeedbackDialog open={!!feedbackTarget} onOpenChange={(o) => { if (!o) setFeedbackTarget(null); }} training={feedbackTarget} onSave={(feedback) => { updateMut.mutate({ id: feedbackTarget.id, data: { playerSessionFeedback: feedback } }); setFeedbackTarget(null); }} saving={updateMut.isPending} />}
