@@ -205,10 +205,10 @@ const Index = () => {
             initial="hidden"
             animate="visible"
             variants={stagger}
-            className="grid grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12"
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-12"
           >
             {/* Headline tile — large */}
-            <Tile className="md:col-span-6 lg:col-span-8 lg:row-span-2 p-7 sm:p-9 lg:p-11" hoverLift={false}>
+            <Tile className="sm:col-span-2 md:col-span-6 lg:col-span-8 lg:row-span-2 p-6 sm:p-8 lg:p-11" hoverLift={false}>
               <div className="relative z-10 flex h-full flex-col justify-between gap-8">
                 <div>
                   <h1 className="text-balance text-4xl font-bold leading-[0.98] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
@@ -243,8 +243,8 @@ const Index = () => {
             </Tile>
 
             {/* Court tile */}
-            <Tile className="md:col-span-3 lg:col-span-4 lg:row-span-2 p-0">
-              <div className="relative h-full min-h-[320px] w-full overflow-hidden">
+            <Tile className="sm:col-span-2 md:col-span-6 lg:col-span-4 lg:row-span-2 p-0">
+              <div className="relative h-full min-h-[260px] sm:min-h-[300px] lg:min-h-[420px] w-full overflow-hidden">
                 <div className="absolute inset-0">
                   <MiniCourt />
                 </div>
@@ -261,7 +261,7 @@ const Index = () => {
             </Tile>
 
             {/* AI insight tile */}
-            <Tile className="md:col-span-3 lg:col-span-4 p-5 sm:p-6 min-h-[150px]">
+            <Tile className="sm:col-span-1 md:col-span-3 lg:col-span-4 p-5 sm:p-6 min-h-[150px]">
               <div className="relative flex h-full flex-col justify-between gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--gold))]">
@@ -281,7 +281,7 @@ const Index = () => {
             </Tile>
 
             {/* Stat ticker tile */}
-            <Tile className="md:col-span-3 lg:col-span-4 p-5 sm:p-6 min-h-[150px]">
+            <Tile className="sm:col-span-1 md:col-span-3 lg:col-span-4 p-5 sm:p-6 min-h-[150px]">
               <div className="flex h-full flex-col justify-between gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -306,7 +306,7 @@ const Index = () => {
               { v: "3", l: "Court surfaces" },
               { v: "13+", l: "Age & up" },
             ].map((s) => (
-              <Tile key={s.l} className="md:col-span-3 lg:col-span-3 p-5">
+              <Tile key={s.l} className="sm:col-span-1 md:col-span-3 lg:col-span-3 p-5">
                 <div className="flex h-full items-end justify-between gap-3">
                   <div>
                     <div className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{s.v}</div>
@@ -350,18 +350,18 @@ const Index = () => {
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
-            className="mx-auto grid max-w-6xl gap-3 sm:grid-cols-6 lg:grid-cols-12"
+            className="mx-auto grid max-w-6xl gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-12"
           >
             {features.map((f, i) => {
               const Icon = f.icon;
               // Vary tile spans for bento feel
               const span =
-                i === 0 ? "sm:col-span-4 lg:col-span-5"
-                : i === 1 ? "sm:col-span-2 lg:col-span-3"
-                : i === 2 ? "sm:col-span-3 lg:col-span-4"
-                : i === 3 ? "sm:col-span-3 lg:col-span-4"
-                : i === 4 ? "sm:col-span-3 lg:col-span-5"
-                : "sm:col-span-3 lg:col-span-3";
+                i === 0 ? "sm:col-span-2 lg:col-span-5"
+                : i === 1 ? "sm:col-span-1 lg:col-span-3"
+                : i === 2 ? "sm:col-span-1 lg:col-span-4"
+                : i === 3 ? "sm:col-span-1 lg:col-span-4"
+                : i === 4 ? "sm:col-span-2 lg:col-span-5"
+                : "sm:col-span-1 lg:col-span-3";
               return (
                 <Tile key={f.title} className={`${span} p-6`}>
                   <div className="flex h-full flex-col gap-3">
