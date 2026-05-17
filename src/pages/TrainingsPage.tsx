@@ -16,8 +16,9 @@ import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
   Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
-  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle, Sparkles, RefreshCw,
+  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle, Sparkles, RefreshCw, AlertCircle,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TrainingReviewDialog } from "@/components/training/TrainingReviewDialog";
 import { PlayerFeedbackDialog } from "@/components/training/PlayerFeedbackDialog";
 import type { TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback } from "@/types";
@@ -193,12 +194,12 @@ function TrainingFormDialog({
 
 function TrainingDetailDrawer({
   training, open, onOpenChange, onEdit, onDelete, onReview, onPlayerFeedback, readOnly, isPlayer, deleting,
-  onAnalyze, analyzing,
+  onAnalyze, analyzing, analyzeError,
 }: {
   training: TrainingSession | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onReview?: () => void; onPlayerFeedback?: () => void;
   readOnly?: boolean; isPlayer?: boolean; deleting?: boolean;
-  onAnalyze?: () => void; analyzing?: boolean;
+  onAnalyze?: () => void; analyzing?: boolean; analyzeError?: string | null;
 }) {
   const { connectedPlayers } = useConnections();
   if (!training) return null;
@@ -282,20 +283,50 @@ function TrainingDetailDrawer({
                 <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
                   <Sparkles className="h-3 w-3" /> AI Performance Summary
                 </div>
-                {onAnalyze && past && (
+                {onAnalyze && past && !analyzing && (
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-7 gap-1 px-2 text-xs"
                     onClick={onAnalyze}
-                    disabled={analyzing}
                   >
-                    <RefreshCw className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`} />
-                    {analyzing ? "Analyzing…" : training.analysis ? "Re-analyze" : "Analyze"}
+                    <RefreshCw className="h-3 w-3" />
+                    {analyzeError ? "Try again" : training.analysis ? "Re-analyze" : "Analyze"}
                   </Button>
                 )}
               </div>
-              {training.analysis ? (
+              {analyzing ? (
+                <div className="space-y-1.5" role="status" aria-label="Generating analysis">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-[92%]" />
+                  <Skeleton className="h-3 w-[78%]" />
+                  <Skeleton className="h-3 w-[60%]" />
+                  <p className="pt-1 text-[10px] text-muted-foreground flex items-center gap-1">
+                    <RefreshCw className="h-2.5 w-2.5 animate-spin" /> Contacting the AI backend…
+                  </p>
+                </div>
+              ) : analyzeError ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 space-y-2">
+                  <div className="flex items-start gap-1.5 text-xs text-destructive">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <p className="font-medium">Analysis failed</p>
+                      <p className="text-destructive/80">{analyzeError}</p>
+                    </div>
+                  </div>
+                  {onAnalyze && (
+                    <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={onAnalyze}>
+                      <RefreshCw className="h-3 w-3" /> Retry
+                    </Button>
+                  )}
+                  {training.analysis && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Showing the last successful summary below.
+                    </p>
+                  )}
+                </div>
+              ) : null}
+              {!analyzing && training.analysis ? (
                 <>
                   <p className="text-xs leading-relaxed text-foreground">{training.analysis.summary}</p>
                   <p className="text-[10px] text-muted-foreground">
@@ -303,11 +334,11 @@ function TrainingDetailDrawer({
                     {training.analysis.model ? ` · ${training.analysis.model}` : ""}
                   </p>
                 </>
-              ) : (
+              ) : !analyzing && !analyzeError ? (
                 <p className="text-xs text-muted-foreground">
                   Generate an AI-powered performance summary of this session from the backend.
                 </p>
-              )}
+              ) : null}
             </div>
           )}
 
