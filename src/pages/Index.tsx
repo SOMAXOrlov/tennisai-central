@@ -188,7 +188,7 @@ const Index = () => {
             >
               <motion.h1
                 variants={fade}
-                className="text-balance text-[44px] font-bold leading-[0.95] tracking-[-0.02em] text-foreground sm:text-[68px] lg:text-[92px]"
+                className="text-balance text-5xl font-bold leading-[0.95] tracking-tight text-foreground sm:text-7xl lg:text-8xl"
               >
                 Train smart.
                 <br />
@@ -311,7 +311,7 @@ const Index = () => {
                     <Marginalia>Season form</Marginalia>
                     <span className="font-mono text-xs text-[hsl(var(--gold))]">+24%</span>
                   </div>
-                  <div className="mt-3 h-24">
+                  <div className="mt-3 h-24 w-full">
                     <FormSpark />
                   </div>
                   <div className="mt-2 flex items-baseline justify-between border-t border-border/50 pt-2">
