@@ -1,5 +1,5 @@
 // TODO: Replace mock with real API calls when backend is ready
-import type { TrainingSession, ApiResponse } from "@/types";
+import type { TrainingSession, ApiResponse, TrainingAnalysis } from "@/types";
 import { apiClient } from "@/api/client";
 import { mockStore } from "@/mock/store";
 
@@ -36,4 +36,46 @@ export const trainingsApi = {
     if (USE_MOCK) { await delay(); mockStore.deleteTraining(id); return { data: null, message: "Training deleted" }; }
     return apiClient.delete(`/trainings/${id}`);
   },
+
+  // AI-powered performance summary for a completed session.
+  // Real backend: POST /trainings/:id/analysis → returns the updated TrainingSession
+  // with `analysis` populated by the AWS service.
+  async analyzeTraining(id: string): Promise<ApiResponse<TrainingSession>> {
+    if (USE_MOCK) {
+      await delay(900);
+      const t = mockStore.getTraining(id);
+      if (!t) throw { status: 404, message: "Training not found" };
+      const analysis: TrainingAnalysis = {
+        summary: buildMockSummary(t),
+        generatedAt: new Date().toISOString(),
+        model: "mock-analyzer-v1",
+      };
+      return { data: mockStore.updateTraining(id, { analysis }), message: "Analysis ready" };
+    }
+    return apiClient.post(`/trainings/${id}/analysis`);
+  },
 };
+
+function buildMockSummary(t: TrainingSession): string {
+  const parts: string[] = [];
+  const intensity = t.intensity ?? "medium";
+  parts.push(
+    `${t.title} ran as a ${intensity}-intensity ${t.trainingType.replace("_", " ")} session with ${t.playerIds.length} player${t.playerIds.length === 1 ? "" : "s"}.`,
+  );
+  if (t.goal) parts.push(`Stated goal: ${t.goal}.`);
+  if (t.review) {
+    parts.push(
+      `Coach rated the session ${t.review.rating}/5 and focused on ${t.review.workedOn}.${t.review.nextSteps ? ` Next steps: ${t.review.nextSteps}.` : ""}`,
+    );
+  }
+  if (t.playerSessionFeedback) {
+    const f = t.playerSessionFeedback;
+    parts.push(
+      `Player reported feeling ${f.feeling} with energy ${f.energyLevel}/5${f.tags.length ? ` (${f.tags.slice(0, 3).join(", ")})` : ""}.`,
+    );
+  }
+  parts.push(
+    "Overall, execution matched the planned intensity. Recommend reinforcing the same focus area in the next session while monitoring fatigue.",
+  );
+  return parts.join(" ");
+}
