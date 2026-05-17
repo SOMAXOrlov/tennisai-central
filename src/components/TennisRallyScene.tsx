@@ -1,5 +1,5 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef, Suspense } from "react";
+import { useMemo, useRef, Suspense } from "react";
 import * as THREE from "three";
 
 /**
@@ -27,6 +27,50 @@ function Ball() {
   const meshRef = useRef<THREE.Mesh>(null!);
   const shadowRef = useRef<THREE.Mesh>(null!);
 
+  // Procedural tennis-ball texture: yellow felt with two curved white seams.
+  const ballTexture = useMemo(() => {
+    const size = 512;
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    const ctx = c.getContext("2d")!;
+    // Felt base (subtle radial variation)
+    const grad = ctx.createRadialGradient(size / 2, size / 2, size * 0.1, size / 2, size / 2, size * 0.6);
+    grad.addColorStop(0, "#e6ff5c");
+    grad.addColorStop(1, "#c8e22a");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    // The classic tennis-ball seam is one continuous curve. On an unwrapped
+    // sphere (equirectangular) it reads as two opposing sinusoidal bands.
+    ctx.strokeStyle = "#fbfff0";
+    ctx.lineWidth = 14;
+    ctx.lineCap = "round";
+    for (const offset of [0, size / 2]) {
+      ctx.beginPath();
+      for (let x = 0; x <= size; x += 4) {
+        const y = size / 2 + Math.sin((x / size) * Math.PI * 2 + (offset ? Math.PI : 0)) * size * 0.22;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    // Faint shadow under each seam for depth
+    ctx.strokeStyle = "rgba(60,80,0,0.35)";
+    ctx.lineWidth = 6;
+    for (const offset of [0, size / 2]) {
+      ctx.beginPath();
+      for (let x = 0; x <= size; x += 4) {
+        const y = size / 2 + Math.sin((x / size) * Math.PI * 2 + (offset ? Math.PI : 0)) * size * 0.22 + 9;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 8;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, []);
+
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
     const cycle = Math.floor(t / PERIOD);
@@ -41,8 +85,8 @@ function Ball() {
     const x = Math.sin(phase * Math.PI) * 0.25 * dir;
 
     meshRef.current.position.set(x, y, z);
-    meshRef.current.rotation.x = t * 5 * dir;
-    meshRef.current.rotation.y = t * 3 * dir;
+    meshRef.current.rotation.x = t * 6 * dir;
+    meshRef.current.rotation.z = t * 2 * dir;
 
     // Court-floor shadow follows the ball; shrinks/fades as the ball rises.
     const heightFactor = z / ARC_HEIGHT;
@@ -58,13 +102,13 @@ function Ball() {
       {/* Ball — rendered late + with depthTest off so it always sits on
           top of the rackets / strings and stays visible at every phase. */}
       <mesh ref={meshRef} renderOrder={10}>
-        <sphereGeometry args={[0.24, 48, 48]} />
+        <sphereGeometry args={[0.26, 64, 64]} />
         <meshStandardMaterial
-          color="#d8f24a"
-          roughness={0.85}
-          metalness={0.02}
-          emissive="#bfe233"
-          emissiveIntensity={0.35}
+          map={ballTexture}
+          roughness={0.95}
+          metalness={0}
+          emissive="#9fbf1a"
+          emissiveIntensity={0.15}
           depthTest={false}
         />
       </mesh>
@@ -85,7 +129,7 @@ function Racket({ end }: { end: "top" | "bottom" }) {
   const groupRef = useRef<THREE.Group>(null!);
   const sign = end === "top" ? 1 : -1;
   // Slight inward tilt at rest (frame angled toward center of court).
-  const restTilt = sign * -0.18;
+  const restTilt = sign * -0.22;
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
@@ -97,13 +141,27 @@ function Racket({ end }: { end: "top" | "bottom" }) {
     //  - end=top    & dir=+1 (ball going from -Y to +Y), contact near phase=1
     //  - end=bottom & dir=-1 (ball going from +Y to -Y), contact near phase=1
     const onThisEnd = (end === "top" && dir === 1) || (end === "bottom" && dir === -1);
-    const swingPhase = onThisEnd ? phase : 0;
-    const impulse =
-      swingPhase > 0.78
-        ? Math.sin(((swingPhase - 0.78) / 0.22) * Math.PI) * sign * -1.0
-        : 0;
-    // Rotate around X so frame swings toward / away from camera.
-    groupRef.current.rotation.x = restTilt + impulse;
+    // Full swing: wind-up (pull back, away from camera) → contact → follow-through.
+    let swing = 0;
+    let twist = 0;
+    if (onThisEnd) {
+      if (phase < 0.55) {
+        // Wind-up: rotate frame away from camera (-Z) gradually
+        const k = phase / 0.55;
+        swing = sign * 0.85 * easeInOutSine(k);
+      } else {
+        // Forward swing & follow-through toward camera (+Z) past contact
+        const k = (phase - 0.55) / 0.45;
+        swing = sign * (0.85 - 2.1 * easeInOutSine(k));
+      }
+      // Slight lateral twist for natural arm motion
+      twist = sign * Math.sin(phase * Math.PI) * 0.35;
+    } else {
+      // Idle ready-stance bob
+      twist = Math.sin(t * 2 + (end === "top" ? 0 : Math.PI)) * 0.05;
+    }
+    groupRef.current.rotation.x = restTilt + swing;
+    groupRef.current.rotation.z = (end === "bottom" ? Math.PI : 0) + twist;
   });
 
   // The whole racket is built along the Y axis (handle below frame in local
@@ -113,42 +171,60 @@ function Racket({ end }: { end: "top" | "bottom" }) {
     <group
       ref={groupRef}
       position={[0, sign * RACKET_Y, 0.2]}
-      rotation={[0, 0, end === "bottom" ? Math.PI : 0]}
     >
       {/* handle */}
       <mesh position={[0, 0.55, 0]}>
-        <cylinderGeometry args={[0.06, 0.06, 0.95, 16]} />
-        <meshStandardMaterial color="#0a0a0a" roughness={0.6} />
+        <cylinderGeometry args={[0.05, 0.05, 0.95, 16]} />
+        <meshStandardMaterial color="#111" roughness={0.6} />
       </mesh>
       {/* grip wrap */}
       <mesh position={[0, 0.13, 0]}>
-        <cylinderGeometry args={[0.075, 0.07, 0.4, 16]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.95} />
+        <cylinderGeometry args={[0.07, 0.06, 0.42, 16]} />
+        <meshStandardMaterial color="#222" roughness={0.95} />
       </mesh>
-      {/* frame (head) */}
-      <mesh position={[0, 1.45, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.45, 0.05, 16, 80]} />
-        <meshStandardMaterial color="#0f172a" metalness={0.65} roughness={0.3} />
+      {/* throat — Y-shaped struts replacing the old box */}
+      <mesh position={[-0.16, 1.02, 0]} rotation={[0, 0, 0.55]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.42, 12]} />
+        <meshStandardMaterial color="hsl(45 90% 55%)" emissive="hsl(45 90% 55%)" emissiveIntensity={0.45} />
       </mesh>
-      {/* strings */}
-      <mesh position={[0, 1.45, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.42, 48]} />
-        <meshBasicMaterial
-          color="#f5f5f5"
-          transparent
-          opacity={0.22}
-          side={THREE.DoubleSide}
-        />
+      <mesh position={[0.16, 1.02, 0]} rotation={[0, 0, -0.55]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.42, 12]} />
+        <meshStandardMaterial color="hsl(45 90% 55%)" emissive="hsl(45 90% 55%)" emissiveIntensity={0.45} />
       </mesh>
-      {/* throat accent */}
-      <mesh position={[0, 1.0, 0]}>
-        <boxGeometry args={[0.18, 0.16, 0.04]} />
+      {/* frame (head) — bright, visible outline */}
+      <mesh position={[0, 1.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.5, 0.045, 18, 96]} />
         <meshStandardMaterial
-          color="hsl(212 90% 55%)"
-          emissive="hsl(212 90% 55%)"
-          emissiveIntensity={0.4}
+          color="hsl(45 95% 60%)"
+          emissive="hsl(45 95% 55%)"
+          emissiveIntensity={0.55}
+          metalness={0.35}
+          roughness={0.35}
         />
       </mesh>
+      {/* strings — crosshatch lines for visible string bed */}
+      <group position={[0, 1.5, 0]}>
+        {Array.from({ length: 9 }).map((_, i) => {
+          const t = (i / 8) * 2 - 1; // -1..1
+          const w = Math.sqrt(Math.max(0, 1 - t * t)) * 0.96; // chord length within frame
+          return (
+            <mesh key={`v${i}`} position={[t * 0.5, 0, 0]}>
+              <boxGeometry args={[0.008, 0.5 * w, 0.005]} />
+              <meshBasicMaterial color="#f4f4f0" transparent opacity={0.85} />
+            </mesh>
+          );
+        })}
+        {Array.from({ length: 9 }).map((_, i) => {
+          const t = (i / 8) * 2 - 1;
+          const w = Math.sqrt(Math.max(0, 1 - t * t)) * 0.96;
+          return (
+            <mesh key={`h${i}`} position={[0, t * 0.5, 0]}>
+              <boxGeometry args={[0.5 * w, 0.008, 0.005]} />
+              <meshBasicMaterial color="#f4f4f0" transparent opacity={0.85} />
+            </mesh>
+          );
+        })}
+      </group>
     </group>
   );
 }
