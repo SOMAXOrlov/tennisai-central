@@ -159,7 +159,7 @@ const Index = () => {
 
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, prefersReduced ? 0 : 60]);
-  const heroBlur = useTransform(scrollYProgress, [0, 1], ["0px", prefersReduced ? "0px" : "6px"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, prefersReduced ? 1 : 0.7]);
 
   const { scrollYProgress: pageProgress } = useScroll();
   const progressX = useSpring(pageProgress, { stiffness: 120, damping: 30, mass: 0.2 });
@@ -185,7 +185,7 @@ const Index = () => {
         />
         <div className="pointer-events-none absolute inset-0 court-lines opacity-[0.18] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,black_30%,transparent_100%)]" />
 
-        <motion.div style={{ y: heroY, filter: useTransform(heroBlur, (v) => `blur(${v})`) as any }} className="container relative">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container relative">
           {/* Eyebrow */}
           <motion.div initial="hidden" animate="visible" variants={rise} custom={0} className="mb-6 flex items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.08)] px-3 py-1 text-[11px] font-medium tracking-wide text-[hsl(var(--gold))]">
@@ -205,10 +205,10 @@ const Index = () => {
             initial="hidden"
             animate="visible"
             variants={stagger}
-            className="grid grid-cols-1 gap-3 sm:grid-cols-6 lg:grid-cols-12 lg:auto-rows-[112px]"
+            className="grid grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12"
           >
             {/* Headline tile — large */}
-            <Tile className="sm:col-span-6 lg:col-span-8 lg:row-span-3 p-7 sm:p-9 lg:p-11" hoverLift={false}>
+            <Tile className="md:col-span-6 lg:col-span-8 lg:row-span-2 p-7 sm:p-9 lg:p-11" hoverLift={false}>
               <div className="relative z-10 flex h-full flex-col justify-between gap-8">
                 <div>
                   <h1 className="text-balance text-4xl font-bold leading-[0.98] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
@@ -243,8 +243,8 @@ const Index = () => {
             </Tile>
 
             {/* Court tile */}
-            <Tile className="sm:col-span-3 lg:col-span-4 lg:row-span-3 p-0">
-              <div className="relative h-full min-h-[260px] w-full overflow-hidden">
+            <Tile className="md:col-span-3 lg:col-span-4 lg:row-span-2 p-0">
+              <div className="relative h-full min-h-[320px] w-full overflow-hidden">
                 <div className="absolute inset-0">
                   <MiniCourt />
                 </div>
@@ -261,7 +261,7 @@ const Index = () => {
             </Tile>
 
             {/* AI insight tile */}
-            <Tile className="sm:col-span-3 lg:col-span-4 lg:row-span-2 p-5 sm:p-6">
+            <Tile className="md:col-span-3 lg:col-span-4 p-5 sm:p-6 min-h-[150px]">
               <div className="relative flex h-full flex-col justify-between gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(var(--gold))]">
@@ -281,7 +281,7 @@ const Index = () => {
             </Tile>
 
             {/* Stat ticker tile */}
-            <Tile className="sm:col-span-3 lg:col-span-4 lg:row-span-2 p-5 sm:p-6">
+            <Tile className="md:col-span-3 lg:col-span-4 p-5 sm:p-6 min-h-[150px]">
               <div className="flex h-full flex-col justify-between gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -306,7 +306,7 @@ const Index = () => {
               { v: "3", l: "Court surfaces" },
               { v: "13+", l: "Age & up" },
             ].map((s) => (
-              <Tile key={s.l} className="sm:col-span-3 lg:col-span-3 lg:row-span-1 p-5">
+              <Tile key={s.l} className="md:col-span-3 lg:col-span-3 p-5">
                 <div className="flex h-full items-end justify-between gap-3">
                   <div>
                     <div className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{s.v}</div>
