@@ -392,7 +392,7 @@ const Index = () => {
       </section>
 
       {/* ──────── Surface showcase ──────── */}
-      <section className="relative border-y border-border bg-secondary/30 py-20">
+      <section className="relative py-20">
         <div className="container">
           <div className="mb-8 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
             <div>
