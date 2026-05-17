@@ -72,9 +72,9 @@ const workflow = [
 ];
 
 const surfaces = [
-  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style", image: surfaceClay, lineColor: "hsl(40 30% 96%)", lineOpacity: 0.78 },
-  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style", image: surfaceGrass, lineColor: "hsl(0 0% 100%)", lineOpacity: 1 },
-  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style", image: surfaceHard, lineColor: "hsl(210 25% 97%)", lineOpacity: 0.85 },
+  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Roland-Garros style", image: surfaceClay, lineColor: "hsl(0 0% 100%)", lineOpacity: 0 },
+  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Wimbledon style", image: surfaceGrass, lineColor: "hsl(0 0% 100%)", lineOpacity: 0 },
+  { name: "Hard", color: "hsl(var(--court-hard))", desc: "US/AO style", image: surfaceHard, lineColor: "hsl(0 0% 100%)", lineOpacity: 0 },
 ];
 
 /* ─── Decorative bits ─── */
