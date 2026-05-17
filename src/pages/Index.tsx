@@ -134,17 +134,24 @@ function Tile({
   className = "",
   children,
   hoverLift = true,
+  bare = true,
 }: {
   className?: string;
   children: React.ReactNode;
   hoverLift?: boolean;
+  /** When true (default), render without a border/background — a frameless tile. */
+  bare?: boolean;
 }) {
   return (
     <motion.div
       variants={tileIn}
       whileHover={hoverLift ? { y: -4 } : undefined}
       transition={{ type: "spring", stiffness: 260, damping: 24 }}
-      className={`group relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 backdrop-blur-sm transition-colors hover:border-[hsl(var(--gold)/0.45)] ${className}`}
+      className={`group relative overflow-hidden rounded-2xl transition-colors ${
+        bare
+          ? ""
+          : "border border-border/70 bg-card/80 backdrop-blur-sm hover:border-[hsl(var(--gold)/0.45)]"
+      } ${className}`}
     >
       {children}
     </motion.div>
