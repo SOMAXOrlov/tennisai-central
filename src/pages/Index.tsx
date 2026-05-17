@@ -149,7 +149,7 @@ const Index = () => {
         <motion.div style={{ y: heroY }} className="container relative">
           {/* Issue header — editorial masthead */}
           <motion.div
-            initial={false}
+            initial="visible"
             animate="visible"
             variants={stagger}
             className="mb-10 flex items-end justify-between gap-6 border-b border-border/50 pb-6"
@@ -168,7 +168,7 @@ const Index = () => {
           <div className="grid grid-cols-12 gap-x-6 gap-y-12">
             {/* Left margin column — small caps lede */}
             <motion.aside
-              initial={false}
+              initial="visible"
               animate="visible"
               variants={fade}
               className="col-span-12 lg:col-span-2 lg:pt-3"
@@ -181,7 +181,7 @@ const Index = () => {
 
             {/* Headline — drop-cap, oversized */}
             <motion.div
-              initial={false}
+              initial="visible"
               animate="visible"
               variants={stagger}
               className="col-span-12 lg:col-span-7"
@@ -224,7 +224,7 @@ const Index = () => {
 
             {/* Right rail — live rally + meta */}
             <motion.div
-              initial={false}
+              initial="visible"
               animate="visible"
               variants={fade}
               className="col-span-12 lg:col-span-3"
@@ -248,7 +248,7 @@ const Index = () => {
 
           {/* Stat strip — newspaper-style numbers across the bottom */}
           <motion.div
-            initial={false}
+            initial="visible"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
@@ -280,7 +280,7 @@ const Index = () => {
               <div className="mt-1 font-mono text-[11px] text-muted-foreground">The Edge Report</div>
             </div>
             <motion.div
-              initial={false}
+              initial="visible"
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={stagger}
@@ -339,7 +339,7 @@ const Index = () => {
             </div>
 
             <motion.h2
-              initial={false}
+              initial="visible"
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={fade}
@@ -351,7 +351,7 @@ const Index = () => {
             </motion.h2>
 
             <motion.ol
-              initial={false}
+              initial="visible"
               whileInView="visible"
               viewport={{ once: true, margin: "-60px" }}
               variants={stagger}
@@ -392,7 +392,7 @@ const Index = () => {
               <div className="mt-1 font-mono text-[11px] text-muted-foreground">The Plates</div>
             </div>
             <motion.h2
-              initial={false}
+              initial="visible"
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={fade}
@@ -404,7 +404,7 @@ const Index = () => {
           </div>
 
           <motion.div
-            initial={false}
+            initial="visible"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
@@ -452,7 +452,7 @@ const Index = () => {
               <div className="mt-1 font-mono text-[11px] text-muted-foreground">The Match Week</div>
             </div>
             <motion.h2
-              initial={false}
+              initial="visible"
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={fade}
@@ -464,7 +464,7 @@ const Index = () => {
           </div>
 
           <motion.ol
-            initial={false}
+            initial="visible"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
@@ -501,7 +501,7 @@ const Index = () => {
         <div className="container relative">
           <Rule />
           <motion.div
-            initial={false}
+            initial="visible"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
