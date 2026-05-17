@@ -134,17 +134,24 @@ function Tile({
   className = "",
   children,
   hoverLift = true,
+  bare = true,
 }: {
   className?: string;
   children: React.ReactNode;
   hoverLift?: boolean;
+  /** When true (default), render without a border/background — a frameless tile. */
+  bare?: boolean;
 }) {
   return (
     <motion.div
       variants={tileIn}
       whileHover={hoverLift ? { y: -4 } : undefined}
       transition={{ type: "spring", stiffness: 260, damping: 24 }}
-      className={`group relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 backdrop-blur-sm transition-colors hover:border-[hsl(var(--gold)/0.45)] ${className}`}
+      className={`group relative overflow-hidden rounded-2xl transition-colors ${
+        bare
+          ? ""
+          : "border border-border/70 bg-card/80 backdrop-blur-sm hover:border-[hsl(var(--gold)/0.45)]"
+      } ${className}`}
     >
       {children}
     </motion.div>
@@ -251,7 +258,7 @@ const Index = () => {
                 <div className="absolute inset-0">
                   <TennisRallyScene className="absolute inset-0 h-full w-full opacity-90" />
                 </div>
-                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between border-t border-border/40 bg-background/60 px-4 py-3 backdrop-blur">
+                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                     <Activity className="h-3 w-3 text-[hsl(var(--gold))]" /> Live rally
                   </div>
@@ -385,7 +392,7 @@ const Index = () => {
       </section>
 
       {/* ──────── Surface showcase ──────── */}
-      <section className="relative border-y border-border bg-secondary/30 py-20">
+      <section className="relative py-20">
         <div className="container">
           <div className="mb-8 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
             <div>
@@ -497,7 +504,7 @@ const Index = () => {
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={rise}
-            className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-card/80 p-10 text-center shadow-2xl shadow-[hsl(var(--emerald-mid)/0.15)] backdrop-blur md:p-14"
+            className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl p-10 text-center md:p-14"
           >
             <div className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full bg-[radial-gradient(circle_at_30%_30%,hsl(var(--gold)),hsl(var(--gold)/0.5))] opacity-80 blur-[2px]" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[hsl(var(--gold))]">Ready up</span>
