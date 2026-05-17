@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 /* TennisAI Design System — Premium Sports SaaS */
 
@@ -50,6 +50,12 @@
     --court-hard: 210 70% 45%;
     --court-line: 0 0% 100%;
     --net-shadow: 220 30% 12%;
+
+    /* Landing — Emerald Prestige palette */
+    --emerald-deep: 162 78% 17%;     /* #064e3b */
+    --emerald-mid: 162 80% 26%;      /* #0d7a5f */
+    --gold: 44 50% 54%;              /* #c9a84c */
+    --cream: 45 60% 92%;             /* #f5f0e0 */
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -108,6 +114,11 @@
     --court-hard: 210 65% 40%;
     --court-line: 210 20% 92%;
     --net-shadow: 0 0% 0%;
+
+    --emerald-deep: 162 78% 13%;
+    --emerald-mid: 162 70% 28%;
+    --gold: 44 60% 58%;
+    --cream: 45 50% 88%;
   }
 }
 
@@ -118,7 +129,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
