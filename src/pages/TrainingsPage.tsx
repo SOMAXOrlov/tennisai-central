@@ -16,13 +16,13 @@ import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
   Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
-  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle,
+  Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle, Sparkles, RefreshCw,
 } from "lucide-react";
 import { TrainingReviewDialog } from "@/components/training/TrainingReviewDialog";
 import { PlayerFeedbackDialog } from "@/components/training/PlayerFeedbackDialog";
 import type { TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
-import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams } from "@/hooks/api/queries";
+import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams, useAnalyzeTraining } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
 
 const TRAINING_TYPES: { value: TrainingType; label: string }[] = [
@@ -193,10 +193,12 @@ function TrainingFormDialog({
 
 function TrainingDetailDrawer({
   training, open, onOpenChange, onEdit, onDelete, onReview, onPlayerFeedback, readOnly, isPlayer, deleting,
+  onAnalyze, analyzing,
 }: {
   training: TrainingSession | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onReview?: () => void; onPlayerFeedback?: () => void;
   readOnly?: boolean; isPlayer?: boolean; deleting?: boolean;
+  onAnalyze?: () => void; analyzing?: boolean;
 }) {
   const { connectedPlayers } = useConnections();
   if (!training) return null;
@@ -270,6 +272,42 @@ function TrainingDetailDrawer({
                 <p className="text-xs text-foreground italic">"{training.playerSessionFeedback.note}"</p>
               )}
               <p className="text-[10px] text-muted-foreground">Submitted {format(parseISO(training.playerSessionFeedback.submittedAt), "MMM d, yyyy")}</p>
+            </div>
+          )}
+
+          {/* AI Analysis */}
+          {(training.analysis || (past && onAnalyze)) && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <Sparkles className="h-3 w-3" /> AI Performance Summary
+                </div>
+                {onAnalyze && past && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 gap-1 px-2 text-xs"
+                    onClick={onAnalyze}
+                    disabled={analyzing}
+                  >
+                    <RefreshCw className={`h-3 w-3 ${analyzing ? "animate-spin" : ""}`} />
+                    {analyzing ? "Analyzing…" : training.analysis ? "Re-analyze" : "Analyze"}
+                  </Button>
+                )}
+              </div>
+              {training.analysis ? (
+                <>
+                  <p className="text-xs leading-relaxed text-foreground">{training.analysis.summary}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Generated {format(parseISO(training.analysis.generatedAt), "MMM d, yyyy 'at' h:mm a")}
+                    {training.analysis.model ? ` · ${training.analysis.model}` : ""}
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Generate an AI-powered performance summary of this session from the backend.
+                </p>
+              )}
             </div>
           )}
 
