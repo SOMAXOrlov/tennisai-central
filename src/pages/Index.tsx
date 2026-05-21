@@ -233,9 +233,16 @@ const Index = () => {
                 <Marginalia>Live rally</Marginalia>
                 <span className="font-mono text-[10px] text-[hsl(var(--gold))]">Court 1 · 30–15</span>
               </div>
-              <div className="relative mt-3 aspect-[3/4] w-full overflow-hidden">
+              <div
+                role="img"
+                aria-label="Live tennis rally — stylized top-down court with a ball bouncing baseline to baseline"
+                className="relative mt-3 aspect-[3/4] w-full overflow-hidden rounded-2xl ring-1 ring-border/50"
+              >
                 <TennisRallyScene className="absolute inset-0 h-full w-full" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent"
+                />
               </div>
               <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
@@ -412,17 +419,21 @@ const Index = () => {
           >
             {surfaces.map((s, i) => (
               <motion.figure key={s.name} variants={fade} className="group">
-                <div className="relative aspect-[4/5] overflow-hidden">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl ring-1 ring-border/50">
                   <SurfaceImage
                     src={s.image}
-                    name={s.name}
+                    name={`${s.name} court — ${s.desc}`}
                     color={s.color}
+                    sizes="(min-width: 1024px) 30vw, (min-width: 768px) 33vw, 100vw"
                     lineColor="hsl(0 0% 100%)"
                     lineOpacity={0}
                     className="transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent" />
-                  <span className="absolute left-4 top-4 font-mono text-[10px] uppercase tracking-[0.28em] text-cream/90">
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent"
+                  />
+                  <span aria-hidden className="absolute left-4 top-4 font-mono text-[10px] uppercase tracking-[0.28em] text-cream/90">
                     Plate {String(i + 1).padStart(2, "0")}
                   </span>
                 </div>
