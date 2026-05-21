@@ -253,6 +253,7 @@ export function TennisRallyScene({ className = "" }: { className?: string }) {
         camera={{ position: [0, -4.6, 4.2], fov: 38 }}
         gl={{ alpha: true, antialias: true }}
         style={{ background: "transparent" }}
+        onCreated={({ camera }) => camera.lookAt(0, 0.2, 0)}
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 4, 5]} intensity={1.1} />
