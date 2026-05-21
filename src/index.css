@@ -206,6 +206,35 @@
       linear-gradient(180deg, hsl(var(--court-grass) / 0.08), transparent 70%);
   }
 
+  /* Full-page tennis court backdrop — SVG layer placed via ::before so it
+     stays fixed behind content. A soft vignette on ::after keeps text legible. */
+  .court-bg { position: relative; isolation: isolate; }
+  .court-bg::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-color: hsl(var(--court-grass));
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1000' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='court' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='%231f6b3a'/><stop offset='1' stop-color='%23154d29'/></linearGradient><pattern id='mesh' x='0' y='0' width='10' height='10' patternUnits='userSpaceOnUse'><path d='M0 0h10v10H0z' fill='none'/><path d='M0 0L10 10M10 0L0 10' stroke='%23ffffff' stroke-opacity='0.18' stroke-width='0.6'/></pattern></defs><rect width='800' height='1000' fill='url(%23court)'/><g stroke='white' stroke-opacity='0.85' fill='none' stroke-width='3'><rect x='130' y='120' width='540' height='760'/><line x1='130' y1='320' x2='670' y2='320'/><line x1='130' y1='680' x2='670' y2='680'/><line x1='400' y1='320' x2='400' y2='680'/><line x1='220' y1='115' x2='220' y2='885'/><line x1='580' y1='115' x2='580' y2='885'/><line x1='398' y1='115' x2='402' y2='125'/><line x1='398' y1='875' x2='402' y2='885'/></g><g><rect x='110' y='488' width='580' height='24' fill='%230a1f14' fill-opacity='0.65'/><rect x='110' y='488' width='580' height='24' fill='url(%23mesh)'/><rect x='110' y='484' width='580' height='6' fill='white' fill-opacity='0.92'/><rect x='108' y='480' width='6' height='40' fill='%230a0a0a'/><rect x='686' y='480' width='6' height='40' fill='%230a0a0a'/></g></svg>");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+  .court-bg::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 50%, hsl(var(--background) / 0.55), hsl(var(--background) / 0.88) 70%, hsl(var(--background) / 0.95) 100%);
+  }
+  .dark .court-bg::after {
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 50%, hsl(var(--background) / 0.5), hsl(var(--background) / 0.85) 70%, hsl(var(--background) / 0.95) 100%);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
