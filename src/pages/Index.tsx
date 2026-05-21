@@ -128,7 +128,7 @@ const Index = () => {
   const progressX = useSpring(pageProgress, { stiffness: 120, damping: 30, mass: 0.2 });
 
   return (
-    <>
+    <div className="court-bg">
       <motion.div
         style={{ scaleX: progressX }}
         className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-[hsl(var(--emerald-mid))] via-[hsl(var(--emerald-mid))] to-[hsl(var(--gold))]"
