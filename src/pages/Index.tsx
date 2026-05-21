@@ -422,7 +422,7 @@ const Index = () => {
                 <div className="relative aspect-[4/5] overflow-hidden rounded-2xl ring-1 ring-border/50">
                   <SurfaceImage
                     src={s.image}
-                    name={`${s.name} court — ${s.desc}`}
+                    name={s.name}
                     color={s.color}
                     sizes="(min-width: 1024px) 30vw, (min-width: 768px) 33vw, 100vw"
                     lineColor="hsl(0 0% 100%)"
