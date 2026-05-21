@@ -174,7 +174,7 @@ const Index = () => {
               className="col-span-12 lg:col-span-2 lg:pt-3"
             >
               <Marginalia>The lede</Marginalia>
-              <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mt-3 text-[clamp(0.8125rem,0.75rem+0.3vw,0.9375rem)] leading-relaxed text-muted-foreground">
                 An operating system for competitive tennis — written for the player who treats the season as a craft.
               </p>
             </motion.aside>
@@ -188,7 +188,7 @@ const Index = () => {
             >
               <motion.h1
                 variants={fade}
-                className="text-balance text-5xl font-bold leading-[0.95] tracking-tight text-foreground sm:text-7xl lg:text-8xl"
+                className="text-balance font-bold leading-[0.95] tracking-tight text-foreground text-[clamp(2.5rem,1.4rem+5.5vw,7.5rem)]"
               >
                 Train smart.
                 <br />
@@ -201,7 +201,7 @@ const Index = () => {
               </motion.h1>
 
               <motion.div variants={fade} className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-5">
-                <p className="sm:col-span-3 text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+                <p className="sm:col-span-3 text-pretty leading-relaxed text-muted-foreground text-[clamp(0.9375rem,0.85rem+0.4vw,1.125rem)]">
                   Tournament planning, training coordination and AI-driven match insights — assembled into a single,
                   quiet workspace for the modern competitive player and their team.
                 </p>
@@ -288,7 +288,7 @@ const Index = () => {
             >
               <motion.h2
                 variants={fade}
-                className="text-balance text-3xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+                className="text-balance font-bold leading-[1.05] tracking-tight text-foreground text-[clamp(1.875rem,1.2rem+3vw,3.75rem)]"
               >
                 Read your opponent before the
                 <span className="italic text-muted-foreground"> first ball</span> is in play.
@@ -343,7 +343,7 @@ const Index = () => {
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={fade}
-              className="col-span-12 lg:col-span-9 text-balance text-3xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+              className="col-span-12 lg:col-span-9 text-balance font-bold leading-[1.05] tracking-tight text-foreground text-[clamp(1.875rem,1.2rem+3vw,3.75rem)]"
             >
               Everything between{" "}
               <span className="italic font-normal text-muted-foreground">first serve</span>{" "}
@@ -396,7 +396,7 @@ const Index = () => {
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={fade}
-              className="col-span-12 lg:col-span-9 text-balance text-3xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl"
+              className="col-span-12 lg:col-span-9 text-balance font-bold leading-[1.05] tracking-tight text-foreground text-[clamp(1.875rem,1.3rem+2.4vw,3rem)]"
             >
               Clay, grass, hard —{" "}
               <span className="italic font-normal text-muted-foreground">one platform.</span>
@@ -456,7 +456,7 @@ const Index = () => {
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
               variants={fade}
-              className="col-span-12 lg:col-span-9 text-balance text-3xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl"
+              className="col-span-12 lg:col-span-9 text-balance font-bold leading-[1.05] tracking-tight text-foreground text-[clamp(1.875rem,1.3rem+2.4vw,3rem)]"
             >
               From practice court to match point —{" "}
               <span className="italic font-normal text-muted-foreground">in four moves.</span>
@@ -514,7 +514,7 @@ const Index = () => {
               </p>
             </motion.div>
             <motion.div variants={fade} className="col-span-12 lg:col-span-9">
-              <h2 className="text-balance text-4xl font-bold leading-[1.0] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+              <h2 className="text-balance font-bold leading-[1.0] tracking-tight text-foreground text-[clamp(2.25rem,1.4rem+4vw,5.25rem)]">
                 Step on court{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--emerald-mid))] to-[hsl(var(--gold))] bg-clip-text text-transparent">
                   with an edge.
