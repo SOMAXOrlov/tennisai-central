@@ -1,141 +1,164 @@
 import { Link } from "react-router-dom";
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  motion,
-  type Variants,
-  useScroll,
-  useTransform,
-  useReducedMotion,
-  useSpring,
-} from "framer-motion";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Trophy,
-  Brain,
-  Calendar,
-  Users,
-  Shield,
-  BarChart3,
-  Target,
-  Activity,
-  Globe,
-} from "lucide-react";
-import surfaceClay from "@/assets/surface-clay.jpg";
-import surfaceGrass from "@/assets/surface-grass.jpg";
-import surfaceHard from "@/assets/surface-hard.jpg";
-import { SurfaceImage } from "@/components/SurfaceImage";
-import { TennisRallyScene } from "@/components/TennisRallyScene";
-
-/* ─── Motion ─── */
-
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
-const rise: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: (i: number = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.07, duration: 0.7, ease: EASE },
-  }),
-};
-
-const stagger: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
-};
-
-const fade: Variants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
-};
-
-/* ─── Data ─── */
+import { ArrowRight, Trophy, Brain, Calendar, Users, Shield, BarChart3 } from "lucide-react";
 
 const capabilities = [
-  { n: "01", icon: Trophy, title: "Tournaments", desc: "One global calendar across federations, surfaces and categories — registration windows, draws, results." },
-  { n: "02", icon: Calendar, title: "Smart schedule", desc: "Trainings, matches, travel and recovery laid out on a single, conflict-aware timeline." },
-  { n: "03", icon: Brain, title: "AI match insights", desc: "Pre-match prep tuned to opponent tendencies, surface bias and conditions of the day." },
-  { n: "04", icon: Users, title: "Team hub", desc: "Role-aware connections between players, coaches and supporters — shared context, private notes." },
-  { n: "05", icon: BarChart3, title: "Performance", desc: "Win-rate trends, form curves and improvement signals across the season." },
-  { n: "06", icon: Shield, title: "Equipment", desc: "String tension, racquet wear and shoe mileage — quiet nudges before things fail." },
+  { icon: Trophy, title: "Tournaments", desc: "One calendar across federations, surfaces and categories." },
+  { icon: Calendar, title: "Schedule", desc: "Trainings, matches and travel on a conflict-aware timeline." },
+  { icon: Brain, title: "Match insights", desc: "Pre-match prep tuned to opponent tendencies and surface." },
+  { icon: Users, title: "Team hub", desc: "Quiet collaboration between players, coaches and supporters." },
+  { icon: BarChart3, title: "Performance", desc: "Win-rate trends and improvement signals across the season." },
+  { icon: Shield, title: "Equipment", desc: "Tension, racquet wear and shoe mileage — tracked gently." },
 ];
 
 const workflow = [
-  { step: "I", title: "Plan", desc: "Build a season around the tournaments that matter.", icon: Calendar },
-  { step: "II", title: "Train", desc: "Coordinate sessions and capture structured feedback.", icon: Target },
-  { step: "III", title: "Compete", desc: "Step on court with AI-powered match scouting.", icon: Trophy },
-  { step: "IV", title: "Improve", desc: "Turn every match into measurable progress.", icon: BarChart3 },
+  { step: "01", title: "Plan", desc: "Build a season around the tournaments that matter." },
+  { step: "02", title: "Train", desc: "Coordinate sessions and capture structured feedback." },
+  { step: "03", title: "Compete", desc: "Step on court with AI-powered match scouting." },
+  { step: "04", title: "Improve", desc: "Turn every match into measurable progress." },
 ];
-
-const surfaces = [
-  { name: "Clay", color: "hsl(var(--court-clay))", desc: "Heavier ball, longer rallies — built for the patient.", image: surfaceClay },
-  { name: "Grass", color: "hsl(var(--court-grass))", desc: "Low bounce, quick exchanges — first-strike tennis.", image: surfaceGrass },
-  { name: "Hard", color: "hsl(var(--court-hard))", desc: "True bounce, neutral ground — pure ball striking.", image: surfaceHard },
-];
-
-/* ─── Decorative ─── */
-
-function Marginalia({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="block font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-      {children}
-    </span>
-  );
-}
-
-function Rule({ className = "" }: { className?: string }) {
-  return <div className={`h-px w-full bg-border/60 ${className}`} />;
-}
-
-function FormSpark() {
-  const points = [10, 18, 14, 26, 22, 34, 30, 42, 38, 50, 46, 58];
-  const max = 60;
-  const path = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${(i / (points.length - 1)) * 100} ${100 - (p / max) * 90}`)
-    .join(" ");
-  return (
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-      <defs>
-        <linearGradient id="sparkFill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--gold))" stopOpacity="0.32" />
-          <stop offset="100%" stopColor="hsl(var(--gold))" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[20, 40, 60, 80].map((y) => (
-        <line key={y} x1="0" x2="100" y1={y} y2={y} stroke="hsl(var(--cream) / 0.06)" strokeWidth="0.3" />
-      ))}
-      <path d={`${path} L 100 100 L 0 100 Z`} fill="url(#sparkFill)" />
-      <path d={path} stroke="hsl(var(--gold))" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      {points.map((p, i) => (
-        <circle key={i} cx={(i / (points.length - 1)) * 100} cy={100 - (p / max) * 90} r={i === points.length - 1 ? 1.8 : 0.8} fill="hsl(var(--gold))" />
-      ))}
-    </svg>
-  );
-}
-
-/* ─── Page ─── */
 
 const Index = () => {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const prefersReduced = useReducedMotion();
-
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, prefersReduced ? 0 : 60]);
-
-  const { scrollYProgress: pageProgress } = useScroll();
-  const progressX = useSpring(pageProgress, { stiffness: 120, damping: 30, mass: 0.2 });
-
   return (
-    <div className="court-bg">
-      <motion.div
-        style={{ scaleX: progressX }}
-        className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-[hsl(var(--emerald-mid))] via-[hsl(var(--emerald-mid))] to-[hsl(var(--gold))]"
-      />
+    <div className="bg-background">
+      {/* Hero */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-24 md:py-32">
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            TennisAI — Season Workspace
+          </p>
+          <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            A quiet workspace for the competitive tennis season.
+          </h1>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+            Tournament planning, training coordination and AI-driven match insights — assembled
+            into a single, calm tool for players, coaches and supporters.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <Button size="lg" className="h-11 gap-2 px-6 text-sm" asChild>
+              <Link to="/signup">
+                Get started
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="ghost" className="h-11 px-5 text-sm" asChild>
+              <Link to="/login">Sign in</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      {/* ─────────── Hero ─────────── */}
-      <section ref={heroRef} className="relative isolate overflow-hidden pb-24 pt-28 md:pb-32 md:pt-32">
+      {/* Stats */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-12">
+          <dl className="grid grid-cols-2 gap-y-8 sm:grid-cols-4">
+            {[
+              { v: "500+", l: "Tournaments" },
+              { v: "24/7", l: "AI co-pilot" },
+              { v: "3", l: "Surfaces" },
+              { v: "13+", l: "Junior to pro" },
+            ].map((s) => (
+              <div key={s.l}>
+                <dt className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{s.v}</dt>
+                <dd className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">{s.l}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* Capabilities */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-20 md:py-24">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              What's inside
+            </p>
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              Everything between first serve and match point.
+            </h2>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {capabilities.map((c) => {
+              const Icon = c.icon;
+              return (
+                <div key={c.title} className="border-t border-border/60 pt-5">
+                  <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
+                  <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">{c.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Workflow */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-20 md:py-24">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              The match week
+            </p>
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              From practice court to match point — in four moves.
+            </h2>
+          </div>
+          <ol className="mt-14 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            {workflow.map((w) => (
+              <li key={w.step} className="border-t border-border/60 pt-5">
+                <span className="font-mono text-xs text-muted-foreground">{w.step}</span>
+                <h3 className="mt-3 text-base font-semibold tracking-tight text-foreground">{w.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.desc}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-24 md:py-28">
+          <h2 className="max-w-3xl text-balance text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
+            Step on court with an edge.
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
+            Free to start, built to scale with your season. No credit card required.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <Button size="lg" className="h-11 gap-2 px-6 text-sm" asChild>
+              <Link to="/signup">
+                Create free account
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Link
+              to="/login"
+              className="text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              Already on TennisAI? Sign in
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-10">
+        <div className="container max-w-5xl flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} TennisAI</span>
+          <nav className="flex items-center gap-6">
+            <Link to="/signup" className="hover:text-foreground">Get started</Link>
+            <Link to="/login" className="hover:text-foreground">Sign in</Link>
+            <span className="cursor-default">Privacy</span>
+            <span className="cursor-default">Terms</span>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Index;
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
