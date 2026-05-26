@@ -160,6 +160,59 @@ const Index = () => {
 
       {/* CTA */}
       <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-20 md:py-24">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              Pricing
+            </p>
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              Simple plans for everyone on the team.
+            </h2>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+            {pricing.map((p) => (
+              <div
+                key={p.name}
+                className={
+                  "flex flex-col rounded-lg border p-6 " +
+                  (p.highlighted
+                    ? "border-foreground/30 bg-muted/30"
+                    : "border-border/60 bg-background")
+                }
+              >
+                <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                  {p.name}
+                </p>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold tracking-tight text-foreground">{p.price}</span>
+                  <span className="text-xs text-muted-foreground">{p.cadence}</span>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                <ul className="mt-6 space-y-2 text-sm text-foreground">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <span aria-hidden className="mt-2 h-px w-3 shrink-0 bg-border" />
+                      <span className="text-muted-foreground">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8 pt-2">
+                  <Button
+                    asChild
+                    variant={p.highlighted ? "default" : "outline"}
+                    className="w-full h-10 text-sm"
+                  >
+                    <Link to="/signup">{p.cta}</Link>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-b border-border/60">
         <div className="container max-w-5xl py-24 md:py-28">
           <h2 className="max-w-3xl text-balance text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
             Step on court with an edge.
