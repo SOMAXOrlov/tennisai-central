@@ -303,10 +303,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-b border-border/60">
-        <div className="container max-w-5xl py-24 md:py-28">
-
       {/* Surfaces */}
       <section className="border-b border-border/60">
         <div className="container max-w-5xl py-20 md:py-24">
@@ -346,7 +342,7 @@ const Index = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="border-b border-border/60 [&_+_section]:hidden">
+      <section className="border-b border-border/60">
         <div className="container max-w-5xl py-24 md:py-28">
           <h2 className="max-w-3xl text-balance text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
             Step on court with an edge.
