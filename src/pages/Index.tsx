@@ -1,5 +1,8 @@
+import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, Trophy, Brain, Calendar, Users, Shield, BarChart3 } from "lucide-react";
 
 const capabilities = [
@@ -61,6 +64,31 @@ const pricing = [
 ];
 
 const Index = () => {
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleLeadSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (trimmed.length === 0 || trimmed.length > 255) {
+      toast({ title: "Please enter your email", variant: "destructive" });
+      return;
+    }
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    if (!valid) {
+      toast({ title: "That email looks off", description: "Double-check and try again.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    // Lead capture stub — wire to backend later.
+    setTimeout(() => {
+      setSubmitting(false);
+      setEmail("");
+      toast({ title: "You're on the list", description: "We'll be in touch before your next match." });
+    }, 300);
+  };
+
   return (
     <div className="bg-background">
       {/* Hero */}
@@ -87,6 +115,39 @@ const Index = () => {
               <Link to="/login">Sign in</Link>
             </Button>
           </div>
+
+          <form
+            onSubmit={handleLeadSubmit}
+            className="mt-12 max-w-md border-t border-border/60 pt-8"
+            noValidate
+          >
+            <label
+              htmlFor="lead-email"
+              className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground"
+            >
+              Stay in the loop
+            </label>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <Input
+                id="lead-email"
+                type="email"
+                autoComplete="email"
+                inputMode="email"
+                placeholder="you@club.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                maxLength={255}
+                required
+                className="h-11 sm:flex-1"
+              />
+              <Button type="submit" size="lg" variant="outline" className="h-11 px-5 text-sm" disabled={submitting}>
+                {submitting ? "Adding…" : "Notify me"}
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Early notes on TennisAI. No spam, unsubscribe any time.
+            </p>
+          </form>
         </div>
       </section>
 
