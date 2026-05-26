@@ -306,6 +306,48 @@ const Index = () => {
       {/* CTA */}
       <section className="border-b border-border/60">
         <div className="container max-w-5xl py-24 md:py-28">
+
+      {/* Surfaces */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-20 md:py-24">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              Surfaces
+            </p>
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              Built for every court you'll play on.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+              Clay, grass and hard — match insights and training plans adapt to the surface.
+            </p>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {surfaces.map((s) => (
+              <figure key={s.name} className="overflow-hidden rounded-lg border border-border/60">
+                <div className="aspect-[4/3]">
+                  <SurfaceImage
+                    src={s.src}
+                    name={s.name}
+                    color={s.color}
+                    lineColor={s.lineColor}
+                    lineOpacity={s.lineOpacity}
+                  />
+                </div>
+                <figcaption className="border-t border-border/60 p-5">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                    {s.name}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="border-b border-border/60 [&_+_section]:hidden">
+        <div className="container max-w-5xl py-24 md:py-28">
           <h2 className="max-w-3xl text-balance text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
             Step on court with an edge.
           </h2>
