@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, Trophy, Brain, Calendar, Users, Shield, BarChart3 } from "lucide-react";
+import { SurfaceImage } from "@/components/SurfaceImage";
+import clayImg from "@/assets/surface-clay.jpg";
+import grassImg from "@/assets/surface-grass.jpg";
+import hardImg from "@/assets/surface-hard.jpg";
 
 const capabilities = [
   { icon: Trophy, title: "Tournaments", desc: "One calendar across federations, surfaces and categories." },
@@ -19,6 +23,33 @@ const workflow = [
   { step: "02", title: "Train", desc: "Coordinate sessions and capture structured feedback." },
   { step: "03", title: "Compete", desc: "Step on court with AI-powered match scouting." },
   { step: "04", title: "Improve", desc: "Turn every match into measurable progress." },
+];
+
+const surfaces = [
+  {
+    name: "Clay",
+    src: clayImg,
+    color: "hsl(var(--court-clay))",
+    lineColor: "hsl(40 30% 96%)",
+    lineOpacity: 0.85,
+    desc: "Slower bounce, longer rallies. Tune topspin and patience.",
+  },
+  {
+    name: "Grass",
+    src: grassImg,
+    color: "hsl(var(--court-grass))",
+    lineColor: "hsl(0 0% 100%)",
+    lineOpacity: 0.95,
+    desc: "Low skid, quick points. Sharpen serve and first-strike play.",
+  },
+  {
+    name: "Hard",
+    src: hardImg,
+    color: "hsl(var(--court-hard))",
+    lineColor: "hsl(0 0% 100%)",
+    lineOpacity: 0.95,
+    desc: "Balanced pace and bounce. The all-court proving ground.",
+  },
 ];
 
 const pricing = [
@@ -272,7 +303,45 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Surfaces */}
+      <section className="border-b border-border/60">
+        <div className="container max-w-5xl py-20 md:py-24">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              Surfaces
+            </p>
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              Built for every court you'll play on.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+              Clay, grass and hard — match insights and training plans adapt to the surface.
+            </p>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {surfaces.map((s) => (
+              <figure key={s.name} className="overflow-hidden rounded-lg border border-border/60">
+                <div className="aspect-[4/3]">
+                  <SurfaceImage
+                    src={s.src}
+                    name={s.name}
+                    color={s.color}
+                    lineColor={s.lineColor}
+                    lineOpacity={s.lineOpacity}
+                  />
+                </div>
+                <figcaption className="border-t border-border/60 p-5">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                    {s.name}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
       <section className="border-b border-border/60">
         <div className="container max-w-5xl py-24 md:py-28">
           <h2 className="max-w-3xl text-balance text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl">
