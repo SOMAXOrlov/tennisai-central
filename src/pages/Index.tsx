@@ -18,6 +18,48 @@ const workflow = [
   { step: "04", title: "Improve", desc: "Turn every match into measurable progress." },
 ];
 
+const pricing = [
+  {
+    name: "Player",
+    price: "Free",
+    cadence: "forever",
+    desc: "For competitors building their season.",
+    features: [
+      "Tournament calendar & planning",
+      "Training log & feedback",
+      "Basic match insights",
+    ],
+    cta: "Start as a player",
+    highlighted: false,
+  },
+  {
+    name: "Coach",
+    price: "$12",
+    cadence: "per month",
+    desc: "For coaches managing rosters and sessions.",
+    features: [
+      "Up to 25 connected players",
+      "Session proposals & reviews",
+      "Team analytics & scouting",
+    ],
+    cta: "Start coaching",
+    highlighted: true,
+  },
+  {
+    name: "Supporter",
+    price: "$4",
+    cadence: "per month",
+    desc: "For parents and fans following along.",
+    features: [
+      "Follow up to 5 players",
+      "Schedule & results digest",
+      "Match-day notifications",
+    ],
+    cta: "Follow a player",
+    highlighted: false,
+  },
+];
+
 const Index = () => {
   return (
     <div className="bg-background">
