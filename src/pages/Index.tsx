@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, Trophy, Brain, Calendar, Users, Shield, BarChart3 } from "lucide-react";
+import { SurfaceImage } from "@/components/SurfaceImage";
+import clayImg from "@/assets/surface-clay.jpg";
+import grassImg from "@/assets/surface-grass.jpg";
+import hardImg from "@/assets/surface-hard.jpg";
 
 const capabilities = [
   { icon: Trophy, title: "Tournaments", desc: "One calendar across federations, surfaces and categories." },
@@ -19,6 +23,33 @@ const workflow = [
   { step: "02", title: "Train", desc: "Coordinate sessions and capture structured feedback." },
   { step: "03", title: "Compete", desc: "Step on court with AI-powered match scouting." },
   { step: "04", title: "Improve", desc: "Turn every match into measurable progress." },
+];
+
+const surfaces = [
+  {
+    name: "Clay",
+    src: clayImg,
+    color: "hsl(var(--court-clay))",
+    lineColor: "hsl(40 30% 96%)",
+    lineOpacity: 0.85,
+    desc: "Slower bounce, longer rallies. Tune topspin and patience.",
+  },
+  {
+    name: "Grass",
+    src: grassImg,
+    color: "hsl(var(--court-grass))",
+    lineColor: "hsl(0 0% 100%)",
+    lineOpacity: 0.95,
+    desc: "Low skid, quick points. Sharpen serve and first-strike play.",
+  },
+  {
+    name: "Hard",
+    src: hardImg,
+    color: "hsl(var(--court-hard))",
+    lineColor: "hsl(0 0% 100%)",
+    lineOpacity: 0.95,
+    desc: "Balanced pace and bounce. The all-court proving ground.",
+  },
 ];
 
 const pricing = [
