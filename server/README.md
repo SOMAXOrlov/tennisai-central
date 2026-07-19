@@ -76,6 +76,10 @@ needed). To send real email:
 | PATCH  | `/api/trainings/:id`         | Bearer | Update (owner only)                  |
 | DELETE | `/api/trainings/:id`         | Bearer | Delete (owner only)                  |
 | POST   | `/api/trainings/:id/analysis`| Bearer | Generate + persist an AI summary     |
+| GET    | `/api/tournaments`           | Bearer | Global tournament catalog            |
+| GET    | `/api/player-tournaments`    | Bearer | Current user's tournament entries    |
+| POST   | `/api/player-tournaments`    | Bearer | Register the user for a tournament   |
+| PATCH  | `/api/player-tournaments/:id`| Bearer | Update entry status/notes (owner)    |
 
 ## Demo logins (seeded)
 `player@test.com`, `coach@test.com`, `observer@test.com`, `admin@test.com` —
@@ -91,7 +95,8 @@ See [`../DEPLOY.md`](../DEPLOY.md) for the full Vercel + Render + Postgres runbo
 ## Migration status
 - ✅ **Auth** — real: signup, login, session, welcome email.
 - ✅ **Trainings** — real: CRUD + AI analysis, auth-scoped to owner/participants.
+- ✅ **Tournaments** — real: global catalog + per-user entries (`/api/tournaments`,
+  `/api/player-tournaments`), auth-scoped to the current player.
 - ⏳ **Everything else** — still front-end mock (`USE_MOCK` in `src/api/endpoints/*`).
   Migrating a domain = add a Prisma model + auth-scoped router here, then flip that
-  module's flag. Tournaments has a `VITE_LIVE_TOURNAMENTS` opt-in reserved for when
-  its backend lands.
+  module's flag.

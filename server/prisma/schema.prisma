@@ -26,6 +26,8 @@ model User {
   // back-relations (trainings domain)
   coachedTrainings       Training[]            @relation("TrainingCoach")
   trainingParticipations TrainingParticipant[]
+  // back-relations (tournaments domain)
+  playerTournaments      PlayerTournament[]
 
   @@map("users")
 }
@@ -75,4 +77,50 @@ model TrainingParticipant {
   @@unique([trainingId, playerId])
   @@index([playerId])
   @@map("training_participants")
+}
+
+// ── Tournaments domain ───────────────────────────────────────────
+// A global catalog (Tournament) plus a per-player join (PlayerTournament).
+// Mirrors the front-end `Tournament` / `PlayerTournament` shapes.
+
+model Tournament {
+  id             String   @id @default(cuid())
+  name           String
+  city           String
+  country        String
+  surface        String
+  indoorOutdoor  String // indoor | outdoor
+  altitude       Int?
+  ballBrand      String?
+  weatherSummary String?
+  category       String?
+  level          String?
+  federation     String? // ITF | WTA | ATP | UTR | USTA
+  startDate      DateTime
+  endDate        DateTime
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  playerEntries PlayerTournament[]
+
+  @@index([startDate])
+  @@map("tournaments")
+}
+
+model PlayerTournament {
+  id           String   @id @default(cuid())
+  tournamentId String
+  playerId     String
+  status       String // planned | registered | maybe | withdrawn | played
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player     User       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, playerId])
+  @@index([playerId])
+  @@map("player_tournaments")
 }

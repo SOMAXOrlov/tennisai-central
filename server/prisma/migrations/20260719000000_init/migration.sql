@@ -47,6 +47,42 @@ CREATE TABLE "training_participants" (
     CONSTRAINT "training_participants_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "tournaments" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "surface" TEXT NOT NULL,
+    "indoorOutdoor" TEXT NOT NULL,
+    "altitude" INTEGER,
+    "ballBrand" TEXT,
+    "weatherSummary" TEXT,
+    "category" TEXT,
+    "level" TEXT,
+    "federation" TEXT,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "tournaments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "player_tournaments" (
+    "id" TEXT NOT NULL,
+    "tournamentId" TEXT NOT NULL,
+    "playerId" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "player_tournaments_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -62,6 +98,15 @@ CREATE INDEX "training_participants_playerId_idx" ON "training_participants"("pl
 -- CreateIndex
 CREATE UNIQUE INDEX "training_participants_trainingId_playerId_key" ON "training_participants"("trainingId", "playerId");
 
+-- CreateIndex
+CREATE INDEX "tournaments_startDate_idx" ON "tournaments"("startDate");
+
+-- CreateIndex
+CREATE INDEX "player_tournaments_playerId_idx" ON "player_tournaments"("playerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "player_tournaments_tournamentId_playerId_key" ON "player_tournaments"("tournamentId", "playerId");
+
 -- AddForeignKey
 ALTER TABLE "trainings" ADD CONSTRAINT "trainings_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -70,4 +115,10 @@ ALTER TABLE "training_participants" ADD CONSTRAINT "training_participants_traini
 
 -- AddForeignKey
 ALTER TABLE "training_participants" ADD CONSTRAINT "training_participants_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "player_tournaments" ADD CONSTRAINT "player_tournaments_tournamentId_fkey" FOREIGN KEY ("tournamentId") REFERENCES "tournaments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "player_tournaments" ADD CONSTRAINT "player_tournaments_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
