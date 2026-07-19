@@ -43,8 +43,18 @@ const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 export const mockDirectoryService = {
   /** Look up a user by their public ID (e.g. TAI-P-001) */
   async lookupByPublicId(publicId: string): Promise<DirectoryEntry | null> {
-    await delay();
     const normalized = publicId.trim().toUpperCase();
+    // Real mode: query the live users directory. Lazy import avoids a cycle.
+    if (import.meta.env.VITE_API_BASE_URL) {
+      try {
+        const { usersApi } = await import("@/api/endpoints/users");
+        const dir = await usersApi.getDirectory();
+        return dir.find((u) => u.publicId === normalized) ?? null;
+      } catch {
+        return null;
+      }
+    }
+    await delay();
     return DIRECTORY.find((u) => u.publicId === normalized) ?? null;
   },
 

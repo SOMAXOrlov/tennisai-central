@@ -4,11 +4,10 @@ import { mockStore } from "@/mock/store";
 import { mockTournaments } from "@/mock/data";
 import { mapTournaments } from "@/api/mappers/tournamentFederation";
 
-// The tournaments backend is not built yet, so this stays on the mock even when
-// an API base is configured. Opt in explicitly with VITE_LIVE_TOURNAMENTS=true
-// once server/src/tournaments exists (prevents 404s against a missing route).
-const LIVE_API =
-  Boolean(import.meta.env.VITE_API_BASE_URL) && import.meta.env.VITE_LIVE_TOURNAMENTS === "true";
+// Tournaments are migrated to the real backend (server/src/tournaments). Live
+// whenever an absolute API base is configured; otherwise the in-memory mock is
+// used for offline frontend work and tests.
+const LIVE_API = Boolean(import.meta.env.VITE_API_BASE_URL);
 const delay = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
 export const tournamentsApi = {

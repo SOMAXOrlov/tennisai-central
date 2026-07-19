@@ -7,10 +7,10 @@ const prisma = new PrismaClient();
 // (equipment, finance, etc. are keyed on p1 / c1 / …), so the seeded
 // dashboard keeps working after auth becomes real.
 const DEMO_USERS = [
-  { id: "p1", email: "player@test.com", role: "player", firstName: "Alex", lastName: "Rivera" },
-  { id: "c1", email: "coach@test.com", role: "coach", firstName: "Jordan", lastName: "Smith" },
-  { id: "o1", email: "observer@test.com", role: "observer", firstName: "Morgan", lastName: "Lee" },
-  { id: "a1", email: "admin@test.com", role: "admin", firstName: "Admin", lastName: "User" },
+  { id: "p1", email: "player@test.com", publicId: "TAI-P-001", role: "player", firstName: "Alex", lastName: "Rivera" },
+  { id: "c1", email: "coach@test.com", publicId: "TAI-C-001", role: "coach", firstName: "Jordan", lastName: "Smith" },
+  { id: "o1", email: "observer@test.com", publicId: "TAI-F-001", role: "observer", firstName: "Morgan", lastName: "Lee" },
+  { id: "a1", email: "admin@test.com", publicId: "TAI-A-001", role: "admin", firstName: "Admin", lastName: "User" },
 ];
 
 // A couple of demo trainings for coach c1 with player p1 as participant, so the
@@ -48,6 +48,75 @@ const DEMO_TRAININGS = [
   },
 ];
 
+// A representative slice of the tournament catalog (pinned ids match the
+// front-end mock cross-references). A real deployment would import the full feed.
+const DEMO_TOURNAMENTS = [
+  { id: "t1", name: "Australian Open 2026", city: "Melbourne", country: "Australia", surface: "Hard", indoorOutdoor: "outdoor", ballBrand: "Dunlop", category: "Grand Slam", level: "Professional", federation: "ATP", startDate: "2026-01-19T00:00:00Z", endDate: "2026-02-01T00:00:00Z" },
+  { id: "t2", name: "Roland-Garros 2026", city: "Paris", country: "France", surface: "Clay", indoorOutdoor: "outdoor", ballBrand: "Wilson", category: "Grand Slam", level: "Professional", federation: "ATP", startDate: "2026-05-24T00:00:00Z", endDate: "2026-06-07T00:00:00Z" },
+  { id: "t3", name: "Wimbledon 2026", city: "London", country: "UK", surface: "Grass", indoorOutdoor: "outdoor", ballBrand: "Slazenger", category: "Grand Slam", level: "Professional", federation: "WTA", startDate: "2026-06-29T00:00:00Z", endDate: "2026-07-12T00:00:00Z" },
+  { id: "t4", name: "US Open 2026", city: "New York", country: "USA", surface: "Hard", indoorOutdoor: "outdoor", ballBrand: "Wilson", category: "Grand Slam", level: "Professional", federation: "USTA", startDate: "2026-08-31T00:00:00Z", endDate: "2026-09-13T00:00:00Z" },
+  { id: "t5", name: "Indian Wells Masters", city: "Indian Wells", country: "USA", surface: "Hard", indoorOutdoor: "outdoor", ballBrand: "Penn", category: "ATP 1000", level: "Professional", federation: "ATP", startDate: "2026-03-09T00:00:00Z", endDate: "2026-03-22T00:00:00Z" },
+  { id: "t6", name: "Miami Open", city: "Miami", country: "USA", surface: "Hard", indoorOutdoor: "outdoor", ballBrand: "Wilson", category: "ATP 1000", level: "Professional", federation: "ATP", startDate: "2026-03-23T00:00:00Z", endDate: "2026-04-05T00:00:00Z" },
+  { id: "t7", name: "Madrid Open", city: "Madrid", country: "Spain", surface: "Clay", indoorOutdoor: "outdoor", altitude: 650, ballBrand: "Dunlop", category: "ATP 1000", level: "Professional", federation: "ATP", startDate: "2026-04-27T00:00:00Z", endDate: "2026-05-10T00:00:00Z" },
+  { id: "t8", name: "Internazionali BNL d'Italia", city: "Rome", country: "Italy", surface: "Clay", indoorOutdoor: "outdoor", ballBrand: "Dunlop", category: "ATP 1000", level: "Professional", federation: "ATP", startDate: "2026-05-11T00:00:00Z", endDate: "2026-05-18T00:00:00Z" },
+];
+
+// Demo tournament entries for player p1.
+const DEMO_PLAYER_TOURNAMENTS = [
+  { id: "pt1", tournamentId: "t1", playerId: "p1", status: "registered" },
+  { id: "pt2", tournamentId: "t3", playerId: "p1", status: "planned" },
+];
+
+// Demo team (coach c1 → player p1) and an active connection between them.
+const DEMO_TEAMS = [{ id: "team-1", name: "Rising Stars", coachId: "c1", memberIds: ["p1"] }];
+const DEMO_CONNECTIONS = [
+  { id: "conn-1", fromUserId: "c1", toUserId: "p1", status: "active" },
+];
+
+// A pending request (p1 → c1) and a confirmed calendar event.
+const DEMO_TRAINING_REQUESTS = [
+  {
+    id: "treq-1",
+    playerId: "p1",
+    coachId: "c1",
+    status: "pending",
+    preferredDate: "2026-07-25",
+    preferredStartTime: "10:00",
+    preferredEndTime: "11:30",
+    trainingType: "individual",
+    location: "Court 2",
+    priority: "normal",
+  },
+];
+const DEMO_CALENDAR_EVENTS = [
+  {
+    id: "cal-1",
+    title: "Training: Alex Rivera",
+    type: "training",
+    state: "confirmed",
+    startDate: "2026-07-22T09:00:00Z",
+    endDate: "2026-07-22T10:30:00Z",
+    playerId: "p1",
+    playerName: "Alex Rivera",
+    createdBy: "c1",
+    createdByRole: "coach",
+  },
+];
+
+// Finance / equipment / notifications for player p1.
+const DEMO_FINANCE = [
+  { id: "fin-1", playerId: "p1", category: "training", description: "Monthly coaching", amount: 800, currency: "USD", date: "2026-07-01" },
+  { id: "fin-2", playerId: "p1", category: "travel", description: "Flight to Melbourne", amount: 640, currency: "USD", date: "2026-07-05" },
+  { id: "fin-3", playerId: "p1", category: "equipment", description: "New racket", amount: 220, currency: "USD", date: "2026-07-10" },
+];
+const DEMO_EQUIPMENT = [
+  { id: "eq-1", playerId: "p1", category: "racket", name: "Pro Staff 97", brand: "Wilson", model: "v14", condition: "good", acquiredDate: "2026-01-15" },
+  { id: "eq-2", playerId: "p1", category: "shoes", name: "Court FF 3", brand: "Asics", condition: "new", acquiredDate: "2026-06-20" },
+];
+const DEMO_NOTIFICATIONS = [
+  { id: "notif-1", userId: "p1", type: "training_request_approved", title: "Training Request Approved", message: "Your individual request for 2026-07-22 was approved", read: false, linkTo: "/calendar" },
+];
+
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
@@ -70,9 +139,70 @@ async function main() {
     });
   }
 
+  for (const t of DEMO_TOURNAMENTS) {
+    const { startDate, endDate, ...rest } = t;
+    const values = { ...rest, startDate: new Date(startDate), endDate: new Date(endDate) };
+    await prisma.tournament.upsert({ where: { id: t.id }, update: values, create: values });
+  }
+
+  for (const pt of DEMO_PLAYER_TOURNAMENTS) {
+    await prisma.playerTournament.upsert({
+      where: { tournamentId_playerId: { tournamentId: pt.tournamentId, playerId: pt.playerId } },
+      update: { status: pt.status },
+      create: pt,
+    });
+  }
+
+  for (const t of DEMO_TEAMS) {
+    await prisma.team.upsert({
+      where: { id: t.id },
+      update: { name: t.name },
+      create: { id: t.id, name: t.name, coachId: t.coachId },
+    });
+    for (const playerId of t.memberIds) {
+      await prisma.teamMember.upsert({
+        where: { teamId_playerId: { teamId: t.id, playerId } },
+        update: {},
+        create: { teamId: t.id, playerId },
+      });
+    }
+  }
+
+  for (const c of DEMO_CONNECTIONS) {
+    await prisma.connectionRequest.upsert({
+      where: { fromUserId_toUserId: { fromUserId: c.fromUserId, toUserId: c.toUserId } },
+      update: { status: c.status },
+      create: c,
+    });
+  }
+
+  for (const tr of DEMO_TRAINING_REQUESTS) {
+    await prisma.trainingRequest.upsert({ where: { id: tr.id }, update: { status: tr.status }, create: tr });
+  }
+
+  for (const ev of DEMO_CALENDAR_EVENTS) {
+    const { startDate, endDate, ...rest } = ev;
+    const values = { ...rest, startDate: new Date(startDate), endDate: new Date(endDate) };
+    await prisma.calendarEvent.upsert({ where: { id: ev.id }, update: values, create: values });
+  }
+
+  for (const f of DEMO_FINANCE) {
+    await prisma.financeEntry.upsert({ where: { id: f.id }, update: { amount: f.amount }, create: f });
+  }
+  for (const e of DEMO_EQUIPMENT) {
+    await prisma.equipmentItem.upsert({ where: { id: e.id }, update: { name: e.name }, create: e });
+  }
+  for (const n of DEMO_NOTIFICATIONS) {
+    await prisma.notification.upsert({ where: { id: n.id }, update: { title: n.title }, create: n });
+  }
+
   console.log(`✅ Seeded ${DEMO_USERS.length} demo users (password: password123):`);
   DEMO_USERS.forEach((u) => console.log(`   • ${u.email} (${u.role})`));
   console.log(`✅ Seeded ${DEMO_TRAININGS.length} demo trainings for coach c1 / player p1.`);
+  console.log(`✅ Seeded ${DEMO_TOURNAMENTS.length} tournaments + ${DEMO_PLAYER_TOURNAMENTS.length} entries for p1.`);
+  console.log(`✅ Seeded ${DEMO_TEAMS.length} team + ${DEMO_CONNECTIONS.length} connection.`);
+  console.log(`✅ Seeded ${DEMO_TRAINING_REQUESTS.length} training request + ${DEMO_CALENDAR_EVENTS.length} calendar event.`);
+  console.log(`✅ Seeded ${DEMO_FINANCE.length} finance + ${DEMO_EQUIPMENT.length} equipment + ${DEMO_NOTIFICATIONS.length} notification for p1.`);
 }
 
 main()

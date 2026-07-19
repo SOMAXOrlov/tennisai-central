@@ -83,7 +83,6 @@ Redeploy the API. The frontend can now sign up / log in.
 | Var | Required | Notes |
 |---|---|---|
 | `VITE_API_BASE_URL` | ✅ | absolute API base incl. `/api` |
-| `VITE_LIVE_TOURNAMENTS` | – | reserved; leave unset until that backend exists |
 
 ---
 
@@ -103,9 +102,11 @@ npm run dev                   # :5180  (proxies /api → :4000; no VITE_API_BASE
 ## Notes & known follow-ups
 - **Auth session**: 1-day JWT in `localStorage`. A short-lived access token +
   httpOnly refresh token is the planned hardening (not yet implemented).
-- **Migrated domains**: auth + trainings are real. Other domains remain mock and
-  will show demo data; migrate them one at a time (Prisma model + auth-scoped
-  router + flip the endpoint flag).
+- **Migrated domains**: everything except **aiInsights** is real (auth, trainings,
+  tournaments, teams, connections, training-requests, calendar, finance, equipment,
+  notifications, profile). aiInsights is a derived computation that still runs
+  client-side against the mock — port its heuristics to the server (or compute over
+  the now-real data) to make it production-correct.
 - **Vite/esbuild advisory**: the only remaining `npm audit` finding is the
   esbuild dev-server issue, which affects the local dev server only (never the
   deployed static build). Clearing it needs a Vite major upgrade — deferred.

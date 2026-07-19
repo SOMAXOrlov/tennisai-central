@@ -11,6 +11,7 @@ const listMock: any = vi.fn(async () => ({ data: [] }));
 
 vi.mock("@/api/endpoints/connections", () => ({
   USE_MOCK_CONNECTIONS: true,
+  isMockMode: () => true,
   connectionsApi: {
     list: (...a: any[]) => listMock(...a),
     send: (...a: any[]) => sendMock(...a),

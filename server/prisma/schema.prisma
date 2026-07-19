@@ -15,6 +15,7 @@ datasource db {
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
+  publicId      String   @unique // shareable directory id, e.g. TAI-P-001
   passwordHash  String
   role          String // "player" | "coach" | "observer" | "admin"
   firstName     String
@@ -26,6 +27,22 @@ model User {
   // back-relations (trainings domain)
   coachedTrainings       Training[]            @relation("TrainingCoach")
   trainingParticipations TrainingParticipant[]
+  // back-relations (tournaments domain)
+  playerTournaments      PlayerTournament[]
+  // back-relations (teams domain)
+  coachedTeams    Team[]       @relation("TeamCoach")
+  teamMemberships TeamMember[]
+  // back-relations (connections domain)
+  sentConnections     ConnectionRequest[] @relation("ConnFrom")
+  receivedConnections ConnectionRequest[] @relation("ConnTo")
+  // back-relations (training-requests domain)
+  trainingRequestsAsPlayer TrainingRequest[] @relation("TRPlayer")
+  trainingRequestsAsCoach  TrainingRequest[] @relation("TRCoach")
+  // back-relations (finance / equipment / notifications)
+  financeEntries         FinanceEntry[]
+  equipmentItems         EquipmentItem[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
 
   @@map("users")
 }
@@ -75,4 +92,236 @@ model TrainingParticipant {
   @@unique([trainingId, playerId])
   @@index([playerId])
   @@map("training_participants")
+}
+
+// ── Tournaments domain ───────────────────────────────────────────
+// A global catalog (Tournament) plus a per-player join (PlayerTournament).
+// Mirrors the front-end `Tournament` / `PlayerTournament` shapes.
+
+model Tournament {
+  id             String   @id @default(cuid())
+  name           String
+  city           String
+  country        String
+  surface        String
+  indoorOutdoor  String // indoor | outdoor
+  altitude       Int?
+  ballBrand      String?
+  weatherSummary String?
+  category       String?
+  level          String?
+  federation     String? // ITF | WTA | ATP | UTR | USTA
+  startDate      DateTime
+  endDate        DateTime
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  playerEntries PlayerTournament[]
+
+  @@index([startDate])
+  @@map("tournaments")
+}
+
+model PlayerTournament {
+  id           String   @id @default(cuid())
+  tournamentId String
+  playerId     String
+  status       String // planned | registered | maybe | withdrawn | played
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player     User       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, playerId])
+  @@index([playerId])
+  @@map("player_tournaments")
+}
+
+// ── Teams domain ─────────────────────────────────────────────────
+// A coach-owned team with player members. The front-end `Team.players`
+// (ConnectedPlayer[]) is composed from the TeamMember join + User.
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  coachId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coach   User         @relation("TeamCoach", fields: [coachId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+
+  @@index([coachId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  playerId String
+  joinedAt DateTime @default(now()) // → ConnectedPlayer.connectedSince
+
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, playerId])
+  @@index([playerId])
+  @@map("team_members")
+}
+
+// ── Connections domain ───────────────────────────────────────────
+// A directed relationship request between two users. Denormalised
+// names/roles in the front-end shape are derived from the User join.
+
+model ConnectionRequest {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  status     String   @default("pending") // pending | active | rejected | revoked
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  fromUser User @relation("ConnFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ConnTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+  @@index([status])
+  @@map("connection_requests")
+}
+
+// ── Training-requests domain ─────────────────────────────────────
+// A player's request to a coach for a session. On approval a calendar
+// event is created and linked via calendarEventId.
+
+model TrainingRequest {
+  id                 String   @id @default(cuid())
+  playerId           String
+  coachId            String
+  status             String   @default("pending") // pending | approved | rejected | reschedule_proposed | cancelled
+  preferredDate      String // "yyyy-MM-dd"
+  preferredStartTime String // "HH:mm"
+  preferredEndTime   String
+  trainingType       String
+  location           String?
+  notes              String?
+  priority           String? // normal | high
+  coachMessage       String?
+  proposedDate       String?
+  proposedStartTime  String?
+  proposedEndTime    String?
+  calendarEventId    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  player User @relation("TRPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  coach  User @relation("TRCoach", fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@index([coachId])
+  @@index([status])
+  @@map("training_requests")
+}
+
+// ── Calendar domain ──────────────────────────────────────────────
+// Events with optional recurrence (stored as a rule; expanded into
+// virtual occurrences on read). playerId/teamId/tournamentId are loose
+// denormalised pointers, matching the front-end CalendarEvent shape.
+
+model CalendarEvent {
+  id                String   @id @default(cuid())
+  title             String
+  type              String // training | tournament | match | travel | recovery
+  state             String?
+  startDate         DateTime
+  endDate           DateTime
+  location          String?
+  description       String?
+  playerId          String?
+  playerName        String?
+  teamId            String?
+  tournamentId      String?
+  coachNotes        String?
+  createdBy         String?
+  createdByRole     String?
+  trainingRequestId String?
+  recurrence        Json? // RecurrenceRule
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([createdBy])
+  @@index([playerId])
+  @@index([startDate])
+  @@map("calendar_events")
+}
+
+// ── Finance / Equipment / Notifications ──────────────────────────
+
+model FinanceEntry {
+  id          String   @id @default(cuid())
+  playerId    String
+  category    String // training | travel | tournament | equipment
+  description String
+  amount      Float
+  currency    String   @default("USD")
+  date        String
+  createdAt   DateTime @default(now())
+
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@map("finance_entries")
+}
+
+model EquipmentItem {
+  id           String   @id @default(cuid())
+  playerId     String
+  category     String
+  name         String
+  brand        String?
+  model        String?
+  notes        String?
+  acquiredDate String?
+  condition    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@map("equipment_items")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  linkTo    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                  String  @id @default(cuid())
+  userId              String  @unique
+  trainingReminders   Boolean @default(true)
+  tournamentReminders Boolean @default(true)
+  requestApprovals    Boolean @default(true)
+  financeUpdates      Boolean @default(true)
+  aiInsightUpdates    Boolean @default(true)
+  systemNotifications Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }

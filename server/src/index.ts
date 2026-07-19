@@ -7,6 +7,16 @@ import { env, emailEnabled } from "./env";
 import { prisma } from "./db";
 import { authRouter } from "./auth/routes";
 import { trainingsRouter } from "./trainings/routes";
+import { tournamentsRouter, playerTournamentsRouter } from "./tournaments/routes";
+import { teamsRouter } from "./teams/routes";
+import { connectionsRouter } from "./connections/routes";
+import { usersRouter } from "./users/routes";
+import { trainingRequestsRouter } from "./trainingRequests/routes";
+import { calendarRouter } from "./calendar/routes";
+import { financeRouter } from "./finance/routes";
+import { equipmentRouter } from "./equipment/routes";
+import { notificationsRouter } from "./notifications/routes";
+import { profileRouter } from "./profile/routes";
 import { errorHandler } from "./http";
 
 const app = express();
@@ -41,6 +51,17 @@ app.get("/api/health", async (_req, res) => {
 
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/trainings", trainingsRouter);
+app.use("/api/tournaments", tournamentsRouter);
+app.use("/api/player-tournaments", playerTournamentsRouter);
+app.use("/api/teams", teamsRouter);
+app.use("/api/connections", connectionsRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/training-requests", trainingRequestsRouter);
+app.use("/api/calendar", calendarRouter);
+app.use("/api/me", profileRouter);
+app.use("/api", financeRouter);
+app.use("/api", equipmentRouter);
+app.use("/api", notificationsRouter);
 
 // Fallback JSON 404 so the frontend always gets a parseable error body.
 app.use((_req, res) => res.status(404).json({ message: "Not found" }));
