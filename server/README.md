@@ -89,6 +89,11 @@ needed). To send real email:
 | PATCH  | `/api/connections/:id`       | Bearer | Approve/reject (recipient only)      |
 | DELETE | `/api/connections/:id`       | Bearer | Revoke an active relationship        |
 | GET    | `/api/users/directory`       | Bearer | Discoverable users for the lookup    |
+| GET    | `/api/training-requests` · `/:id` | Bearer | Requests the user is party to   |
+| POST   | `/api/training-requests`     | Bearer | Player requests a session            |
+| POST   | `/api/training-requests/:id/{approve,reject,reschedule,cancel}` | Bearer | Coach acts (approve → calendar event) |
+| GET    | `/api/calendar/events` · `/:id` | Bearer | Events (recurring → occurrences)  |
+| POST/PATCH/DELETE | `/api/calendar/events` | Bearer | Create / update / delete an event |
 
 ## Demo logins (seeded)
 `player@test.com`, `coach@test.com`, `observer@test.com`, `admin@test.com` —
@@ -110,7 +115,10 @@ See [`../DEPLOY.md`](../DEPLOY.md) for the full Vercel + Render + Postgres runbo
 - ✅ **Connections** — real: directed requests with server-side duplicate/recipient
   guards (`/api/connections`) + a users directory (`/api/users/directory`). Users now
   carry a shareable `publicId`.
+- ✅ **Training requests + Calendar** — real: `/api/training-requests` (approve creates
+  a linked calendar event server-side) and `/api/calendar/events` (recurrence expanded
+  into occurrences on read). Note: approve/reject no longer writes a *notification*
+  (notifications are still mock — migrate that domain to restore the side effect).
 - ⏳ **Remaining** — still front-end mock (`USE_MOCK` in `src/api/endpoints/*`):
-  calendar, training-requests, finance, equipment, notifications, profile, aiInsights.
-  Migrating a domain = add a Prisma model + auth-scoped router here, then flip that
-  module's flag.
+  finance, equipment, notifications, profile, aiInsights. Migrating a domain = add a
+  Prisma model + auth-scoped router here, then flip that module's flag.

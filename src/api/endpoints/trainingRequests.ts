@@ -1,9 +1,11 @@
-// TODO: Replace mock with real API calls when backend is ready
+// Training requests are migrated to the real backend (server/src/trainingRequests).
+// Approval creates a linked calendar event server-side. Live when an absolute API
+// base is configured; otherwise the in-memory mock is used.
 import type { TrainingRequest, ApiResponse } from "@/types";
 import { apiClient } from "@/api/client";
 import { mockStore } from "@/mock/store";
 
-const USE_MOCK = true;
+const USE_MOCK = !import.meta.env.VITE_API_BASE_URL;
 const delay = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
 export const trainingRequestsApi = {

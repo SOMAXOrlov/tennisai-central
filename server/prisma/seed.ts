@@ -73,6 +73,36 @@ const DEMO_CONNECTIONS = [
   { id: "conn-1", fromUserId: "c1", toUserId: "p1", status: "active" },
 ];
 
+// A pending request (p1 → c1) and a confirmed calendar event.
+const DEMO_TRAINING_REQUESTS = [
+  {
+    id: "treq-1",
+    playerId: "p1",
+    coachId: "c1",
+    status: "pending",
+    preferredDate: "2026-07-25",
+    preferredStartTime: "10:00",
+    preferredEndTime: "11:30",
+    trainingType: "individual",
+    location: "Court 2",
+    priority: "normal",
+  },
+];
+const DEMO_CALENDAR_EVENTS = [
+  {
+    id: "cal-1",
+    title: "Training: Alex Rivera",
+    type: "training",
+    state: "confirmed",
+    startDate: "2026-07-22T09:00:00Z",
+    endDate: "2026-07-22T10:30:00Z",
+    playerId: "p1",
+    playerName: "Alex Rivera",
+    createdBy: "c1",
+    createdByRole: "coach",
+  },
+];
+
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
@@ -132,11 +162,22 @@ async function main() {
     });
   }
 
+  for (const tr of DEMO_TRAINING_REQUESTS) {
+    await prisma.trainingRequest.upsert({ where: { id: tr.id }, update: { status: tr.status }, create: tr });
+  }
+
+  for (const ev of DEMO_CALENDAR_EVENTS) {
+    const { startDate, endDate, ...rest } = ev;
+    const values = { ...rest, startDate: new Date(startDate), endDate: new Date(endDate) };
+    await prisma.calendarEvent.upsert({ where: { id: ev.id }, update: values, create: values });
+  }
+
   console.log(`✅ Seeded ${DEMO_USERS.length} demo users (password: password123):`);
   DEMO_USERS.forEach((u) => console.log(`   • ${u.email} (${u.role})`));
   console.log(`✅ Seeded ${DEMO_TRAININGS.length} demo trainings for coach c1 / player p1.`);
   console.log(`✅ Seeded ${DEMO_TOURNAMENTS.length} tournaments + ${DEMO_PLAYER_TOURNAMENTS.length} entries for p1.`);
   console.log(`✅ Seeded ${DEMO_TEAMS.length} team + ${DEMO_CONNECTIONS.length} connection.`);
+  console.log(`✅ Seeded ${DEMO_TRAINING_REQUESTS.length} training request + ${DEMO_CALENDAR_EVENTS.length} calendar event.`);
 }
 
 main()

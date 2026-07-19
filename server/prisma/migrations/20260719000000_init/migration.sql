@@ -117,6 +117,55 @@ CREATE TABLE "connection_requests" (
     CONSTRAINT "connection_requests_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "training_requests" (
+    "id" TEXT NOT NULL,
+    "playerId" TEXT NOT NULL,
+    "coachId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "preferredDate" TEXT NOT NULL,
+    "preferredStartTime" TEXT NOT NULL,
+    "preferredEndTime" TEXT NOT NULL,
+    "trainingType" TEXT NOT NULL,
+    "location" TEXT,
+    "notes" TEXT,
+    "priority" TEXT,
+    "coachMessage" TEXT,
+    "proposedDate" TEXT,
+    "proposedStartTime" TEXT,
+    "proposedEndTime" TEXT,
+    "calendarEventId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "training_requests_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "calendar_events" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "state" TEXT,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "location" TEXT,
+    "description" TEXT,
+    "playerId" TEXT,
+    "playerName" TEXT,
+    "teamId" TEXT,
+    "tournamentId" TEXT,
+    "coachNotes" TEXT,
+    "createdBy" TEXT,
+    "createdByRole" TEXT,
+    "trainingRequestId" TEXT,
+    "recurrence" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "calendar_events_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -162,6 +211,24 @@ CREATE INDEX "connection_requests_status_idx" ON "connection_requests"("status")
 -- CreateIndex
 CREATE UNIQUE INDEX "connection_requests_fromUserId_toUserId_key" ON "connection_requests"("fromUserId", "toUserId");
 
+-- CreateIndex
+CREATE INDEX "training_requests_playerId_idx" ON "training_requests"("playerId");
+
+-- CreateIndex
+CREATE INDEX "training_requests_coachId_idx" ON "training_requests"("coachId");
+
+-- CreateIndex
+CREATE INDEX "training_requests_status_idx" ON "training_requests"("status");
+
+-- CreateIndex
+CREATE INDEX "calendar_events_createdBy_idx" ON "calendar_events"("createdBy");
+
+-- CreateIndex
+CREATE INDEX "calendar_events_playerId_idx" ON "calendar_events"("playerId");
+
+-- CreateIndex
+CREATE INDEX "calendar_events_startDate_idx" ON "calendar_events"("startDate");
+
 -- AddForeignKey
 ALTER TABLE "trainings" ADD CONSTRAINT "trainings_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -191,4 +258,10 @@ ALTER TABLE "connection_requests" ADD CONSTRAINT "connection_requests_fromUserId
 
 -- AddForeignKey
 ALTER TABLE "connection_requests" ADD CONSTRAINT "connection_requests_toUserId_fkey" FOREIGN KEY ("toUserId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "training_requests" ADD CONSTRAINT "training_requests_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "training_requests" ADD CONSTRAINT "training_requests_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

@@ -11,6 +11,8 @@ import { tournamentsRouter, playerTournamentsRouter } from "./tournaments/routes
 import { teamsRouter } from "./teams/routes";
 import { connectionsRouter } from "./connections/routes";
 import { usersRouter } from "./users/routes";
+import { trainingRequestsRouter } from "./trainingRequests/routes";
+import { calendarRouter } from "./calendar/routes";
 import { errorHandler } from "./http";
 
 const app = express();
@@ -50,6 +52,8 @@ app.use("/api/player-tournaments", playerTournamentsRouter);
 app.use("/api/teams", teamsRouter);
 app.use("/api/connections", connectionsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/training-requests", trainingRequestsRouter);
+app.use("/api/calendar", calendarRouter);
 
 // Fallback JSON 404 so the frontend always gets a parseable error body.
 app.use((_req, res) => res.status(404).json({ message: "Not found" }));

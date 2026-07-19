@@ -35,6 +35,9 @@ model User {
   // back-relations (connections domain)
   sentConnections     ConnectionRequest[] @relation("ConnFrom")
   receivedConnections ConnectionRequest[] @relation("ConnTo")
+  // back-relations (training-requests domain)
+  trainingRequestsAsPlayer TrainingRequest[] @relation("TRPlayer")
+  trainingRequestsAsCoach  TrainingRequest[] @relation("TRCoach")
 
   @@map("users")
 }
@@ -183,4 +186,69 @@ model ConnectionRequest {
   @@index([toUserId])
   @@index([status])
   @@map("connection_requests")
+}
+
+// ── Training-requests domain ─────────────────────────────────────
+// A player's request to a coach for a session. On approval a calendar
+// event is created and linked via calendarEventId.
+
+model TrainingRequest {
+  id                 String   @id @default(cuid())
+  playerId           String
+  coachId            String
+  status             String   @default("pending") // pending | approved | rejected | reschedule_proposed | cancelled
+  preferredDate      String // "yyyy-MM-dd"
+  preferredStartTime String // "HH:mm"
+  preferredEndTime   String
+  trainingType       String
+  location           String?
+  notes              String?
+  priority           String? // normal | high
+  coachMessage       String?
+  proposedDate       String?
+  proposedStartTime  String?
+  proposedEndTime    String?
+  calendarEventId    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  player User @relation("TRPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  coach  User @relation("TRCoach", fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@index([coachId])
+  @@index([status])
+  @@map("training_requests")
+}
+
+// ── Calendar domain ──────────────────────────────────────────────
+// Events with optional recurrence (stored as a rule; expanded into
+// virtual occurrences on read). playerId/teamId/tournamentId are loose
+// denormalised pointers, matching the front-end CalendarEvent shape.
+
+model CalendarEvent {
+  id                String   @id @default(cuid())
+  title             String
+  type              String // training | tournament | match | travel | recovery
+  state             String?
+  startDate         DateTime
+  endDate           DateTime
+  location          String?
+  description       String?
+  playerId          String?
+  playerName        String?
+  teamId            String?
+  tournamentId      String?
+  coachNotes        String?
+  createdBy         String?
+  createdByRole     String?
+  trainingRequestId String?
+  recurrence        Json? // RecurrenceRule
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([createdBy])
+  @@index([playerId])
+  @@index([startDate])
+  @@map("calendar_events")
 }
