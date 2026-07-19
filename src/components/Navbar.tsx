@@ -15,16 +15,23 @@ export function Navbar() {
       )}
     >
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+        <Link to="/" className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center bg-primary">
             <span className="text-sm font-bold text-primary-foreground">T</span>
           </div>
-          <span className="text-lg font-bold tracking-tight text-foreground">
-            TennisAI
+          <span className="text-base font-bold tracking-tight text-foreground">
+            Tennis AI
           </span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        {isLanding && (
+          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+            <a href="#how-it-works" className="hover:text-foreground">How it works</a>
+            <a href="#pricing" className="hover:text-foreground">Pricing</a>
+          </nav>
+        )}
+
+        <div className="flex items-center gap-2">
           <ThemeToggle />
           <Button variant="ghost" size="sm" asChild>
             <Link to="/login">Sign In</Link>

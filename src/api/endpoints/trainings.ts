@@ -1,9 +1,12 @@
-// TODO: Replace mock with real API calls when backend is ready
+// Trainings are migrated to the real backend (server/src/trainings). When an
+// absolute API base is configured (production, or local dev pointed at the API),
+// calls go live; otherwise they fall back to the in-memory mock for offline
+// frontend work and tests.
 import type { TrainingSession, ApiResponse, TrainingAnalysis } from "@/types";
 import { apiClient } from "@/api/client";
 import { mockStore } from "@/mock/store";
 
-const USE_MOCK = true; // TODO: flip when backend is live
+const USE_MOCK = !import.meta.env.VITE_API_BASE_URL;
 const delay = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
 export const trainingsApi = {

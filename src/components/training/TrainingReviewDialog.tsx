@@ -60,7 +60,7 @@ export function TrainingReviewDialog({ open, onOpenChange, training, onSave, sav
                   <Star
                     className={`h-6 w-6 ${
                       star <= (hoverRating || rating)
-                        ? "fill-amber-400 text-amber-400"
+                        ? "fill-primary text-primary"
                         : "text-muted-foreground/30"
                     }`}
                   />

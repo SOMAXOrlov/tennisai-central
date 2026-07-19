@@ -40,9 +40,9 @@ const TRAINING_TYPE_LABELS: Record<TrainingType, string> = Object.fromEntries(
 ) as Record<TrainingType, string>;
 
 const INTENSITY_OPTIONS = [
-  { value: "low", label: "Low", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  { value: "medium", label: "Medium", color: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-  { value: "high", label: "High", color: "bg-red-500/10 text-red-600 dark:text-red-400" },
+  { value: "low", label: "Low", color: "bg-muted text-foreground dark:text-foreground" },
+  { value: "medium", label: "Medium", color: "bg-primary/10 text-primary dark:text-primary" },
+  { value: "high", label: "High", color: "bg-primary/10 text-primary dark:text-primary" },
 ] as const;
 
 // ─── Training Form ───
@@ -230,14 +230,14 @@ function TrainingDetailDrawer({
 
           {/* Training Review Section */}
           {training.review && (
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+            <div className="rounded-lg border border-primary/25 bg-primary/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary dark:text-primary">
                   <ClipboardCheck className="h-3 w-3" /> Session Review
                 </div>
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className={`h-3 w-3 ${s <= training.review!.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/20"}`} />
+                    <Star key={s} className={`h-3 w-3 ${s <= training.review!.rating ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
                   ))}
                 </div>
               </div>
@@ -531,7 +531,7 @@ export default function TrainingsPage() {
                     <span className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{TRAINING_TYPE_LABELS[t.trainingType]}</span>
                     {intensityCfg && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${intensityCfg.color}`}>{intensityCfg.label}</span>}
                     {t.review && (
-                      <span className="flex items-center gap-0.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                      <span className="flex items-center gap-0.5 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary dark:text-primary">
                         <Star className="h-2.5 w-2.5 fill-current" /> {t.review.rating}
                       </span>
                     )}

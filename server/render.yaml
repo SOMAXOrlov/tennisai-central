@@ -1,0 +1,34 @@
+# Render Blueprint — API service + managed Postgres.
+# Deploy: push to GitHub, then New > Blueprint in the Render dashboard and point
+# it at this repo. Set APP_URL to the deployed frontend origin after the first deploy.
+services:
+  - type: web
+    name: tennisai-api
+    runtime: node
+    rootDir: server
+    plan: starter
+    # Build phase has devDeps (prisma, typescript) available.
+    buildCommand: npm ci && npm run build
+    # Apply committed migrations before the new version serves traffic.
+    preDeployCommand: npm run migrate:deploy
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tennisai-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: APP_URL
+        sync: false # set to the deployed frontend origin, e.g. https://tennisai.vercel.app
+
+databases:
+  - name: tennisai-db
+    plan: starter
+    databaseName: tennisai
+    user: tennisai

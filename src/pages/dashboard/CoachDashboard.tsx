@@ -32,10 +32,10 @@ function formatDate(iso: string) {
 }
 
 const eventTypeColor: Record<string, string> = {
-  training: "bg-blue-500",
+  training: "bg-foreground",
   tournament: "bg-primary",
-  match: "bg-orange-500",
-  travel: "bg-purple-500",
+  match: "bg-primary",
+  travel: "bg-foreground",
   recovery: "bg-muted-foreground",
 };
 

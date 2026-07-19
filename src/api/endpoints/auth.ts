@@ -10,7 +10,10 @@ import type {
 import { apiClient } from "@/api/client";
 import { mockAuthService } from "@/mock/auth";
 
-const USE_MOCK = true; // TODO: flip when backend is live
+// Auth now talks to the real backend (server/) via the Vite /api proxy.
+// Set VITE_MOCK_AUTH=true in a frontend .env to fall back to the in-memory
+// mock (e.g. when running the frontend without the API server).
+const USE_MOCK = import.meta.env.VITE_MOCK_AUTH === "true";
 
 export const authApi = {
   login(data: LoginRequest): Promise<ApiResponse<{ user: User; tokens: AuthTokens }>> {

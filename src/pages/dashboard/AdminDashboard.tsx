@@ -96,27 +96,27 @@ function formatDateTime(iso: string) {
 
 const userStatusStyles: Record<string, string> = {
   active: "bg-primary/10 text-primary",
-  pending: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  pending: "bg-primary/10 text-primary dark:text-primary",
   suspended: "bg-destructive/10 text-destructive",
 };
 
 const tournamentStatusStyles: Record<string, string> = {
-  upcoming: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  upcoming: "bg-muted text-foreground dark:text-foreground",
   active: "bg-primary/10 text-primary",
   completed: "bg-muted text-muted-foreground",
   cancelled: "bg-destructive/10 text-destructive",
 };
 
 const alertIcons: Record<string, React.ReactNode> = {
-  warning: <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />,
+  warning: <AlertTriangle className="h-4 w-4 text-primary dark:text-primary" />,
   error: <XCircle className="h-4 w-4 text-destructive" />,
-  info: <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />,
+  info: <Clock className="h-4 w-4 text-foreground dark:text-foreground" />,
 };
 
 const alertBorders: Record<string, string> = {
-  warning: "border-yellow-500/20",
+  warning: "border-primary/25",
   error: "border-destructive/20",
-  info: "border-blue-500/20",
+  info: "border-border",
 };
 
 // ── Component ──

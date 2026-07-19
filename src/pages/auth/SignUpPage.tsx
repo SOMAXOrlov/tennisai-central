@@ -31,6 +31,7 @@ export default function SignUpPage() {
     e.preventDefault();
     setError("");
     if (!role) return setError("Please select a role");
+    if (form.password.length < 8) return setError("Password must be at least 8 characters");
     if (form.password !== form.confirmPassword) return setError("Passwords do not match");
     if (!ageConfirmed) return setError("You must confirm you are 13 or older");
     if (!termsAccepted) return setError("You must accept the terms");

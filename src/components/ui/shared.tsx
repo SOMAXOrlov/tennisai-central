@@ -16,10 +16,10 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const ROLE_STYLES: Record<UserRole, string> = {
-  player: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  coach: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  observer: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  admin: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+  player: "bg-muted text-foreground dark:text-foreground",
+  coach: "bg-muted text-foreground dark:text-foreground",
+  observer: "bg-primary/10 text-primary dark:text-primary",
+  admin: "bg-muted text-foreground dark:text-foreground",
 };
 
 export function RoleBadge({ role, className }: { role: UserRole; className?: string }) {
@@ -33,14 +33,14 @@ export function RoleBadge({ role, className }: { role: UserRole; className?: str
 // ─── StatusBadge (relationship + tournament statuses) ───
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  pending: "bg-primary/10 text-primary dark:text-primary",
   active: "bg-primary/10 text-primary",
   accepted: "bg-primary/10 text-primary",
   rejected: "bg-destructive/10 text-destructive",
   revoked: "bg-muted text-muted-foreground",
-  planned: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  planned: "bg-muted text-foreground dark:text-foreground",
   registered: "bg-primary/10 text-primary",
-  maybe: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  maybe: "bg-primary/10 text-primary dark:text-primary",
   withdrawn: "bg-muted text-muted-foreground",
   played: "bg-primary/10 text-primary",
 };
@@ -57,7 +57,7 @@ export function StatusBadge({ status, className }: { status: string; className?:
 
 export function ReadOnlyBadge({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400", className)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary dark:text-primary", className)}>
       <Eye className="h-3 w-3" />
       Read-only
     </span>
@@ -68,9 +68,9 @@ export function ReadOnlyBadge({ className }: { className?: string }) {
 
 export function ReadOnlyBanner({ message, className }: { message?: string; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5", className)}>
-      <Lock className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-      <p className="text-sm text-amber-700 dark:text-amber-300">
+    <div className={cn("flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-4 py-2.5", className)}>
+      <Lock className="h-4 w-4 shrink-0 text-primary dark:text-primary" />
+      <p className="text-sm text-primary dark:text-primary">
         {message ?? <>You have <strong>read-only</strong> access. You can view but not edit any data.</>}
       </p>
     </div>

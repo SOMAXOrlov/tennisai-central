@@ -33,24 +33,24 @@ import {
 } from "date-fns";
 
 const EVENT_CONFIG: Record<CalendarEventType, { label: string; icon: React.ReactNode; dot: string; bg: string }> = {
-  training: { label: "Training", icon: <Dumbbell className="h-3.5 w-3.5" />, dot: "bg-blue-500", bg: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20" },
-  tournament: { label: "Tournament", icon: <Trophy className="h-3.5 w-3.5" />, dot: "bg-amber-500", bg: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20" },
-  match: { label: "Match", icon: <Swords className="h-3.5 w-3.5" />, dot: "bg-red-500", bg: "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20" },
-  travel: { label: "Travel", icon: <Plane className="h-3.5 w-3.5" />, dot: "bg-purple-500", bg: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20" },
-  recovery: { label: "Recovery", icon: <Heart className="h-3.5 w-3.5" />, dot: "bg-emerald-500", bg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20" },
+  training: { label: "Training", icon: <Dumbbell className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
+  tournament: { label: "Tournament", icon: <Trophy className="h-3.5 w-3.5" />, dot: "bg-primary", bg: "bg-primary/10 text-primary dark:text-primary border-primary/25" },
+  match: { label: "Match", icon: <Swords className="h-3.5 w-3.5" />, dot: "bg-primary", bg: "bg-primary/10 text-primary dark:text-primary border-primary/25" },
+  travel: { label: "Travel", icon: <Plane className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
+  recovery: { label: "Recovery", icon: <Heart className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
 };
 const EVENT_TYPES: CalendarEventType[] = ["training", "tournament", "match", "travel", "recovery"];
 
 // Player color palette for coach view color-coding
 const PLAYER_COLORS: { bg: string; dot: string }[] = [
-  { bg: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20", dot: "bg-sky-500" },
-  { bg: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20", dot: "bg-rose-500" },
-  { bg: "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20", dot: "bg-teal-500" },
-  { bg: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20", dot: "bg-orange-500" },
-  { bg: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20", dot: "bg-violet-500" },
-  { bg: "bg-lime-500/10 text-lime-700 dark:text-lime-300 border-lime-500/20", dot: "bg-lime-500" },
-  { bg: "bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/20", dot: "bg-fuchsia-500" },
-  { bg: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20", dot: "bg-cyan-500" },
+  { bg: "bg-muted text-foreground dark:text-foreground border-border", dot: "bg-foreground" },
+  { bg: "bg-primary/10 text-primary dark:text-primary border-primary/25", dot: "bg-primary" },
+  { bg: "bg-muted text-foreground dark:text-foreground border-border", dot: "bg-foreground" },
+  { bg: "bg-primary/10 text-primary dark:text-primary border-primary/25", dot: "bg-primary" },
+  { bg: "bg-muted text-foreground dark:text-foreground border-border", dot: "bg-foreground" },
+  { bg: "bg-muted text-foreground dark:text-foreground border-border", dot: "bg-foreground" },
+  { bg: "bg-muted text-foreground dark:text-foreground border-border", dot: "bg-foreground" },
+  { bg: "bg-muted text-foreground dark:text-foreground border-border", dot: "bg-foreground" },
 ];
 
 const playerColorCache = new Map<string, { bg: string; dot: string }>();
@@ -81,7 +81,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable, registered 
   const cfg = EVENT_CONFIG[event.type];
   const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
   const isIntl = event.id.startsWith("intl-");
-  const intlBg = "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20";
+  const intlBg = "bg-muted text-foreground dark:text-foreground border-border";
   const playerColor = showPlayer && event.playerId ? getPlayerColor(event.playerId) : null;
   const chipBg = isIntl ? intlBg : playerColor ? playerColor.bg : cfg.bg;
   return (
@@ -101,7 +101,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable, registered 
       {isIntl ? <Globe className="h-3.5 w-3.5" /> : cfg.icon}
       <span className="truncate">{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {event.title}</> : event.title}</span>
       {isRecurring && <Repeat className="h-2.5 w-2.5 shrink-0 opacity-60" />}
-      {registered && <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />}
+      {registered && <CheckCircle2 className="h-3 w-3 shrink-0 text-foreground dark:text-foreground" />}
     </button>
   );
 }
@@ -136,7 +136,7 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
               <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
               <StateBadge state={event.state} />
               {isRecurring && <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0"><Repeat className="h-3 w-3" />Recurring</Badge>}
-              {alreadyRegistered && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3 w-3" />Registered</span>}
+              {alreadyRegistered && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />Registered</span>}
               {readOnly && <ReadOnlyBadge />}
             </SheetTitle>
           </SheetHeader>
@@ -157,9 +157,9 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
               {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
               {event.description && <p className="text-muted-foreground">{event.description}</p>}
               {!hideCoachNotes && event.coachNotes && (
-                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300"><StickyNote className="h-3 w-3" />Coach Notes</div>
-                  <p className="text-sm text-blue-700/80 dark:text-blue-300/80">{event.coachNotes}</p>
+                <div className="rounded-lg border border-border bg-muted p-3">
+                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground dark:text-foreground"><StickyNote className="h-3 w-3" />Coach Notes</div>
+                  <p className="text-sm text-foreground dark:text-foreground">{event.coachNotes}</p>
                 </div>
               )}
             </div>
@@ -172,7 +172,7 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
             )}
             {alreadyRegistered && event.id.startsWith("intl-") && (
               <div className="border-t border-border pt-4">
-                <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-3 py-2 text-sm font-medium text-foreground dark:text-foreground">
                   <CheckCircle2 className="h-4 w-4" /> You're registered for this tournament
                 </div>
               </div>
@@ -468,7 +468,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
                 <div className="flex items-center gap-2">
                   <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.bg}`}>{cfg.icon}{cfg.label}</span>
                    <StateBadge state={event.state} />
-                   {registeredIntlIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3 w-3" />Registered</span>}
+                   {registeredIntlIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />Registered</span>}
                 </div>
                 <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
                 {showPlayerLabel && event.playerName && event.playerId && (

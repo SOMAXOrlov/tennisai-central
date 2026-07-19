@@ -36,9 +36,9 @@ const ROLE_LABEL: Record<UserRole, string> = {
 };
 
 const ROLE_STYLE: Record<string, string> = {
-  player: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  coach: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  observer: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  player: "bg-muted text-foreground dark:text-foreground",
+  coach: "bg-muted text-foreground dark:text-foreground",
+  observer: "bg-primary/10 text-primary dark:text-primary",
 };
 
 const ROLE_ID_PREFIX: Record<UserRole, string> = {
