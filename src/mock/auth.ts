@@ -77,7 +77,8 @@ function stripPassword(u: User & { password: string }): User {
 export const mockAuthService = {
   async login(data: LoginRequest): Promise<ApiResponse<{ user: User; tokens: AuthTokens }>> {
     await delay();
-    const found = MOCK_USERS[data.email];
+    const email = data.email.trim().toLowerCase();
+    const found = MOCK_USERS[email];
     if (!found || found.password !== data.password) {
       throw { status: 401, message: "Invalid email or password" };
     }
@@ -87,20 +88,25 @@ export const mockAuthService = {
 
   async signUp(data: SignUpRequest): Promise<ApiResponse<{ user: User }>> {
     await delay();
-    if (MOCK_USERS[data.email]) {
+    const email = data.email.trim().toLowerCase();
+    if (MOCK_USERS[email]) {
       throw { status: 409, message: "Email already registered" };
     }
-    const newUser: User = {
+    const newUser: User & { password: string } = {
       id: `u-${Date.now()}`,
-      email: data.email,
+      email,
       role: data.role,
       firstName: data.firstName,
       lastName: data.lastName,
       emailVerified: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      password: data.password,
     };
-    return { data: { user: newUser }, message: "Check your email to verify your account" };
+    // Persist the new account so the user can actually sign in afterwards.
+    // (Previously the new user was discarded, so signup → login always failed.)
+    MOCK_USERS[email] = newUser;
+    return { data: { user: stripPassword(newUser) }, message: "Check your email to verify your account" };
   },
 
   async logout(): Promise<ApiResponse<null>> {

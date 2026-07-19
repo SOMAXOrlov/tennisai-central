@@ -6,14 +6,14 @@ interface StatusBadgeProps {
 }
 
 const statusStyles: Record<string, string> = {
-  pending: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  pending: "bg-primary/10 text-primary dark:text-primary",
   active: "bg-primary/10 text-primary",
   accepted: "bg-primary/10 text-primary",
   rejected: "bg-destructive/10 text-destructive",
   revoked: "bg-muted text-muted-foreground",
-  planned: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  planned: "bg-muted text-foreground dark:text-foreground",
   registered: "bg-primary/10 text-primary",
-  maybe: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  maybe: "bg-primary/10 text-primary dark:text-primary",
   withdrawn: "bg-muted text-muted-foreground",
   played: "bg-primary/10 text-primary",
 };

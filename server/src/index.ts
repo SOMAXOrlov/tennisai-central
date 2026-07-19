@@ -1,0 +1,67 @@
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import { env, emailEnabled } from "./env";
+import { prisma } from "./db";
+import { authRouter } from "./auth/routes";
+import { trainingsRouter } from "./trainings/routes";
+import { errorHandler } from "./http";
+
+const app = express();
+
+// Behind a PaaS load balancer (Render/Railway/Fly) — trust the proxy so
+// rate-limiting and secure cookies see the real client IP / protocol.
+app.set("trust proxy", 1);
+
+app.use(helmet());
+app.use(cors({ origin: env.appUrl, credentials: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(morgan(env.isProd ? "combined" : "dev"));
+
+// Throttle auth endpoints — brute-force / credential-stuffing defence.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many attempts. Please try again later." },
+});
+
+// Liveness + DB readiness.
+app.get("/api/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true, db: "up", emailEnabled, time: new Date().toISOString() });
+  } catch {
+    res.status(503).json({ ok: false, db: "down", time: new Date().toISOString() });
+  }
+});
+
+app.use("/api/auth", authLimiter, authRouter);
+app.use("/api/trainings", trainingsRouter);
+
+// Fallback JSON 404 so the frontend always gets a parseable error body.
+app.use((_req, res) => res.status(404).json({ message: "Not found" }));
+
+// Terminal error handler — must be registered last.
+app.use(errorHandler);
+
+const server = app.listen(env.port, () => {
+  console.log(`\n🎾  TennisAI API listening on http://localhost:${env.port} [${env.nodeEnv}]`);
+  console.log(`    Database:       PostgreSQL`);
+  console.log(`    Gmail sending:  ${emailEnabled ? "ENABLED ✅" : "disabled (console fallback)"}\n`);
+});
+
+// Graceful shutdown — drain in-flight requests and close the DB pool.
+function shutdown(signal: string) {
+  console.log(`\n${signal} received — shutting down…`);
+  server.close(() => {
+    prisma.$disconnect().finally(() => process.exit(0));
+  });
+  // Failsafe: force-exit if close hangs.
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

@@ -28,7 +28,7 @@ export function DevHmrBanner() {
   if (!import.meta.env.DEV || !show) return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-[100] w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 rounded-lg border border-amber-500/40 bg-amber-50 p-3 text-sm text-amber-900 shadow-lg dark:bg-amber-950/90 dark:text-amber-100">
+    <div className="fixed bottom-4 left-1/2 z-[100] w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 rounded-lg border border-primary/25 bg-primary/10 p-3 text-sm text-primary shadow-lg dark:bg-primary/10 dark:text-primary">
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
         <div className="flex-1">
@@ -37,7 +37,7 @@ export function DevHmrBanner() {
             A component referenced in the cached module no longer exists in source. Try:
           </p>
           <ol className="mt-1.5 list-decimal pl-4 text-xs leading-relaxed opacity-90">
-            <li>Hard reload (<kbd className="rounded bg-amber-500/20 px-1">Cmd/Ctrl + Shift + R</kbd>)</li>
+            <li>Hard reload (<kbd className="rounded bg-primary/10 px-1">Cmd/Ctrl + Shift + R</kbd>)</li>
             <li>Restart dev server (<code>npm run dev</code>)</li>
             <li>Clear cache: <code>rm -rf node_modules/.vite</code></li>
           </ol>
@@ -48,7 +48,7 @@ export function DevHmrBanner() {
             sessionStorage.setItem(DISMISS_KEY, "1");
             setShow(false);
           }}
-          className="rounded p-1 hover:bg-amber-500/20"
+          className="rounded p-1 hover:bg-primary/10"
         >
           <X className="h-4 w-4" />
         </button>

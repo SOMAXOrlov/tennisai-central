@@ -38,10 +38,10 @@ const STATUS_TABS: TrainingRequestStatus[] = ["pending", "approved", "rejected",
 
 function RequestStatusBadge({ status }: { status: TrainingRequestStatus }) {
   const styles: Record<TrainingRequestStatus, string> = {
-    pending: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+    pending: "bg-primary/10 text-primary dark:text-primary",
     approved: "bg-primary/10 text-primary",
     rejected: "bg-destructive/10 text-destructive",
-    reschedule_proposed: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    reschedule_proposed: "bg-muted text-foreground dark:text-foreground",
     cancelled: "bg-muted text-muted-foreground",
   };
   const labels: Record<TrainingRequestStatus, string> = {
@@ -187,9 +187,9 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
           </div>
 
           {request.priority === "high" && (
-            <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2">
-              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">High Priority</span>
+            <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-2">
+              <AlertCircle className="h-4 w-4 text-primary dark:text-primary" />
+              <span className="text-sm font-medium text-primary dark:text-primary">High Priority</span>
             </div>
           )}
 
@@ -220,9 +220,9 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
           )}
 
           {request.status === "reschedule_proposed" && request.proposedDate && (
-            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-              <div className="mb-1 text-xs font-medium text-blue-700 dark:text-blue-300">Proposed New Time</div>
-              <p className="text-sm text-blue-700/80 dark:text-blue-300/80">
+            <div className="rounded-lg border border-border bg-muted p-3">
+              <div className="mb-1 text-xs font-medium text-foreground dark:text-foreground">Proposed New Time</div>
+              <p className="text-sm text-foreground dark:text-foreground">
                 {request.proposedDate} · {request.proposedStartTime} – {request.proposedEndTime}
               </p>
             </div>
@@ -357,8 +357,8 @@ export default function TrainingRequestsPage() {
       {isObserver && <ReadOnlyBanner />}
 
       {isPlayer && !connectedCoach && (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-          <p className="text-sm text-amber-700 dark:text-amber-300">
+        <div className="rounded-lg border border-primary/25 bg-primary/10 p-4">
+          <p className="text-sm text-primary dark:text-primary">
             <AlertCircle className="mr-1.5 inline h-4 w-4" />
             You need to connect with a coach before you can request training sessions.
           </p>
@@ -396,7 +396,7 @@ export default function TrainingRequestsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-foreground">{isCoach ? req.playerName : typeLabel}</h3>
                     <RequestStatusBadge status={req.status} />
-                    {req.priority === "high" && <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">High Priority</span>}
+                    {req.priority === "high" && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary dark:text-primary">High Priority</span>}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {req.preferredDate}</span>

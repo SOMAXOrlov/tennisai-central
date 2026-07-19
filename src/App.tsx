@@ -8,6 +8,7 @@ import { AuthProvider } from "@/auth/AuthContext";
 import { ConnectionProvider } from "@/store/ConnectionStore";
 import { RouteGuard, GuestGuard } from "@/auth/RouteGuard";
 import { DevHmrBanner } from "@/components/DevHmrBanner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Layouts
 import { PublicLayout } from "@/layouts/PublicLayout";
@@ -63,6 +64,7 @@ const App = () => (
           <Sonner />
           <DevHmrBanner />
           <BrowserRouter>
+            <ErrorBoundary>
             <Routes>
               {/* Public routes */}
               <Route element={<PublicLayout />}>
@@ -122,6 +124,7 @@ const App = () => (
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </ErrorBoundary>
           </BrowserRouter>
           </TooltipProvider>
         </ConnectionProvider>

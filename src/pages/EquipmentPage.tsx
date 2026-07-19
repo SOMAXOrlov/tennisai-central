@@ -81,10 +81,10 @@ const CATEGORY_ORDER: EquipmentCategory[] = ["racket", "string", "shoes", "balls
 // ─── Condition badge colors ───
 
 const CONDITION_STYLES: Record<string, string> = {
-  excellent: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
-  good: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20",
-  fair: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
-  poor: "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20",
+  excellent: "bg-muted text-foreground dark:text-foreground border-border",
+  good: "bg-muted text-foreground dark:text-foreground border-border",
+  fair: "bg-primary/10 text-primary dark:text-primary border-primary/25",
+  poor: "bg-primary/10 text-primary dark:text-primary border-primary/25",
 };
 
 function getConditionLevel(category: EquipmentCategory, condition?: string): string {
@@ -203,8 +203,8 @@ export default function EquipmentPage() {
 
       {/* AI Upgrade Suggestions */}
       {aiSuggestions.length > 0 && (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300">
+        <div className="rounded-xl border border-primary/25 bg-primary/10 p-5 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary dark:text-primary">
             <Lightbulb className="h-4 w-4" />
             Equipment Upgrade Recommendations
           </div>
@@ -221,7 +221,7 @@ export default function EquipmentPage() {
                 <ul className="space-y-1 pl-4">
                   {s.suggestions.slice(0, 2).map((tip, j) => (
                     <li key={j} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
                       {tip}
                     </li>
                   ))}

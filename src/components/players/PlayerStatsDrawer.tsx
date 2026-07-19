@@ -129,7 +129,7 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
                       <p className="text-sm font-medium text-foreground">{t.title}</p>
                       <div className="flex items-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className={`h-3 w-3 ${s <= (t.review?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/20"}`} />
+                          <Star key={s} className={`h-3 w-3 ${s <= (t.review?.rating ?? 0) ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
                         ))}
                       </div>
                     </div>

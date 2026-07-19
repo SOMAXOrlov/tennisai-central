@@ -4,9 +4,11 @@ import { mockStore } from "@/mock/store";
 import { mockTournaments } from "@/mock/data";
 import { mapTournaments } from "@/api/mappers/tournamentFederation";
 
-// Use the live AWS REST API when VITE_API_BASE_URL is configured; otherwise
-// fall back to the in-memory mock store for local development and tests.
-const LIVE_API = Boolean(import.meta.env.VITE_API_BASE_URL);
+// The tournaments backend is not built yet, so this stays on the mock even when
+// an API base is configured. Opt in explicitly with VITE_LIVE_TOURNAMENTS=true
+// once server/src/tournaments exists (prevents 404s against a missing route).
+const LIVE_API =
+  Boolean(import.meta.env.VITE_API_BASE_URL) && import.meta.env.VITE_LIVE_TOURNAMENTS === "true";
 const delay = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
 export const tournamentsApi = {

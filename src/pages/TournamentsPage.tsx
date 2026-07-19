@@ -21,9 +21,9 @@ import type { TournamentStatus, ConnectedPlayer } from "@/types";
 import { toast } from "sonner";
 const ALL = "__all__";
 const surfaceColor: Record<string, string> = {
-  Clay: "bg-orange-500/15 text-orange-700 dark:text-orange-400",
-  Hard: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  Grass: "bg-green-500/15 text-green-700 dark:text-green-400",
+  Clay: "bg-primary/10 text-primary dark:text-primary",
+  Hard: "bg-muted text-foreground dark:text-foreground",
+  Grass: "bg-muted text-foreground dark:text-foreground",
 };
 const STATUS_OPTIONS: TournamentStatus[] = ["planned", "registered", "maybe", "withdrawn", "played"];
 

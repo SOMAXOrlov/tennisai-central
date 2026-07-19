@@ -19,6 +19,19 @@ export function getAccessToken(): string | null {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    // A 401 on an authenticated request means the session died (expired/revoked
+    // token). Clear it and bounce to login from protected areas.
+    if (response.status === 401 && accessToken) {
+      setAccessToken(null);
+      try {
+        localStorage.removeItem("tennisai_token");
+      } catch {
+        /* ignore storage errors */
+      }
+      const path = window.location.pathname;
+      const onPublicPage = path === "/" || path.startsWith("/login") || path.startsWith("/signup");
+      if (!onPublicPage) window.location.assign("/login");
+    }
     const body = await response.json().catch(() => ({}));
     const message = body?.message || `Request failed with status ${response.status}`;
     throw new ApiError(response.status, message);
