@@ -8,6 +8,9 @@ import { prisma } from "./db";
 import { authRouter } from "./auth/routes";
 import { trainingsRouter } from "./trainings/routes";
 import { tournamentsRouter, playerTournamentsRouter } from "./tournaments/routes";
+import { teamsRouter } from "./teams/routes";
+import { connectionsRouter } from "./connections/routes";
+import { usersRouter } from "./users/routes";
 import { errorHandler } from "./http";
 
 const app = express();
@@ -44,6 +47,9 @@ app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/trainings", trainingsRouter);
 app.use("/api/tournaments", tournamentsRouter);
 app.use("/api/player-tournaments", playerTournamentsRouter);
+app.use("/api/teams", teamsRouter);
+app.use("/api/connections", connectionsRouter);
+app.use("/api/users", usersRouter);
 
 // Fallback JSON 404 so the frontend always gets a parseable error body.
 app.use((_req, res) => res.status(404).json({ message: "Not found" }));

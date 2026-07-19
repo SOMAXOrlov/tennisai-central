@@ -2,6 +2,7 @@
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "publicId" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -83,8 +84,44 @@ CREATE TABLE "player_tournaments" (
     CONSTRAINT "player_tournaments_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "teams" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "coachId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "teams_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "team_members" (
+    "id" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "playerId" TEXT NOT NULL,
+    "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "team_members_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "connection_requests" (
+    "id" TEXT NOT NULL,
+    "fromUserId" TEXT NOT NULL,
+    "toUserId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "connection_requests_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_publicId_key" ON "users"("publicId");
 
 -- CreateIndex
 CREATE INDEX "trainings_coachId_idx" ON "trainings"("coachId");
@@ -107,6 +144,24 @@ CREATE INDEX "player_tournaments_playerId_idx" ON "player_tournaments"("playerId
 -- CreateIndex
 CREATE UNIQUE INDEX "player_tournaments_tournamentId_playerId_key" ON "player_tournaments"("tournamentId", "playerId");
 
+-- CreateIndex
+CREATE INDEX "teams_coachId_idx" ON "teams"("coachId");
+
+-- CreateIndex
+CREATE INDEX "team_members_playerId_idx" ON "team_members"("playerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "team_members_teamId_playerId_key" ON "team_members"("teamId", "playerId");
+
+-- CreateIndex
+CREATE INDEX "connection_requests_toUserId_idx" ON "connection_requests"("toUserId");
+
+-- CreateIndex
+CREATE INDEX "connection_requests_status_idx" ON "connection_requests"("status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "connection_requests_fromUserId_toUserId_key" ON "connection_requests"("fromUserId", "toUserId");
+
 -- AddForeignKey
 ALTER TABLE "trainings" ADD CONSTRAINT "trainings_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -121,4 +176,19 @@ ALTER TABLE "player_tournaments" ADD CONSTRAINT "player_tournaments_tournamentId
 
 -- AddForeignKey
 ALTER TABLE "player_tournaments" ADD CONSTRAINT "player_tournaments_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "teams" ADD CONSTRAINT "teams_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "team_members" ADD CONSTRAINT "team_members_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "team_members" ADD CONSTRAINT "team_members_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "connection_requests" ADD CONSTRAINT "connection_requests_fromUserId_fkey" FOREIGN KEY ("fromUserId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "connection_requests" ADD CONSTRAINT "connection_requests_toUserId_fkey" FOREIGN KEY ("toUserId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

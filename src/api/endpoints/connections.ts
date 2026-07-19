@@ -17,12 +17,17 @@ import { apiClient } from "@/api/client";
 export const USE_MOCK_CONNECTIONS = true;
 
 /**
- * Dynamic mock-mode check so tests can flip behaviour at runtime via
- * `vi.stubEnv("VITE_USE_MOCK_CONNECTIONS", "false")`. Defaults to mock mode
- * unless the env var is explicitly set to the string "false".
+ * Dynamic mock-mode check.
+ * - `VITE_USE_MOCK_CONNECTIONS="false"` forces real mode (used by tests).
+ * - `VITE_USE_MOCK_CONNECTIONS="true"` forces mock mode.
+ * - Otherwise: real when an API base is configured (production), else mock.
  */
-export const isMockMode = (): boolean =>
-  import.meta.env.VITE_USE_MOCK_CONNECTIONS !== "false";
+export const isMockMode = (): boolean => {
+  const flag = import.meta.env.VITE_USE_MOCK_CONNECTIONS;
+  if (flag === "false") return false;
+  if (flag === "true") return true;
+  return !import.meta.env.VITE_API_BASE_URL;
+};
 
 export interface SendRequestPayload {
   toUserId: string;

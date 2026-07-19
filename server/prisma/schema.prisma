@@ -15,6 +15,7 @@ datasource db {
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
+  publicId      String   @unique // shareable directory id, e.g. TAI-P-001
   passwordHash  String
   role          String // "player" | "coach" | "observer" | "admin"
   firstName     String
@@ -28,6 +29,12 @@ model User {
   trainingParticipations TrainingParticipant[]
   // back-relations (tournaments domain)
   playerTournaments      PlayerTournament[]
+  // back-relations (teams domain)
+  coachedTeams    Team[]       @relation("TeamCoach")
+  teamMemberships TeamMember[]
+  // back-relations (connections domain)
+  sentConnections     ConnectionRequest[] @relation("ConnFrom")
+  receivedConnections ConnectionRequest[] @relation("ConnTo")
 
   @@map("users")
 }
@@ -123,4 +130,57 @@ model PlayerTournament {
   @@unique([tournamentId, playerId])
   @@index([playerId])
   @@map("player_tournaments")
+}
+
+// ── Teams domain ─────────────────────────────────────────────────
+// A coach-owned team with player members. The front-end `Team.players`
+// (ConnectedPlayer[]) is composed from the TeamMember join + User.
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  coachId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coach   User         @relation("TeamCoach", fields: [coachId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+
+  @@index([coachId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  playerId String
+  joinedAt DateTime @default(now()) // → ConnectedPlayer.connectedSince
+
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, playerId])
+  @@index([playerId])
+  @@map("team_members")
+}
+
+// ── Connections domain ───────────────────────────────────────────
+// A directed relationship request between two users. Denormalised
+// names/roles in the front-end shape are derived from the User join.
+
+model ConnectionRequest {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  status     String   @default("pending") // pending | active | rejected | revoked
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  fromUser User @relation("ConnFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ConnTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+  @@index([status])
+  @@map("connection_requests")
 }

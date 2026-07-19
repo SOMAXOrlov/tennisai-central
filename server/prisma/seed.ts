@@ -7,10 +7,10 @@ const prisma = new PrismaClient();
 // (equipment, finance, etc. are keyed on p1 / c1 / …), so the seeded
 // dashboard keeps working after auth becomes real.
 const DEMO_USERS = [
-  { id: "p1", email: "player@test.com", role: "player", firstName: "Alex", lastName: "Rivera" },
-  { id: "c1", email: "coach@test.com", role: "coach", firstName: "Jordan", lastName: "Smith" },
-  { id: "o1", email: "observer@test.com", role: "observer", firstName: "Morgan", lastName: "Lee" },
-  { id: "a1", email: "admin@test.com", role: "admin", firstName: "Admin", lastName: "User" },
+  { id: "p1", email: "player@test.com", publicId: "TAI-P-001", role: "player", firstName: "Alex", lastName: "Rivera" },
+  { id: "c1", email: "coach@test.com", publicId: "TAI-C-001", role: "coach", firstName: "Jordan", lastName: "Smith" },
+  { id: "o1", email: "observer@test.com", publicId: "TAI-F-001", role: "observer", firstName: "Morgan", lastName: "Lee" },
+  { id: "a1", email: "admin@test.com", publicId: "TAI-A-001", role: "admin", firstName: "Admin", lastName: "User" },
 ];
 
 // A couple of demo trainings for coach c1 with player p1 as participant, so the
@@ -67,6 +67,12 @@ const DEMO_PLAYER_TOURNAMENTS = [
   { id: "pt2", tournamentId: "t3", playerId: "p1", status: "planned" },
 ];
 
+// Demo team (coach c1 → player p1) and an active connection between them.
+const DEMO_TEAMS = [{ id: "team-1", name: "Rising Stars", coachId: "c1", memberIds: ["p1"] }];
+const DEMO_CONNECTIONS = [
+  { id: "conn-1", fromUserId: "c1", toUserId: "p1", status: "active" },
+];
+
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
@@ -103,10 +109,34 @@ async function main() {
     });
   }
 
+  for (const t of DEMO_TEAMS) {
+    await prisma.team.upsert({
+      where: { id: t.id },
+      update: { name: t.name },
+      create: { id: t.id, name: t.name, coachId: t.coachId },
+    });
+    for (const playerId of t.memberIds) {
+      await prisma.teamMember.upsert({
+        where: { teamId_playerId: { teamId: t.id, playerId } },
+        update: {},
+        create: { teamId: t.id, playerId },
+      });
+    }
+  }
+
+  for (const c of DEMO_CONNECTIONS) {
+    await prisma.connectionRequest.upsert({
+      where: { fromUserId_toUserId: { fromUserId: c.fromUserId, toUserId: c.toUserId } },
+      update: { status: c.status },
+      create: c,
+    });
+  }
+
   console.log(`✅ Seeded ${DEMO_USERS.length} demo users (password: password123):`);
   DEMO_USERS.forEach((u) => console.log(`   • ${u.email} (${u.role})`));
   console.log(`✅ Seeded ${DEMO_TRAININGS.length} demo trainings for coach c1 / player p1.`);
   console.log(`✅ Seeded ${DEMO_TOURNAMENTS.length} tournaments + ${DEMO_PLAYER_TOURNAMENTS.length} entries for p1.`);
+  console.log(`✅ Seeded ${DEMO_TEAMS.length} team + ${DEMO_CONNECTIONS.length} connection.`);
 }
 
 main()

@@ -1,9 +1,11 @@
-// TODO: Replace mock with real API calls when backend is ready
+// Teams are migrated to the real backend (server/src/teams). Live whenever an
+// absolute API base is configured; otherwise the in-memory mock is used for
+// offline frontend work and tests.
 import type { Team, ConnectedPlayer, ApiResponse } from "@/types";
 import { apiClient } from "@/api/client";
 import { mockStore } from "@/mock/store";
 
-const USE_MOCK = true;
+const USE_MOCK = !import.meta.env.VITE_API_BASE_URL;
 const delay = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
 export const teamsApi = {

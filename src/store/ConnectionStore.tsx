@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { mockConnectionRequests } from "@/mock/data";
 import type { ConnectionRequest, RelationshipStatus, ConnectedPlayer, UserRole } from "@/types";
 import { DIRECTORY, type DirectoryEntry } from "@/mock/directory";
-import { connectionsApi } from "@/api/endpoints/connections";
+import { connectionsApi, isMockMode } from "@/api/endpoints/connections";
 
 // ─── Types ───
 
@@ -74,10 +74,27 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
   const { user } = useAuth();
   const userId = user?.id ?? "";
 
-  const [requests, setRequests] = useState<ConnectionRequest[]>(() => [
-    ...buildSeedRequests(),
-    ...mockConnectionRequests,
-  ]);
+  // Mock mode seeds an in-memory graph; real mode loads from the API.
+  const [requests, setRequests] = useState<ConnectionRequest[]>(() =>
+    isMockMode() ? [...buildSeedRequests(), ...mockConnectionRequests] : [],
+  );
+
+  // Real mode: the server is authoritative. Load on mount and after every
+  // mutation to reconcile ids/status. No-op in mock mode (tests unaffected).
+  const refetch = useCallback(() => {
+    if (isMockMode()) return;
+    connectionsApi
+      .list()
+      .then((res) => setRequests(res.data ?? []))
+      .catch(() => {
+        /* leave current state; a later action will retry */
+      });
+  }, []);
+
+  useEffect(() => {
+    if (isMockMode() || !user) return;
+    refetch();
+  }, [user, refetch]);
 
   const sendRequest = useCallback(
     (entry: DirectoryEntry): SendResult => {
@@ -115,12 +132,13 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
       // synthetic success; in real mode the request is observable in tests.
       void connectionsApi
         .send({ toUserId: entry.id, toPublicId: entry.publicId })
+        .then(() => refetch())
         .catch(() => {
           /* Local state remains authoritative for the mock build. */
         });
       return { ok: true, request: newReq };
     },
-    [user, userId, requests]
+    [user, userId, requests, refetch]
   );
 
   const updateStatus = useCallback(
@@ -144,12 +162,13 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
       );
       void connectionsApi
         .updateStatus(id, { status: status as "active" | "rejected" })
+        .then(() => refetch())
         .catch(() => {
           /* ignore — local state is authoritative in mock mode */
         });
       return { ok: true };
     },
-    [requests, userId]
+    [requests, userId, refetch]
   );
 
   const revokeRelationship = useCallback(
@@ -169,12 +188,15 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
             : r
         )
       );
-      void connectionsApi.revoke(id).catch(() => {
-        /* ignore — local state is authoritative in mock mode */
-      });
+      void connectionsApi
+        .revoke(id)
+        .then(() => refetch())
+        .catch(() => {
+          /* ignore — local state is authoritative in mock mode */
+        });
       return { ok: true };
     },
-    [requests, userId]
+    [requests, userId, refetch]
   );
 
   // Active relationships involving current user

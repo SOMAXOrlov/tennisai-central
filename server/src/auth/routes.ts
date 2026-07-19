@@ -1,10 +1,12 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import type { User } from "@prisma/client";
 import { prisma } from "../db";
 import { signToken } from "./jwt";
 import { sendWelcomeEmail } from "../email/mailer";
+import { publicIdFor } from "../lib/publicId";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
 
 export const authRouter = Router();
@@ -44,6 +46,7 @@ authRouter.post(
     const user = await prisma.user.create({
       data: {
         email,
+        publicId: publicIdFor(data.role, randomUUID()),
         passwordHash,
         role: data.role,
         firstName: data.firstName,
