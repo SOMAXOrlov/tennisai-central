@@ -103,6 +103,20 @@ const DEMO_CALENDAR_EVENTS = [
   },
 ];
 
+// Finance / equipment / notifications for player p1.
+const DEMO_FINANCE = [
+  { id: "fin-1", playerId: "p1", category: "training", description: "Monthly coaching", amount: 800, currency: "USD", date: "2026-07-01" },
+  { id: "fin-2", playerId: "p1", category: "travel", description: "Flight to Melbourne", amount: 640, currency: "USD", date: "2026-07-05" },
+  { id: "fin-3", playerId: "p1", category: "equipment", description: "New racket", amount: 220, currency: "USD", date: "2026-07-10" },
+];
+const DEMO_EQUIPMENT = [
+  { id: "eq-1", playerId: "p1", category: "racket", name: "Pro Staff 97", brand: "Wilson", model: "v14", condition: "good", acquiredDate: "2026-01-15" },
+  { id: "eq-2", playerId: "p1", category: "shoes", name: "Court FF 3", brand: "Asics", condition: "new", acquiredDate: "2026-06-20" },
+];
+const DEMO_NOTIFICATIONS = [
+  { id: "notif-1", userId: "p1", type: "training_request_approved", title: "Training Request Approved", message: "Your individual request for 2026-07-22 was approved", read: false, linkTo: "/calendar" },
+];
+
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
@@ -172,12 +186,23 @@ async function main() {
     await prisma.calendarEvent.upsert({ where: { id: ev.id }, update: values, create: values });
   }
 
+  for (const f of DEMO_FINANCE) {
+    await prisma.financeEntry.upsert({ where: { id: f.id }, update: { amount: f.amount }, create: f });
+  }
+  for (const e of DEMO_EQUIPMENT) {
+    await prisma.equipmentItem.upsert({ where: { id: e.id }, update: { name: e.name }, create: e });
+  }
+  for (const n of DEMO_NOTIFICATIONS) {
+    await prisma.notification.upsert({ where: { id: n.id }, update: { title: n.title }, create: n });
+  }
+
   console.log(`✅ Seeded ${DEMO_USERS.length} demo users (password: password123):`);
   DEMO_USERS.forEach((u) => console.log(`   • ${u.email} (${u.role})`));
   console.log(`✅ Seeded ${DEMO_TRAININGS.length} demo trainings for coach c1 / player p1.`);
   console.log(`✅ Seeded ${DEMO_TOURNAMENTS.length} tournaments + ${DEMO_PLAYER_TOURNAMENTS.length} entries for p1.`);
   console.log(`✅ Seeded ${DEMO_TEAMS.length} team + ${DEMO_CONNECTIONS.length} connection.`);
   console.log(`✅ Seeded ${DEMO_TRAINING_REQUESTS.length} training request + ${DEMO_CALENDAR_EVENTS.length} calendar event.`);
+  console.log(`✅ Seeded ${DEMO_FINANCE.length} finance + ${DEMO_EQUIPMENT.length} equipment + ${DEMO_NOTIFICATIONS.length} notification for p1.`);
 }
 
 main()

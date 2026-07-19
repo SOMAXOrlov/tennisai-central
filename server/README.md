@@ -94,6 +94,11 @@ needed). To send real email:
 | POST   | `/api/training-requests/:id/{approve,reject,reschedule,cancel}` | Bearer | Coach acts (approve → calendar event) |
 | GET    | `/api/calendar/events` · `/:id` | Bearer | Events (recurring → occurrences)  |
 | POST/PATCH/DELETE | `/api/calendar/events` | Bearer | Create / update / delete an event |
+| GET/POST | `/api/players/:id/finance` (+`/summary`) | Bearer | Finance entries (self only)   |
+| GET/POST | `/api/players/:id/equipment` · PATCH/DELETE `/api/equipment/:id` | Bearer | Equipment (self) |
+| GET | `/api/notifications` · PATCH `/:id/read` · `/read-all` | Bearer | Notifications (self)       |
+| GET/PATCH | `/api/notification-preferences` | Bearer | Per-user notification settings   |
+| GET/PATCH | `/api/me/profile`         | Bearer | View / update own profile            |
 
 ## Demo logins (seeded)
 `player@test.com`, `coach@test.com`, `observer@test.com`, `admin@test.com` —
@@ -116,9 +121,12 @@ See [`../DEPLOY.md`](../DEPLOY.md) for the full Vercel + Render + Postgres runbo
   guards (`/api/connections`) + a users directory (`/api/users/directory`). Users now
   carry a shareable `publicId`.
 - ✅ **Training requests + Calendar** — real: `/api/training-requests` (approve creates
-  a linked calendar event server-side) and `/api/calendar/events` (recurrence expanded
-  into occurrences on read). Note: approve/reject no longer writes a *notification*
-  (notifications are still mock — migrate that domain to restore the side effect).
-- ⏳ **Remaining** — still front-end mock (`USE_MOCK` in `src/api/endpoints/*`):
-  finance, equipment, notifications, profile, aiInsights. Migrating a domain = add a
-  Prisma model + auth-scoped router here, then flip that module's flag.
+  a linked calendar event **and a notification**) and `/api/calendar/events` (recurrence
+  expanded into occurrences on read).
+- ✅ **Finance · Equipment · Notifications · Profile** — real, self-scoped:
+  `/api/players/:id/finance` (+ summary), `/api/players/:id/equipment` + `/api/equipment/:id`,
+  `/api/notifications` (+ `/notification-preferences`), `/api/me/profile`.
+- ⏳ **aiInsights** — the only holdout. It is a *derived computation* (aggregates
+  trainings/equipment), not stored CRUD, so it still runs client-side against the mock.
+  To make it production-correct, either port the heuristics to the server or have the
+  client compute over the now-real trainings/equipment. Everything else is real.

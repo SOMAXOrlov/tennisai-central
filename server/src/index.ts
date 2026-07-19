@@ -13,6 +13,10 @@ import { connectionsRouter } from "./connections/routes";
 import { usersRouter } from "./users/routes";
 import { trainingRequestsRouter } from "./trainingRequests/routes";
 import { calendarRouter } from "./calendar/routes";
+import { financeRouter } from "./finance/routes";
+import { equipmentRouter } from "./equipment/routes";
+import { notificationsRouter } from "./notifications/routes";
+import { profileRouter } from "./profile/routes";
 import { errorHandler } from "./http";
 
 const app = express();
@@ -54,6 +58,10 @@ app.use("/api/connections", connectionsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/training-requests", trainingRequestsRouter);
 app.use("/api/calendar", calendarRouter);
+app.use("/api/me", profileRouter);
+app.use("/api", financeRouter);
+app.use("/api", equipmentRouter);
+app.use("/api", notificationsRouter);
 
 // Fallback JSON 404 so the frontend always gets a parseable error body.
 app.use((_req, res) => res.status(404).json({ message: "Not found" }));

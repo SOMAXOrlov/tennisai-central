@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { TrainingRequest, User } from "@prisma/client";
 import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
+import { createNotification } from "../notifications/routes";
 
 export const trainingRequestsRouter = Router();
 trainingRequestsRouter.use(requireAuth);
@@ -101,6 +102,13 @@ trainingRequestsRouter.post(
       data: { ...d, playerId: req.userId! },
       include: withUsers,
     });
+    void createNotification({
+      userId: created.coachId,
+      type: "training_request_created",
+      title: "New Training Request",
+      message: `${created.player.firstName} ${created.player.lastName} requested a ${created.trainingType} session on ${created.preferredDate}`,
+      linkTo: "/training-requests",
+    });
     return ok(res, present(created), "Request sent", 201);
   }),
 );
@@ -139,6 +147,13 @@ trainingRequestsRouter.post(
         include: withUsers,
       });
     });
+    void createNotification({
+      userId: r.playerId,
+      type: "training_request_approved",
+      title: "Training Request Approved",
+      message: `Your ${r.trainingType} request for ${r.preferredDate} was approved${coachMessage ? `: "${coachMessage}"` : ""}`,
+      linkTo: "/calendar",
+    });
     return ok(res, present(updated), "Request approved");
   }),
 );
@@ -154,6 +169,13 @@ trainingRequestsRouter.post(
       where: { id: r.id },
       data: { status: "rejected", coachMessage },
       include: withUsers,
+    });
+    void createNotification({
+      userId: r.playerId,
+      type: "training_request_rejected",
+      title: "Training Request Declined",
+      message: `Your ${r.trainingType} request for ${r.preferredDate} was declined${coachMessage ? `: "${coachMessage}"` : ""}`,
+      linkTo: "/training-requests",
     });
     return ok(res, present(updated), "Request declined");
   }),
@@ -176,6 +198,13 @@ trainingRequestsRouter.post(
         coachMessage: d.coachMessage,
       },
       include: withUsers,
+    });
+    void createNotification({
+      userId: r.playerId,
+      type: "training_request_rescheduled",
+      title: "New Time Proposed",
+      message: `Coach proposed ${d.proposedDate} ${d.proposedStartTime}–${d.proposedEndTime} for your ${r.trainingType} session`,
+      linkTo: "/training-requests",
     });
     return ok(res, present(updated), "New time proposed");
   }),

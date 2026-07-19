@@ -38,6 +38,11 @@ model User {
   // back-relations (training-requests domain)
   trainingRequestsAsPlayer TrainingRequest[] @relation("TRPlayer")
   trainingRequestsAsCoach  TrainingRequest[] @relation("TRCoach")
+  // back-relations (finance / equipment / notifications)
+  financeEntries         FinanceEntry[]
+  equipmentItems         EquipmentItem[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
 
   @@map("users")
 }
@@ -251,4 +256,72 @@ model CalendarEvent {
   @@index([playerId])
   @@index([startDate])
   @@map("calendar_events")
+}
+
+// ── Finance / Equipment / Notifications ──────────────────────────
+
+model FinanceEntry {
+  id          String   @id @default(cuid())
+  playerId    String
+  category    String // training | travel | tournament | equipment
+  description String
+  amount      Float
+  currency    String   @default("USD")
+  date        String
+  createdAt   DateTime @default(now())
+
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@map("finance_entries")
+}
+
+model EquipmentItem {
+  id           String   @id @default(cuid())
+  playerId     String
+  category     String
+  name         String
+  brand        String?
+  model        String?
+  notes        String?
+  acquiredDate String?
+  condition    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@map("equipment_items")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  linkTo    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                  String  @id @default(cuid())
+  userId              String  @unique
+  trainingReminders   Boolean @default(true)
+  tournamentReminders Boolean @default(true)
+  requestApprovals    Boolean @default(true)
+  financeUpdates      Boolean @default(true)
+  aiInsightUpdates    Boolean @default(true)
+  systemNotifications Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }
