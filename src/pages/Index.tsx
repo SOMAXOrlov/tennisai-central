@@ -1,7 +1,15 @@
+import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
+
+// Split out of the entry chunk: the hero renders and reads correctly with
+// nothing but the dark band behind it, so the court has no business delaying
+// first paint for someone who only came here to sign in.
+const RallyCanvas = lazy(() =>
+  import("@/components/motion/RallyCanvas").then((m) => ({ default: m.RallyCanvas })),
+);
 
 // ── Content ───────────────────────────────────────────────
 const capabilities = [
@@ -25,17 +33,25 @@ function Marker() {
 const Index = () => {
   return (
     <div className="bg-background">
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="border-b border-foreground/15">
-        <div className="container max-w-6xl py-20 md:py-28">
+      {/* ── Hero ──────────────────────────────────────────────
+          A floodlit court, with one point played out on it behind the copy.
+          The band is night-dark in both themes (see .hero-court), so nothing
+          in here uses --foreground or --muted-foreground — those flip with the
+          theme and would go black-on-black in light mode. */}
+      <section className="hero-court border-b border-foreground/15">
+        <Suspense fallback={null}>
+          <RallyCanvas className="absolute inset-0 h-full w-full" />
+        </Suspense>
+
+        <div className="container relative z-10 max-w-6xl py-24 md:py-32">
           {/* Hero animates on load rather than on scroll — it is already in
               view, so waiting for an intersection would leave it blank. The
               60ms steps read as one considered movement, not four separate
               ones. */}
-          <h1 className="max-w-4xl animate-rise-in text-5xl font-extrabold leading-[0.95] tracking-[-0.03em] text-foreground sm:text-6xl md:text-7xl">
+          <h1 className="max-w-4xl animate-rise-in text-5xl font-extrabold leading-[0.95] tracking-[-0.03em] text-[#f2f6fb] sm:text-6xl md:text-7xl">
             Run the season like a system.
           </h1>
-          <p className="mt-8 max-w-2xl animate-rise-in text-lg leading-relaxed text-muted-foreground [animation-delay:90ms] md:text-xl">
+          <p className="mt-8 max-w-2xl animate-rise-in text-lg leading-relaxed text-[#a3b1c4] [animation-delay:90ms] md:text-xl">
             Tennis AI keeps the season between coach and player in one place — trainings
             scheduled, sessions planned, kit logged, tournaments chosen. Built for coaches,
             players and the parents who drive.
@@ -46,13 +62,13 @@ const Index = () => {
             </Button>
             <a
               href="#how-it-works"
-              className="group inline-flex items-center gap-2 text-sm font-semibold text-foreground"
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-[#f2f6fb]"
             >
               {/* Underline sweeps out from the left on hover. */}
-              <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-foreground after:transition-transform after:duration-300 after:ease-editorial group-hover:after:scale-x-100 motion-reduce:after:transition-none">
+              <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#f2f6fb] after:transition-transform after:duration-300 after:ease-editorial group-hover:after:scale-x-100 motion-reduce:after:transition-none">
                 See how it works
               </span>
-              <ArrowRight className="h-4 w-4 text-primary transition-transform duration-300 ease-editorial group-hover:translate-x-1 motion-reduce:transition-none" />
+              <ArrowRight className="h-4 w-4 text-[hsl(var(--tennis-ball))] transition-transform duration-300 ease-editorial group-hover:translate-x-1 motion-reduce:transition-none" />
             </a>
           </div>
         </div>

@@ -8,10 +8,14 @@ export function Navbar() {
   const isLanding = location.pathname === "/";
 
   return (
+    // The landing header used to sit at 60% opacity, which read as a soft edge
+    // over a paper-white page. The hero beneath it is now a floodlit court, and
+    // a half-transparent light bar over that turned the links low-contrast — so
+    // the header is solid everywhere and the dark band starts below it.
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-border/50 backdrop-blur supports-[backdrop-filter]:bg-background/80",
-        isLanding ? "bg-background/60" : "bg-background/95"
+        "sticky top-0 z-50 w-full border-b border-border/50 backdrop-blur",
+        "bg-background/95 supports-[backdrop-filter]:bg-background/80"
       )}
     >
       <div className="container flex h-16 items-center justify-between">

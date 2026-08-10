@@ -294,6 +294,47 @@
       radial-gradient(ellipse 80% 70% at 50% 50%, hsl(var(--background) / 0.5), hsl(var(--background) / 0.85) 70%, hsl(var(--background) / 0.95) 100%);
   }
 
+  /* ── Broadcast hero band ────────────────────────────────────────────
+     The landing hero is a floodlit court, and it stays night-dark in both
+     light and dark mode on purpose — broadcast graphics want a dark ground,
+     and a court that repainted itself paper-white would stop reading as one.
+     So these colours are literal rather than themed, and everything inside
+     the band sets its own foreground: it cannot inherit --foreground, which
+     flips with the theme. */
+  .hero-court {
+    position: relative;
+    isolation: isolate;
+    background-color: #0b1220;
+  }
+
+  /* Lower-third scrim. Broadcast always shades the corner the caption sits in;
+     without it the headline fights the court lines running underneath. */
+  .hero-court::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      102deg,
+      rgba(11, 18, 32, 0.97) 0%,
+      rgba(11, 18, 32, 0.88) 38%,
+      rgba(11, 18, 32, 0.45) 68%,
+      rgba(11, 18, 32, 0) 88%
+    );
+  }
+
+  /* Vertical fade at the foot, so the band ends rather than just stops. */
+  .hero-court::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 6rem;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(11, 18, 32, 0) 0%, rgba(11, 18, 32, 0.9) 100%);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
