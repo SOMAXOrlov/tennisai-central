@@ -52,7 +52,30 @@ export function mapTournament(raw: Record<string, unknown>): Tournament {
     federation: inferFederation(t),
     latitude: typeof t.latitude === "number" ? t.latitude : null,
     longitude: typeof t.longitude === "number" ? t.longitude : null,
+    // Planning facts and provenance. The server has sent these for a while; this
+    // mapper used to drop them on the floor, so in live mode every tournament
+    // reached the page with no entry deadline and no source. Pass-through only —
+    // a missing value stays missing rather than being guessed.
+    entryDeadline: str(t.entryDeadline),
+    ageCategory: str(t.ageCategory),
+    venue: str(t.venue),
+    website: str(t.website),
+    registeredCount: num(t.registeredCount),
+    utrRangeMin: num(t.utrRangeMin),
+    utrRangeMax: num(t.utrRangeMax),
+    source: str(t.source),
+    lastSeenAt: str(t.lastSeenAt),
+    updatedAt: str(t.updatedAt),
   };
+}
+
+/** A string field as sent, or undefined — never "" or "undefined" coerced from a null. */
+function str(value: unknown): string | undefined {
+  return typeof value === "string" && value !== "" ? value : undefined;
+}
+
+function num(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
 export function mapTournaments(payload: unknown): Tournament[] {

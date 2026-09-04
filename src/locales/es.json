@@ -271,6 +271,113 @@
       "unreadAria": "{count, plural, one {# notificación sin leer} other {# notificaciones sin leer}}"
     }
   },
+    "tournaments": {
+      "provenance": {
+        "viaSource": "vía {source}",
+        "source": {
+          "utr-events": "UTR",
+          "itf-juniors": "ITF Juniors",
+          "static-snapshot": "instantánea curada",
+          "http-live": "feed con licencia"
+        },
+        "manual": "Añadido a mano",
+        "checked": "comprobado {when}",
+        "edited": "editado {when}",
+        "noFreshness": "actualidad no disponible",
+        "chipAria": "Fuente: {source}. {freshness}",
+        "legend": "Cada etiqueta indica qué feed publicó el evento y cuándo lo confirmó por última vez. Las filas «Añadido a mano» se introdujeron manualmente."
+      },
+      "conditions": {
+        "title": "Condiciones de juego",
+        "surface": "Superficie",
+        "setting": "Cubierta / exterior",
+        "indoor": "Cubierta",
+        "outdoor": "Exterior",
+        "altitude": "Altitud",
+        "altitudeM": "{m} m",
+        "altitudeFromMap": "según las coordenadas del mapa",
+        "altitudeAssumed": "Para la física de la pelota se asume el nivel del mar.",
+        "ball": "Pelota oficial",
+        "ballNotRecorded": "Sin registrar",
+        "ballPlaceholder": "p. ej. Dunlop ATP",
+        "ballAdd": "Añadir",
+        "ballChange": "Cambiar",
+        "ballSaved": "Pelota guardada",
+        "ballSaveFailed": "No se pudo guardar la pelota.",
+        "notAvailable": "No disponible",
+        "weather": "Meteorología",
+        "weatherBasis": {
+          "forecast": "Pronóstico en vivo",
+          "observed": "Meteorología registrada",
+          "typical": "Media histórica",
+          "unknown": "Sin datos meteorológicos"
+        },
+        "weatherBasisDetail": {
+          "forecast": "Pronóstico para el {date}. Solo existen pronósticos con unas dos semanas de antelación.",
+          "observed": "Lo que se registró realmente el {date}.",
+          "typical": "No es un pronóstico. Queda demasiado lejos para pronosticar, así que es la media de cómo ha sido realmente el {date} en {years, plural, one {# año anterior} other {# años anteriores}}.",
+          "unknown": "No se muestra nada en lugar de una suposición."
+        },
+        "temperature": "{c} °C",
+        "temperatureRange": "({min}–{max} °C)",
+        "humidity": "{pct} % de humedad",
+        "sourceLine": "Fuente: {source}",
+        "ballBehaviour": "Cómo jugará la pelota",
+        "speed": {
+          "faster": "La pelota atravesará el aire más rápido de lo habitual",
+          "slower": "La pelota atravesará el aire más lento de lo habitual",
+          "neutral": "La velocidad de la pelota en el aire parecerá normal"
+        },
+        "bounce": {
+          "higher": "y botará más alto",
+          "lower": "y botará más bajo",
+          "neutral": "con un bote normal"
+        },
+        "airDensity": "Densidad del aire {density} kg/m³ ({delta} frente a un día templado a nivel del mar) · calculado, no estimado por IA",
+        "indoorAssumption": "se asume pista cubierta a 22 °C",
+        "noPhysics": "El comportamiento de la pelota no se puede calcular sin datos meteorológicos.",
+        "loadError": "No se pudieron cargar las condiciones.",
+        "prep": {
+          "title": "Prepárate para este partido",
+          "intro": "Un modelo lee las condiciones de arriba y el entrenamiento reciente, y sugiere táctica, calentamiento y equipamiento.",
+          "cta": "Preparar este partido",
+          "ctaFor": "Preparar a {name} para este partido",
+          "working": "Analizando…",
+          "playerLabel": "Preparar a",
+          "reason": {
+            "aiOff": "El análisis con IA no está activado en este servidor. Las condiciones de arriba no se ven afectadas.",
+            "noWeather": "Hacen falta datos meteorológicos antes de poder analizar nada.",
+            "noPlayer": "Añade primero un jugador a este torneo: la preparación se escribe para un jugador concreto.",
+            "readOnly": "Su cuenta es de solo lectura; un jugador o un entrenador puede ejecutar la preparación.",
+            "quota": "Has usado todas tus generaciones de IA de este mes."
+          },
+          "failed": "No se pudo analizar.",
+          "tactical": "Táctica",
+          "preparation": "Preparación",
+          "equipment": "Equipamiento",
+          "generatedBy": "Generado por {provider} · {model}, a partir de {sessions, plural, one {# sesión reciente} other {# sesiones recientes}}. Es una sugerencia: tu criterio decide."
+        }
+      },
+      "next": {
+        "title": "Próximo torneo",
+        "description": "El siguiente evento de tu calendario",
+        "none": "Aún no tienes nada en tu calendario.",
+        "browse": "Buscar un torneo",
+        "startsIn": "{days, plural, one {Empieza en # día} other {Empieza en # días}}",
+        "startsToday": "Empieza hoy",
+        "onNow": "En juego",
+        "prepCta": "Preparar este partido",
+        "prepHint": "Las condiciones, el comportamiento de la pelota y un plan de preparación están en la página del torneo.",
+        "open": "Abrir"
+      }
+    },
+    "ai": {
+      "usage": {
+        "remaining": "Te quedan {remaining} de {limit} generaciones de IA este mes",
+        "exhausted": "Has usado las {limit} generaciones de IA de este mes",
+        "aria": "Generaciones de IA restantes este mes"
+      }
+    },
   "dashboard": {
     "nav": {
       "dashboard": "Panel",
