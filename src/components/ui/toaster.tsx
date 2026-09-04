@@ -1,24 +1,9 @@
-import { useToast } from "@/hooks/use-toast";
-import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
-
+/**
+ * Legacy mount point of the Radix toast list. Toasts are rendered by sonner
+ * (`<Toaster />` from `@/components/ui/sonner`, mounted in App.tsx) and
+ * `@/hooks/use-toast` forwards the old `toast({ title })` calls there, so this
+ * renders nothing. Kept so an import of it does not break; nothing mounts it.
+ */
 export function Toaster() {
-  const { toasts } = useToast();
-
-  return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && <ToastDescription>{description}</ToastDescription>}
-            </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        );
-      })}
-      <ToastViewport />
-    </ToastProvider>
-  );
+  return null;
 }

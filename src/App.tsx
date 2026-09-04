@@ -1,5 +1,4 @@
 import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -106,7 +105,8 @@ const App = () => (
       <AuthProvider>
         <ConnectionProvider>
           <TooltipProvider>
-          <Toaster />
+          {/* The one toast system. `@/hooks/use-toast` adapts the old
+              `toast({ title })` calls onto it. */}
           <Sonner />
           <BodyPointerEventsGuard />
           <DevHmrBanner />
