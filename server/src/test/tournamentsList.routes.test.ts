@@ -82,6 +82,55 @@ describe("GET /api/tournaments", () => {
     expect(daysBack).toBeGreaterThan(59);
   });
 
+  it("sends provenance and freshness so the client can say where a row came from and when", async () => {
+    // A stale lastSeenAt is how a coach learns a feed has silently stopped —
+    // it is useless if it never leaves the server.
+    db.tournament.findMany.mockResolvedValue([
+      {
+        id: "utr-events-1",
+        name: "UTR Pro Lisbon",
+        city: "Lisbon",
+        country: "Portugal",
+        surface: "Hard",
+        indoorOutdoor: "outdoor",
+        federation: "UTR",
+        startDate: new Date("2026-10-01T00:00:00.000Z"),
+        endDate: new Date("2026-10-04T00:00:00.000Z"),
+        source: "utr-events",
+        lastSeenAt: new Date("2026-09-04T06:00:00.000Z"),
+        createdAt: new Date("2026-08-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-09-04T06:00:01.000Z"),
+      },
+      {
+        id: "manual-1",
+        name: "Club championship",
+        city: "Vic",
+        country: "Spain",
+        surface: "Clay",
+        indoorOutdoor: "outdoor",
+        startDate: new Date("2026-10-10T00:00:00.000Z"),
+        endDate: new Date("2026-10-11T00:00:00.000Z"),
+        source: null,
+        lastSeenAt: null,
+        createdAt: new Date("2026-08-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-08-02T00:00:00.000Z"),
+      },
+    ]);
+
+    const res = await request(app).get("/api/tournaments").set("Authorization", bearer(USER));
+    expect(res.status).toBe(200);
+
+    const [fed, manual] = res.body.data;
+    expect(fed.source).toBe("utr-events");
+    expect(fed.lastSeenAt).toBe("2026-09-04T06:00:00.000Z");
+    expect(fed.updatedAt).toBe("2026-09-04T06:00:01.000Z");
+    // A hand-entered row has no feed and therefore no lastSeenAt — the field is
+    // absent, not a fabricated timestamp.
+    expect(manual.source).toBeUndefined();
+    expect(manual.lastSeenAt).toBeUndefined();
+    expect(manual.updatedAt).toBe("2026-08-02T00:00:00.000Z");
+  });
+
   it("401s an anonymous caller and never touches the catalog", async () => {
     const res = await request(app).get("/api/tournaments");
     expect(res.status).toBe(401);
