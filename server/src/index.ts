@@ -31,8 +31,8 @@ import { aiRouter } from "./ai/routes";
 import { conditionsRouter } from "./conditions/routes";
 import { feedRouter } from "./tournaments/feedRoutes";
 import { startTournamentSchedule } from "./tournaments/schedule";
-import { importStatus, lastImportAt } from "./tournaments/importStatus";
 import { errorHandler } from "./http";
+import { healthRouter } from "./health";
 import { verifyMailTransport } from "./email/mailer";
 
 const app = express();
@@ -67,28 +67,10 @@ const apiLimiter = rateLimit({
   message: { message: "Too many requests. Please slow down and try again shortly." },
 });
 
-// Liveness + DB readiness.
-app.get("/api/health", async (_req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({
-      ok: true,
-      db: "up",
-      emailEnabled,
-      // Which transport, and whether signup is currently possible at all —
-      // the two facts you need to explain "nobody can register" without SSH.
-      mailTransport,
-      signupOpen: !(env.requireEmailVerification && !emailEnabled),
-      // A calendar feed that has silently stopped looks exactly like one that
-      // is working, until a coach plans a season against stale data. Reporting
-      // it here makes a dead source visible without opening a shell.
-      calendar: { lastImportAt: lastImportAt(), sources: importStatus() },
-      time: new Date().toISOString(),
-    });
-  } catch {
-    res.status(503).json({ ok: false, db: "down", time: new Date().toISOString() });
-  }
-});
+// Liveness + DB readiness — public, unauthenticated, and mounted BEFORE the
+// general limiter so an uptime monitor is never throttled into a false alarm.
+// The payload rules live in health.ts.
+app.use("/api/health", healthRouter);
 
 // Coarse per-client throttle across every API router (mounted before them).
 app.use("/api", apiLimiter);
