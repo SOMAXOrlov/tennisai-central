@@ -792,5 +792,176 @@
     "checkNow": "Comprobar ahora",
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
+  },
+  "states": {
+    "loading": "Cargando…",
+    "errorTitle": "Algo ha fallado",
+    "errorFallback": "No se ha podido cargar esto. Inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "offline": "Sin conexión. Vuelve a conectarte e inténtalo de nuevo.",
+    "serverError": "El servidor no ha respondido. Inténtalo de nuevo en un momento.",
+    "accessDenied": {
+      "title": "Acceso denegado",
+      "body": "No tienes permiso para ver esta página."
+    },
+    "boundary": {
+      "title": "Algo ha fallado",
+      "body": "Un error inesperado ha interrumpido esta página. Puedes reintentar, recargar o volver al panel.",
+      "tryAgain": "Reintentar",
+      "reload": "Recargar",
+      "backToDashboard": "Volver al panel",
+      "copyDiagnostics": "Copiar diagnóstico",
+      "copied": "Diagnóstico copiado",
+      "copyFailed": "No se ha podido copiar automáticamente: selecciona el texto de abajo y cópialo.",
+      "diagnosticsHint": "El diagnóstico incluye la página, la hora, el error y el navegador. Sin datos de la cuenta."
+    },
+    "load": {
+      "trainings": "No se han podido cargar los entrenamientos.",
+      "calendar": "No se ha podido cargar el calendario.",
+      "equipment": "No se ha podido cargar el equipamiento.",
+      "finance": "No se han podido cargar los datos financieros.",
+      "teams": "No se han podido cargar los equipos.",
+      "requests": "No se han podido cargar las solicitudes de entrenamiento.",
+      "notifications": "No se han podido cargar las notificaciones.",
+      "preferences": "No se han podido cargar las preferencias de notificaciones.",
+      "stats": "No se han podido cargar las estadísticas.",
+      "matches": "No se han podido cargar los partidos.",
+      "plans": "No se han podido cargar los planes de entrenamiento.",
+      "plan": "No se ha podido cargar este plan de entrenamiento.",
+      "dashboard": "No se ha podido cargar el panel.",
+      "playerEquipment": "No se ha podido cargar el equipamiento de {name}."
+    }
+  },
+  "toast": {
+    "common": {
+      "nextStep": "Comprueba la conexión e inténtalo de nuevo.",
+      "undo": "Deshacer"
+    },
+    "training": {
+      "created": "Entrenamiento creado",
+      "updated": "Entrenamiento actualizado",
+      "deleted": "Entrenamiento eliminado",
+      "feedbackSaved": "Valoración guardada",
+      "analysisReady": "Análisis listo",
+      "createFailed": "No se ha podido crear el entrenamiento",
+      "updateFailed": "No se ha podido actualizar el entrenamiento",
+      "deleteFailed": "No se ha podido eliminar el entrenamiento",
+      "feedbackFailed": "No se ha podido guardar la valoración",
+      "analyzeFailed": "No se ha podido analizar el entrenamiento",
+      "attendanceFailed": "No se ha podido guardar la asistencia"
+    },
+    "request": {
+      "sent": "Solicitud de entrenamiento enviada",
+      "approved": "Solicitud aprobada",
+      "declined": "Solicitud rechazada",
+      "rescheduled": "Nuevo horario propuesto",
+      "cancelled": "Solicitud cancelada",
+      "sendFailed": "No se ha podido enviar la solicitud",
+      "approveFailed": "No se ha podido aprobar la solicitud",
+      "declineFailed": "No se ha podido rechazar la solicitud",
+      "rescheduleFailed": "No se ha podido proponer un nuevo horario",
+      "cancelFailed": "No se ha podido cancelar la solicitud"
+    },
+    "team": {
+      "created": "Equipo creado",
+      "updated": "Equipo actualizado",
+      "deleted": "Equipo eliminado",
+      "playerAdded": "Jugador añadido al equipo",
+      "playerRemoved": "Jugador quitado del equipo",
+      "createFailed": "No se ha podido crear el equipo",
+      "updateFailed": "No se ha podido actualizar el equipo",
+      "deleteFailed": "No se ha podido eliminar el equipo",
+      "addPlayerFailed": "No se ha podido añadir al jugador",
+      "removePlayerFailed": "No se ha podido quitar al jugador"
+    },
+    "plan": {
+      "saved": "Sesión guardada",
+      "saveFailed": "No se ha podido guardar la sesión",
+      "drillFailed": "No se ha podido actualizar el ejercicio"
+    },
+    "event": {
+      "created": "Evento creado",
+      "updated": "Evento actualizado",
+      "deleted": "Evento eliminado",
+      "rescheduled": "Evento reprogramado",
+      "reassigned": "Evento reasignado a {name}",
+      "movedToOwn": "Evento movido a tu agenda",
+      "reassignUndone": "Reasignación deshecha",
+      "seriesDeleted": "Todos los eventos de la serie eliminados",
+      "occurrenceRemoved": "Esta repetición eliminada",
+      "occurrenceRemoveFailed": "No se ha podido eliminar esta repetición",
+      "notRecurring": "Este evento no se repite, así que no hay una repetición concreta que eliminar.",
+      "exported": "{count, plural, one {# evento exportado} other {# eventos exportados}} — {heading}",
+      "createFailed": "No se ha podido crear el evento",
+      "updateFailed": "No se ha podido actualizar el evento",
+      "deleteFailed": "No se ha podido eliminar el evento"
+    },
+    "tournament": {
+      "statusUpdated": "Estado del torneo actualizado",
+      "addedToSchedule": "Añadido a la agenda",
+      "removedFromSchedule": "Quitado de la agenda",
+      "hidden": "Torneo ocultado",
+      "unhidden": "Torneo visible de nuevo",
+      "refreshed": "Torneos actualizados",
+      "alreadyRegistered": "Ya estás inscrito en este torneo",
+      "statusFailed": "No se ha podido actualizar el estado del torneo",
+      "addFailed": "No se ha podido añadir el torneo",
+      "removeFailed": "No se ha podido quitar el torneo",
+      "hideFailed": "No se ha podido ocultar el torneo",
+      "unhideFailed": "No se ha podido volver a mostrar el torneo"
+    },
+    "finance": {
+      "added": "Gasto añadido",
+      "addFailed": "No se ha podido añadir el gasto"
+    },
+    "equipment": {
+      "added": "Equipamiento añadido",
+      "updated": "Equipamiento actualizado",
+      "removed": "Equipamiento eliminado",
+      "addFailed": "No se ha podido añadir el equipamiento",
+      "updateFailed": "No se ha podido actualizar el equipamiento",
+      "removeFailed": "No se ha podido eliminar el equipamiento"
+    },
+    "notification": {
+      "allRead": "Todas las notificaciones marcadas como leídas",
+      "allReadFailed": "No se ha podido marcar todo como leído",
+      "markReadFailed": "No se ha podido marcar la notificación como leída",
+      "preferenceSaved": "Preferencia guardada",
+      "preferenceFailed": "No se ha podido guardar la preferencia",
+      "pushEnabled": "Notificaciones push activadas en este dispositivo",
+      "pushFailed": "No se han podido activar las notificaciones push en este dispositivo"
+    },
+    "profile": {
+      "updated": "Perfil actualizado",
+      "updateFailed": "No se ha podido actualizar el perfil",
+      "publicIdCopied": "ID público copiado"
+    },
+    "calendarPrefs": {
+      "saveFailed": "No se ha podido guardar la selección de calendario"
+    },
+    "match": {
+      "logged": "Partido registrado",
+      "updated": "Partido actualizado",
+      "deleted": "Partido eliminado",
+      "logFailed": "No se ha podido registrar el partido",
+      "updateFailed": "No se ha podido actualizar el partido",
+      "deleteFailed": "No se ha podido eliminar el partido"
+    },
+    "opponent": {
+      "added": "Rival añadido",
+      "updated": "Rival actualizado",
+      "deleted": "Rival eliminado",
+      "addFailed": "No se ha podido añadir al rival",
+      "updateFailed": "No se ha podido actualizar al rival",
+      "deleteFailed": "No se ha podido eliminar al rival"
+    },
+    "connection": {
+      "approved": "Conexión aprobada",
+      "rejected": "Solicitud rechazada",
+      "revoked": "Conexión revocada",
+      "approveFailed": "No se ha podido aprobar la conexión",
+      "rejectFailed": "No se ha podido rechazar la solicitud",
+      "revokeFailed": "No se ha podido revocar la conexión"
+    }
   }
 }
