@@ -1,0 +1,63 @@
+{
+  "_comment": "SAMPLE Uptime Kuma backup-format monitor for TennisAI. Import via Settings > Backup > Import (Uptime Kuma 1.x). The envelope differs between versions; if the import is refused, create an 'HTTP(s) - Keyword' monitor by hand with these values. Replace the hostname if SITE_ADDRESS changes. No notifications are included — attach your own after import.",
+  "version": "1.23.0",
+  "notificationList": [],
+  "monitorList": [
+    {
+      "id": 1,
+      "name": "TennisAI API health",
+      "description": "GET /api/health must answer 200 with \"ok\":true. 503 = API up but database down; 502 = API process down; connection error = box down.",
+      "type": "keyword",
+      "url": "https://46-225-83-85.sslip.io/api/health",
+      "method": "GET",
+      "keyword": "\"ok\":true",
+      "invertKeyword": false,
+      "interval": 60,
+      "retryInterval": 30,
+      "maxretries": 2,
+      "timeout": 10,
+      "resendInterval": 0,
+      "accepted_statuscodes": ["200-299"],
+      "expiryNotification": true,
+      "ignoreTls": false,
+      "upsideDown": false,
+      "maxredirects": 0,
+      "headers": null,
+      "body": null,
+      "httpBodyEncoding": "json",
+      "authMethod": null,
+      "active": true,
+      "tags": [
+        { "name": "tennisai", "color": "#2f6b4f", "value": "api" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "TennisAI status page",
+      "description": "The public /status page is served by Caddy from the SPA bundle; if this fails but the API monitor passes, the web container or the certificate is the problem.",
+      "type": "keyword",
+      "url": "https://46-225-83-85.sslip.io/status",
+      "method": "GET",
+      "keyword": "<div id=\"root\">",
+      "invertKeyword": false,
+      "interval": 300,
+      "retryInterval": 60,
+      "maxretries": 1,
+      "timeout": 10,
+      "resendInterval": 0,
+      "accepted_statuscodes": ["200-299"],
+      "expiryNotification": true,
+      "ignoreTls": false,
+      "upsideDown": false,
+      "maxredirects": 0,
+      "headers": null,
+      "body": null,
+      "httpBodyEncoding": "json",
+      "authMethod": null,
+      "active": true,
+      "tags": [
+        { "name": "tennisai", "color": "#2f6b4f", "value": "web" }
+      ]
+    }
+  ]
+}
