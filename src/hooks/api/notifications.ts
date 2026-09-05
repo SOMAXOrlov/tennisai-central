@@ -2,7 +2,7 @@
 // surface. Kept out of the shared `@/hooks/api/queries.ts` per the notify
 // agent's file ownership — those hooks own the legacy category-only prefs.
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toastError } from "@/lib/feedback";
 import { notificationPrefsApi, type NotificationPreferencesFull, type PushSubscriptionInput } from "@/api/endpoints/notificationPrefs";
 
 const notificationPreferencesFullKey = ["notificationPreferencesFull"] as const;
@@ -22,8 +22,8 @@ export function useUpdateNotificationPreferencesFull() {
     onSuccess: (res) => {
       qc.setQueryData(notificationPreferencesFullKey, res.data);
     },
-    onError: () => {
-      toast.error("Couldn't save notification preferences");
+    onError: (e: unknown) => {
+      toastError("toast.notification.preferenceFailed", e);
     },
   });
 }

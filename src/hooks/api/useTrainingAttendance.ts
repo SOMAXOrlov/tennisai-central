@@ -16,7 +16,7 @@
 // ============================================================================
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toastError } from "@/lib/feedback";
 import { apiClient } from "@/api/client";
 import { mockStore } from "@/mock/store";
 import { queryKeys } from "@/hooks/api/queries";
@@ -116,7 +116,7 @@ export function useMarkAttendance(markedBy?: string) {
       // Put back exactly what was there. A half-rolled-back register would be
       // worse than the failure itself.
       if (ctx?.previous) qc.setQueryData(queryKeys.trainings, ctx.previous);
-      toast.error((err as { message?: string })?.message ?? "Couldn't save attendance");
+      toastError("toast.training.attendanceFailed", err);
     },
 
     // No success toast: a coach ticking off eight players does not want eight

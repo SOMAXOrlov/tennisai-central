@@ -7,7 +7,7 @@
 // ============================================================
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toastSuccess, toastError } from "@/lib/feedback";
 import { matchesApi } from "@/api/endpoints/matches";
 import { opponentsApi } from "@/api/endpoints/opponents";
 import type {
@@ -28,12 +28,6 @@ export const matchQueryKeys = {
   matchStats: (playerId?: string) => ["matchStats", scope(playerId)] as const,
   opponents: ["opponents"] as const,
 };
-
-/** Pull a human message off an unknown thrown value without using `any`. */
-function errorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
-}
 
 // ─── Queries ───
 
@@ -93,11 +87,11 @@ export function useCreateMatch() {
   const invalidate = useInvalidateMatchData();
   return useMutation({
     mutationFn: (input: MatchCreateInput) => matchesApi.createMatch(input),
-    onSuccess: (res, input) => {
+    onSuccess: (_res, input) => {
       invalidate(input.playerId);
-      toast.success(res.message ?? "Match logged");
+      toastSuccess("toast.match.logged");
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to log match")),
+    onError: (error: unknown) => toastError("toast.match.logFailed", error),
   });
 }
 
@@ -106,11 +100,11 @@ export function useUpdateMatch() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: MatchUpdateInput; playerId?: string }) =>
       matchesApi.updateMatch(id, input),
-    onSuccess: (res, vars) => {
+    onSuccess: (_res, vars) => {
       invalidate(vars.playerId);
-      toast.success(res.message ?? "Match updated");
+      toastSuccess("toast.match.updated");
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to update match")),
+    onError: (error: unknown) => toastError("toast.match.updateFailed", error),
   });
 }
 
@@ -118,11 +112,11 @@ export function useDeleteMatch() {
   const invalidate = useInvalidateMatchData();
   return useMutation({
     mutationFn: ({ id }: { id: string; playerId?: string }) => matchesApi.deleteMatch(id),
-    onSuccess: (res, vars) => {
+    onSuccess: (_res, vars) => {
       invalidate(vars.playerId);
-      toast.success(res.message ?? "Match deleted");
+      toastSuccess("toast.match.deleted");
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to delete match")),
+    onError: (error: unknown) => toastError("toast.match.deleteFailed", error),
   });
 }
 
@@ -132,11 +126,11 @@ export function useCreateOpponent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: OpponentCreateInput) => opponentsApi.createOpponent(input),
-    onSuccess: (res) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: matchQueryKeys.opponents });
-      toast.success(res.message ?? "Opponent added");
+      toastSuccess("toast.opponent.added");
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to add opponent")),
+    onError: (error: unknown) => toastError("toast.opponent.addFailed", error),
   });
 }
 
@@ -145,11 +139,11 @@ export function useUpdateOpponent() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: OpponentUpdateInput }) =>
       opponentsApi.updateOpponent(id, input),
-    onSuccess: (res) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: matchQueryKeys.opponents });
-      toast.success(res.message ?? "Opponent updated");
+      toastSuccess("toast.opponent.updated");
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to update opponent")),
+    onError: (error: unknown) => toastError("toast.opponent.updateFailed", error),
   });
 }
 
@@ -157,12 +151,12 @@ export function useDeleteOpponent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => opponentsApi.deleteOpponent(id),
-    onSuccess: (res) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: matchQueryKeys.opponents });
       // Deleting an opponent clears the reference on existing matches.
       qc.invalidateQueries({ queryKey: ["matches"] });
-      toast.success(res.message ?? "Opponent deleted");
+      toastSuccess("toast.opponent.deleted");
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to delete opponent")),
+    onError: (error: unknown) => toastError("toast.opponent.deleteFailed", error),
   });
 }

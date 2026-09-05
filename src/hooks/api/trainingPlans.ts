@@ -13,6 +13,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { toastError } from "@/lib/feedback";
 import { trainingPlansApi } from "@/api/endpoints/trainingPlans";
 import type { DrillCompletionStatus, TrainingPlan } from "@/types";
 
@@ -22,12 +23,6 @@ export const trainingPlanQueryKeys = {
   list: ["trainingPlans", "list"] as const,
   detail: (id: string) => ["trainingPlans", "detail", id] as const,
 };
-
-/** Pull a human message off an unknown thrown value without using `any`. */
-function errorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
-}
 
 /**
  * Plans visible to the signed-in user. The API scopes this itself:
@@ -69,6 +64,6 @@ export function useUpdateDrillStatus() {
       qc.invalidateQueries({ queryKey: trainingPlanQueryKeys.list });
       if (res.message) toast.success(res.message);
     },
-    onError: (error: unknown) => toast.error(errorMessage(error, "Failed to update the drill")),
+    onError: (error: unknown) => toastError("toast.plan.drillFailed", error),
   });
 }
