@@ -9,7 +9,6 @@ import { EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useT } from "@/lib/i18n";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Users, Pencil, Trash2, UserPlus, UserMinus, ArrowLeft, Search, Check } from "lucide-react";
 import type { Team, ConnectedPlayer } from "@/types";

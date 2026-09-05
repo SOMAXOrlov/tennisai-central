@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, Search, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useT } from "@/lib/i18n";
 import { Link, useSearchParams } from "react-router-dom";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
@@ -17,7 +16,6 @@ import type { ConnectedPlayer } from "@/types";
 export default function PlayersPage() {
   const { t } = useT();
   const { connectedPlayers } = useConnections();
-  const { t } = useT();
   const [search, setSearch] = useState("");
   const [statsPlayer, setStatsPlayer] = useState<ConnectedPlayer | null>(null);
   const [equipmentPlayer, setEquipmentPlayer] = useState<ConnectedPlayer | null>(null);
