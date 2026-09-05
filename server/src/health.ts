@@ -14,7 +14,8 @@
 //                           loop shows up as an uptime that never grows
 //   emailEnabled / mailTransport / signupOpen
 //                           whether anyone can register right now (see env.ts)
-//   calendar                when the tournament feeds last imported
+//   calendar                when the tournament feeds last imported and whether
+//                           each source succeeded (never the error text itself)
 //   time                    server clock, so a client can measure skew
 //
 // It sits BEFORE the general API rate limiter in index.ts on purpose: a
@@ -45,6 +46,22 @@ function readVersion(): string {
 
 export const apiVersion = readVersion();
 
+/**
+ * The per-source import record, minus the raw `error` text. A provider failure
+ * surfaces as `failed: true`; the message itself (a fetch or Prisma error that
+ * can name internal tables, URLs or SQL) stays in the server log, where it is
+ * already written by the import. Anyone on the internet can read this payload.
+ */
+function publicSources() {
+  return importStatus().map(({ source, federation, imported, at, error }) => ({
+    source,
+    federation,
+    imported,
+    at,
+    failed: error !== undefined,
+  }));
+}
+
 export const healthRouter = Router();
 
 healthRouter.get("/", async (_req, res) => {
@@ -71,7 +88,7 @@ healthRouter.get("/", async (_req, res) => {
       // A calendar feed that has silently stopped looks exactly like one that
       // is working, until a coach plans a season against stale data. Reporting
       // it here makes a dead source visible without opening a shell.
-      calendar: { lastImportAt: lastImportAt(), sources: importStatus() },
+      calendar: { lastImportAt: lastImportAt(), sources: publicSources() },
       time: new Date().toISOString(),
     });
   } catch {

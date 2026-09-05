@@ -16,6 +16,7 @@ vi.mock("../db", async () => ({ prisma: (await import("./harness")).createPrisma
 
 import { prisma } from "../db";
 import { healthRouter, apiVersion } from "../health";
+import { recordImport, resetImportStatus } from "../tournaments/importStatus";
 import { createTestApp, prismaMockFrom } from "./harness";
 
 const db = prismaMockFrom(prisma);
@@ -40,6 +41,7 @@ const DEGRADED_KEYS = ["db", "ok", "time", "uptimeSeconds", "version"];
 
 beforeEach(() => {
   vi.resetAllMocks();
+  resetImportStatus();
 });
 
 describe("GET /api/health — database reachable", () => {
@@ -83,6 +85,36 @@ describe("GET /api/health — database reachable", () => {
     for (const forbidden of ["database_url", "postgres", "secret", "password", "jwt", "hostname", "users", "@"]) {
       expect(serialized, `payload must not contain "${forbidden}"`).not.toContain(forbidden);
     }
+  });
+
+  it("reports a failed calendar source as a flag, never as the error text", async () => {
+    db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    recordImport([
+      { source: "utr-events", federation: "UTR", imported: 12 },
+      {
+        source: "itf-juniors",
+        federation: "ITF",
+        imported: 0,
+        error: "fetch failed: getaddrinfo ENOTFOUND internal-db.example.invalid (SELECT * FROM users)",
+      },
+    ]);
+
+    const res = await request(app).get("/api/health");
+
+    expect(res.status).toBe(200);
+    expect(res.body.calendar.sources).toHaveLength(2);
+    // Newest first is the importStatus order; both were recorded together, so
+    // check by name rather than position.
+    const byName = Object.fromEntries(res.body.calendar.sources.map((s: { source: string }) => [s.source, s]));
+    expect(Object.keys(byName["utr-events"]).sort()).toEqual(["at", "failed", "federation", "imported", "source"]);
+    expect(byName["utr-events"].failed).toBe(false);
+    expect(byName["itf-juniors"].failed).toBe(true);
+    expect(byName["itf-juniors"].imported).toBe(0);
+    const serialized = JSON.stringify(res.body);
+    expect(serialized).not.toContain("error");
+    expect(serialized).not.toContain("ENOTFOUND");
+    expect(serialized).not.toContain("internal-db");
+    expect(serialized).not.toContain("SELECT");
   });
 
   it("forbids caching and needs no credentials", async () => {
