@@ -4,8 +4,12 @@
 
 import { cn } from "@/lib/utils";
 import type { UserRole, RelationshipStatus } from "@/types";
-import { Eye, Lock, AlertTriangle, Loader2, Inbox, ShieldX } from "lucide-react";
+import { Eye, Lock, AlertTriangle, Loader2, Inbox, ShieldX, WifiOff } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
+import { isAccessDenied } from "@/lib/errors";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 // ─── RoleBadge ───
 
@@ -81,14 +85,15 @@ export function ReadOnlyBanner({ message, className }: { message?: string; class
 // ─── AccessDeniedState ───
 
 export function AccessDeniedState({ className }: { className?: string }) {
+  const { t } = useT();
   return (
-    <div className={cn("flex flex-col items-center gap-4 py-20 text-center", className)}>
+    <div role="alert" className={cn("flex flex-col items-center gap-4 py-20 text-center", className)}>
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
         <ShieldX className="h-7 w-7 text-destructive" />
       </div>
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
-        <p className="mt-1 text-sm text-muted-foreground">You don't have permission to view this page.</p>
+        <h2 className="text-lg font-semibold text-foreground">{t("states.accessDenied.title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("states.accessDenied.body")}</p>
       </div>
     </div>
   );
@@ -154,11 +159,12 @@ export function LoadingState({
   variant?: "skeleton" | "spinner";
   rows?: number;
 }) {
+  const { t } = useT();
   if (variant === "spinner") {
     return (
       <div className={cn("flex flex-col items-center gap-3 py-20", className)} aria-busy="true">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        {message && <p className="text-sm text-muted-foreground">{message}</p>}
+        <Loader2 className="h-8 w-8 animate-spin text-primary motion-reduce:animate-none" />
+        <p className={cn("text-sm text-muted-foreground", !message && "sr-only")}>{message ?? t("states.loading")}</p>
       </div>
     );
   }
@@ -167,7 +173,7 @@ export function LoadingState({
     <div className={cn("space-y-3 py-6", className)} aria-busy="true" aria-live="polite">
       {/* The message stays announced even though it isn't drawn — the bars carry
           the meaning visually. */}
-      <span className="sr-only">{message ?? "Loading…"}</span>
+      <span className="sr-only">{message ?? t("states.loading")}</span>
       {Array.from({ length: rows }).map((_, i) => (
         <Skeleton
           key={i}
@@ -189,21 +195,50 @@ export function LoadingState({
  * failed request costs one request. Only when no callback is given does the
  * button fall back to a full page reload, which throws away the SPA and the
  * whole query cache.
+ *
+ * Pass the query's `error` too. A 401/403 is not "something went wrong", it is
+ * "you may not see this", and renders `AccessDeniedState` instead — retrying
+ * would only fail the same way. When the browser reports it is offline, the
+ * state says so on its own line: the most common cause of a failed load at a
+ * tennis club is the signal, not the server.
  */
-export function ErrorState({ message, onRetry, className }: { message?: string; onRetry?: () => void; className?: string }) {
+export function ErrorState({
+  message,
+  error,
+  onRetry,
+  className,
+}: {
+  /** What failed, in the user's words — "Couldn't load the trainings." */
+  message?: string;
+  /** The thrown value, so 401/403 can be told apart from a real failure. */
+  error?: unknown;
+  onRetry?: () => void;
+  className?: string;
+}) {
+  const { t } = useT();
+  const online = useOnlineStatus();
+  if (isAccessDenied(error)) return <AccessDeniedState className={className} />;
+
   const retry = onRetry ?? (() => window.location.reload());
   return (
-    <div className={cn("flex flex-col items-center gap-4 py-20 text-center", className)}>
+    <div role="alert" className={cn("flex flex-col items-center gap-4 py-20 text-center", className)}>
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-        <AlertTriangle className="h-6 w-6 text-destructive" />
+        {online ? (
+          <AlertTriangle className="h-6 w-6 text-destructive" />
+        ) : (
+          <WifiOff className="h-6 w-6 text-destructive" />
+        )}
       </div>
-      <div>
-        <p className="font-medium text-foreground">Something went wrong</p>
-        <p className="mt-1 text-sm text-muted-foreground">{message ?? "An unexpected error occurred. Please try again."}</p>
+      <div className="max-w-md">
+        <p className="font-medium text-foreground">{t("states.errorTitle")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{message ?? t("states.errorFallback")}</p>
+        {!online && (
+          <p className="mt-2 text-sm font-medium text-foreground">{t("states.offline")}</p>
+        )}
       </div>
-      <button onClick={retry} className="text-sm font-medium text-primary hover:underline">
-        Try again
-      </button>
+      <Button type="button" variant="outline" size="sm" onClick={retry}>
+        {t("states.retry")}
+      </Button>
     </div>
   );
 }
