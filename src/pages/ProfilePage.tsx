@@ -8,6 +8,7 @@ import { RoleBadge } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/lib/i18n";
 import { User, Copy, Check, ClipboardList, Pencil, CalendarRange, Trophy } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
@@ -27,6 +28,7 @@ const FEDERATION_OPTIONS = [
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { t } = useT();
   const updateMut = useUpdateProfile();
   const { data: calendarPrefs } = useCalendarPreferences();
   const saveCalendarPrefs = useSaveCalendarPreferences();
@@ -81,15 +83,15 @@ export default function ProfilePage() {
               <Label className="text-xs text-muted-foreground">Your Public ID</Label>
               <div className="mt-1 flex items-center gap-2">
                 <code className="flex-1 font-mono text-lg font-bold tracking-wider text-foreground">{publicId}</code>
-                <Button variant="outline" size="icon" onClick={copyId}>{copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}</Button>
+                <Button variant="outline" size="icon" aria-label={copied ? t("a11y.profile.publicIdCopied") : t("a11y.profile.copyPublicId")} onClick={copyId}>{copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}</Button>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Share this ID so others can connect with you.</p>
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>First Name</Label><Input value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>Last Name</Label><Input value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></div>
+            <div className="space-y-1.5"><Label htmlFor="profile-first-name">First Name</Label><Input id="profile-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="profile-last-name">Last Name</Label><Input id="profile-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="profile-email">Email</Label><Input id="profile-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></div>
           </div>
           <Button onClick={handleSave} disabled={updateMut.isPending}>{updateMut.isPending ? "Saving…" : "Save Changes"}</Button>
         </div>
