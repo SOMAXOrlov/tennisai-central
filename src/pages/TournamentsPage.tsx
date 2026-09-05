@@ -37,6 +37,7 @@ import {
 } from "@/hooks/api/queries";
 import { queryKeys } from "@/hooks/api/queries";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useT } from "@/lib/i18n";
 import { CITIES } from "@/lib/geo/cities";
 import { haversineKm, formatDistanceKm } from "@/lib/geo/distance";
 import type { TournamentStatus, ConnectedPlayer, Tournament } from "@/types";
@@ -93,6 +94,8 @@ export default function TournamentsPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
   const queryClient = useQueryClient();
+  // `t` is already the tournament row inside the map callbacks below.
+  const { t: tr } = useT();
   const role = user?.role ?? "player";
   const isCoach = role === "coach";
   const isObserver = role === "observer";
@@ -305,7 +308,7 @@ export default function TournamentsPage() {
       {isObserver && <ReadOnlyBanner />}
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search by name, city, or country…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
+        <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder={tr("tournaments.list.searchPlaceholder")} aria-label={tr("tournaments.list.searchAria")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
         <Select value={surface} onValueChange={setSurface}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Surface" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Surfaces</SelectItem>{surfaces.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
         <Select value={category} onValueChange={setCategory}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Categories</SelectItem>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
         <Select value={country} onValueChange={setCountry}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Country" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Countries</SelectItem>{countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>

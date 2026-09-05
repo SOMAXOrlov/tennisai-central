@@ -372,6 +372,10 @@
       "prepHint": "Conditions, ball behaviour and a preparation plan are on the tournament page.",
       "open": "Open"
     },
+    "list": {
+      "searchPlaceholder": "Search by name, city, or country…",
+      "searchAria": "Search tournaments"
+    },
     "detail": {
       "allTournaments": "All tournaments",
       "loadError": "Could not load this tournament.",

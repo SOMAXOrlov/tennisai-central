@@ -372,6 +372,10 @@
       "prepHint": "Las condiciones, el comportamiento de la pelota y un plan de preparación están en la página del torneo.",
       "open": "Abrir"
     },
+    "list": {
+      "searchPlaceholder": "Buscar por nombre, ciudad o país…",
+      "searchAria": "Buscar torneos"
+    },
     "detail": {
       "allTournaments": "Todos los torneos",
       "loadError": "No se pudo cargar este torneo.",
