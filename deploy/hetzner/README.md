@@ -67,13 +67,15 @@ last 14. Install it as a nightly job:
 ( crontab -l 2>/dev/null; echo "17 3 * * * bash /opt/tennisai/deploy/hetzner/backup.sh >> /var/log/tennisai-backup.log 2>&1" ) | crontab -
 ```
 
-Restoring:
+Restoring is **not** a one-liner: the dump recreates every table but drops
+none, so piping it into the live database as it stands fails half-way with
+duplicate-key errors. The procedure — stop the API, wipe the schema, restore
+with `ON_ERROR_STOP`, verify, start the API — is in [`RESTORE.md`](./RESTORE.md),
+together with the drill that proved the dumps restore
+([`restore-drill.sh`](./restore-drill.sh), safe to re-run: it never writes to
+the live database).
 
-```bash
-cd /opt/tennisai/deploy/hetzner
-gunzip -c /opt/tennisai/backups/tennisai_YYYY-MM-DD_HHMM.sql.gz \
-  | docker compose exec -T db psql -U tennisai -d tennisai
-```
+Uptime monitoring of the running site: [`monitoring/README.md`](./monitoring/README.md).
 
 ## Email
 

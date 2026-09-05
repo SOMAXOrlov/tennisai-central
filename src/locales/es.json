@@ -511,5 +511,68 @@
         "columnActions": "Acciones"
       }
     }
+  },
+  "status": {
+    "title": "Estado del sistema",
+    "subtitle": "Comprobaciones en directo de la API de TennisAI desde este navegador. Se actualiza automáticamente cada {seconds} segundos.",
+    "overall": {
+      "checking": "Comprobando…",
+      "ok": "Todos los sistemas operativos",
+      "degraded": "Degradado — la API responde pero informa de un problema",
+      "unreachable": "No se puede contactar con la API desde este navegador"
+    },
+    "overallHint": {
+      "checking": "Contactando con la API.",
+      "ok": "La API ha respondido y puede acceder a su base de datos.",
+      "degraded": "Iniciar sesión y guardar pueden fallar hasta que se resuelva.",
+      "unreachable": "Puede ser el servidor o esta conexión. Conviene volver a intentarlo en un minuto."
+    },
+    "checks": {
+      "api": "API",
+      "database": "Base de datos",
+      "signup": "Registro",
+      "clock": "Reloj"
+    },
+    "api": {
+      "checking": "Comprobando…",
+      "reachable": "Accesible",
+      "unreachable": "Inaccesible",
+      "http": "HTTP {status}",
+      "rtt": "{ms} ms de ida y vuelta"
+    },
+    "db": {
+      "up": "Operativa",
+      "down": "Caída",
+      "unknown": "Desconocido",
+      "latency": "consulta de {ms} ms"
+    },
+    "signup": {
+      "open": "Abierto",
+      "closed": "Cerrado",
+      "unknown": "Desconocido"
+    },
+    "clock": {
+      "inSync": "Sincronizado",
+      "browserAhead": "Este navegador va {seconds} s adelantado respecto al servidor",
+      "browserBehind": "Este navegador va {seconds} s atrasado respecto al servidor",
+      "unknown": "Desconocido",
+      "hint": "Incluye el retardo de red; las diferencias pequeñas son normales."
+    },
+    "meta": {
+      "appVersion": "Versión de la app",
+      "apiVersion": "Versión de la API",
+      "uptime": "Tiempo activo de la API",
+      "lastChecked": "Última comprobación",
+      "notReported": "No informado"
+    },
+    "uptime": {
+      "days": "{count, plural, one {# día} other {# días}}",
+      "hours": "{count, plural, one {# hora} other {# horas}}",
+      "minutes": "{count, plural, one {# minuto} other {# minutos}}",
+      "underMinute": "Menos de un minuto"
+    },
+    "checkNow": "Comprobar ahora",
+    "checkingNow": "Comprobando…",
+    "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   }
 }
