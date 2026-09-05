@@ -31,6 +31,8 @@ import {
 } from "@/components/stats";
 import { useMatchStats, useMatches } from "@/hooks/api/matches";
 import { useT } from "@/lib/i18n";
+import { IssueSummaryCard } from "@/components/matches/IssueSummaryCard";
+import { useAuth } from "@/auth/AuthContext";
 import {
   NO_VALUE,
   formatMatchDate,
@@ -45,6 +47,7 @@ export default function StatsPage() {
   const { t } = useT();
   const [windowId, setWindowId] = useState<StatsWindowId>(DEFAULT_WINDOW);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const { data: matches = [], isLoading: matchesLoading, error: matchesError, refetch: refetchMatches } = useMatches();
 
@@ -292,6 +295,9 @@ export default function StatsPage() {
           </div>
         </DashboardCard>
       </div>
+
+      {/* ── What keeps coming back — the tags from the last five matches, read as a pattern ── */}
+      <IssueSummaryCard playerId={user?.id} />
 
       {/* ── Recent matches — drill down to the match behind the numbers ── */}
       <DashboardCard

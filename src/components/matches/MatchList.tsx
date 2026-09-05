@@ -18,6 +18,7 @@ import {
   surfaceLabel,
 } from "@/lib/stats/format";
 import type { MatchComputedStats, MatchStatsRaw, MatchView } from "@/types";
+import { MatchIssuesPanel } from "@/components/matches/MatchIssuesPanel";
 
 function ResultBadge({ result }: { result?: string }) {
   if (result !== "win" && result !== "loss") {
@@ -184,7 +185,12 @@ export function MatchList({ matches, onEdit, onDelete, busyId }: MatchListProps)
               </div>
             </div>
 
-            {isOpen && <MatchDetails match={match} />}
+            {isOpen && (
+              <>
+                <MatchDetails match={match} />
+                <MatchIssuesPanel matchId={match.id} className="border-t-0 bg-muted/30 px-4 pb-4 pt-0" />
+              </>
+            )}
           </div>
         );
       })}

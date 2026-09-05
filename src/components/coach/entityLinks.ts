@@ -28,6 +28,14 @@ export function teamManageHref(teamId: string): string {
 }
 
 /**
+ * Session Builder with a focus area preselected — where "Build a session" on
+ * the match-issues card lands. SessionBuilderPage reads `?focus=` on mount.
+ */
+export function sessionBuilderHref(focusArea: string): string {
+  return `/session-builder?focus=${encodeURIComponent(focusArea)}`;
+}
+
+/**
  * Reads the entity params off a page's search params. An empty value counts as
  * absent, so `?player=` does not scope the page to a player called "".
  */

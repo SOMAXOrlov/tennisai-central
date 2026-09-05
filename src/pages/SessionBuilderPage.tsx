@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/shared";
 import { useT } from "@/lib/i18n";
@@ -93,6 +93,17 @@ export default function SessionBuilderPage() {
     if (d.prefs) setPrefs({ ...DEFAULT_PREFS, ...d.prefs });
     setSession(d.session ?? null);
   });
+
+  // Deep link: /session-builder?focus=<area> (from the match-issues "Build a
+  // session" button) puts that focus area first. Runs after the draft restore
+  // above, so the link wins over a stale draft; ignores unknown values.
+  const [searchParams] = useSearchParams();
+  const requestedFocus = searchParams.get("focus");
+  useEffect(() => {
+    if (!requestedFocus || !ALL_FOCUS.includes(requestedFocus as FocusArea)) return;
+    const focus = requestedFocus as FocusArea;
+    setPrefs((p) => (p.focusAreas[0] === focus ? p : { ...p, focusAreas: [focus, ...p.focusAreas.filter((f) => f !== focus)].slice(0, 3) }));
+  }, [requestedFocus]);
 
   const startFresh = () => {
     draft.clear();

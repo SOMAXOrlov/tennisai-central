@@ -4,6 +4,7 @@ import { BarChart3, Dumbbell, Star, Target, Clock, TrendingUp, ChevronRight } fr
 import { useTrainings, usePlayerTournaments } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
 import type { ConnectedPlayer } from "@/types";
+import { PlayerMatchIssues } from "@/components/matches/PlayerMatchIssues";
 
 interface PlayerStatsDrawerProps {
   player: ConnectedPlayer | null;
@@ -74,6 +75,9 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
               <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
             </div>
           </div>
+
+          {/* Match notes: the pattern card + recent matches (open one to read/add what went wrong). */}
+          <PlayerMatchIssues player={player} />
 
           {/* Overview Stats */}
           <div className="grid grid-cols-2 gap-3">
