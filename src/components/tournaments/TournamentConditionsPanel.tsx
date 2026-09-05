@@ -29,40 +29,13 @@ import { useAuth } from "@/auth/AuthContext";
 import { conditionsApi, type WeatherKind } from "@/api/endpoints/conditions";
 import { useAiStatus, useAiUsage, useInvalidateAiUsage } from "@/hooks/api/ai";
 import { useT } from "@/lib/i18n";
+import { conditionsQueryKey, prepBlocker } from "@/lib/tournamentConditions";
 import { cn } from "@/lib/utils";
-
-/** Shared with the dialog wrapper so the header and the body read one cache entry. */
-export const conditionsQueryKey = (tournamentId: string | null) =>
-  ["tournament-conditions", tournamentId] as const;
 
 /** Someone a coach could prepare for this event. */
 export interface PrepCandidate {
   id: string;
   name: string;
-}
-
-export type PrepBlocker = "aiOff" | "readOnly" | "noPlayer" | "noWeather" | "quota";
-
-/**
- * Why "Prepare for this match" cannot run right now, or null when it can.
- *
- * Pure and exported so the ordering is pinned by tests: the reason a user is
- * shown should be the one they can least do anything about first. A switched-off
- * feature beats "pick a player", which beats "no weather", which beats quota.
- */
-export function prepBlocker(input: {
-  aiConfigured: boolean;
-  role: string | undefined;
-  targetPlayerId: string | null;
-  hasPhysics: boolean;
-  remaining: number | undefined;
-}): PrepBlocker | null {
-  if (!input.aiConfigured) return "aiOff";
-  if (input.role === "observer") return "readOnly";
-  if (!input.targetPlayerId) return "noPlayer";
-  if (!input.hasPhysics) return "noWeather";
-  if (input.remaining !== undefined && input.remaining <= 0) return "quota";
-  return null;
 }
 
 /** The surface vocabulary a feed may send when it does not know. */
@@ -162,7 +135,14 @@ export function TournamentConditionsPanel({
   const hasPhysics = data.physics !== null;
 
   const blocker = aiStatus
-    ? prepBlocker({ aiConfigured, role, targetPlayerId, hasPhysics, remaining: usage?.remaining })
+    ? prepBlocker({
+        aiConfigured,
+        role,
+        targetPlayerId,
+        candidateCount: showPicker ? candidates?.length ?? 0 : 0,
+        hasPhysics,
+        remaining: usage?.remaining,
+      })
     : null;
   // While the status is still unknown the button waits rather than claiming
   // the feature is off. Once known, a blocker disables it with its reason.
