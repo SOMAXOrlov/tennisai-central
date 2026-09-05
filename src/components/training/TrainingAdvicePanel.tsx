@@ -2,11 +2,13 @@
 // sessions they already ran — the coach's own reviews and the players' own
 // feedback. Lives inside the create/edit dialog because the useful moment is
 // while the form is still empty, and applying a suggestion just fills it in.
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Sparkles, AlertTriangle, Loader2, Wand2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AiGenerationsRemaining } from "@/components/ai/AiGenerationsRemaining";
 import { aiAdviceApi, type AdviceSession } from "@/api/endpoints/aiAdvice";
+import { useAiStatus, useInvalidateAiUsage } from "@/hooks/api/ai";
 
 export function TrainingAdvicePanel({
   playerIds,
@@ -19,23 +21,25 @@ export function TrainingAdvicePanel({
   onApply: (session: AdviceSession) => void;
 }) {
   // Cheap, cacheable, and never throws — an unconfigured server is a normal state.
-  const { data: status } = useQuery({
-    queryKey: ["ai", "status"],
-    queryFn: aiAdviceApi.status,
-    staleTime: 5 * 60_000,
-  });
+  const { data: status } = useAiStatus();
+  const invalidateUsage = useInvalidateAiUsage();
 
   const advise = useMutation({
     mutationFn: () => aiAdviceApi.trainingAdvice({ playerIds, teamId: teamId || undefined }),
+    // A generation was spent: every "n of m left" on screen moves.
+    onSuccess: () => invalidateUsage(),
   });
 
   const hasTarget = playerIds.length > 0 || Boolean(teamId);
 
   return (
     <div className="space-y-3 border border-border bg-muted/20 p-3">
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-primary" />
-        <span className="text-sm font-medium text-foreground">Advice from past sessions</span>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">Advice from past sessions</span>
+        </div>
+        <AiGenerationsRemaining />
       </div>
 
       {status && !status.configured ? (
