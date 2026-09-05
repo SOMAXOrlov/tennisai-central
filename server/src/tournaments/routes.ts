@@ -71,7 +71,9 @@ function presentTournament(t: Tournament) {
     // (a coach setting the ball included), so the client uses it only for rows
     // no feed produced.
     lastSeenAt: t.lastSeenAt?.toISOString(),
-    updatedAt: t.updatedAt.toISOString(),
+    // Optional chaining on a non-null column on purpose: an embedded tournament
+    // on a player-entry row is only as complete as the query that fetched it.
+    updatedAt: t.updatedAt?.toISOString(),
     federation: (t.federation ?? undefined) as
       | "ITF"
       | "WTA"
