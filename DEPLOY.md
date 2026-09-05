@@ -6,6 +6,13 @@ signup and data that survives.
 **Shape:** static frontend on Vercel → API on Render → Postgres on Neon (or
 Supabase). Roughly 45 minutes end to end, most of it waiting on builds.
 
+> **Where production runs today:** the self-hosted Docker stack described in
+> [`deploy/hetzner/README.md`](deploy/hetzner/README.md), with the backup-restore
+> procedure and the last executed drill in [`deploy/hetzner/RESTORE.md`](deploy/hetzner/RESTORE.md)
+> and the uptime healthcheck in [`deploy/hetzner/monitoring/README.md`](deploy/hetzner/monitoring/README.md).
+> This file documents the earlier Vercel + Render + Neon layout. What has and has
+> not been security-checked is in [`SECURITY.md`](SECURITY.md).
+
 **Definition of done:** a tester can sign up, receive a real verification email,
 verify, log in, create trainings and matches, see them after logging out and
 back in, and reset a forgotten password.

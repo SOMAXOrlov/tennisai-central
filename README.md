@@ -59,6 +59,14 @@ This project is built with:
 - Vite, TypeScript, React, shadcn-ui, Tailwind CSS (frontend)
 - Express, Prisma, PostgreSQL (backend, see `server/`)
 
+## Contributing, security, operations
+
+- `CONTRIBUTING.md` — branch and worktree rules, the gate every PR must pass, the two-languages rule.
+- `SECURITY.md` — how to report a vulnerability, and what has and has not been checked.
+- `deploy/hetzner/README.md` — the self-hosted runbook; `deploy/hetzner/RESTORE.md` is the backup-restore
+  procedure with the last executed drill; `deploy/hetzner/monitoring/README.md` is the healthcheck an uptime
+  monitor should poll. The public status page is `/status`.
+
 ## Troubleshooting
 
 ### Stale component reference errors (e.g. `X is not defined`)
