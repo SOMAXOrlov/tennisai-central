@@ -100,7 +100,7 @@ export function IssueSummaryCard({ playerId, matches, className }: IssueSummaryC
   return (
     <DashboardCard
       title={t("matchIssues.recurring.title")}
-      description={t("matchIssues.recurring.description", { count: matches ?? 5 })}
+      description={t("matchIssues.recurring.description", { count: data?.window.matchesWithIssues ?? matches ?? 5 })}
       icon={<Repeat className="h-4 w-4" />}
       className={className}
     >
