@@ -217,6 +217,10 @@ export interface Tournament {
   utrRangeMax?: number;
   /** Which feed produced this row, shown as provenance. */
   source?: string;
+  /** When that feed last confirmed the event (ISO). Absent for rows entered by hand. */
+  lastSeenAt?: string;
+  /** When the row itself was last written (ISO) — any edit, e.g. a coach setting the ball. */
+  updatedAt?: string;
 }
 
 export interface PlayerTournament {

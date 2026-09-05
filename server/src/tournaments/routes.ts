@@ -66,6 +66,14 @@ function presentTournament(t: Tournament) {
     utrRangeMin: t.utrRangeMin ?? undefined,
     utrRangeMax: t.utrRangeMax ?? undefined,
     source: t.source ?? undefined,
+    // Freshness. `lastSeenAt` is when the feed last confirmed the event; a stale
+    // value means the source stopped listing it. `updatedAt` moves on any write
+    // (a coach setting the ball included), so the client uses it only for rows
+    // no feed produced.
+    lastSeenAt: t.lastSeenAt?.toISOString(),
+    // Optional chaining on a non-null column on purpose: an embedded tournament
+    // on a player-entry row is only as complete as the query that fetched it.
+    updatedAt: t.updatedAt?.toISOString(),
     federation: (t.federation ?? undefined) as
       | "ITF"
       | "WTA"

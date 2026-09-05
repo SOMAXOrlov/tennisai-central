@@ -145,3 +145,28 @@ export function describeClash(clashes: Clash[], playerName?: string): string {
   const kind = clashes.every((c) => !c.direct) ? "back to back with" : "already entered for";
   return `${who} ${kind} ${list} over the same dates.`;
 }
+
+// ── What is next ────────────────────────────────────────────────────────────
+
+/**
+ * The entry that is next on a player's calendar: not withdrawn, not finished,
+ * the soonest start first. A tournament that is on right now counts — the
+ * player still needs its conditions.
+ */
+export function nextUpcoming(entries: PlayerTournament[], now: Date = new Date()): PlayerTournament | null {
+  const at = now.getTime();
+  const live = entries
+    .filter((e) => !NOT_ATTENDING.has(e.status) && e.tournament)
+    .filter((e) => {
+      const end = new Date(e.tournament.endDate).getTime();
+      return !Number.isNaN(end) && end >= at;
+    })
+    .sort((a, b) => new Date(a.tournament.startDate).getTime() - new Date(b.tournament.startDate).getTime());
+  return live[0] ?? null;
+}
+
+/** Whole days until the start, rounded up; 0 once it has started or starts today. */
+export function daysToStart(startDate: string, now: Date = new Date()): number {
+  const diff = new Date(startDate).getTime() - now.getTime();
+  return diff <= 0 ? 0 : Math.ceil(diff / DAY_MS);
+}

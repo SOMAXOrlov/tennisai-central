@@ -2,6 +2,7 @@
 // no mock: a canned "AI" answer is exactly the thing this feature must not
 // produce. Without a configured server the UI reports it as unavailable.
 import type { ApiResponse } from "@/types";
+import type { AiUsage } from "@/types/analytics";
 import { apiClient } from "@/api/client";
 
 export interface AdviceSession {
@@ -52,6 +53,16 @@ export const aiAdviceApi = {
     } catch {
       return { configured: false, provider: null };
     }
+  },
+
+  /**
+   * The caller's own monthly allowance (server/src/ai/routes.ts GET /usage).
+   * Only asked for once `status()` says the feature is on — a counter for a
+   * switched-off feature is noise.
+   */
+  async usage(): Promise<AiUsage> {
+    const res = await apiClient.get<ApiResponse<AiUsage>>("/ai/usage");
+    return res.data;
   },
 
   async trainingAdvice(input: { playerIds: string[]; teamId?: string }): Promise<TrainingAdviceResult> {

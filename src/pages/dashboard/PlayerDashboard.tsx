@@ -6,6 +6,7 @@ import { GetStartedCard } from "@/components/dashboard/GetStartedCard";
 import { hasCoachCounterpart, isProfileComplete, playerItems } from "@/components/dashboard/firstRunItems";
 import { IncomingRequestsCard } from "@/components/dashboard/IncomingRequestsCard";
 import { StatisticsSummaryCard } from "@/components/dashboard/StatisticsSummaryCard";
+import { NextTournamentCard } from "@/components/tournaments/NextTournamentCard";
 import { statCardClass, statLinkClass } from "@/components/dashboard/statLinkStyles";
 import { StatusBadge, LoadingState, ErrorState } from "@/components/ui/shared";
 import {
@@ -13,7 +14,6 @@ import {
   Trophy,
   Wallet,
   Package,
-  Brain,
   Bell,
   ArrowRight,
   Clock,
@@ -284,29 +284,10 @@ export default function PlayerDashboard() {
 
       {/* AI Insights + Notifications row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Match prep now lives on the tournament itself, where the surface,
-            ball and weather actually are — rather than asking the player to
-            retype all of it into a separate page. */}
-        <DashboardCard
-          title={t("dashboard.player.matchConditions.title")}
-          description={t("dashboard.player.matchConditions.description")}
-          icon={<Brain className="h-4 w-4" />}
-          action={
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/tournaments">{t("dashboard.common.open")} <ArrowRight className="ml-1 h-3 w-3" /></Link>
-            </Button>
-          }
-        >
-          <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4">
-            <p className="text-sm font-medium text-foreground">{t("dashboard.player.matchConditions.cardTitle")}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("dashboard.player.matchConditions.cardBody")}
-            </p>
-            <Button size="sm" variant="outline" className="mt-3" asChild>
-              <Link to="/tournaments">{t("dashboard.player.matchConditions.browse")}</Link>
-            </Button>
-          </div>
-        </DashboardCard>
+        {/* The next tournament, with the way in to its conditions and the
+            match preparation — which live on the tournament itself, where the
+            surface, ball and weather actually are. */}
+        <NextTournamentCard />
 
         <DashboardCard
           title={t("dashboard.common.recentNotifications")}

@@ -2,6 +2,7 @@
 // TennisAI — AI routes
 //
 //   GET  /api/ai/status            is the feature switched on?
+//   GET  /api/ai/usage             the caller's own monthly allowance
 //   POST /api/ai/training-advice   advise the next session(s)
 //
 // Coach-only. Every generation is recorded in `ai_generations` and counted
@@ -39,8 +40,13 @@ export const aiRouter = Router();
 
 aiRouter.use(requireAuth);
 
-/** Generations per coach per calendar month. Deliberately conservative. */
-const MONTHLY_LIMIT = 100;
+/** Generations per user per calendar month. Deliberately conservative. */
+export const MONTHLY_LIMIT = 100;
+
+/** Calendar month the counter table is keyed on: "yyyy-MM". */
+function currentPeriodKey(): string {
+  return new Date().toISOString().slice(0, 7);
+}
 
 const requestSchema = z
   .object({
@@ -62,6 +68,35 @@ aiRouter.get(
   asyncHandler(async (_req, res) => {
     const cfg = aiConfig();
     ok(res, { configured: cfg !== null, provider: cfg?.provider ?? null });
+  }),
+);
+
+/**
+ * How much of this month's allowance the caller has left.
+ *
+ * Exposed so the UI can say "n of m left" next to the button that spends one,
+ * instead of the 429 being the first anyone hears of the cap. Strictly the
+ * caller's own row: the user id comes from the token and nothing in the query
+ * or body can redirect it, so nobody reads another person's usage. Any signed-in
+ * role may ask — a player preparing for their own tournament spends from the
+ * same counter as a coach.
+ */
+aiRouter.get(
+  "/usage",
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const periodKey = currentPeriodKey();
+    const counter = await prisma.aiUsageCounter.findUnique({
+      where: { userId_periodKey: { userId: req.userId!, periodKey } },
+      select: { reportsGenerated: true },
+    });
+    const reportsGenerated = counter?.reportsGenerated ?? 0;
+    // Same field names as the client's existing AiUsage type (src/types/analytics.ts).
+    ok(res, {
+      periodKey,
+      reportsGenerated,
+      limit: MONTHLY_LIMIT,
+      remaining: Math.max(0, MONTHLY_LIMIT - reportsGenerated),
+    });
   }),
 );
 

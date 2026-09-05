@@ -23,6 +23,7 @@ import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import { TournamentConditionsDialog } from "@/components/tournaments/TournamentConditionsDialog";
+import { ProvenanceChip, ProvenanceLegend } from "@/components/tournaments/ProvenanceChip";
 import { AddToCalendarDialog } from "@/components/tournaments/AddToCalendarDialog";
 import { useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
 // Loaded on demand: Leaflet + its CSS are ~160 KB and only the Map tab needs
@@ -36,6 +37,7 @@ import {
 } from "@/hooks/api/queries";
 import { queryKeys } from "@/hooks/api/queries";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useT } from "@/lib/i18n";
 import { CITIES } from "@/lib/geo/cities";
 import { haversineKm, formatDistanceKm } from "@/lib/geo/distance";
 import type { TournamentStatus, ConnectedPlayer, Tournament } from "@/types";
@@ -92,6 +94,8 @@ export default function TournamentsPage() {
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
   const queryClient = useQueryClient();
+  // `t` is already the tournament row inside the map callbacks below.
+  const { t: tr } = useT();
   const role = user?.role ?? "player";
   const isCoach = role === "coach";
   const isObserver = role === "observer";
@@ -304,7 +308,7 @@ export default function TournamentsPage() {
       {isObserver && <ReadOnlyBanner />}
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search by name, city, or country…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
+        <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder={tr("tournaments.list.searchPlaceholder")} aria-label={tr("tournaments.list.searchAria")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
         <Select value={surface} onValueChange={setSurface}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Surface" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Surfaces</SelectItem>{surfaces.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
         <Select value={category} onValueChange={setCategory}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Categories</SelectItem>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
         <Select value={country} onValueChange={setCountry}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Country" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Countries</SelectItem>{countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
@@ -340,6 +344,9 @@ export default function TournamentsPage() {
         </div>
       )}
 
+      {/* One legend for the provenance chips on every row below, whichever view. */}
+      <ProvenanceLegend />
+
       {/* Player tournament view */}
       {(showPlayerTournaments || isPlayer) && viewMode === "players" && (
         filteredPlayerTournaments.length === 0 ? (
@@ -372,6 +379,7 @@ export default function TournamentsPage() {
                             {pt.tournament.name}
                           </button>
                           {pt.tournament.category && <p className="text-xs text-muted-foreground">{pt.tournament.category}</p>}
+                          <ProvenanceChip tournament={pt.tournament} className="mt-1" />
                         </div>
                       </td>
                       {!isPlayer && <td className="px-4 py-3">
@@ -522,6 +530,7 @@ export default function TournamentsPage() {
                     {t.altitude != null && t.altitude > 0 && <Badge variant="outline"><Mountain className="mr-1 h-3 w-3" />{t.altitude}m</Badge>}
                     {distance != null && <Badge variant="outline" className="border-primary/40 text-primary"><MapPin className="mr-1 h-3 w-3" />{formatDistanceKm(distance)} away</Badge>}
                   </div>
+                  <ProvenanceChip tournament={t} />
                   {isCoach && (() => {
                     const pts = playerTournaments.filter((pt) => pt.tournamentId === t.id && connectedIds.has(pt.playerId));
                     if (pts.length === 0) return null;
@@ -680,6 +689,7 @@ export default function TournamentsPage() {
                         <p className="text-xs text-muted-foreground">
                           {t.city}, {t.country} · {format(new Date(t.startDate), "MMM d")} – {format(new Date(t.endDate), "MMM d, yyyy")}
                         </p>
+                        <ProvenanceChip tournament={t} className="mt-1" />
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className={surfaceColor[t.surface] ?? ""}>{t.surface}</Badge>
@@ -732,6 +742,15 @@ export default function TournamentsPage() {
       <TournamentConditionsDialog
         tournamentId={conditionsFor?.id ?? null}
         playerId={conditionsFor?.playerId}
+        // Opened from a browse card by a coach: whoever from the squad is
+        // entered is who could be prepared. A specific entry wins over this.
+        candidates={
+          isCoach && conditionsFor && !conditionsFor.playerId
+            ? playerTournaments
+                .filter((pt) => pt.tournamentId === conditionsFor.id && connectedIds.has(pt.playerId) && pt.status !== "withdrawn")
+                .map((pt) => ({ id: pt.playerId, name: pt.playerName ?? pt.playerId }))
+            : undefined
+        }
         open={conditionsFor !== null}
         onOpenChange={(o) => { if (!o) setConditionsFor(null); }}
       />
