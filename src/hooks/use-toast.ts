@@ -12,7 +12,7 @@
 
 import * as React from "react";
 import { toast as sonnerToast } from "sonner";
-import { ERROR_TOAST_DURATION_MS } from "@/lib/feedback";
+import { ERROR_TOAST_DURATION_MS, announceError } from "@/lib/feedback";
 
 export interface ToastOptions {
   title?: React.ReactNode;
@@ -28,6 +28,11 @@ export interface ToastHandle {
   id: string | number;
   dismiss: () => void;
   update: (next: ToastOptions) => void;
+}
+
+/** Plain text for the screen-reader mirror; ReactNode content falls back to the string parts. */
+function announcementText(...parts: React.ReactNode[]): string {
+  return parts.filter((p): p is string | number => typeof p === "string" || typeof p === "number").join(". ");
 }
 
 /** Sonner puts the title first and everything else in an options bag. */
@@ -48,6 +53,8 @@ function toSonnerArgs({ title, description, action, duration, variant }: ToastOp
 function toast(options: ToastOptions): ToastHandle {
   const { message, options: sonnerOptions, isError } = toSonnerArgs(options);
   const id = isError ? sonnerToast.error(message, sonnerOptions) : sonnerToast.success(message, sonnerOptions);
+  // Errors are also mirrored into the assertive live region (see feedback.ts).
+  if (isError) announceError(announcementText(message, sonnerOptions.description));
   return {
     id,
     dismiss: () => sonnerToast.dismiss(id),

@@ -93,4 +93,19 @@ describe("LoadingState", () => {
     const { container } = render(<LoadingState rows={5} />);
     expect(container.querySelectorAll(".bg-muted")).toHaveLength(5);
   });
+
+  it("spinner variant is a status region with a screen-reader label and a hidden icon", () => {
+    const { container } = render(<LoadingState variant="spinner" />);
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-busy", "true");
+    expect(status).toHaveTextContent("Loading…");
+    expect(screen.getByText("Loading…")).toHaveClass("sr-only");
+    expect(container.querySelector(".animate-spin")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("spinner variant shows a visible message when one is given", () => {
+    render(<LoadingState variant="spinner" message="Loading map…" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Loading map…");
+    expect(screen.getByText("Loading map…")).not.toHaveClass("sr-only");
+  });
 });

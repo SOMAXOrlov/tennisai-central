@@ -162,8 +162,8 @@ export function LoadingState({
   const { t } = useT();
   if (variant === "spinner") {
     return (
-      <div className={cn("flex flex-col items-center gap-3 py-20", className)} aria-busy="true">
-        <Loader2 className="h-8 w-8 animate-spin text-primary motion-reduce:animate-none" />
+      <div role="status" className={cn("flex flex-col items-center gap-3 py-20", className)} aria-busy="true">
+        <Loader2 aria-hidden="true" className="h-8 w-8 animate-spin text-primary motion-reduce:animate-none" />
         <p className={cn("text-sm text-muted-foreground", !message && "sr-only")}>{message ?? t("states.loading")}</p>
       </div>
     );
