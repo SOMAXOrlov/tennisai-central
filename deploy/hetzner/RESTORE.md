@@ -10,6 +10,14 @@ Last drill: **2026-09-05 08:55 UTC**, on the production host, against a
 throwaway container. Re-run it with [`restore-drill.sh`](./restore-drill.sh)
 (safe: it never writes to the live database).
 
+Post-drill check, 2026-09-05 09:20 UTC (the run that wrote this file was cut
+off shortly after the drill, so the host was re-inspected before continuing):
+`docker ps -a` showed only the three live `tennisai-*` containers and the
+unrelated `nooma-bot`; `docker volume ls` only the four `tennisai_*` compose
+volumes; no `tennisai-restore-drill-*` container, no drill-labelled volume, no
+dump outside `/opt/tennisai/backups` (checked `/tmp` and `/root`). Nothing to
+clean up — the teardown in step 5 had done its job.
+
 ## Where backups are
 
 | | |
