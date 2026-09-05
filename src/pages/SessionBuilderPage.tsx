@@ -35,7 +35,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { useConnections } from "@/store/ConnectionStore";
 import { DraftRestoredNotice } from "@/lib/drafts/DraftRestoredNotice";
 import { useFormDraft } from "@/lib/drafts/useFormDraft";
