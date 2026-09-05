@@ -85,8 +85,8 @@ export default function TermsPage() {
         </div>
 
         <div className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
-          <Link to="/" className="font-medium text-primary hover:underline">Back to home</Link>
-          <Link to="/privacy" className="font-medium text-primary hover:underline">Privacy Policy</Link>
+          <Link to="/" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Back to home</Link>
+          <Link to="/privacy" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Privacy Policy</Link>
         </div>
       </div>
     </div>

@@ -166,11 +166,11 @@ const Index = () => {
             © {new Date().getFullYear()} Tennis AI
           </span>
           <nav className="flex items-center gap-6">
-            <a href="#how-it-works" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">How it works</a>
-            <a href="#pricing" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Access</a>
-            <Link to="/login" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Sign in</Link>
-            <Link to="/privacy" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Privacy</Link>
-            <Link to="/terms" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Terms</Link>
+            <a href="#how-it-works" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:min-w-11 coarse:items-center coarse:justify-center">How it works</a>
+            <a href="#pricing" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:min-w-11 coarse:items-center coarse:justify-center">Access</a>
+            <Link to="/login" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:min-w-11 coarse:items-center coarse:justify-center">Sign in</Link>
+            <Link to="/privacy" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:min-w-11 coarse:items-center coarse:justify-center">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:min-w-11 coarse:items-center coarse:justify-center">Terms</Link>
           </nav>
         </div>
       </footer>
