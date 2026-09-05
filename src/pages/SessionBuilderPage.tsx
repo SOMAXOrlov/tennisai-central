@@ -180,7 +180,7 @@ export default function SessionBuilderPage() {
                       type="button"
                       onClick={() => toggleFocus(f)}
                       aria-pressed={active}
-                      className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors coarse:min-h-11 coarse:px-3.5 ${
                         active
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"

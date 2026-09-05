@@ -49,8 +49,8 @@ export function Navbar() {
 
         {isLanding && (
           <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            <a href="#how-it-works" className="hover:text-foreground">{t("navbar.howItWorks")}</a>
-            <a href="#pricing" className="hover:text-foreground">{t("navbar.access")}</a>
+            <a href="#how-it-works" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">{t("navbar.howItWorks")}</a>
+            <a href="#pricing" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">{t("navbar.access")}</a>
           </nav>
         )}
 

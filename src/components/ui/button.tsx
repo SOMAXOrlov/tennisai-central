@@ -29,8 +29,8 @@ const buttonVariants = cva(
       // `h-8` and `coarse:min-h-11` as different modifier sets, so neither
       // deduplicates the other away.
       size: {
-        default: "h-10 px-4 py-2 coarse:min-h-11",
-        sm: "h-9 rounded-md px-3 coarse:min-h-11",
+        default: "h-10 px-4 py-2 coarse:min-h-11 coarse:min-w-11",
+        sm: "h-9 rounded-md px-3 coarse:min-h-11 coarse:min-w-11",
         // Already 44px — nothing to raise.
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10 coarse:min-h-11 coarse:min-w-11",

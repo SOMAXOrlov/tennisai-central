@@ -54,7 +54,7 @@ const Index = () => {
             </Button>
             <a
               href="#how-it-works"
-              className="group inline-flex items-center gap-2 text-sm font-semibold text-foreground"
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-foreground coarse:min-h-11"
             >
               {/* Underline sweeps out from the left on hover. */}
               <span className="relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-foreground after:transition-transform after:duration-300 after:ease-editorial group-hover:after:scale-x-100 motion-reduce:after:transition-none">
@@ -151,7 +151,7 @@ const Index = () => {
             <Button size="lg" className="h-12 px-7 text-sm font-semibold" asChild>
               <Link to="/signup">Get Started</Link>
             </Button>
-            <Link to="/login" className="text-sm font-semibold text-foreground underline-offset-4 hover:underline">
+            <Link to="/login" className="text-sm font-semibold text-foreground underline-offset-4 hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">
               Already on Tennis AI? Sign in
             </Link>
           </Reveal>
@@ -166,11 +166,11 @@ const Index = () => {
             © {new Date().getFullYear()} Tennis AI
           </span>
           <nav className="flex items-center gap-6">
-            <a href="#how-it-works" className="hover:text-foreground">How it works</a>
-            <a href="#pricing" className="hover:text-foreground">Access</a>
-            <Link to="/login" className="hover:text-foreground">Sign in</Link>
-            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
-            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <a href="#how-it-works" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">How it works</a>
+            <a href="#pricing" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Access</a>
+            <Link to="/login" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Sign in</Link>
+            <Link to="/privacy" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Terms</Link>
           </nav>
         </div>
       </footer>
