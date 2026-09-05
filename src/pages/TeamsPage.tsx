@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Plus, Users, Pencil, Trash2, UserPlus, UserMinus, ArrowLeft, Search, Check } from "lucide-react";
 import type { Team, ConnectedPlayer } from "@/types";
 import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from "@/hooks/api/queries";
-import { PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { IdentityTrigger, PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
 import { format } from "date-fns";
@@ -34,13 +34,20 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
   return (
     <div className="group flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:bg-accent/20">
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></div>
-          <div>
-            <h3 className="font-semibold text-foreground">{team.name}</h3>
-            <p className="text-xs text-muted-foreground">{team.players.length} player{team.players.length !== 1 ? "s" : ""} · Created {format(new Date(team.createdAt), "MMM yyyy")}</p>
-          </div>
-        </div>
+        {/* The team's badge and name open the same menu as the "…" button. */}
+        <TeamActionsMenu
+          team={team}
+          onManage={onSelect}
+          trigger={
+            <IdentityTrigger name={team.name} className="-m-1 p-1">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></span>
+              <span className="min-w-0">
+                <span className="block font-semibold text-foreground">{team.name}</span>
+                <span className="block text-xs text-muted-foreground">{team.players.length} player{team.players.length !== 1 ? "s" : ""} · Created {format(new Date(team.createdAt), "MMM yyyy")}</span>
+              </span>
+            </IdentityTrigger>
+          }
+        />
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <Button size="icon" variant="ghost" aria-label={t("a11y.teams.rename", { name: team.name })} className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onRename(); }}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -94,11 +101,21 @@ function TeamDetail({ team, connectedPlayers, onBack, onAddPlayer, onRemovePlaye
             <div className="space-y-2">
               {team.players.map((player) => (
                 <div key={player.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent/30">
-                  <PlayerAvatar player={player} />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground">{player.firstName} {player.lastName}</p>
-                    <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
-                  </div>
+                  {/* Avatar and name open the same menu as the "…" button. */}
+                  <PlayerActionsMenu
+                    player={player}
+                    onViewStats={setStatsPlayer}
+                    onViewEquipment={setEquipmentPlayer}
+                    trigger={
+                      <IdentityTrigger name={`${player.firstName} ${player.lastName}`} className="-m-1 min-w-0 flex-1 p-1">
+                        <PlayerAvatar player={player} />
+                        <span className="min-w-0">
+                          <span className="block font-medium text-foreground">{player.firstName} {player.lastName}</span>
+                          <span className="block font-mono text-xs text-muted-foreground">{player.playerPublicId}</span>
+                        </span>
+                      </IdentityTrigger>
+                    }
+                  />
                   <PlayerActionsMenu player={player} compact onViewStats={setStatsPlayer} onViewEquipment={setEquipmentPlayer} />
                   <Button size="sm" variant="ghost" disabled={removingPlayer} className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => onRemovePlayer(player.id)}>
                     <UserMinus className="h-3.5 w-3.5" /> Remove
