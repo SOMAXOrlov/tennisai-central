@@ -2,7 +2,7 @@
 // toggles, plus a one-click "enable push on this device" action. Lives in the
 // notify agent's area — rendered from NotificationsPage.
 import { useState } from "react";
-import { toast } from "sonner";
+import { toastSuccess, toastError } from "@/lib/feedback";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -63,11 +63,11 @@ export function NotificationPreferencesCard() {
         userAgent: navigator.userAgent,
       });
       setDeviceStatus("enabled");
-      toast.success("Push notifications enabled on this device");
+      toastSuccess("toast.notification.pushEnabled");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Couldn't enable push on this device";
       setDeviceStatus(message.toLowerCase().includes("permission") ? "denied" : "unsupported");
-      toast.error(message);
+      toastError("toast.notification.pushFailed", err);
     } finally {
       setEnabling(false);
     }

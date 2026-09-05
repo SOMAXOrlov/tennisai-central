@@ -20,6 +20,7 @@ import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import { toast } from "sonner";
+import { toastSuccess, toastError, toastInfo } from "@/lib/feedback";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Dumbbell, Trophy, Swords,
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
@@ -705,7 +706,7 @@ export default function CalendarPage() {
       // Refreshing the catalog is not a request to start watching four more
       // tours, and silently widening someone's calendar is how it became
       // unreadable in the first place.
-      toast.success("Tournaments refreshed");
+      toastSuccess("toast.tournament.refreshed");
     }
   };
 
@@ -845,7 +846,7 @@ export default function CalendarPage() {
     const newStart = new Date(start.getTime() + dayDiff);
     const newEnd = new Date(end.getTime() + dayDiff);
     updateMut.mutate({ id: eventId, data: { startDate: newStart.toISOString(), endDate: newEnd.toISOString() } }, {
-      onSuccess: () => toast.success("Event rescheduled"),
+      onSuccess: () => toastSuccess("toast.event.rescheduled"),
     });
   }, [updateMut]);
 
@@ -875,12 +876,12 @@ export default function CalendarPage() {
     const playerName = player ? `${player.firstName} ${player.lastName}` : undefined;
     updateMut.mutate({ id: eventId, data: { playerId: newPlayerId ?? undefined, playerName: playerName ?? undefined } }, {
       onSuccess: () => {
-        toast.success(player ? `Event reassigned to ${playerName}` : "Event moved to your schedule", {
+        toast.success(player ? t("toast.event.reassigned", { name: playerName ?? "" }) : t("toast.event.movedToOwn"), {
           action: {
-            label: "Undo",
+            label: t("toast.common.undo"),
             onClick: () => {
               updateMut.mutate({ id: eventId, data: { playerId: prevPlayerId ?? undefined, playerName: prevPlayerName ?? undefined } }, {
-                onSuccess: () => toast.success("Reassignment undone"),
+                onSuccess: () => toastSuccess("toast.event.reassignUndone"),
               });
             },
           },
@@ -888,7 +889,7 @@ export default function CalendarPage() {
       },
     });
     setReassignPending(null);
-  }, [reassignPending, updateMut, connectedPlayers, events]);
+  }, [reassignPending, updateMut, connectedPlayers, events, t]);
 
   // The day whose full list is open, with the events it held when opened.
   const [daySheet, setDaySheet] = useState<{ day: Date; events: CalendarEvent[] } | null>(null);
@@ -901,7 +902,7 @@ export default function CalendarPage() {
   const handleDelete = () => {
     if (selectedEvent) {
       const parentId = selectedEvent.recurrenceParentId ?? selectedEvent.id;
-      deleteMut.mutate(parentId, { onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("All events in series deleted"); } });
+      deleteMut.mutate(parentId, { onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toastSuccess("toast.event.seriesDeleted"); } });
     }
   };
   // Removing ONE occurrence of a repeating event means recording an exception
@@ -920,14 +921,14 @@ export default function CalendarPage() {
     const parent = events.find((e) => e.id === parentId) ?? selectedEvent;
     const rule = parent.recurrence;
     if (!rule) {
-      toast.error("This event does not repeat, so there is no single occurrence to remove.");
+      toastInfo("toast.event.notRecurring");
       return;
     }
     updateMut.mutate(
       { id: parentId, data: { recurrence: withRecurrenceException(rule, occDate) } },
       {
-        onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toast.success("This occurrence removed"); },
-        onError: () => toast.error("Could not remove this occurrence. Please try again."),
+        onSuccess: () => { setSelectedEvent(null); setDrawerOpen(false); toastSuccess("toast.event.occurrenceRemoved"); },
+        onError: (e: unknown) => toastError("toast.event.occurrenceRemoveFailed", e),
       },
     );
   };
@@ -1038,7 +1039,7 @@ export default function CalendarPage() {
     downloadTextFile(icsFileName(view, currentDate), ics);
     // Names what actually left the app, so a wrong scope is caught here rather
     // than in somebody's inbox.
-    toast.success(`Exported ${exportEvents.length} event${exportEvents.length === 1 ? "" : "s"} — ${heading}`);
+    toastSuccess("toast.event.exported", { count: exportEvents.length, heading });
   };
 
   if (isLoading) return <PageSkeleton variant="calendar" />;
@@ -1413,7 +1414,7 @@ export default function CalendarPage() {
         const tournament = tournaments.find(t => t.id === tournamentId);
         if (!tournament) return;
         const alreadyRegistered = playerTournaments.some(pt => pt.tournamentId === tournamentId);
-        if (alreadyRegistered) { toast.info("You're already registered for this tournament"); return; }
+        if (alreadyRegistered) { toastInfo("toast.tournament.alreadyRegistered"); return; }
         registerMut.mutate({ tournamentId, tournament, playerId: user!.id, playerName: `${user!.firstName} ${user!.lastName}`, status: "registered" } as any, { onSuccess: () => { setDrawerOpen(false); setSelectedEvent(null); } });
       } : undefined} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
