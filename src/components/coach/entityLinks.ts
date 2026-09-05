@@ -37,3 +37,12 @@ export function readEntityParams(params: URLSearchParams): { playerId: string | 
     teamId: params.get("team") || null,
   };
 }
+
+/**
+ * The accessible name of an identity (avatar/name) trigger. Deliberately NOT
+ * "Actions for …" — a card may show both openers, and two buttons with one
+ * name would be indistinguishable to a screen reader (and to the tests).
+ */
+export function identityTriggerLabel(name: string): string {
+  return `Open menu for ${name}`;
+}
