@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/responsive-dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -230,7 +230,7 @@ function TrainingFormDialog({
             ) : (
               <div className="space-y-2 max-h-40 overflow-y-auto rounded-lg border border-border p-2">
                 {connectedPlayers.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 cursor-pointer rounded px-2 py-1 hover:bg-accent/30">
+                  <label key={p.id} className="flex items-center gap-2 cursor-pointer rounded px-2 py-1 hover:bg-accent/30 coarse:min-h-11">
                     <Checkbox checked={form.playerIds.includes(p.id)} onCheckedChange={() => togglePlayer(p.id)} />
                     <span className="text-sm text-foreground">{p.firstName} {p.lastName}</span>
                     <span className="font-mono text-xs text-muted-foreground">{p.playerPublicId}</span>

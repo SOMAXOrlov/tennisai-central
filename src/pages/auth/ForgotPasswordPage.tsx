@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
               setSent(false);
               setError("");
             }}
-            className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline coarse:min-h-11"
           >
             Used a different email? Try again
           </button>
@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
     <div className="space-y-4">
       <Link
         to="/login"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground coarse:min-h-11"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to login

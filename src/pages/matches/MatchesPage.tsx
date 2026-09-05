@@ -15,7 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/shared";
 import { useT } from "@/lib/i18n";
 import { MatchForm, type MatchFormValues } from "@/components/matches/MatchForm";

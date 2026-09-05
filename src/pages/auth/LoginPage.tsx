@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="space-y-4">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground coarse:min-h-11">
         <ArrowLeft className="h-4 w-4" />
         Back to home
       </Link>
@@ -99,8 +99,8 @@ export default function LoginPage() {
         {loading ? "Signing in…" : "Sign in"}
       </Button>
       <div className="flex justify-between text-sm">
-        <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground">Forgot your password?</Link>
-        <Link to="/signup" className="text-primary hover:underline">Create account</Link>
+        <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Forgot your password?</Link>
+        <Link to="/signup" className="text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Create account</Link>
       </div>
     </form>
     </div>

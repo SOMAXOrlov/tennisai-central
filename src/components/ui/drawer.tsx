@@ -31,7 +31,11 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[92dvh] flex-col overflow-y-auto overscroll-contain rounded-t-[10px] border bg-background pb-[env(safe-area-inset-bottom)]",
+        // `rounded-t-none`, not shadcn's `rounded-t-[10px]`: the theme maps the
+        // NAMED radius scale to --radius (0), but an arbitrary `[10px]` bypasses
+        // that remap, so this was the one surface shipping rounded corners on a
+        // square brand.
+        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[92dvh] flex-col overflow-y-auto overscroll-contain rounded-t-none border bg-background pb-[env(safe-area-inset-bottom)]",
         className,
       )}
       {...props}

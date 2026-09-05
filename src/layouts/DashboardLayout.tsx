@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { navItems } from "@/components/search/navRegistry";
 import { CommandPalette } from "@/components/search/CommandPalette";
 import { SearchTrigger, SearchTriggerIcon } from "@/components/search/SearchTrigger";
+import { QuickActions } from "@/components/mobile/QuickActions";
 
 /** Remembers the collapsed nav across reloads. */
 const NAV_COLLAPSED_KEY = "tennisai:navCollapsed";
@@ -390,8 +391,12 @@ export function DashboardLayout() {
           </Button>
           <span className="text-lg font-bold text-foreground">TennisAI</span>
           {/* Search sits in the header, not only in the drawer: on a phone the
-              drawer is the thing search exists to save you from opening. */}
+              drawer is the thing search exists to save you from opening.
+              Quick actions sit first: the courtside log/score is the thing
+              this header exists for. Phone-only by construction — this whole
+              header is md:hidden, so desktop keeps its full forms. */}
           <div className="flex items-center">
+            <QuickActions />
             <SearchTriggerIcon onClick={openSearch} />
             <ThemeToggle />
           </div>

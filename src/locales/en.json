@@ -261,6 +261,88 @@
     "signIn": "Sign In",
     "getStarted": "Get Started"
   },
+  "quick": {
+    "trigger": "Quick actions",
+    "title": "Quick actions",
+    "description": "Two taps, courtside.",
+    "back": "Back",
+    "cancel": "Cancel",
+    "menu": {
+      "logTraining": {
+        "title": "Log a training",
+        "description": "Who, when, how long."
+      },
+      "matchScore": {
+        "title": "Enter a match score",
+        "description": "Opponent, sets, result."
+      }
+    },
+    "coach": {
+      "who": "Who",
+      "whoPlaceholder": "Pick a player or team",
+      "playersGroup": "Players",
+      "teamsGroup": "Teams",
+      "teamMembers": "{count, plural, one {# player} other {# players}}",
+      "start": "Start",
+      "duration": "Duration",
+      "minutes": "{count} min",
+      "note": "Note (private to you)",
+      "notePlaceholder": "Optional — e.g. worked on the second serve",
+      "submit": "Log training",
+      "submitting": "Logging…",
+      "titleIndividual": "Training with {name}",
+      "titleTeam": "Team training: {name}",
+      "noPeople": "Connect a player or create a team first — there is nobody to log a training for yet.",
+      "errors": {
+        "who": "Pick who this training was for.",
+        "start": "Enter when the training started.",
+        "save": "Could not log the training. Your input is still here — try again."
+      }
+    },
+    "player": {
+      "opponent": "Opponent",
+      "opponentNotRecorded": "Not recorded",
+      "opponentNew": "+ New opponent…",
+      "newFirstName": "Opponent's first name",
+      "newLastName": "Opponent's last name",
+      "date": "Date played",
+      "surface": "Surface",
+      "surfaces": {
+        "hard": "Hard",
+        "clay": "Clay",
+        "grass": "Grass",
+        "indoor": "Indoor"
+      },
+      "sets": "Set scores",
+      "setsHint": "Games won by you, then your opponent.",
+      "set": "Set {n}",
+      "you": "You",
+      "them": "Opponent",
+      "addSet": "Add set",
+      "removeSet": "Remove set {n}",
+      "result": "Result",
+      "resultNotRecorded": "Not recorded",
+      "win": "Win",
+      "loss": "Loss",
+      "submit": "Save score",
+      "submitting": "Saving…",
+      "details": "Format, indoor/outdoor and detailed counts can be added later in Matches.",
+      "errors": {
+        "opponent": "Enter the opponent's first and last name.",
+        "date": "Enter the date the match was played.",
+        "setsIncomplete": "Every set needs both games won — remove any set you did not play.",
+        "setsRange": "Games won must be between 0 and 30.",
+        "setsTiebreak": "Write a tiebreak as two numbers, e.g. 7-5.",
+        "setsNone": "Add at least one set score.",
+        "save": "Could not save the match. Your input is still here — try again."
+      }
+    }
+  },
+  "mobile": {
+    "sheet": {
+      "close": "Close"
+    }
+  },
   "nav": {
     "trainings": {
       "unreviewedBadge": "{count}",

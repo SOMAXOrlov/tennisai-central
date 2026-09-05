@@ -84,8 +84,8 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
-          <Link to="/" className="font-medium text-primary hover:underline">Back to home</Link>
-          <Link to="/terms" className="font-medium text-primary hover:underline">Terms of Service</Link>
+          <Link to="/" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Back to home</Link>
+          <Link to="/terms" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Terms of Service</Link>
         </div>
       </div>
     </div>

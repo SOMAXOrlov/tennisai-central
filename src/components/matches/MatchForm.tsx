@@ -26,6 +26,7 @@ import {
   type RallyBucketKey,
 } from "@/components/matches/MatchStatsFields";
 import { MATCH_FORMAT_LABEL, MATCH_FORMAT_OPTIONS } from "@/lib/stats/format";
+import { MAX_SETS, parseSetRows, type SetRowsError } from "@/components/matches/setScores";
 import type {
   IndoorOutdoor,
   MatchFormat,
@@ -40,7 +41,14 @@ import type {
 const NO_OPPONENT = "__none__";
 const NEW_OPPONENT = "__new__";
 const NO_RESULT = "__unrecorded__";
-const MAX_SETS = 5;
+
+/** Set-score problems → this form's copy. The rules themselves live in setScores.ts. */
+const SET_ERROR_COPY: Record<SetRowsError, string> = {
+  incomplete: "Every set needs both games won — remove any set you did not play.",
+  range: "Games won must be between 0 and 30.",
+  tiebreak: "Write a tiebreak as two numbers, e.g. 7-5.",
+  none: "Add at least one set score.",
+};
 
 /** What the form hands back — the page maps it to the API payload. */
 export interface MatchFormValues {
@@ -274,33 +282,10 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
       nextErrors.opponent = "Enter the new opponent's first and last name.";
     }
 
-    // Drop rows the user left completely blank, then require complete rows.
-    const usedRows = sets.filter((row) => row.player.trim() !== "" || row.opponent.trim() !== "");
-    const scoreSets: MatchSetScore[] = [];
-    for (const row of usedRows) {
-      const player = Number(row.player);
-      const opponent = Number(row.opponent);
-      if (!Number.isFinite(player) || !Number.isFinite(opponent) || row.player === "" || row.opponent === "") {
-        nextErrors.sets = "Every set needs both games won — remove any set you did not play.";
-        break;
-      }
-      if (player < 0 || opponent < 0 || player > 30 || opponent > 30) {
-        nextErrors.sets = "Games won must be between 0 and 30.";
-        break;
-      }
-      if (row.tiebreak.trim() && !/^\d{1,2}-\d{1,2}$/.test(row.tiebreak.trim())) {
-        nextErrors.sets = "Write a tiebreak as two numbers, e.g. 7-5.";
-        break;
-      }
-      scoreSets.push({
-        player: Math.max(0, Math.floor(player)),
-        opponent: Math.max(0, Math.floor(opponent)),
-        ...(row.tiebreak.trim() ? { tiebreak: row.tiebreak.trim() } : {}),
-      });
-    }
-    if (!nextErrors.sets && scoreSets.length === 0) {
-      nextErrors.sets = "Add at least one set score.";
-    }
+    // Same rules as the phone quick-entry sheet — one parser, two forms.
+    const parsedSets = parseSetRows(sets);
+    const scoreSets: MatchSetScore[] = parsedSets.ok ? parsedSets.sets : [];
+    if (parsedSets.ok === false) nextErrors.sets = SET_ERROR_COPY[parsedSets.error];
 
     const parsedCounts = ALL_COUNT_KEYS.reduce(
       (acc, key) => {

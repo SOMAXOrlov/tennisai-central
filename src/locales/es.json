@@ -261,6 +261,88 @@
     "signIn": "Iniciar sesión",
     "getStarted": "Empezar"
   },
+  "quick": {
+    "trigger": "Acciones rápidas",
+    "title": "Acciones rápidas",
+    "description": "Dos toques, a pie de pista.",
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "menu": {
+      "logTraining": {
+        "title": "Registrar un entrenamiento",
+        "description": "Con quién, cuándo y cuánto."
+      },
+      "matchScore": {
+        "title": "Anotar el resultado de un partido",
+        "description": "Rival, sets y resultado."
+      }
+    },
+    "coach": {
+      "who": "Con quién",
+      "whoPlaceholder": "Elige un jugador o equipo",
+      "playersGroup": "Jugadores",
+      "teamsGroup": "Equipos",
+      "teamMembers": "{count, plural, one {# jugador} other {# jugadores}}",
+      "start": "Inicio",
+      "duration": "Duración",
+      "minutes": "{count} min",
+      "note": "Nota (solo para ti)",
+      "notePlaceholder": "Opcional: p. ej., trabajamos el segundo servicio",
+      "submit": "Registrar entrenamiento",
+      "submitting": "Registrando…",
+      "titleIndividual": "Entrenamiento con {name}",
+      "titleTeam": "Entrenamiento de equipo: {name}",
+      "noPeople": "Conecta primero con un jugador o crea un equipo: aún no hay nadie para quien registrar un entrenamiento.",
+      "errors": {
+        "who": "Elige para quién fue este entrenamiento.",
+        "start": "Indica cuándo empezó el entrenamiento.",
+        "save": "No se pudo registrar el entrenamiento. Lo que escribiste sigue aquí: inténtalo de nuevo."
+      }
+    },
+    "player": {
+      "opponent": "Rival",
+      "opponentNotRecorded": "Sin registrar",
+      "opponentNew": "+ Nuevo rival…",
+      "newFirstName": "Nombre del rival",
+      "newLastName": "Apellido del rival",
+      "date": "Fecha del partido",
+      "surface": "Superficie",
+      "surfaces": {
+        "hard": "Dura",
+        "clay": "Tierra batida",
+        "grass": "Hierba",
+        "indoor": "Cubierta"
+      },
+      "sets": "Resultado por sets",
+      "setsHint": "Juegos que ganaste tú y, después, los de tu rival.",
+      "set": "Set {n}",
+      "you": "Tú",
+      "them": "Rival",
+      "addSet": "Añadir set",
+      "removeSet": "Quitar el set {n}",
+      "result": "Resultado",
+      "resultNotRecorded": "Sin registrar",
+      "win": "Victoria",
+      "loss": "Derrota",
+      "submit": "Guardar resultado",
+      "submitting": "Guardando…",
+      "details": "El formato, si fue cubierta o exterior y las estadísticas detalladas se pueden añadir después en Partidos.",
+      "errors": {
+        "opponent": "Escribe el nombre y el apellido del rival.",
+        "date": "Indica la fecha en que se jugó el partido.",
+        "setsIncomplete": "Cada set necesita los juegos de ambos: quita los sets que no jugaste.",
+        "setsRange": "Los juegos ganados deben estar entre 0 y 30.",
+        "setsTiebreak": "Escribe el tie-break con dos números, p. ej. 7-5.",
+        "setsNone": "Añade al menos un set.",
+        "save": "No se pudo guardar el partido. Lo que escribiste sigue aquí: inténtalo de nuevo."
+      }
+    }
+  },
+  "mobile": {
+    "sheet": {
+      "close": "Cerrar"
+    }
+  },
   "nav": {
     "trainings": {
       "unreviewedBadge": "{count}",
