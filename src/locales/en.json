@@ -926,7 +926,6 @@
       "allRead": "All notifications marked as read",
       "allReadFailed": "Couldn't mark everything as read",
       "markReadFailed": "Couldn't mark the notification as read",
-      "preferenceSaved": "Preference saved",
       "preferenceFailed": "Couldn't save the preference",
       "pushEnabled": "Push notifications enabled on this device",
       "pushFailed": "Couldn't enable push on this device"

@@ -926,7 +926,6 @@
       "allRead": "Todas las notificaciones marcadas como leídas",
       "allReadFailed": "No se ha podido marcar todo como leído",
       "markReadFailed": "No se ha podido marcar la notificación como leída",
-      "preferenceSaved": "Preferencia guardada",
       "preferenceFailed": "No se ha podido guardar la preferencia",
       "pushEnabled": "Notificaciones push activadas en este dispositivo",
       "pushFailed": "No se han podido activar las notificaciones push en este dispositivo"

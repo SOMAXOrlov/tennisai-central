@@ -225,12 +225,28 @@ export function useCreateTrainingPlan() {
   });
 }
 
+// Optimistic: renaming a team is a field patch on a row the coach is looking
+// at, and the rename dialog closes on submit — without this the old name would
+// sit on the card for a round trip. Restored verbatim if the save fails.
 export function useUpdateTeam() {
+  const qc = useQueryClient();
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Team> }) => teamsApi.updateTeam(id, data),
-    onSuccess: () => { inv.team(); toastSuccess("toast.team.updated"); },
-    onError: (e: unknown) => toastError("toast.team.updateFailed", e),
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.teams });
+      const previous = qc.getQueryData<Team[]>(queryKeys.teams);
+      qc.setQueryData<Team[]>(queryKeys.teams, (old) =>
+        old?.map((team) => (team.id === id ? { ...team, ...data } : team)),
+      );
+      return { previous };
+    },
+    onSuccess: () => { toastSuccess("toast.team.updated"); },
+    onError: (e: unknown, _vars, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.teams, ctx.previous);
+      toastError("toast.team.updateFailed", e);
+    },
+    onSettled: () => { inv.team(); },
   });
 }
 
@@ -528,12 +544,36 @@ export function useNotificationPreferences() {
   });
 }
 
+/** Shared by every in-flight preference save, so a burst of toggles can be counted (see onSettled). */
+const NOTIFICATION_PREFS_MUTATION_KEY = ["updateNotificationPrefs"] as const;
+
+// Optimistic: a preference is one boolean on a record the client already
+// holds. The switch flips as it is tapped; if the save fails the record is put
+// back and a toast says so. No success toast — the switch staying flipped is
+// the confirmation, and six toasts for six toggles would be noise.
 export function useUpdateNotificationPreferences() {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: NOTIFICATION_PREFS_MUTATION_KEY,
     mutationFn: (data: Partial<NotificationSettings>) => notificationsApi.updatePreferences(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.notificationPrefs }); toastSuccess("toast.notification.preferenceSaved"); },
-    onError: (e: unknown) => toastError("toast.notification.preferenceFailed", e),
+    onMutate: async (data) => {
+      await qc.cancelQueries({ queryKey: queryKeys.notificationPrefs });
+      const previous = qc.getQueryData<NotificationSettings>(queryKeys.notificationPrefs);
+      qc.setQueryData<NotificationSettings>(queryKeys.notificationPrefs, (old) => (old ? { ...old, ...data } : old));
+      return { previous };
+    },
+    onError: (e: unknown, _data, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.notificationPrefs, ctx.previous);
+      toastError("toast.notification.preferenceFailed", e);
+    },
+    // Refetch only when the LAST toggle settles: an early response would carry
+    // a record that predates the later taps and flick those switches back
+    // until their own responses land (the attendance register does the same).
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: NOTIFICATION_PREFS_MUTATION_KEY }) === 1) {
+        qc.invalidateQueries({ queryKey: queryKeys.notificationPrefs });
+      }
+    },
   });
 }
 
