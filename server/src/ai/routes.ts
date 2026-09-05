@@ -89,12 +89,13 @@ aiRouter.get(
       where: { userId_periodKey: { userId: req.userId!, periodKey } },
       select: { reportsGenerated: true },
     });
-    const used = counter?.reportsGenerated ?? 0;
+    const reportsGenerated = counter?.reportsGenerated ?? 0;
+    // Same field names as the client's existing AiUsage type (src/types/analytics.ts).
     ok(res, {
       periodKey,
-      used,
+      reportsGenerated,
       limit: MONTHLY_LIMIT,
-      remaining: Math.max(0, MONTHLY_LIMIT - used),
+      remaining: Math.max(0, MONTHLY_LIMIT - reportsGenerated),
     });
   }),
 );

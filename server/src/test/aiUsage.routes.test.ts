@@ -49,7 +49,7 @@ describe("GET /api/ai/usage", () => {
     expect(arg.where.userId_periodKey.periodKey).toMatch(/^\d{4}-\d{2}$/);
     expect(res.body.data).toEqual({
       periodKey: arg.where.userId_periodKey.periodKey,
-      used: 7,
+      reportsGenerated: 7,
       limit: MONTHLY_LIMIT,
       remaining: MONTHLY_LIMIT - 7,
     });
@@ -58,7 +58,7 @@ describe("GET /api/ai/usage", () => {
   it("reports a month with no counter row as nothing used", async () => {
     const res = await request(app).get("/api/ai/usage").set("Authorization", bearer(ME));
     expect(res.status).toBe(200);
-    expect(res.body.data.used).toBe(0);
+    expect(res.body.data.reportsGenerated).toBe(0);
     expect(res.body.data.remaining).toBe(MONTHLY_LIMIT);
   });
 
@@ -66,7 +66,7 @@ describe("GET /api/ai/usage", () => {
     db.aiUsageCounter.findUnique.mockResolvedValue({ reportsGenerated: MONTHLY_LIMIT + 5 });
     const res = await request(app).get("/api/ai/usage").set("Authorization", bearer(ME));
     expect(res.body.data.remaining).toBe(0);
-    expect(res.body.data.used).toBe(MONTHLY_LIMIT + 5);
+    expect(res.body.data.reportsGenerated).toBe(MONTHLY_LIMIT + 5);
   });
 
   it("does not require a role lookup — any signed-in user may read their own usage", async () => {
