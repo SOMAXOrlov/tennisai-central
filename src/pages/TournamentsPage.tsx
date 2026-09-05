@@ -23,6 +23,7 @@ import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import { TournamentConditionsDialog } from "@/components/tournaments/TournamentConditionsDialog";
+import { ProvenanceChip, ProvenanceLegend } from "@/components/tournaments/ProvenanceChip";
 import { AddToCalendarDialog } from "@/components/tournaments/AddToCalendarDialog";
 import { useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
 // Loaded on demand: Leaflet + its CSS are ~160 KB and only the Map tab needs
@@ -340,6 +341,9 @@ export default function TournamentsPage() {
         </div>
       )}
 
+      {/* One legend for the provenance chips on every row below, whichever view. */}
+      <ProvenanceLegend />
+
       {/* Player tournament view */}
       {(showPlayerTournaments || isPlayer) && viewMode === "players" && (
         filteredPlayerTournaments.length === 0 ? (
@@ -372,6 +376,7 @@ export default function TournamentsPage() {
                             {pt.tournament.name}
                           </button>
                           {pt.tournament.category && <p className="text-xs text-muted-foreground">{pt.tournament.category}</p>}
+                          <ProvenanceChip tournament={pt.tournament} className="mt-1" />
                         </div>
                       </td>
                       {!isPlayer && <td className="px-4 py-3">
@@ -522,6 +527,7 @@ export default function TournamentsPage() {
                     {t.altitude != null && t.altitude > 0 && <Badge variant="outline"><Mountain className="mr-1 h-3 w-3" />{t.altitude}m</Badge>}
                     {distance != null && <Badge variant="outline" className="border-primary/40 text-primary"><MapPin className="mr-1 h-3 w-3" />{formatDistanceKm(distance)} away</Badge>}
                   </div>
+                  <ProvenanceChip tournament={t} />
                   {isCoach && (() => {
                     const pts = playerTournaments.filter((pt) => pt.tournamentId === t.id && connectedIds.has(pt.playerId));
                     if (pts.length === 0) return null;
@@ -680,6 +686,7 @@ export default function TournamentsPage() {
                         <p className="text-xs text-muted-foreground">
                           {t.city}, {t.country} · {format(new Date(t.startDate), "MMM d")} – {format(new Date(t.endDate), "MMM d, yyyy")}
                         </p>
+                        <ProvenanceChip tournament={t} className="mt-1" />
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className={surfaceColor[t.surface] ?? ""}>{t.surface}</Badge>
@@ -732,6 +739,15 @@ export default function TournamentsPage() {
       <TournamentConditionsDialog
         tournamentId={conditionsFor?.id ?? null}
         playerId={conditionsFor?.playerId}
+        // Opened from a browse card by a coach: whoever from the squad is
+        // entered is who could be prepared. A specific entry wins over this.
+        candidates={
+          isCoach && conditionsFor && !conditionsFor.playerId
+            ? playerTournaments
+                .filter((pt) => pt.tournamentId === conditionsFor.id && connectedIds.has(pt.playerId) && pt.status !== "withdrawn")
+                .map((pt) => ({ id: pt.playerId, name: pt.playerName ?? pt.playerId }))
+            : undefined
+        }
         open={conditionsFor !== null}
         onOpenChange={(o) => { if (!o) setConditionsFor(null); }}
       />

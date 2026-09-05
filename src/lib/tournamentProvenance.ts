@@ -86,3 +86,50 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   if (elapsed < YEAR) return rtf.format(-Math.floor(elapsed / MONTH), "month");
   return rtf.format(-Math.floor(elapsed / YEAR), "year");
 }
+
+// ── The words on the chip ───────────────────────────────────────────────────
+
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
+export interface ProvenanceText {
+  /** "via UTR" / "Added manually" / "via some-other-feed". */
+  source: string;
+  /** "checked 3 hours ago" / "edited yesterday" / "freshness not available". */
+  freshness: string;
+  /** The timestamp the freshness was derived from, for a tooltip; null when none. */
+  at: string | null;
+  manual: boolean;
+}
+
+/**
+ * What the provenance chip says, as a pure function of the row and the
+ * translator — so the browse card, the schedule row, the map list and the
+ * detail page all say the same thing, and the mapping is testable without
+ * rendering anything.
+ */
+export function describeProvenance(
+  row: Pick<Tournament, "source" | "lastSeenAt" | "updatedAt">,
+  t: Translate,
+  now: Date = new Date(),
+): ProvenanceText {
+  const provenance = provenanceOf(row.source);
+  const manual = provenance.kind === "manual";
+  const source = manual
+    ? t("tournaments.provenance.manual")
+    : t("tournaments.provenance.viaSource", {
+        source:
+          provenance.kind === "other"
+            ? (provenance.raw ?? "")
+            : t(`tournaments.provenance.source.${provenance.kind}`),
+      });
+
+  const fresh = freshnessOf(row);
+  const freshness =
+    fresh.basis === "feed"
+      ? t("tournaments.provenance.checked", { when: formatRelativeTime(fresh.at!, now) })
+      : fresh.basis === "edited"
+        ? t("tournaments.provenance.edited", { when: formatRelativeTime(fresh.at!, now) })
+        : t("tournaments.provenance.noFreshness");
+
+  return { source, freshness, at: fresh.at, manual };
+}
