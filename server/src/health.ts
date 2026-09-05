@@ -20,9 +20,14 @@
 //
 // It sits BEFORE the general API rate limiter in index.ts on purpose: a
 // monitor polling every 30–60 s must never be throttled into a false alarm.
+// It is not un-limited, though: every hit costs one `SELECT 1`, so the router
+// carries its own generous per-address ceiling (HEALTH_LIMIT) that no monitor
+// or /status page comes near, but that stops one client from turning the probe
+// into a connection-pool drain.
 // ============================================================================
 
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { readFileSync } from "node:fs";
 import { emailEnabled, env, mailTransport } from "./env";
 import { prisma } from "./db";
@@ -62,42 +67,68 @@ function publicSources() {
   }));
 }
 
-export const healthRouter = Router();
+/**
+ * Per-address ceiling for /api/health. 120 a minute is two a second — the
+ * /status page polls every 30 s and a monitor every 60 s, so even a whole
+ * office behind one NAT stays far below it. Exposed as a factory so the tests
+ * can build a router with a tiny limit instead of firing 121 requests.
+ */
+export const HEALTH_LIMIT = { windowMs: 60_000, max: 120 };
 
-healthRouter.get("/", async (_req, res) => {
-  // Never let a browser or an intermediary cache a health answer: a monitor
-  // that reads a stale "ok" is worse than no monitor at all.
-  res.set("Cache-Control", "no-store");
+export function createHealthRouter(limit: { windowMs: number; max: number } = HEALTH_LIMIT) {
+  const router = Router();
 
-  const startedAt = process.hrtime.bigint();
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    const dbLatencyMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+  router.use(
+    rateLimit({
+      windowMs: limit.windowMs,
+      max: limit.max,
+      standardHeaders: true,
+      legacyHeaders: false,
+      // Deliberately not the health shape: a monitor keyed on `"ok":true` must
+      // see a 429 as a failure, and a 429 never means the database is down.
+      message: { message: "Too many health checks from this address. Poll at most once every few seconds." },
+    }),
+  );
 
-    res.json({
-      ok: true,
-      db: "up",
-      dbLatencyMs: Math.round(dbLatencyMs * 10) / 10,
-      version: apiVersion,
-      uptimeSeconds: Math.floor(process.uptime()),
-      emailEnabled,
-      // Which transport, and whether signup is currently possible at all —
-      // the two facts you need to explain "nobody can register" without SSH.
-      mailTransport,
-      signupOpen: !(env.requireEmailVerification && !emailEnabled),
-      // A calendar feed that has silently stopped looks exactly like one that
-      // is working, until a coach plans a season against stale data. Reporting
-      // it here makes a dead source visible without opening a shell.
-      calendar: { lastImportAt: lastImportAt(), sources: publicSources() },
-      time: new Date().toISOString(),
-    });
-  } catch {
-    res.status(503).json({
-      ok: false,
-      db: "down",
-      version: apiVersion,
-      uptimeSeconds: Math.floor(process.uptime()),
-      time: new Date().toISOString(),
-    });
-  }
-});
+  router.get("/", async (_req, res) => {
+    // Never let a browser or an intermediary cache a health answer: a monitor
+    // that reads a stale "ok" is worse than no monitor at all.
+    res.set("Cache-Control", "no-store");
+
+    const startedAt = process.hrtime.bigint();
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      const dbLatencyMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+
+      res.json({
+        ok: true,
+        db: "up",
+        dbLatencyMs: Math.round(dbLatencyMs * 10) / 10,
+        version: apiVersion,
+        uptimeSeconds: Math.floor(process.uptime()),
+        emailEnabled,
+        // Which transport, and whether signup is currently possible at all —
+        // the two facts you need to explain "nobody can register" without SSH.
+        mailTransport,
+        signupOpen: !(env.requireEmailVerification && !emailEnabled),
+        // A calendar feed that has silently stopped looks exactly like one that
+        // is working, until a coach plans a season against stale data. Reporting
+        // it here makes a dead source visible without opening a shell.
+        calendar: { lastImportAt: lastImportAt(), sources: publicSources() },
+        time: new Date().toISOString(),
+      });
+    } catch {
+      res.status(503).json({
+        ok: false,
+        db: "down",
+        version: apiVersion,
+        uptimeSeconds: Math.floor(process.uptime()),
+        time: new Date().toISOString(),
+      });
+    }
+  });
+
+  return router;
+}
+
+export const healthRouter = createHealthRouter();

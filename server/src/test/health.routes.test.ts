@@ -15,7 +15,7 @@ import request from "supertest";
 vi.mock("../db", async () => ({ prisma: (await import("./harness")).createPrismaMock() }));
 
 import { prisma } from "../db";
-import { healthRouter, apiVersion } from "../health";
+import { healthRouter, createHealthRouter, apiVersion, HEALTH_LIMIT } from "../health";
 import { recordImport, resetImportStatus } from "../tournaments/importStatus";
 import { createTestApp, prismaMockFrom } from "./harness";
 
@@ -156,5 +156,43 @@ describe("GET /api/health — database unreachable", () => {
 
     expect(JSON.stringify(res.body)).not.toContain("password");
     expect(JSON.stringify(res.body)).not.toContain("FATAL");
+  });
+});
+
+describe("GET /api/health — per-address ceiling", () => {
+  it("is generous enough for monitors and the /status page", () => {
+    // /status polls every 30 s, a monitor every 60 s: 3 requests a minute per
+    // client. The ceiling must stay well clear of that, and below the general
+    // API limiter's 300 / 15 min it does not fall under.
+    expect(HEALTH_LIMIT.windowMs).toBe(60_000);
+    expect(HEALTH_LIMIT.max).toBeGreaterThanOrEqual(60);
+  });
+
+  it("answers 429 above the ceiling without touching the database", async () => {
+    db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    const tight = createTestApp([["/api/health", createHealthRouter({ windowMs: 60_000, max: 3 })]]);
+
+    for (let i = 0; i < 3; i++) {
+      expect((await request(tight).get("/api/health")).status).toBe(200);
+    }
+    const blocked = await request(tight).get("/api/health");
+
+    expect(blocked.status).toBe(429);
+    // Not the health shape: a monitor keyed on `"ok":true` must fail, and the
+    // body must not claim anything about the database.
+    expect(blocked.body).toEqual({ message: expect.any(String) });
+    expect(blocked.body.ok).toBeUndefined();
+    expect(blocked.body.db).toBeUndefined();
+    expect(blocked.headers["ratelimit-limit"]).toBe("3");
+    // The limiter runs before the handler — the fourth request never probed.
+    expect(db.$queryRaw).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps the default router far below the ceiling in ordinary use", async () => {
+    db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    const res = await request(app).get("/api/health");
+    expect(res.status).toBe(200);
+    expect(Number(res.headers["ratelimit-limit"])).toBe(HEALTH_LIMIT.max);
+    expect(Number(res.headers["ratelimit-remaining"])).toBeGreaterThan(HEALTH_LIMIT.max / 2);
   });
 });

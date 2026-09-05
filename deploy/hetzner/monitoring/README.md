@@ -13,9 +13,13 @@ GET https://46-225-83-85.sslip.io/api/health
 ```
 
 Same for any later hostname: `https://<SITE_ADDRESS>/api/health`. It is public,
-needs no login, is mounted **before** the API rate limiter (so polling it every
-30–60 s never trips a false alarm), and answers `Cache-Control: no-store` so no
-intermediary can hand a monitor a stale "ok".
+needs no login, is mounted **before** the general API rate limiter (so polling
+it every 30–60 s never trips a false alarm), and answers `Cache-Control:
+no-store` so no intermediary can hand a monitor a stale "ok". It does carry
+its own ceiling — **120 requests a minute per client address**, answered with
+`HTTP 429` and a `{ "message" }` body above that — which a monitor plus a few
+open `/status` tabs never approach. A 429 therefore means something is
+hammering the endpoint, not that the database is down.
 
 The same data, for humans: `https://<SITE_ADDRESS>/status`.
 
