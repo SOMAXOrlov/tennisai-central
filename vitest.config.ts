@@ -4,6 +4,10 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  // Mirrors the `define` in vite.config.ts — Vitest reads this file, not that one.
+  define: {
+    __APP_VERSION__: JSON.stringify("test"),
+  },
   test: {
     environment: "jsdom",
     globals: true,

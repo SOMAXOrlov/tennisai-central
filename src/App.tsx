@@ -34,6 +34,7 @@ const DashboardLayout = lazy(() =>
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicyPage = lazy(() => import("./pages/legal/PrivacyPolicyPage"));
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
+const StatusPage = lazy(() => import("./pages/StatusPage"));
 
 // Auth
 const SignUpPage = lazy(() => import("./pages/auth/SignUpPage"));
@@ -119,6 +120,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/privacy" element={<Page><PrivacyPolicyPage /></Page>} />
                 <Route path="/terms" element={<Page><TermsPage /></Page>} />
+                <Route path="/status" element={<Page><StatusPage /></Page>} />
               </Route>
 
               {/* Auth routes (guest only) */}

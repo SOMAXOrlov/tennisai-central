@@ -511,5 +511,68 @@
         "columnActions": "Actions"
       }
     }
+  },
+  "status": {
+    "title": "System status",
+    "subtitle": "Live checks of the TennisAI API from this browser. Refreshes automatically every {seconds} seconds.",
+    "overall": {
+      "checking": "Checking…",
+      "ok": "All systems operational",
+      "degraded": "Degraded — the API answers but reports a problem",
+      "unreachable": "The API cannot be reached from this browser"
+    },
+    "overallHint": {
+      "checking": "Contacting the API.",
+      "ok": "The API answered and can reach its database.",
+      "degraded": "Signing in and saving may fail until this clears.",
+      "unreachable": "This can be the server or this connection. Try again in a minute."
+    },
+    "checks": {
+      "api": "API",
+      "database": "Database",
+      "signup": "Sign-up",
+      "clock": "Clock"
+    },
+    "api": {
+      "checking": "Checking…",
+      "reachable": "Reachable",
+      "unreachable": "Unreachable",
+      "http": "HTTP {status}",
+      "rtt": "{ms} ms round trip"
+    },
+    "db": {
+      "up": "Up",
+      "down": "Down",
+      "unknown": "Unknown",
+      "latency": "{ms} ms query"
+    },
+    "signup": {
+      "open": "Open",
+      "closed": "Closed",
+      "unknown": "Unknown"
+    },
+    "clock": {
+      "inSync": "In sync",
+      "browserAhead": "This browser is {seconds} s ahead of the server",
+      "browserBehind": "This browser is {seconds} s behind the server",
+      "unknown": "Unknown",
+      "hint": "Includes network delay; small differences are normal."
+    },
+    "meta": {
+      "appVersion": "App version",
+      "apiVersion": "API version",
+      "uptime": "API uptime",
+      "lastChecked": "Last checked",
+      "notReported": "Not reported"
+    },
+    "uptime": {
+      "days": "{count, plural, one {# day} other {# days}}",
+      "hours": "{count, plural, one {# hour} other {# hours}}",
+      "minutes": "{count, plural, one {# minute} other {# minutes}}",
+      "underMinute": "Under a minute"
+    },
+    "checkNow": "Check now",
+    "checkingNow": "Checking…",
+    "footer": "Only what the API reports about itself is shown here. No account data is involved."
   }
 }
