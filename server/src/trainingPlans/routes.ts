@@ -38,11 +38,11 @@ const drillStatusSchema = z.object({
   completionStatus: z.enum(["pending", "done", "skipped"]),
 });
 
-type PlanWithDrills = TrainingPlan & { drills: TrainingDrill[] };
+export type PlanWithDrills = TrainingPlan & { drills: TrainingDrill[] };
 
 const withDrills = { drills: { orderBy: { createdAt: "asc" } } } as const;
 
-function presentDrill(d: TrainingDrill) {
+export function presentDrill(d: TrainingDrill) {
   return {
     id: d.id,
     planId: d.planId,
@@ -124,16 +124,31 @@ async function assertCanPlanFor(userId: string, playerId: string): Promise<void>
   }
 }
 
+/** Which library statuses a plan drill may cite. Approved is the rule (see docs/library.md). */
+export interface LibraryUsableOptions {
+  /**
+   * Also accept `reviewed` drills. Only the session assembler sets this, and
+   * only when the coach built the proposal with `includeReviewed` — a coach who
+   * knowingly worked from reviewed drills may cite them in the plan they save.
+   * Hand-written plans (this router's POST) never do.
+   */
+  allowReviewed?: boolean;
+}
+
 /**
  * Every `libraryDrillId` in the body must resolve to a drill the caller is
- * actually allowed to use: approved, and either global, their own, or their
- * academy's. Anything else is a 400 — a plan that cites a drill nobody can open
- * is worse than a plan with no citation at all.
+ * actually allowed to use: approved (or reviewed, when explicitly allowed), and
+ * either global, their own, or their academy's. Anything else is a 400 — a plan
+ * that cites a drill nobody can open is worse than a plan with no citation at all.
  *
  * The library is only queried when at least one drill carries an id, so a
  * hand-written plan costs no extra round trips.
  */
-async function assertLibraryDrillsUsable(userId: string, ids: string[]): Promise<void> {
+export async function assertLibraryDrillsUsable(
+  userId: string,
+  ids: string[],
+  options: LibraryUsableOptions = {},
+): Promise<void> {
   if (ids.length === 0) return;
 
   const memberships = await prisma.academyMembership.findMany({
@@ -145,8 +160,9 @@ async function assertLibraryDrillsUsable(userId: string, ids: string[]): Promise
   const visible: Prisma.DrillWhereInput[] = [{ visibility: "global" }, { ownerCoachId: userId }];
   if (academyIds.length > 0) visible.push({ visibility: "academy", academyId: { in: academyIds } });
 
+  const status: Prisma.DrillWhereInput["status"] = options.allowReviewed ? { in: ["approved", "reviewed"] } : "approved";
   const found = await prisma.drill.findMany({
-    where: { id: { in: ids }, status: "approved", OR: visible },
+    where: { id: { in: ids }, status, OR: visible },
     select: { id: true },
   });
 
@@ -155,6 +171,60 @@ async function assertLibraryDrillsUsable(userId: string, ids: string[]): Promise
   if (missing.length > 0) {
     throw new HttpError(400, `Unknown or unavailable library drill: ${missing.join(", ")}`);
   }
+}
+
+/** One plan drill as the create routes accept it (zod-parsed body shape). */
+export type PlanDrillInput = z.infer<typeof drillSchema>;
+
+/** Provenance stamp: which generator produced the plan. */
+export interface PlanOrigin {
+  model: string;
+  promptVersion: string;
+}
+
+export const SESSION_BUILDER_ORIGIN: PlanOrigin = { model: "tennisai-session-builder-v1", promptVersion: "sb-1" };
+
+/**
+ * THE way a generated session becomes a player's training plan — one
+ * `TrainingPlan` row with its `TrainingDrill` children created in a single
+ * nested write. Both the Session Builder's POST below and the assembler's
+ * `/api/sessions/:id/save` go through here, so a drill column added later is
+ * added once. Authorization is the caller's job: this only writes.
+ */
+export async function createTrainingPlanWithDrills(input: {
+  playerId: string;
+  createdById: string;
+  title: string;
+  weekOf?: string;
+  drills: PlanDrillInput[];
+  origin: PlanOrigin;
+}): Promise<PlanWithDrills> {
+  return prisma.trainingPlan.create({
+    data: {
+      playerId: input.playerId,
+      createdById: input.createdById,
+      title: input.title,
+      weekOf: input.weekOf,
+      model: input.origin.model,
+      promptVersion: input.origin.promptVersion,
+      drills: {
+        create: input.drills.map((d) => ({
+          objective: d.objective,
+          category: d.category,
+          instructions: d.instructions,
+          durationMin: d.durationMin,
+          reps: d.reps,
+          equipment: d.equipment,
+          intensity: d.intensity,
+          successCriteria: d.successCriteria,
+          relatedInsight: d.relatedInsight,
+          coachNotes: d.coachNotes,
+          libraryDrillId: d.libraryDrillId,
+        })),
+      },
+    },
+    include: withDrills,
+  });
 }
 
 // GET /api/training-plans — plans the user created OR that are about them.
@@ -196,31 +266,13 @@ trainingPlansRouter.post(
       data.drills.map((d) => d.libraryDrillId).filter((id): id is string => typeof id === "string"),
     );
 
-    const plan = await prisma.trainingPlan.create({
-      data: {
-        playerId: data.playerId,
-        createdById: userId,
-        title: data.title,
-        weekOf: data.weekOf,
-        model: "tennisai-session-builder-v1",
-        promptVersion: "sb-1",
-        drills: {
-          create: data.drills.map((d) => ({
-            objective: d.objective,
-            category: d.category,
-            instructions: d.instructions,
-            durationMin: d.durationMin,
-            reps: d.reps,
-            equipment: d.equipment,
-            intensity: d.intensity,
-            successCriteria: d.successCriteria,
-            relatedInsight: d.relatedInsight,
-            coachNotes: d.coachNotes,
-            libraryDrillId: d.libraryDrillId,
-          })),
-        },
-      },
-      include: withDrills,
+    const plan = await createTrainingPlanWithDrills({
+      playerId: data.playerId,
+      createdById: userId,
+      title: data.title,
+      weekOf: data.weekOf,
+      drills: data.drills,
+      origin: SESSION_BUILDER_ORIGIN,
     });
 
     return ok(res, present(plan), "Session saved to the player's training plan", 201);
