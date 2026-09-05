@@ -74,6 +74,10 @@ const DELEGATES = [
   "connectionRequest",
   "trainingRequest",
   "calendarEvent",
+  // Match issues (matches/issues.routes.ts) read the match for its player and
+  // then the issue rows; the summaries read matches WITH their issues.
+  "match",
+  "matchIssue",
   "notification",
   // The delivery funnel (notifications/deliver.ts) reads both of these right
   // after writing a notification. Without them every notification spec logged
