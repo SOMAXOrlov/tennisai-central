@@ -10,6 +10,8 @@
 //
 // Every data hook is mocked at the module boundary — the sheet must never
 // fetch anything before it is opened, and these specs are about the sheet.
+// vaul needs two jsdom shims (pointer capture, a computed transform); they
+// live in src/test/vaulJsdom.ts and are installed per sheet-test file.
 // The Radix Selects are never opened here (jsdom lacks the pointer-capture
 // APIs they need); the coach form pre-selects its only target, and the player
 // form's Selects default to "not recorded" / "hard".
@@ -19,28 +21,9 @@ import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite
 import { render, screen, cleanup, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { UserRole } from "@/types";
+import { installVaulJsdomShims } from "@/test/vaulJsdom";
 
-// vaul's drag handling runs on every pointer event inside the sheet. jsdom has
-// no pointer capture and no computed `transform`, so give it inert versions —
-// enough for a tap to be a tap. Local to this file: nothing else needs them.
-beforeAll(() => {
-  const proto = Element.prototype as Element & {
-    setPointerCapture?: (id: number) => void;
-    releasePointerCapture?: (id: number) => void;
-    hasPointerCapture?: (id: number) => boolean;
-  };
-  proto.setPointerCapture ??= () => {};
-  proto.releasePointerCapture ??= () => {};
-  proto.hasPointerCapture ??= () => false;
-  const original = window.getComputedStyle.bind(window);
-  window.getComputedStyle = ((el: Element, pseudo?: string | null) => {
-    const style = original(el, pseudo);
-    // jsdom reports "" (not undefined) for an unset transform; vaul then falls
-    // through to webkitTransform, which IS undefined, and calls .match on it.
-    if (!style.transform) Object.defineProperty(style, "transform", { value: "none", configurable: true });
-    return style;
-  }) as typeof window.getComputedStyle;
-});
+beforeAll(installVaulJsdomShims);
 
 const auth = { role: "coach" as UserRole };
 const createTraining = { mutateAsync: vi.fn(), isPending: false };

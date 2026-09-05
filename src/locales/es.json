@@ -338,6 +338,11 @@
       }
     }
   },
+  "mobile": {
+    "sheet": {
+      "close": "Cerrar"
+    }
+  },
   "nav": {
     "trainings": {
       "unreviewedBadge": "{count}",
