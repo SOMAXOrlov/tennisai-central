@@ -30,7 +30,6 @@ import { AttendanceRegister } from "@/components/training/AttendanceRegister";
 import type { AdviceSession } from "@/api/endpoints/aiAdvice";
 import type { TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback, AttendanceStatus } from "@/types";
 import { useAuth } from "@/auth/AuthContext";
-import { useT } from "@/lib/i18n";
 import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams, useAnalyzeTraining, useSaveTrainingFeedback } from "@/hooks/api/queries";
 import { useMarkAttendance } from "@/hooks/api/useTrainingAttendance";
 import { format, parseISO, isPast } from "date-fns";
