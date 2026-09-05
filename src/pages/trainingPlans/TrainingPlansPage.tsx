@@ -16,7 +16,9 @@ import { Link } from "react-router-dom";
 import { ClipboardList, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/shared";
+import { EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { hasCoachCounterpart } from "@/lib/connections/hasCoachCounterpart";
@@ -38,6 +40,7 @@ export default function TrainingPlansPage() {
   const [filter, setFilter] = useState<PlanFilter>("all");
 
   const { data: plans = [], isLoading, error, refetch } = useTrainingPlanList();
+  const { t } = useT();
 
   const isCoach = hasRole("coach");
 
@@ -82,13 +85,13 @@ export default function TrainingPlansPage() {
     </div>
   );
 
-  if (isLoading) return <LoadingState message="Loading your training plans…" />;
+  if (isLoading) return <PageSkeleton variant="cards" />;
 
   if (error) {
     return (
       <div className="space-y-6">
         {header}
-        <ErrorState message="Failed to load your training plans." onRetry={() => void refetch()} />
+        <ErrorState error={error} message={t("states.load.plans")} onRetry={() => void refetch()} />
       </div>
     );
   }

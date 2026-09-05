@@ -12,7 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/responsive-dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EmptyState, LoadingState, ErrorState, StatusBadge, ReadOnlyBanner, ReadOnlyBadge } from "@/components/ui/shared";
+import { EmptyState, ErrorState, StatusBadge, ReadOnlyBanner, ReadOnlyBadge } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import {
   useTrainingRequests,
   useCreateTrainingRequest,
@@ -332,7 +334,8 @@ export default function TrainingRequestsPage() {
   const isCoach = role === "coach";
   const isObserver = role === "observer";
 
-  const { data: requests = [], isLoading, error } = useTrainingRequests();
+  const { data: requests = [], isLoading, error, refetch } = useTrainingRequests();
+  const { t } = useT();
   const cancelMut = useCancelTrainingRequest();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -365,8 +368,8 @@ export default function TrainingRequestsPage() {
 
   const pendingCount = requests.filter((r) => r.status === "pending" && (isCoach ? r.coachId === user?.id : r.playerId === user?.id)).length;
 
-  if (isLoading) return <LoadingState message="Loading requests…" />;
-  if (error) return <ErrorState message="Failed to load requests" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="list" />;
+  if (error) return <ErrorState error={error} message={t("states.load.requests")} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-6">

@@ -7,7 +7,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { LoadingState, ErrorState } from "@/components/ui/shared";
+import { ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import { BellRing, Mail, Smartphone } from "lucide-react";
 import {
   useNotificationPreferencesFull,
@@ -31,15 +33,16 @@ type DeviceStatus = "idle" | "enabled" | "unsupported" | "denied";
 
 export function NotificationPreferencesCard() {
   const { data: prefs, isLoading, error, refetch } = useNotificationPreferencesFull();
+  const { t } = useT();
   const update = useUpdateNotificationPreferencesFull();
   const { data: pushKey } = usePushPublicKey();
   const subscribePush = useSubscribePush();
   const [enabling, setEnabling] = useState(false);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus>("idle");
 
-  if (isLoading) return <LoadingState message="Loading notification preferences…" />;
+  if (isLoading) return <PageSkeleton variant="list" header={false} rows={4} />;
   if (error || !prefs) {
-    return <ErrorState message="Failed to load notification preferences" onRetry={() => refetch()} />;
+    return <ErrorState error={error} message={t("states.load.preferences")} onRetry={() => void refetch()} />;
   }
 
   const toggle = (key: keyof NotificationPreferencesFull) => (checked: boolean) => {

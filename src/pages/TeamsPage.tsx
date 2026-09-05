@@ -5,7 +5,9 @@ import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { useT } from "@/lib/i18n";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
-import { EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
+import { EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -183,7 +185,8 @@ export default function TeamsPage() {
   const coachId = user?.id ?? "";
   const { connectedPlayers } = useConnections();
 
-  const { data: allTeams = [], isLoading, error } = useTeams();
+  const { data: allTeams = [], isLoading, error, refetch } = useTeams();
+  const { t } = useT();
   const teams = useMemo(() => allTeams.filter((t) => t.coachId === coachId), [allTeams, coachId]);
 
   const createMut = useCreateTeam();
@@ -207,8 +210,8 @@ export default function TeamsPage() {
 
   const selectedTeam = useMemo(() => teams.find((t) => t.id === selectedTeamId) ?? null, [teams, selectedTeamId]);
 
-  if (isLoading) return <LoadingState message="Loading teams…" />;
-  if (error) return <ErrorState message="Failed to load teams" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="cards" />;
+  if (error) return <ErrorState error={error} message={t("states.load.teams")} onRetry={() => void refetch()} />;
 
   if (selectedTeam) {
     return (

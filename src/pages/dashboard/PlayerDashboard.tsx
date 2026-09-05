@@ -8,7 +8,8 @@ import { IncomingRequestsCard } from "@/components/dashboard/IncomingRequestsCar
 import { StatisticsSummaryCard } from "@/components/dashboard/StatisticsSummaryCard";
 import { NextTournamentCard } from "@/components/tournaments/NextTournamentCard";
 import { statCardClass, statLinkClass } from "@/components/dashboard/statLinkStyles";
-import { StatusBadge, LoadingState, ErrorState } from "@/components/ui/shared";
+import { StatusBadge, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import {
   Calendar,
   Trophy,
@@ -55,11 +56,11 @@ export default function PlayerDashboard() {
   const { activeRelationships } = useConnections();
 
   const uid = user?.id ?? "";
-  const { data: calendarEvents = [], isLoading: loadingEvents, error: errorEvents } = useCalendarEvents();
-  const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT } = usePlayerTournaments();
-  const { data: notifications = [], isLoading: loadingNotif, error: errorNotif } = useNotifications(uid);
-  const { data: financeSummary, isLoading: loadingFinance, error: errorFinance } = useFinanceSummary(uid);
-  const { data: equipment = [], isLoading: loadingEquip, error: errorEquip } = useEquipment(uid);
+  const { data: calendarEvents = [], isLoading: loadingEvents, error: errorEvents, refetch: refetchEvents } = useCalendarEvents();
+  const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT, refetch: refetchPT } = usePlayerTournaments();
+  const { data: notifications = [], isLoading: loadingNotif, error: errorNotif, refetch: refetchNotif } = useNotifications(uid);
+  const { data: financeSummary, isLoading: loadingFinance, error: errorFinance, refetch: refetchFinance } = useFinanceSummary(uid);
+  const { data: equipment = [], isLoading: loadingEquip, error: errorEquip, refetch: refetchEquip } = useEquipment(uid);
   // Same query ProfilePage runs, so this is a shared cache read. Used only to
   // derive the "complete your profile" tick, and kept out of the page's
   // loading/error gate so a failure here cannot take the dashboard down.
@@ -67,6 +68,8 @@ export default function PlayerDashboard() {
 
   const isLoading = loadingEvents || loadingPT || loadingNotif || loadingFinance || loadingEquip;
   const hasError = errorEvents || errorPT || errorNotif || errorFinance || errorEquip;
+  // One "Try again" re-asks every failed query; a full reload would also throw away the cache.
+  const retryAll = () => { void refetchEvents(); void refetchPT(); void refetchNotif(); void refetchFinance(); void refetchEquip(); };
 
   const now = new Date();
   const upcomingEvents = [...calendarEvents]
@@ -89,8 +92,8 @@ export default function PlayerDashboard() {
     tournamentCount: playerTournaments.length,
   });
 
-  if (isLoading) return <LoadingState message={t("dashboard.player.loading")} />;
-  if (hasError) return <ErrorState message={t("dashboard.common.loadError")} onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="dashboard" />;
+  if (hasError) return <ErrorState error={hasError} message={t("states.load.dashboard")} onRetry={retryAll} />;
 
   return (
     <div className="space-y-6">

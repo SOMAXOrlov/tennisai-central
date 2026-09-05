@@ -7,7 +7,9 @@
 import { ArrowLeft, CalendarDays, Clock, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
-import { ErrorState, LoadingState } from "@/components/ui/shared";
+import { ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import { formatMatchDate } from "@/lib/stats/format";
 import { useTrainingPlan, useUpdateDrillStatus } from "@/hooks/api/trainingPlans";
 import { DrillCard } from "@/pages/trainingPlans/DrillCard";
@@ -24,6 +26,7 @@ export interface TrainingPlanDetailProps {
 
 export function TrainingPlanDetail({ planId, people, onBack }: TrainingPlanDetailProps) {
   const { data: plan, isLoading, error, refetch } = useTrainingPlan(planId);
+  const { t } = useT();
   const updateStatus = useUpdateDrillStatus();
 
   const back = (
@@ -36,7 +39,7 @@ export function TrainingPlanDetail({ planId, people, onBack }: TrainingPlanDetai
     return (
       <div className="space-y-4">
         {back}
-        <LoadingState message="Loading this plan…" />
+        <PageSkeleton variant="detail" />
       </div>
     );
   }
@@ -45,7 +48,7 @@ export function TrainingPlanDetail({ planId, people, onBack }: TrainingPlanDetai
     return (
       <div className="space-y-4">
         {back}
-        <ErrorState message="Failed to load this training plan." onRetry={() => void refetch()} />
+        <ErrorState error={error} message={t("states.load.plan")} onRetry={() => void refetch()} />
       </div>
     );
   }

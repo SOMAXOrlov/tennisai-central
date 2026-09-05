@@ -3,7 +3,8 @@ import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/api/queries";
 import { useT } from "@/lib/i18n";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/shared";
+import { ErrorState, EmptyState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,7 +67,8 @@ export default function EquipmentPage() {
   const { t } = useT();
   const { user } = useAuth();
   const playerId = user?.id ?? "";
-  const { data: items = [], isLoading, error } = useEquipment(playerId);
+  const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
+  const { t } = useT();
   const createMut = useCreateEquipment();
   const deleteMut = useDeleteEquipment();
   const [addOpen, setAddOpen] = useState(false);
@@ -108,9 +110,8 @@ export default function EquipmentPage() {
     setAddOpen(true);
   };
 
-  if (!user) return <LoadingState message="Loading…" />;
-  if (isLoading) return <LoadingState message="Loading equipment…" />;
-  if (error) return <ErrorState message="Failed to load equipment" onRetry={() => window.location.reload()} />;
+  if (!user || isLoading) return <PageSkeleton variant="cards" />;
+  if (error) return <ErrorState error={error} message={t("states.load.equipment")} onRetry={() => void refetch()} />;
 
   const currentConditions = CATEGORY_CONFIG[form.category].conditions;
 

@@ -4,7 +4,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useConnections } from "@/store/ConnectionStore";
 import { hasCoachCounterpart } from "@/lib/connections/hasCoachCounterpart";
 import { useT } from "@/lib/i18n";
-import { EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
+import { EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -493,7 +494,8 @@ export default function TrainingsPage() {
   const isPlayer = role === "player";
   const readOnly = !isCoach;
 
-  const { data: trainings = [], isLoading, error } = useTrainings();
+  const { data: trainings = [], isLoading, error, refetch } = useTrainings();
+  const { t } = useT();
   const { data: teams = [] } = useTeams();
   const createMut = useCreateTraining();
   const updateMut = useUpdateTraining();
@@ -668,8 +670,8 @@ export default function TrainingsPage() {
       ? attendanceMut.variables.marks[0]?.playerId ?? null
       : null;
 
-  if (isLoading) return <LoadingState message="Loading trainings…" />;
-  if (error) return <ErrorState message="Failed to load trainings" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="list" />;
+  if (error) return <ErrorState error={error} message={t("states.load.trainings")} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-6">

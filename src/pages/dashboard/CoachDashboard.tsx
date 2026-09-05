@@ -7,7 +7,8 @@ import { GetStartedCard } from "@/components/dashboard/GetStartedCard";
 import { coachItems } from "@/components/dashboard/firstRunItems";
 import { IncomingRequestsCard } from "@/components/dashboard/IncomingRequestsCard";
 import { statCardClass, statLinkClass } from "@/components/dashboard/statLinkStyles";
-import { StatusBadge, LoadingState, ErrorState } from "@/components/ui/shared";
+import { StatusBadge, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import {
   Users,
   UserPlus,
@@ -51,16 +52,18 @@ export default function CoachDashboard() {
   // Drawers opened from the player menus below; one of each for the page.
   const [statsPlayer, setStatsPlayer] = useState<ConnectedPlayer | null>(null);
   const [equipmentPlayer, setEquipmentPlayer] = useState<ConnectedPlayer | null>(null);
-  const { data: trainings = [], isLoading: loadingTrainings, error: errorTrainings } = useTrainings();
-  const { data: teams = [], isLoading: loadingTeams, error: errorTeams } = useTeams();
-  const { data: calendarEvents = [], isLoading: loadingEvents, error: errorEvents } = useCalendarEvents();
-  const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT } = usePlayerTournaments();
+  const { data: trainings = [], isLoading: loadingTrainings, error: errorTrainings, refetch: refetchTrainings } = useTrainings();
+  const { data: teams = [], isLoading: loadingTeams, error: errorTeams, refetch: refetchTeams } = useTeams();
+  const { data: calendarEvents = [], isLoading: loadingEvents, error: errorEvents, refetch: refetchEvents } = useCalendarEvents();
+  const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT, refetch: refetchPT } = usePlayerTournaments();
   // Only used to derive the "built a session" tick — a failure here must not
   // take the dashboard down, so it stays out of the loading/error gate.
   const { data: trainingPlans = [], isLoading: loadingPlans } = useTrainingPlans();
 
   const isLoading = loadingTrainings || loadingTeams || loadingEvents || loadingPT;
   const hasError = errorTrainings || errorTeams || errorEvents || errorPT;
+  // One "Try again" re-asks every failed query; a full reload would also throw away the cache.
+  const retryAll = () => { void refetchTrainings(); void refetchTeams(); void refetchEvents(); void refetchPT(); };
 
   const now = new Date();
   const unreviewedSessions = trainings
@@ -85,8 +88,8 @@ export default function CoachDashboard() {
     teamCount: teams.length,
   });
 
-  if (isLoading) return <LoadingState message={t("dashboard.coach.loading")} />;
-  if (hasError) return <ErrorState message={t("dashboard.common.loadError")} onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="dashboard" />;
+  if (hasError) return <ErrorState error={hasError} message={t("states.load.dashboard")} onRetry={retryAll} />;
 
   return (
     <div className="space-y-6">

@@ -5,7 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { useT } from "@/lib/i18n";
-import { ReadOnlyBanner, ReadOnlyBadge, EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
+import { ReadOnlyBanner, ReadOnlyBadge, EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -622,7 +623,8 @@ export default function CalendarPage() {
   // grid is never painted at 375px, even for one frame.
   const isCompact = useIsMobile();
 
-  const { data: events = [], isLoading, error } = useCalendarEvents();
+  const { data: events = [], isLoading, error, refetch } = useCalendarEvents();
+  const { t } = useT();
   const { data: teams = [] } = useTeams();
   const { data: tournaments = [], refetch: refetchTournaments, isFetching: isRefetchingTournaments } = useTournaments();
   const { data: playerTournaments = [] } = usePlayerTournaments();
@@ -1039,8 +1041,8 @@ export default function CalendarPage() {
     toast.success(`Exported ${exportEvents.length} event${exportEvents.length === 1 ? "" : "s"} — ${heading}`);
   };
 
-  if (isLoading) return <LoadingState message="Loading calendar…" />;
-  if (error) return <ErrorState message="Failed to load calendar" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="calendar" />;
+  if (error) return <ErrorState error={error} message={t("states.load.calendar")} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-5">
