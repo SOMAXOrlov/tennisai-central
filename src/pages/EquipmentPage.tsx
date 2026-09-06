@@ -159,7 +159,7 @@ export default function EquipmentPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={(e) => { e.stopPropagation(); openAddDialog(cat); }}>
-                          <Plus className="h-3 w-3" /> Add
+                          <Plus className="h-3 w-3" /> {t("equipment.add2")}
                         </Button>
                         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
                       </div>
