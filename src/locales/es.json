@@ -1123,6 +1123,59 @@
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   },
+  "common": {
+    "role": {
+      "player": "Jugador",
+      "coach": "Entrenador",
+      "observer": "Madre/padre",
+      "admin": "Administrador"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "active": "Activa",
+      "accepted": "Aceptada",
+      "rejected": "Rechazada",
+      "revoked": "Revocada",
+      "planned": "Prevista",
+      "registered": "Inscrito",
+      "maybe": "Quizá",
+      "withdrawn": "Retirado",
+      "played": "Jugado"
+    },
+    "readOnly": {
+      "badge": "Solo lectura",
+      "access": "solo lectura",
+      "banner": "Su acceso es de {access}. Puede consultar los datos, pero no editarlos."
+    },
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "delete": "Eliminar",
+    "remove": "Quitar",
+    "edit": "Editar",
+    "add": "Añadir",
+    "done": "Hecho",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "dismiss": "Descartar",
+    "notFound": {
+      "title": "Vaya, esta página no existe",
+      "action": "Volver al inicio"
+    },
+    "theme": {
+      "toggle": "Cambiar el tema"
+    },
+    "dev": {
+      "title": "Módulo HMR obsoleto",
+      "body": "Un componente al que apunta el módulo en caché ya no existe en el código. Prueba a:",
+      "hardReload": "Recarga forzada",
+      "hardReloadShortcut": "Cmd/Ctrl + Mayús + R",
+      "restart": "Reinicia el servidor de desarrollo",
+      "clearCache": "Vacía la caché:"
+    }
+  },
   "states": {
     "loading": "Cargando…",
     "errorTitle": "Algo ha fallado",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 const DISMISS_KEY = "dev-hmr-banner-dismissed";
 
@@ -9,6 +10,7 @@ const DISMISS_KEY = "dev-hmr-banner-dismissed";
  * exists in source). Only renders in `import.meta.env.DEV`.
  */
 export function DevHmrBanner() {
+  const { t } = useT();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -32,18 +34,18 @@ export function DevHmrBanner() {
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
         <div className="flex-1">
-          <p className="font-semibold">Stale HMR module detected</p>
+          <p className="font-semibold">{t("common.dev.title")}</p>
           <p className="mt-1 text-xs leading-relaxed opacity-90">
-            A component referenced in the cached module no longer exists in source. Try:
+            {t("common.dev.body")}
           </p>
           <ol className="mt-1.5 list-decimal pl-4 text-xs leading-relaxed opacity-90">
-            <li>Hard reload (<kbd className="rounded bg-primary/10 px-1">Cmd/Ctrl + Shift + R</kbd>)</li>
-            <li>Restart dev server (<code>npm run dev</code>)</li>
-            <li>Clear cache: <code>rm -rf node_modules/.vite</code></li>
+            <li>{t("common.dev.hardReload")} (<kbd className="rounded bg-primary/10 px-1">{t("common.dev.hardReloadShortcut")}</kbd>)</li>
+            <li>{t("common.dev.restart")} (<code>npm run dev</code>)</li>
+            <li>{t("common.dev.clearCache")} <code>rm -rf node_modules/.vite</code></li>
           </ol>
         </div>
         <button
-          aria-label="Dismiss"
+          aria-label={t("common.dismiss")}
           onClick={() => {
             sessionStorage.setItem(DISMISS_KEY, "1");
             setShow(false);

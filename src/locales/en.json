@@ -1123,6 +1123,59 @@
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
   },
+  "common": {
+    "role": {
+      "player": "Player",
+      "coach": "Coach",
+      "observer": "Parent",
+      "admin": "Admin"
+    },
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "revoked": "Revoked",
+      "planned": "Planned",
+      "registered": "Registered",
+      "maybe": "Maybe",
+      "withdrawn": "Withdrawn",
+      "played": "Played"
+    },
+    "readOnly": {
+      "badge": "Read-only",
+      "access": "read-only",
+      "banner": "You have {access} access. You can view but not edit any data."
+    },
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "delete": "Delete",
+    "remove": "Remove",
+    "edit": "Edit",
+    "add": "Add",
+    "done": "Done",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "dismiss": "Dismiss",
+    "notFound": {
+      "title": "Oops! Page not found",
+      "action": "Return to Home"
+    },
+    "theme": {
+      "toggle": "Toggle theme"
+    },
+    "dev": {
+      "title": "Stale HMR module detected",
+      "body": "A component referenced in the cached module no longer exists in source. Try:",
+      "hardReload": "Hard reload",
+      "hardReloadShortcut": "Cmd/Ctrl + Shift + R",
+      "restart": "Restart dev server",
+      "clearCache": "Clear cache:"
+    }
+  },
   "states": {
     "loading": "Loading…",
     "errorTitle": "Something went wrong",

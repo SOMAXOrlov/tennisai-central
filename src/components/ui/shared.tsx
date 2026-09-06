@@ -13,13 +13,6 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 // ─── RoleBadge ───
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  player: "Player",
-  coach: "Coach",
-  observer: "Parent",
-  admin: "Admin",
-};
-
 const ROLE_STYLES: Record<UserRole, string> = {
   player: "bg-muted text-foreground dark:text-foreground",
   coach: "bg-muted text-foreground dark:text-foreground",
@@ -28,9 +21,12 @@ const ROLE_STYLES: Record<UserRole, string> = {
 };
 
 export function RoleBadge({ role, className }: { role: UserRole; className?: string }) {
+  // Looked up during render, not in a module constant: `t()` at import time
+  // would freeze the label to whatever locale happened to load first.
+  const { t } = useT();
   return (
     <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium", ROLE_STYLES[role], className)}>
-      {ROLE_LABELS[role]}
+      {t(`common.role.${role}`)}
     </span>
   );
 }
@@ -51,9 +47,14 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  const { t } = useT();
+  // Only the statuses we actually have copy for are translated; an unexpected
+  // one falls through to the raw value (still capitalised by CSS) rather than
+  // rendering the missing key path at the user.
+  const label = status in STATUS_STYLES ? t(`common.status.${status}`) : status;
   return (
     <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize", STATUS_STYLES[status] || "bg-muted text-muted-foreground", className)}>
-      {status}
+      {label}
     </span>
   );
 }
@@ -61,22 +62,31 @@ export function StatusBadge({ status, className }: { status: string; className?:
 // ─── ReadOnlyBadge ───
 
 export function ReadOnlyBadge({ className }: { className?: string }) {
+  const { t } = useT();
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary dark:text-primary", className)}>
       <Eye className="h-3 w-3" />
-      Read-only
+      {t("common.readOnly.badge")}
     </span>
   );
 }
 
 // ─── ReadOnlyBanner ───
 
+/** A character no copy will ever contain, used to find an interpolated slot again. */
+const SLOT = "\u0000";
+
 export function ReadOnlyBanner({ message, className }: { message?: string; className?: string }) {
+  const { t } = useT();
+  // The sentence emphasises the words "read-only" inside it. Translating it as
+  // one string with an {access} slot lets Spanish put that phrase where the
+  // grammar wants it; splitting on the filled slot puts the <strong> back.
+  const [before, after] = t("common.readOnly.banner", { access: SLOT }).split(SLOT);
   return (
     <div className={cn("flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-4 py-2.5", className)}>
       <Lock className="h-4 w-4 shrink-0 text-primary dark:text-primary" />
       <p className="text-sm text-primary dark:text-primary">
-        {message ?? <>You have <strong>read-only</strong> access. You can view but not edit any data.</>}
+        {message ?? <>{before}<strong>{t("common.readOnly.access")}</strong>{after}</>}
       </p>
     </div>
   );
