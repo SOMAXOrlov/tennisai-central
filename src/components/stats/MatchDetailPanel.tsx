@@ -12,6 +12,7 @@ import { NO_VALUE, formatCount, formatPct, formatRatio } from "@/lib/stats/forma
 import { cn } from "@/lib/utils";
 import type { MatchComputedStats, MatchStatsRaw, MatchView } from "@/types";
 import { MatchIssuesPanel } from "@/components/matches/MatchIssuesPanel";
+import { useT } from "@/lib/i18n";
 
 function DetailRow({ label, value, hint }: { label: string; value: string; hint?: string }) {
   const missing = value === NO_VALUE;
@@ -27,6 +28,7 @@ function DetailRow({ label, value, hint }: { label: string; value: string; hint?
 }
 
 export function MatchDetailPanel({ match, className }: { match: MatchView; className?: string }) {
+  const { t } = useT();
   // Explicitly typed so an absent block still resolves the optional fields.
   const c: MatchComputedStats = match.computed ?? {};
   const s: MatchStatsRaw = match.stats ?? {};
@@ -34,55 +36,55 @@ export function MatchDetailPanel({ match, className }: { match: MatchView; class
   return (
     <div className={cn("space-y-4 border-t border-border bg-muted/30 p-4", className)}>
       <dl className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
-        <DetailRow label="1st serve in" value={formatPct(c.firstServePct ?? null)} hint="not counted" />
-        <DetailRow label="1st serve points won" value={formatPct(c.firstServeWonPct ?? null)} hint="not counted" />
-        <DetailRow label="2nd serve points won" value={formatPct(c.secondServeWonPct ?? null)} hint="not counted" />
-        <DetailRow label="Return points won" value={formatPct(c.returnPointsWonPct ?? null)} hint="not counted" />
+        <DetailRow label={t("matches.detail.firstServeIn")} value={formatPct(c.firstServePct ?? null)} hint={t("matches.detail.hintNotCounted")} />
+        <DetailRow label={t("matches.detail.firstServePointsWon")} value={formatPct(c.firstServeWonPct ?? null)} hint={t("matches.detail.hintNotCounted")} />
+        <DetailRow label={t("matches.detail.secondServePointsWon")} value={formatPct(c.secondServeWonPct ?? null)} hint={t("matches.detail.hintNotCounted")} />
+        <DetailRow label={t("matches.detail.returnPointsWon")} value={formatPct(c.returnPointsWonPct ?? null)} hint={t("matches.detail.hintNotCounted")} />
         <DetailRow
-          label="Break points converted"
+          label={t("matches.detail.breakPointsConverted")}
           value={formatPct(c.breakPointConversionPct ?? null)}
-          hint="none created or not counted"
+          hint={t("matches.detail.hintNoneCreated")}
         />
         <DetailRow
-          label="Break points saved"
+          label={t("matches.detail.breakPointsSaved")}
           value={formatPct(c.breakPointSavePct ?? null)}
-          hint="none faced or not counted"
+          hint={t("matches.detail.hintNoneFaced")}
         />
-        <DetailRow label="Net points won" value={formatPct(c.netPointsWonPct ?? null)} hint="not counted" />
-        <DetailRow label="Aces" value={formatCount(s.aces ?? null)} hint="not counted" />
-        <DetailRow label="Double faults" value={formatCount(s.doubleFaults ?? null)} hint="not counted" />
-        <DetailRow label="Winners" value={formatCount(c.totalWinners ?? null)} hint="not counted" />
+        <DetailRow label={t("matches.detail.netPointsWon")} value={formatPct(c.netPointsWonPct ?? null)} hint={t("matches.detail.hintNotCounted")} />
+        <DetailRow label={t("matches.detail.aces")} value={formatCount(s.aces ?? null)} hint={t("matches.detail.hintNotCounted")} />
+        <DetailRow label={t("matches.detail.doubleFaults")} value={formatCount(s.doubleFaults ?? null)} hint={t("matches.detail.hintNotCounted")} />
+        <DetailRow label={t("matches.detail.winners")} value={formatCount(c.totalWinners ?? null)} hint={t("matches.detail.hintNotCounted")} />
         <DetailRow
-          label="Errors (forced + unforced)"
+          label={t("matches.detail.errors")}
           value={formatCount(c.totalErrors ?? null)}
-          hint="needs both error counts"
+          hint={t("matches.detail.hintBothErrors")}
         />
         <DetailRow
-          label="Winners : unforced errors"
+          label={t("matches.detail.winnerToUnforced")}
           value={formatRatio(c.winnerToUnforcedRatio ?? null)}
-          hint="not counted"
+          hint={t("matches.detail.hintNotCounted")}
         />
       </dl>
 
       {match.conditions && (
         <p className="text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Conditions:</span> {match.conditions}
+          <span className="font-medium text-foreground">{t("matches.detail.conditions")}</span> {match.conditions}
         </p>
       )}
 
       {match.notesBySet && Object.keys(match.notesBySet).length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes by set</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("matches.detail.notesBySet")}</p>
           {Object.entries(match.notesBySet).map(([set, note]) => (
             <p key={set} className="text-sm text-foreground">
-              <span className="text-muted-foreground">Set {set}:</span> {note}
+              <span className="text-muted-foreground">{t("matches.detail.setLabel", { set })}</span> {note}
             </p>
           ))}
         </div>
       )}
 
       <p className="text-xs text-muted-foreground">
-        Percentages are computed from the counts entered for this match — nothing is estimated.
+        {t("matches.detail.computedNote")}
       </p>
 
       <MatchIssuesPanel matchId={match.id} />

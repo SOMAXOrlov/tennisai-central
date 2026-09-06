@@ -33,30 +33,36 @@ import {
 import { NO_VALUE, formatMatchDate, formatPct, matchCountLabel } from "@/lib/stats/format";
 import {
   MIN_TREND_POINTS,
-  TREND_METRICS,
   buildTrendSeries,
   trendMetricMeta,
+  trendMetrics,
   type TrendMetricId,
   type TrendPoint,
 } from "@/components/stats/trend";
 import type { MatchView } from "@/types";
+import { interleave, slot, useT } from "@/lib/i18n";
 
 function TrendTooltip({ point, metricLabel }: { point: TrendPoint | null; metricLabel: string }) {
+  const { t } = useT();
   if (!point) return null;
 
   return (
     <div className="min-w-[10rem] space-y-1 border border-border bg-card px-3 py-2 text-xs">
-      <p className="font-semibold text-foreground">{point.opponentName ?? "Opponent not recorded"}</p>
+      <p className="font-semibold text-foreground">{point.opponentName ?? t("matches.opponentNotRecorded")}</p>
       <p className="text-muted-foreground">
         {formatMatchDate(point.dateIso)}
-        {point.result ? ` · ${point.result === "win" ? "Win" : "Loss"}` : " · result not recorded"}
+        {point.result
+          ? t("stats.trend.resultSuffix", {
+              result: point.result === "win" ? t("matches.result.win") : t("matches.result.loss"),
+            })
+          : t("stats.trend.resultNotRecorded")}
       </p>
       <p className="text-foreground">
-        <span className="text-muted-foreground">{metricLabel}: </span>
+        <span className="text-muted-foreground">{t("stats.trend.metricValue", { label: metricLabel })}</span>
         {/* A real 0% must print as "0%", so never test the value for truthiness. */}
         <span className="font-semibold tabular-nums">{formatPct(point.value)}</span>
       </p>
-      {point.value === null && <p className="text-muted-foreground">These counts were not entered.</p>}
+      {point.value === null && <p className="text-muted-foreground">{t("stats.trend.notEntered")}</p>}
     </div>
   );
 }
@@ -71,6 +77,7 @@ export interface PerformanceTrendChartProps {
 }
 
 export function PerformanceTrendChart({ matches, windowSize, windowLabel }: PerformanceTrendChartProps) {
+  const { t } = useT();
   const [metric, setMetric] = useState<TrendMetricId>("firstServePct");
 
   const meta = trendMetricMeta(metric);
@@ -82,11 +89,11 @@ export function PerformanceTrendChart({ matches, windowSize, windowLabel }: Perf
 
   const metricSelect = (
     <Select value={metric} onValueChange={(next) => setMetric(next as TrendMetricId)}>
-      <SelectTrigger className="h-9 w-[190px] text-xs" aria-label="Trend metric">
+      <SelectTrigger className="h-9 w-[190px] text-xs" aria-label={t("stats.cards.trend")}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {TREND_METRICS.map((option) => (
+        {trendMetrics().map((option) => (
           <SelectItem key={option.id} value={option.id} className="text-xs">
             {option.label}
           </SelectItem>
@@ -97,23 +104,30 @@ export function PerformanceTrendChart({ matches, windowSize, windowLabel }: Perf
 
   return (
     <DashboardCard
-      title="Trend"
-      description={`One point per logged match · ${windowLabel}`}
+      title={t("stats.cards.trend")}
+      description={t("stats.cards.trendDescription", { window: windowLabel })}
       icon={<LineChartIcon className="h-4 w-4" />}
       action={metricSelect}
     >
       {!series.plottable ? (
         <div className="space-y-2 border border-dashed border-border p-6 text-center">
-          <p className="text-sm font-medium text-foreground">Not enough data yet to show a trend</p>
+          <p className="text-sm font-medium text-foreground">{t("stats.trend.notEnough")}</p>
           <p className="text-sm text-muted-foreground">
             {series.usable === 0
-              ? `None of the ${matchCountLabel(series.points.length)} in this window has ${meta.requires} recorded.`
-              : `Only ${series.usable} of the ${matchCountLabel(series.points.length)} in this window ${
-                  series.usable === 1 ? "has" : "have"
-                } ${meta.requires} recorded — a trend needs at least ${MIN_TREND_POINTS} points.`}
+              ? t("stats.trend.noneUsable", {
+                  sample: matchCountLabel(series.points.length),
+                  requires: meta.requires,
+                })
+              : t("stats.trend.someUsable", {
+                  usable: series.usable,
+                  sample: matchCountLabel(series.points.length),
+                  has: series.usable === 1 ? t("stats.trend.hasSingular") : t("stats.trend.hasPlural"),
+                  requires: meta.requires,
+                  min: MIN_TREND_POINTS,
+                })}
           </p>
           <p className="text-xs text-muted-foreground">
-            Two points are a pair of numbers, not a trend, so nothing is plotted here.
+            {t("stats.trend.twoPoints")}
           </p>
         </div>
       ) : (
@@ -136,7 +150,7 @@ export function PerformanceTrendChart({ matches, windowSize, windowLabel }: Perf
                 tickLine={false}
                 axisLine={false}
                 width={40}
-                tickFormatter={(value: number) => `${value}%`}
+                tickFormatter={(value: number) => t("stats.trend.percentTick", { value })}
               />
               <ChartTooltip
                 cursor={{ stroke: "hsl(var(--border))" }}
@@ -167,16 +181,17 @@ export function PerformanceTrendChart({ matches, windowSize, windowLabel }: Perf
           <div className="space-y-1 border-t border-border pt-3">
             <p className="text-xs text-muted-foreground">{meta.definition}</p>
             <p className="text-xs text-muted-foreground">
-              Plotted from{" "}
-              <span className="font-medium text-foreground">
-                {series.usable} of the {matchCountLabel(series.points.length)}
-              </span>{" "}
-              in this window.
+              {interleave(t("stats.trend.plottedFrom", { usableOfSample: slot(0) }), [
+                <span key="sample" className="font-medium text-foreground">
+                  {t("stats.trend.usableOfSample", {
+                    usable: series.usable,
+                    sample: matchCountLabel(series.points.length),
+                  })}
+                </span>,
+              ])}
               {series.missing > 0
-                ? ` ${series.missing} ${series.missing === 1 ? "match has" : "matches have"} no ${
-                    meta.requires
-                  } recorded, so the line breaks there — the gap is never filled in.`
-                : " Every match in the window has these counts."}
+                ? t("stats.trend.missingSuffix", { count: series.missing, requires: meta.requires })
+                : t("stats.trend.completeSuffix")}
             </p>
           </div>
         </div>

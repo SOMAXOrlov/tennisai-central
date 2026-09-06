@@ -4,15 +4,17 @@
 import { formatPct, formatWinLoss, matchCountLabel, surfaceLabel } from "@/lib/stats/format";
 import { cn } from "@/lib/utils";
 import type { SurfaceSplitStats } from "@/types";
+import { useT } from "@/lib/i18n";
 
 export function SurfaceSplitRow({ split }: { split: SurfaceSplitStats }) {
+  const { t } = useT();
   return (
     <div className="space-y-1.5 border-b border-border py-3 last:border-b-0">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-medium text-foreground">{surfaceLabel(split.surface)}</span>
         <span className="text-xs text-muted-foreground">
           {matchCountLabel(split.matches)} ·{" "}
-          {split.resultsRecorded > 0 ? formatWinLoss(split.wins, split.losses) : "no result recorded"}
+          {split.resultsRecorded > 0 ? formatWinLoss(split.wins, split.losses) : t("stats.surfaces.noResult")}
         </span>
       </div>
       <div className="flex items-center gap-3">
@@ -35,8 +37,9 @@ export function SurfaceSplitRow({ split }: { split: SurfaceSplitStats }) {
 }
 
 export function SurfaceSplitList({ splits }: { splits: SurfaceSplitStats[] }) {
+  const { t } = useT();
   if (splits.length === 0) {
-    return <p className="py-4 text-sm text-muted-foreground">No surfaces recorded yet.</p>;
+    return <p className="py-4 text-sm text-muted-foreground">{t("stats.surfaces.none")}</p>;
   }
   return (
     <div>

@@ -14,6 +14,7 @@ import {
 } from "@/lib/stats/format";
 import { cn } from "@/lib/utils";
 import type { StatMetric } from "@/types";
+import { useT } from "@/lib/i18n";
 
 export type MetricKind = "pct" | "count" | "ratio";
 
@@ -32,6 +33,7 @@ function formatMetric(metric: StatMetric, kind: MetricKind): string {
 }
 
 export function MetricTile({ label, metric, kind, requires }: MetricTileProps) {
+  const { t } = useT();
   const value = formatMetric(metric, kind);
   const missing = value === NO_VALUE;
 
@@ -52,7 +54,7 @@ export function MetricTile({ label, metric, kind, requires }: MetricTileProps) {
       {missing && requires && (
         <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
           <Info className="h-3 w-3 shrink-0" />
-          Count {requires} when logging a match to see this.
+          {t("stats.metric.countPrompt", { requires })}
         </p>
       )}
     </div>

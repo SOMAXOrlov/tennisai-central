@@ -117,10 +117,8 @@ export default function MatchesPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{editing ? "Edit match" : "Log a match"}</h1>
-          <p className="text-sm text-muted-foreground">
-            Record what happened on court. Detailed counts are optional — leave anything you did not count blank.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{editing ? t("matches.editTitle") : t("matches.createTitle")}</h1>
+          <p className="text-sm text-muted-foreground">{t("matches.formIntro")}</p>
         </div>
         <MatchForm
           mode={editing ? "edit" : "create"}
@@ -138,15 +136,13 @@ export default function MatchesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Matches</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("matches.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {matches.length > 0
-              ? `${matches.length} match${matches.length === 1 ? "" : "es"} logged — your statistics are computed from these.`
-              : "Log a match to start building your statistics."}
+            {matches.length > 0 ? t("matches.loggedCount", { count: matches.length }) : t("matches.empty")}
           </p>
         </div>
         <Button className="gap-2 self-start" onClick={() => setView({ mode: "create" })}>
-          <Plus className="h-4 w-4" /> Log match
+          <Plus className="h-4 w-4" /> {t("matches.logMatch")}
         </Button>
       </div>
 
@@ -177,15 +173,12 @@ export default function MatchesPage() {
       <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete match</DialogTitle>
-            <DialogDescription>
-              This permanently removes the match and everything counted in it. Your statistics will be recomputed
-              without it.
-            </DialogDescription>
+            <DialogTitle>{t("matches.delete.title")}</DialogTitle>
+            <DialogDescription>{t("matches.delete.body")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -196,7 +189,7 @@ export default function MatchesPage() {
                 deleteMatch.mutate({ id }, { onSettled: () => setDeleteTarget(null) });
               }}
             >
-              {deleteMatch.isPending ? "Deleting…" : "Delete match"}
+              {deleteMatch.isPending ? t("matches.delete.deleting") : t("matches.delete.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>

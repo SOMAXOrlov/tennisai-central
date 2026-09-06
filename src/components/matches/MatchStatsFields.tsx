@@ -12,61 +12,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { MatchCountFields } from "@/types";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export type CountKey = keyof MatchCountFields;
 
 export interface CountFieldGroup {
-  title: string;
-  fields: ReadonlyArray<{ key: CountKey; label: string }>;
+  /** Translation key for the fieldset legend. */
+  titleKey: string;
+  fields: ReadonlyArray<CountKey>;
 }
 
-/** Field order mirrors how a coach counts courtside. */
+/**
+ * Field order mirrors how a coach counts courtside. Keys only — every label is
+ * looked up as `matches.stats.field.<key>` at render time, so the group
+ * definition never freezes a language into a module constant.
+ */
 export const COUNT_FIELD_GROUPS: ReadonlyArray<CountFieldGroup> = [
   {
-    title: "Serve",
+    titleKey: "matches.stats.groupServe",
     fields: [
-      { key: "firstServeAttempts", label: "1st serve attempts" },
-      { key: "firstServesIn", label: "1st serves in" },
-      { key: "firstServePointsWon", label: "1st serve points won" },
-      { key: "secondServePlayed", label: "2nd serves played" },
-      { key: "secondServePointsWon", label: "2nd serve points won" },
-      { key: "aces", label: "Aces" },
-      { key: "doubleFaults", label: "Double faults" },
+      "firstServeAttempts",
+      "firstServesIn",
+      "firstServePointsWon",
+      "secondServePlayed",
+      "secondServePointsWon",
+      "aces",
+      "doubleFaults",
     ],
   },
   {
-    title: "Return & break points",
+    titleKey: "matches.stats.groupReturn",
     fields: [
-      { key: "returnPointsPlayed", label: "Return points played" },
-      { key: "returnPointsWon", label: "Return points won" },
-      { key: "breakPointsCreated", label: "Break points created" },
-      { key: "breakPointsConverted", label: "Break points converted" },
-      { key: "breakPointsFaced", label: "Break points faced" },
-      { key: "breakPointsSaved", label: "Break points saved" },
+      "returnPointsPlayed",
+      "returnPointsWon",
+      "breakPointsCreated",
+      "breakPointsConverted",
+      "breakPointsFaced",
+      "breakPointsSaved",
     ],
   },
   {
-    title: "Rally & net",
-    fields: [
-      { key: "winners", label: "Winners" },
-      { key: "forcedErrors", label: "Forced errors" },
-      { key: "unforcedErrors", label: "Unforced errors" },
-      { key: "netApproaches", label: "Net approaches" },
-      { key: "netPointsWon", label: "Net points won" },
-    ],
+    titleKey: "matches.stats.groupRally",
+    fields: ["winners", "forcedErrors", "unforcedErrors", "netApproaches", "netPointsWon"],
   },
 ];
 
-export const ALL_COUNT_KEYS: CountKey[] = COUNT_FIELD_GROUPS.flatMap((g) => g.fields.map((f) => f.key));
+export const ALL_COUNT_KEYS: CountKey[] = COUNT_FIELD_GROUPS.flatMap((g) => [...g.fields]);
 
 export const RALLY_BUCKET_KEYS = ["1-4", "5-8", "9+"] as const;
 export type RallyBucketKey = (typeof RALLY_BUCKET_KEYS)[number];
-
-const BUCKET_LABEL: Record<RallyBucketKey, string> = {
-  "1-4": "Rallies 1–4 shots",
-  "5-8": "Rallies 5–8 shots",
-  "9+": "Rallies 9+ shots",
-};
 
 export interface MatchStatsFieldsProps {
   counts: Record<CountKey, string>;
@@ -88,6 +82,7 @@ export function MatchStatsFields({
   onOpenChange,
   errors,
 }: MatchStatsFieldsProps) {
+  const { t } = useT();
   const filled = ALL_COUNT_KEYS.filter((k) => counts[k] !== "").length;
 
   return (
@@ -98,11 +93,9 @@ export function MatchStatsFields({
             <ListOrdered className="h-4 w-4" />
           </span>
           <span>
-            <span className="block text-sm font-semibold text-foreground">Detailed stats (optional)</span>
+            <span className="block text-sm font-semibold text-foreground">{t("matches.stats.title")}</span>
             <span className="block text-xs text-muted-foreground">
-              {filled > 0
-                ? `${filled} count${filled === 1 ? "" : "s"} entered — blanks stay blank, never zero`
-                : "Add only what you counted. Anything left blank is never treated as zero."}
+              {filled > 0 ? t("matches.stats.hintFilled", { count: filled }) : t("matches.stats.hintEmpty")}
             </span>
           </span>
         </span>
@@ -112,18 +105,18 @@ export function MatchStatsFields({
       <CollapsibleContent>
         <div className="space-y-5 border-t border-border p-4">
           {COUNT_FIELD_GROUPS.map((group) => (
-            <fieldset key={group.title} className="space-y-3">
+            <fieldset key={group.titleKey} className="space-y-3">
               <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {group.title}
+                {t(group.titleKey)}
               </legend>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {group.fields.map((field) => {
-                  const id = `count-${field.key}`;
-                  const error = errors?.[field.key];
+                  const id = `count-${field}`;
+                  const error = errors?.[field];
                   return (
-                    <div key={field.key} className="space-y-1.5">
+                    <div key={field} className="space-y-1.5">
                       <Label htmlFor={id} className="text-xs text-muted-foreground">
-                        {field.label}
+                        {t(`matches.stats.field.${field}`)}
                       </Label>
                       <Input
                         id={id}
@@ -132,9 +125,9 @@ export function MatchStatsFields({
                         step={1}
                         inputMode="numeric"
                         placeholder="—"
-                        value={counts[field.key]}
+                        value={counts[field]}
                         aria-invalid={error ? true : undefined}
-                        onChange={(e) => onCountChange(field.key, e.target.value)}
+                        onChange={(e) => onCountChange(field, e.target.value)}
                       />
                       {error && <p className="text-xs text-destructive">{error}</p>}
                     </div>
@@ -146,7 +139,7 @@ export function MatchStatsFields({
 
           <fieldset className="space-y-3">
             <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Rally lengths
+              {t("matches.stats.rallyLengths")}
             </legend>
             <div className="grid gap-3 sm:grid-cols-3">
               {RALLY_BUCKET_KEYS.map((bucket) => {
@@ -154,7 +147,7 @@ export function MatchStatsFields({
                 return (
                   <div key={bucket} className="space-y-1.5">
                     <Label htmlFor={id} className="text-xs text-muted-foreground">
-                      {BUCKET_LABEL[bucket]}
+                      {t(`matches.stats.bucket.${bucket}`)}
                     </Label>
                     <Input
                       id={id}
