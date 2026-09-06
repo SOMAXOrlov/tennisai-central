@@ -41,7 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { haversineKm, formatDistanceKm, type LatLng } from "@/lib/geo/distance";
 import { clusterForZoom, withinBounds, padBounds, type Bounds } from "@/lib/geo/cluster";
 import type { Tournament } from "@/types";
-import { useT } from "@/lib/i18n";
+import { getDateFnsLocale, useT } from "@/lib/i18n";
 
 // Leaflet's bundled marker images are gone with the DOM pins — the only
 // remaining icons are the two divIcons below, which carry their own markup.
@@ -181,7 +181,7 @@ export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide
     if (!selected) return null;
     return {
       t: selected,
-      dates: `${format(new Date(selected.startDate), "MMM d")} – ${format(new Date(selected.endDate), "MMM d, yyyy")}`,
+      dates: `${format(new Date(selected.startDate), "d MMM", { locale: getDateFnsLocale() })} – ${format(new Date(selected.endDate), "d MMM yyyy", { locale: getDateFnsLocale() })}`,
       distance: userCoords
         ? haversineKm(userCoords, { lat: selected.latitude, lng: selected.longitude })
         : null,

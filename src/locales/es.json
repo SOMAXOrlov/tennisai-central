@@ -1235,6 +1235,9 @@
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   },
+  "drafts": {
+    "earlier": "antes"
+  },
   "profile": {
     "title": "Mi perfil",
     "subtitle": "Gestiona tus datos personales.",
@@ -2541,7 +2544,8 @@
       "nextMonth": "Mes siguiente",
       "allDay": "Todo el día",
       "moreOnDay": "+{count} más — abre el día para verlos todos",
-      "upcoming": "Próximamente"
+      "upcoming": "Próximamente",
+      "dayWithEvents": "{day} — {events}"
     },
     "day": {
       "fallbackTitle": "Día",

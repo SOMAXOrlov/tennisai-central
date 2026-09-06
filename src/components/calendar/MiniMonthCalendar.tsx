@@ -9,6 +9,9 @@ import { eventBaseColor } from "@/lib/calendar/colors";
 import type { CalendarEvent } from "@/types";
 import { useT } from "@/lib/i18n";
 
+/** Intl options for the clock times in the upcoming list. */
+const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
+
 /** Max events listed inside a day's hover popup before it collapses to "+N more". */
 const POPUP_EVENT_LIMIT = 5;
 
@@ -34,7 +37,7 @@ interface MiniMonthCalendarProps {
  * clickable, which is what serves touch devices (hover doesn't exist there).
  */
 export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthChange }: MiniMonthCalendarProps) {
-  const { t, getDateFnsLocale } = useT();
+  const { t, formatDate, getDateFnsLocale } = useT();
   const dfl = { locale: getDateFnsLocale() };
   const [miniMonth, setMiniMonth] = useState(currentDate);
 
@@ -122,7 +125,9 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                 // popup), i.e. for in-month days — otherwise a screen reader
                 // would promise events on a leading/trailing day that offers no
                 // way to see them.
-                aria-label={`${format(day, "EEEE d MMMM")}${hasEvents ? ` — ${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}` : ""}`}
+                aria-label={hasEvents
+                  ? t("calendar.mini.dayWithEvents", { day: format(day, "EEEE d MMMM", dfl), events: t("calendar.eventCount", { count: dayEvents.length }) })
+                  : format(day, "EEEE d MMMM", dfl)}
                 className={`relative flex h-7 w-full items-center justify-center rounded text-[11px] font-medium transition-colors
                   ${!inMonth ? "text-muted-foreground/25" : "text-foreground"}
                   ${isSelected ? "bg-primary font-semibold text-primary-foreground" : "hover:bg-accent"}
@@ -151,7 +156,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                       edge, so a top/bottom popup would clip off-screen. */}
                   <HoverCardContent side="right" align="start" sideOffset={10} className="w-64 p-0">
                     <div className="border-b border-border px-3 py-2">
-                      <p className="text-xs font-semibold text-foreground">{format(day, "EEEE, d MMMM")}</p>
+                      <p className="text-xs font-semibold text-foreground">{format(day, "EEEE, d MMMM", dfl)}</p>
                       <p className="text-[10px] text-muted-foreground">
                         {dayEvents.length} {dayEvents.length === 1 ? "event" : "events"} scheduled
                       </p>
@@ -216,7 +221,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[11px] font-medium leading-tight text-foreground">{event.title}</span>
-                    <span className="block text-[10px] text-muted-foreground">{format(start, "EEE d MMM · h:mm a")}</span>
+                    <span className="block text-[10px] text-muted-foreground">{format(start, "EEE d MMM", dfl)} · {formatDate(start, TIME_ONLY)}</span>
                   </span>
                 </button>
               );

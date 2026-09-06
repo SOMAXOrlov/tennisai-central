@@ -23,6 +23,7 @@ import { useIsCoarsePointer } from "@/hooks/use-mobile";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
+import { getDateFnsLocale } from "@/lib/i18n";
 import {
   useAddMatchIssue, useDeleteMatchIssue, useMatchIssueSummary, useMatchIssues, useUpdateMatchIssue,
 } from "@/hooks/api/matchIssues";
@@ -132,7 +133,7 @@ function EntryRow({
       <div className="min-w-0 flex-1">
         {issue.note && <p className="text-sm text-foreground">{issue.note}</p>}
         <p className="text-xs text-muted-foreground">
-          {authorLabel(t, issue, user?.id)} · {format(parseISO(issue.createdAt), "d MMM, HH:mm")}
+          {authorLabel(t, issue, user?.id)} · {format(parseISO(issue.createdAt), "d MMM, HH:mm", { locale: getDateFnsLocale() })}
         </p>
       </div>
       {mine && (

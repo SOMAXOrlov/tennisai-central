@@ -1235,6 +1235,9 @@
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
   },
+  "drafts": {
+    "earlier": "earlier"
+  },
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your personal information.",
@@ -2541,7 +2544,8 @@
       "nextMonth": "Next month",
       "allDay": "All day",
       "moreOnDay": "+{count} more — click the day to see all",
-      "upcoming": "Upcoming"
+      "upcoming": "Upcoming",
+      "dayWithEvents": "{day} — {events}"
     },
     "day": {
       "fallbackTitle": "Day",

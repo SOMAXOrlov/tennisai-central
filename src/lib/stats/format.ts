@@ -7,7 +7,7 @@
 // once shipped here; these helpers exist so it cannot come back.)
 // ============================================================
 
-import { formatDate, formatNumber, formatPercent, t } from "@/lib/i18n";
+import { formatDate, formatDecimal, formatNumber, formatPercent, t } from "@/lib/i18n";
 import type {
   AggregateMatchStats,
   MatchFormat,
@@ -81,7 +81,7 @@ export function formatCount(metric: StatMetric | number | null | undefined): str
 export function formatRatio(metric: StatMetric | number | null | undefined): string {
   const value = metricValue(metric);
   if (value === null) return NO_VALUE;
-  return value.toFixed(2);
+  return formatDecimal(value, 2);
 }
 
 /** "4 matches" / "1 match" — pluralised match count for captions. */

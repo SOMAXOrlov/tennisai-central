@@ -157,6 +157,19 @@ export function formatNumber(value: Primitive): string {
   return new Intl.NumberFormat(currentLocale).format(n);
 }
 
+/**
+ * A number at a fixed number of decimals — "1.20" in `en`, "1,20" in `es`.
+ * `toFixed` always writes a dot, which is wrong in most of the world.
+ */
+export function formatDecimal(value: number, digits: number): string {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return String(value);
+  return new Intl.NumberFormat(currentLocale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(n);
+}
+
 /** Format a count for compact UI badges (e.g. 99+ when over threshold). */
 export function formatBadgeCount(count: number, max = 99): string {
   if (count > max) return `${formatNumber(max)}+`;
@@ -372,6 +385,7 @@ export function useT() {
   return {
     t,
     formatNumber,
+    formatDecimal,
     formatBadgeCount,
     formatDate,
     formatRelativeTime,

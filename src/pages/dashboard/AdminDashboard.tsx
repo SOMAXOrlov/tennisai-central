@@ -127,7 +127,7 @@ const alertBorders: Record<string, string> = {
 // ── Component ──
 
 export default function AdminDashboard() {
-  const { t } = useT();
+  const { t, formatNumber } = useT();
   const { user } = useAuth();
   const { requests } = useConnections();
   const [userSearch, setUserSearch] = useState("");
@@ -173,10 +173,10 @@ export default function AdminDashboard() {
 
       {/* User count cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard label={t("dashboard.admin.userCounts.total")} value={mockUserCounts.total.toLocaleString()} icon={<Users className="h-4 w-4" />} trend={t("dashboard.admin.userCounts.totalTrend", { count: 32 })} />
-        <StatCard label={t("dashboard.admin.userCounts.players")} value={mockUserCounts.players.toLocaleString()} icon={<Users className="h-4 w-4" />} />
-        <StatCard label={t("dashboard.admin.userCounts.coaches")} value={mockUserCounts.coaches.toLocaleString()} icon={<Users className="h-4 w-4" />} />
-        <StatCard label={t("dashboard.admin.userCounts.observers")} value={mockUserCounts.observers.toLocaleString()} icon={<Users className="h-4 w-4" />} />
+        <StatCard label={t("dashboard.admin.userCounts.total")} value={formatNumber(mockUserCounts.total)} icon={<Users className="h-4 w-4" />} trend={t("dashboard.admin.userCounts.totalTrend", { count: 32 })} />
+        <StatCard label={t("dashboard.admin.userCounts.players")} value={formatNumber(mockUserCounts.players)} icon={<Users className="h-4 w-4" />} />
+        <StatCard label={t("dashboard.admin.userCounts.coaches")} value={formatNumber(mockUserCounts.coaches)} icon={<Users className="h-4 w-4" />} />
+        <StatCard label={t("dashboard.admin.userCounts.observers")} value={formatNumber(mockUserCounts.observers)} icon={<Users className="h-4 w-4" />} />
         <StatCard label={t("dashboard.admin.userCounts.admins")} value={mockUserCounts.admins} icon={<Shield className="h-4 w-4" />} />
       </div>
 

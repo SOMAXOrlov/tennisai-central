@@ -49,7 +49,7 @@ const eventTypeColor: Record<string, string> = {
 };
 
 export default function PlayerDashboard() {
-  const { t } = useT();
+  const { t, formatCurrency } = useT();
   const { user } = useAuth();
   // Incoming pending requests are rendered by <IncomingRequestsCard />, which
   // reads the same store and hides itself when the inbox is empty.
@@ -82,6 +82,9 @@ export default function PlayerDashboard() {
     totalTravel: financeSummary?.totalTravel ?? 0,
     totalTournament: financeSummary?.totalTournament ?? 0,
     totalEquipment: financeSummary?.totalEquipment ?? 0,
+    // The account's own currency. USD only as the last resort, so an amount is
+    // never silently relabelled as dollars when the summary says otherwise.
+    currency: financeSummary?.currency ?? "USD",
   };
 
   // First-run checklist. Every tick comes from data already on this page —
@@ -240,14 +243,14 @@ export default function PlayerDashboard() {
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
-                <p className="text-sm font-semibold text-foreground">${item.amount.toLocaleString()}</p>
+                <p className="text-sm font-semibold text-foreground">{formatCurrency(item.amount, finance.currency)}</p>
               </div>
             ))}
             <div className="border-t border-border pt-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-foreground">{t("dashboard.common.financeTotal")}</p>
                 <p className="text-sm font-bold text-foreground">
-                  ${(finance.totalTraining + finance.totalTravel + finance.totalTournament + finance.totalEquipment).toLocaleString()}
+                  {formatCurrency(finance.totalTraining + finance.totalTravel + finance.totalTournament + finance.totalEquipment, finance.currency)}
                 </p>
               </div>
             </div>
