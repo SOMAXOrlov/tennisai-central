@@ -175,6 +175,12 @@ const Index = () => {
                   </p>
                 </div>
                 <figure className={"m-0 " + (i % 2 === 1 ? "lg:order-1" : "")}>
+                  {/* `w-auto` + `max-w-full` + a height cap, rather than a
+                      plain `w-full`: two of these three crops are portrait, and
+                      stretched to the column width they would each be taller
+                      than the viewport. Capping the height lets the browser
+                      scale on whichever axis binds and keeps the aspect ratio
+                      the `width`/`height` attributes declare. */}
                   <img
                     src={src}
                     alt={t(`landing.differentiators.${key}.alt`)}
@@ -182,7 +188,7 @@ const Index = () => {
                     height={h}
                     loading="lazy"
                     decoding="async"
-                    className="h-auto w-full border border-border bg-card"
+                    className="block h-auto max-h-[26rem] w-auto max-w-full border border-border bg-card"
                   />
                 </figure>
               </Reveal>
