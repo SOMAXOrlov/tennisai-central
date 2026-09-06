@@ -1127,7 +1127,7 @@ export default function CalendarPage() {
             className="gap-1.5 coarse:min-w-11"
           >
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("calendar.exportView", { view: t(`calendar.view.${view}`) })}</span>
+            <span className="hidden sm:inline">{t(`calendar.exportView.${view}`)}</span>
           </Button>
           {canEdit && <Button size="sm" onClick={handleAdd} className="gap-1.5 shadow-sm"><Plus className="h-4 w-4" />{t("calendar.addEvent")}</Button>}
         </div>

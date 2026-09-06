@@ -53,7 +53,7 @@ export function drillCategoryLabel(category: string): string {
 
 export function intensityLabel(intensity: string | undefined): string | null {
   if (!intensity) return null;
-  return INTENSITIES.includes(intensity as Intensity) ? t(`plans.intensity.${intensity}`) : intensity;
+  return INTENSITIES.includes(intensity as Intensity) ? t(`common.intensityBadge.${intensity}`) : intensity;
 }
 
 /** Total planned minutes — null unless at least one drill carries a duration. */

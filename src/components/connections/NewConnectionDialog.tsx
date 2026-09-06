@@ -318,7 +318,7 @@ export function NewConnectionDialog({
                               className="h-7 gap-1.5 text-xs"
                             >
                               <Sparkles className="h-3 w-3" />
-                              {t("connections.dialog.searchARole", { role: t(`common.role.${r}`) })}
+                              {t(`connections.dialog.searchRole.${r}`)}
                             </Button>
                           ))}
                         </div>

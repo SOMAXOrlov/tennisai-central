@@ -305,7 +305,7 @@ export default function SessionBuilderPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />{t("session.minutes", { count: session.totalMinutes })}</Badge>
-                  <Badge variant="secondary">{t("session.intensityBadge", { intensity: t(`training.intensity.${session.intensity}`) })}</Badge>
+                  <Badge variant="secondary">{t(`common.intensityBadge.${session.intensity}`)}</Badge>
                   <Badge variant="secondary" className="capitalize">{session.surface}</Badge>
                   <Badge variant="secondary">{session.format === "group" ? t("session.groupBadge", { format: t("session.formatGroup"), count: session.playersCount }) : t("session.formatIndividual")}</Badge>
                   {session.focusAreas.map((f) => (

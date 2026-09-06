@@ -46,7 +46,7 @@
       },
       "addTournament": {
         "label": "Añade un torneo",
-        "description": "Planifica tu temporada y controla juntos los viajes y los gastos.",
+        "description": "Planifica tu temporada y ten los viajes y los gastos en un mismo sitio.",
         "action": "Torneos"
       }
     },
@@ -151,7 +151,7 @@
       }
     },
     "equipment": {
-      "title": "Todavía no hay equipamiento registrado",
+      "title": "Todavía no hay material registrado",
       "description": "Guarda tus raquetas, cordajes y zapatillas en un solo lugar para saber con qué juegas y cuándo encordar o reemplazar.",
       "action": "Añadir un artículo"
     },
@@ -286,7 +286,7 @@
       "duration": "Duración",
       "minutes": "{count} min",
       "note": "Nota (solo para ti)",
-      "notePlaceholder": "Opcional: p. ej., trabajamos el segundo servicio",
+      "notePlaceholder": "Opcional: p. ej., trabajamos el segundo saque",
       "submit": "Registrar entrenamiento",
       "submitting": "Registrando…",
       "titleIndividual": "Entrenamiento con {name}",
@@ -307,10 +307,10 @@
       "date": "Fecha del partido",
       "surface": "Superficie",
       "surfaces": {
-        "hard": "Dura",
+        "hard": "Pista dura",
         "clay": "Tierra batida",
         "grass": "Hierba",
-        "indoor": "Cubierta"
+        "indoor": "Pista cubierta"
       },
       "sets": "Resultado por sets",
       "setsHint": "Juegos que ganaste tú y, después, los de tu rival.",
@@ -358,7 +358,7 @@
       "source": {
         "utr-events": "UTR",
         "itf-juniors": "ITF Juniors",
-        "static-snapshot": "instantánea curada",
+        "static-snapshot": "selección propia",
         "http-live": "feed con licencia"
       },
       "manual": "Añadido a mano",
@@ -366,21 +366,21 @@
       "edited": "editado {when}",
       "noFreshness": "actualidad no disponible",
       "chipAria": "Fuente: {source}. {freshness}",
-      "legend": "Cada etiqueta indica qué feed publicó el evento y cuándo lo confirmó por última vez. Las filas «Añadido a mano» se introdujeron manualmente."
+      "legend": "Cada etiqueta indica qué feed publicó el evento y cuándo lo confirmó por última vez. Las filas “Añadido a mano” se introdujeron manualmente."
     },
     "conditions": {
       "title": "Condiciones de juego",
       "surface": "Superficie",
-      "setting": "Cubierta / exterior",
+      "setting": "Cubierta o aire libre",
       "indoor": "Cubierta",
-      "outdoor": "Exterior",
+      "outdoor": "Aire libre",
       "altitude": "Altitud",
       "altitudeM": "{m} m",
       "altitudeFromMap": "según las coordenadas del mapa",
       "altitudeAssumed": "Para la física de la pelota se asume el nivel del mar.",
       "ball": "Pelota oficial",
       "ballNotRecorded": "Sin registrar",
-      "ballPlaceholder": "p. ej. Dunlop ATP",
+      "ballPlaceholder": "Ej.: Dunlop ATP",
       "ballAdd": "Añadir",
       "ballChange": "Cambiar",
       "ballSaved": "Pelota guardada",
@@ -421,7 +421,7 @@
       "loading": "Cargando…",
       "prep": {
         "title": "Prepárate para este partido",
-        "intro": "Un modelo lee las condiciones de arriba y el entrenamiento reciente, y sugiere táctica, calentamiento y equipamiento.",
+        "intro": "Un modelo lee las condiciones de arriba y el entrenamiento reciente, y sugiere táctica, calentamiento y material.",
         "cta": "Preparar este partido",
         "ctaFor": "Preparar a {name} para este partido",
         "working": "Analizando…",
@@ -437,14 +437,14 @@
         "failed": "No se pudo analizar.",
         "tactical": "Táctica",
         "preparation": "Preparación",
-        "equipment": "Equipamiento",
+        "equipment": "Material",
         "generatedBy": "Generado por {provider} · {model}, a partir de {sessions, plural, one {# sesión reciente} other {# sesiones recientes}}. Es una sugerencia: tu criterio decide."
       }
     },
     "next": {
       "title": "Próximo torneo",
-      "description": "El siguiente evento de tu calendario",
-      "none": "Aún no tienes nada en tu calendario.",
+      "description": "El siguiente evento de tu agenda",
+      "none": "Aún no tienes nada en tu agenda.",
       "browse": "Buscar un torneo",
       "startsIn": "{days, plural, one {Empieza en # día} other {Empieza en # días}}",
       "startsToday": "Empieza hoy",
@@ -466,7 +466,7 @@
       "entriesClose": "las inscripciones cierran el {date}",
       "details": "Detalles",
       "surface": "Superficie",
-      "indoorOutdoor": "Cubierta / exterior",
+      "indoorOutdoor": "Cubierta o aire libre",
       "level": "Nivel",
       "ageCategory": "Categoría de edad",
       "ratingBand": "Franja de nivel",
@@ -476,7 +476,7 @@
       "organiserPage": "Página del organizador",
       "going": "Van a ir",
       "nobodyFromSquad": "Todavía nadie de tu grupo.",
-      "notEntered": "No estás inscrito en este.",
+      "notEntered": "Todavía no te has inscrito en este.",
       "player": "Jugador",
       "seeWhereItIs": "Ver dónde está"
     },
@@ -490,7 +490,7 @@
       "loading": "Cargando los torneos…",
       "loadError": "No se han podido cargar los torneos",
       "tabs": {
-        "mySchedule": "Mi calendario",
+        "mySchedule": "Mi agenda",
         "playerView": "Vista de jugador",
         "addTournaments": "Añadir torneos",
         "browseAll": "Ver todos",
@@ -521,8 +521,8 @@
         "date": "Fecha",
         "surface": "Superficie",
         "status": "Estado",
-        "removeTitle": "Quitar del calendario",
-        "removeAria": "Quitar {name} de tu calendario"
+        "removeTitle": "Quitar de la agenda",
+        "removeAria": "Quitar {name} de tu agenda"
       },
       "following": "Sigues",
       "pick": {
@@ -534,14 +534,14 @@
       "conditionsAria": "Condiciones de juego de {name}",
       "hideTitle": "Ocultar de las sugerencias",
       "hideAria": "Ocultar {name} de las sugerencias",
-      "indoor": "Pista cubierta",
+      "indoor": "Cubierta",
       "outdoor": "Aire libre",
       "altitudeM": "{m} m",
       "away": "a {distance}",
       "yourPlayers": "Tus jugadores",
-      "inScheduleRemove": "En tu calendario: quitar",
-      "addToSchedule": "Añadir al calendario",
-      "inSchedule": "En tu calendario",
+      "inScheduleRemove": "En tu agenda: quitar",
+      "addToSchedule": "Añadir a mi agenda",
+      "inSchedule": "En tu agenda",
       "remove": "Quitar",
       "add": "Añadir",
       "unhide": "Mostrar",
@@ -566,8 +566,8 @@
       "loading": "Cargando el mapa…"
     },
     "removeDialog": {
-      "title": "¿Quitarlo de tu calendario?",
-      "body": "{name} se quitará de tu calendario, junto con el estado que le hayas puesto. Puedes volver a añadirlo desde la pestaña Ver todos.",
+      "title": "¿Quitarlo de tu agenda?",
+      "body": "{name} se quitará de tu agenda, junto con el estado que le hayas puesto. Puedes volver a añadirlo desde la pestaña Ver todos.",
       "keep": "Dejarlo",
       "removing": "Quitando…",
       "remove": "Quitar"
@@ -582,7 +582,7 @@
       "clashSentence": "{who} {kind} {list} en las mismas fechas.",
       "clashWhoUnnamed": "Este jugador",
       "clashWhoNamed": "{name}",
-      "clashDirect": "ya está inscrito en",
+      "clashDirect": "ya tiene inscripción en",
       "clashBackToBack": "juega seguido con",
       "clashList": "{head} y {last}"
     },
@@ -644,7 +644,7 @@
       "forehand": "Derecha",
       "backhand": "Revés",
       "net": "Juego en red",
-      "footwork": "Pies",
+      "footwork": "Juego de pies",
       "fitness": "Físico",
       "mental": "Mental",
       "tactics": "Táctica",
@@ -953,7 +953,7 @@
       "tournaments": "Torneos",
       "matches": "Partidos",
       "stats": "Estadísticas",
-      "equipment": "Equipamiento",
+      "equipment": "Material",
       "finance": "Finanzas",
       "players": "Jugadores",
       "teams": "Equipos",
@@ -1003,7 +1003,7 @@
       "financeTraining": "Entrenamiento",
       "financeTravel": "Viajes",
       "financeTournaments": "Torneos",
-      "financeEquipment": "Equipamiento",
+      "financeEquipment": "Material",
       "financeTotal": "Total",
       "playerTournamentsTitle": "Torneos del jugador"
     },
@@ -1017,23 +1017,23 @@
         "registeredTrend": "{count} inscritos"
       },
       "schedule": {
-        "title": "Próximo calendario",
-        "description": "Los próximos eventos de tu calendario"
+        "title": "Lo que viene",
+        "description": "Los próximos eventos de tu agenda"
       },
       "myTournaments": {
         "title": "Mis torneos",
         "description": "Tus torneos planificados e inscritos"
       },
       "equipment": {
-        "title": "Equipamiento",
+        "title": "Material",
         "itemsTracked": "{count, plural, one {# artículo registrado} other {# artículos registrados}}",
-        "empty": "Aún no hay equipamiento registrado."
+        "empty": "Aún no hay material registrado."
       }
     },
     "coach": {
       "header": {
-        "title": "Hola de nuevo, coach {lastName}",
-        "subtitle": "Gestiona tus jugadores, equipos y calendario de entrenamientos."
+        "title": "Hola de nuevo, {lastName}",
+        "subtitle": "Gestiona tus jugadores, tus equipos y la agenda de entrenamientos."
       },
       "createTeam": "Crear equipo",
       "newTraining": "Nuevo entrenamiento",
@@ -1070,7 +1070,7 @@
         "review": "Revisar"
       },
       "schedule": {
-        "title": "Próximo calendario",
+        "title": "Lo que viene",
         "description": "Tus sesiones de entrenamiento y eventos",
         "scheduleTraining": "Programar un entrenamiento"
       },
@@ -1103,8 +1103,8 @@
         "connectedSince": "Conectado desde {date}"
       },
       "schedule": {
-        "title": "Calendario del jugador",
-        "description": "Próximos eventos en el calendario del jugador"
+        "title": "Agenda del jugador",
+        "description": "Próximos eventos en la agenda del jugador"
       },
       "playerTournaments": {
         "title": "Torneos del jugador",
@@ -1152,13 +1152,13 @@
       "recentRegistrations": {
         "title": "Registros recientes",
         "description": "Usuarios más nuevos en la plataforma",
-        "searchPlaceholder": "Buscar usuarios...",
+        "searchPlaceholder": "Buscar usuarios…",
         "columnUser": "Usuario",
         "columnRole": "Rol",
         "columnStatus": "Estado",
         "columnRegistered": "Registrado",
         "columnActions": "Acciones",
-        "noResults": "No se encontraron usuarios que coincidan con \"{query}\""
+        "noResults": "No se encontraron usuarios que coincidan con “{query}”"
       },
       "tournamentManagement": {
         "title": "Gestión de torneos",
@@ -1213,7 +1213,7 @@
     "db": {
       "up": "Operativa",
       "down": "Caída",
-      "unknown": "Desconocido",
+      "unknown": "Desconocida",
       "latency": "consulta de {ms} ms"
     },
     "signup": {
@@ -1371,7 +1371,7 @@
     "dialogDescription": "Busca páginas, jugadores y torneos. Usa las flechas para elegir un resultado y pulsa Intro para abrirlo.",
     "inputPlaceholder": "Buscar páginas, jugadores, torneos…",
     "searching": "Buscando torneos…",
-    "noMatches": "Ningún resultado para «{query}».",
+    "noMatches": "Ningún resultado para “{query}”.",
     "nothing": "No hay nada que mostrar."
   },
   "onboarding": {
@@ -1454,12 +1454,16 @@
       "notAllowed": "Conexión no permitida",
       "roleCannotSend": "Tu perfil no permite enviar solicitudes de conexión.",
       "trySearching": "Prueba a buscar un perfil con el que sí puedas conectar:",
-      "searchARole": "Buscar un {role}",
       "allowedConnections": "Conexiones permitidas: ",
       "none": "Ninguna",
       "send": "Enviar la solicitud",
       "notFound": "No hay ningún usuario con ese ID. Revísalo e inténtalo de nuevo.",
-      "self": "No puedes enviarte una solicitud de conexión a ti mismo."
+      "self": "No puedes enviarte una solicitud de conexión.",
+      "searchRole": {
+        "player": "Buscar un jugador",
+        "coach": "Buscar un entrenador",
+        "observer": "Buscar un familiar"
+      }
     },
     "validation": {
       "cannotSend": "Tu perfil no puede enviar solicitudes de conexión.",
@@ -1467,7 +1471,7 @@
       "plural": {
         "player": "Jugadores",
         "coach": "Entrenadores",
-        "observer": "Madres/padres",
+        "observer": "Familiares",
         "admin": "Administradores"
       }
     },
@@ -1480,7 +1484,7 @@
     },
     "errors": {
       "signedOut": "Tienes que iniciar sesión.",
-      "self": "No puedes conectarte contigo mismo.",
+      "self": "No puedes conectarte con tu propia cuenta.",
       "already": "Ya tienes una conexión con esta persona.",
       "pending": "Ya hay una solicitud pendiente entre vosotros.",
       "requestNotFound": "No encontramos la solicitud.",
@@ -1606,7 +1610,7 @@
   },
   "finance": {
     "title": "Finanzas",
-    "subtitle": "Controle los gastos de entrenamiento, viajes, torneos y material.",
+    "subtitle": "Seguimiento de los gastos de entrenamiento, viajes, torneos y material.",
     "addExpense": "Añadir un gasto",
     "total": "Total",
     "transactions": "Movimientos",
@@ -1663,7 +1667,7 @@
       "avgRating": "Puntuación media",
       "reviewedCount": "{count} revisados",
       "tournaments": "Torneos",
-      "registered": "inscrito",
+      "registered": "inscritos",
       "breakdown": "Desglose de entrenamientos",
       "recentReviews": "Revisiones recientes",
       "workedOn": "Se trabajó:",
@@ -1696,7 +1700,7 @@
     "allInTeam": "Todos tus jugadores conectados ya están en este equipo.",
     "add": "Añadir",
     "nameLabel": "Nombre del equipo",
-    "namePlaceholder": "Ej.: Escuadra Júnior Elite",
+    "namePlaceholder": "Ej.: Grupo júnior de competición",
     "saving": "Guardando…",
     "save": "Guardar",
     "createTitle": "Crear un equipo",
@@ -1749,7 +1753,7 @@
     "drillsDescription": "Marca un ejercicio cuando lo termines, o sáltatelo: el estado se guarda en el plan",
     "noDrills": "Este plan no tiene ejercicios.",
     "noDrillsInPlan": "Este plan no tiene ejercicios",
-    "progress": "{done} de {total} hechos",
+    "progress": "{done} de {total, plural, one {# ejercicio hecho} other {# ejercicios hechos}}",
     "skippedCount": "{count} saltados",
     "pct": "{pct} %",
     "you": "Tú",
@@ -1760,20 +1764,15 @@
       "physical": "Físico",
       "mental": "Mental"
     },
-    "intensity": {
-      "low": "Intensidad baja",
-      "medium": "Intensidad media",
-      "high": "Intensidad alta"
-    },
     "status": {
       "pending": "Por hacer",
       "done": "Hecho",
       "skipped": "Saltado"
     },
     "drill": {
-      "markDone": "Marcar «{objective}» como hecho",
+      "markDone": "Marcar “{objective}” como hecho",
       "minutes": "{count} min",
-      "success": "Objetivo: ",
+      "success": "Objetivo del ejercicio: ",
       "why": "Por qué: ",
       "coachNote": "Nota del entrenador: ",
       "unskip": "Deshacer el salto",
@@ -1813,11 +1812,10 @@
     "noSession": "Todavía no hay sesión",
     "noSessionHint": "Elige un objetivo y las áreas de trabajo a la izquierda y pulsa {action} para crear el plan completo.",
     "saveToPlan": "Guardar en un plan",
-    "intensityBadge": "intensidad {intensity}",
     "groupBadge": "{format} · {count}",
     "what": "Qué:",
     "how": "Cómo:",
-    "success": "Objetivo:",
+    "success": "Objetivo del ejercicio:",
     "drillMeta": "{minutes} min · {category}",
     "equipment": "Material necesario",
     "noEquipment": "No hace falta material especial.",
@@ -2123,7 +2121,7 @@
       "setNumber": "Set {number}",
       "you": "Tú",
       "opponentGames": "Rival",
-      "tiebreak": "Tiebreak (opcional)",
+      "tiebreak": "Tie-break (opcional)",
       "removeSetAria": "Quitar el set {number}",
       "saving": "Guardando…",
       "saveChanges": "Guardar los cambios",
@@ -2133,7 +2131,7 @@
         "opponent": "Indica el nombre y los apellidos del rival nuevo.",
         "setIncomplete": "Cada set necesita los juegos de ambos: quita los sets que no hayas jugado.",
         "setRange": "Los juegos ganados deben estar entre 0 y 30.",
-        "setTiebreak": "Escribe el tiebreak como dos números, por ejemplo 7-5.",
+        "setTiebreak": "Escribe el tie-break como dos números, por ejemplo 7-5.",
         "setNone": "Añade al menos el resultado de un set.",
         "maxFirstServeAttempts": "No puede superar los primeros saques intentados",
         "maxFirstServesIn": "No puede superar los primeros saques dentro",
@@ -2331,7 +2329,7 @@
         "present": "Presente",
         "absent": "Ausente",
         "late": "Tarde",
-        "excused": "Justificado"
+        "excused": "Con justificante"
       }
     },
     "feedback": {
@@ -2340,7 +2338,7 @@
       "description": "Una opinión rápida sobre “{title}”: ayuda a tu entrenador a mejorar las próximas sesiones.",
       "feelingLabel": "¿Cómo te has sentido? *",
       "energyLabel": "Nivel de energía",
-      "exhausted": "Agotado",
+      "exhausted": "Sin energía",
       "fullEnergy": "A tope",
       "tagsLabel": "Etiquetas rápidas",
       "tagsHint": "(marca las que quieras)",
@@ -2364,12 +2362,12 @@
         "Learned a lot": "He aprendido mucho",
         "Need more practice": "Necesito practicar más",
         "Fun session": "Sesión divertida",
-        "Felt tired": "Me sentí cansado",
+        "Felt tired": "Acabé sin energía",
         "Great coaching": "Muy buen entrenamiento",
         "Too long": "Demasiado larga",
         "Too short": "Demasiado corta",
         "Want more of this": "Quiero más de esto",
-        "Felt confused": "Me sentí perdido"
+        "Felt confused": "No lo tenía claro"
       }
     },
     "reviewDialog": {
@@ -2403,7 +2401,7 @@
       "thin": "La muestra es pequeña: tómalo como punto de partida, no como un plan.",
       "sessionMeta": "{type} · {intensity} · {minutes} min",
       "use": "Usar esta",
-      "attribution": "Generado por {provider} · {model}. Es una sugerencia: decide tu criterio."
+      "attribution": "Generado por {provider} · {model}. Es una sugerencia: tu criterio decide."
     }
   },
   "calendar": {
@@ -2417,7 +2415,6 @@
     "eventCount": "{count, plural, one {# evento} other {# eventos}}",
     "eventsSuffix": "eventos",
     "addEvent": "Añadir evento",
-    "exportView": "Exportar este {view}",
     "exportDescription": "Exportar {count, plural, one {el # evento} other {los # eventos}} de {period} como archivo de calendario (.ics)",
     "today": "Hoy",
     "filters": "Filtros",
@@ -2583,8 +2580,16 @@
     "agenda": {
       "nothingIn": "No hay nada en {period}",
       "thisWeek": "esta semana",
-      "useArrows": "Usa las flechas para ver otro/a {range}, o abre Filtros para añadir un calendario de torneos.",
-      "showAll": "Ver los {count} del {date}"
+      "showAll": "Ver los {count} del {date}",
+      "useArrows": {
+        "month": "Usa las flechas para ver otro mes, o abre Filtros para añadir un calendario de torneos.",
+        "week": "Usa las flechas para ver otra semana, o abre Filtros para añadir un calendario de torneos."
+      }
+    },
+    "exportView": {
+      "month": "Exportar este mes",
+      "week": "Exportar esta semana",
+      "day": "Exportar este día"
     }
   },
   "auth": {
@@ -2635,7 +2640,7 @@
           "description": "Gestiona jugadores, equipos y entrenamientos"
         },
         "observer": {
-          "label": "Observador",
+          "label": "Familiar",
           "description": "Sigue el progreso de un jugador (solo lectura)"
         }
       },
@@ -2738,7 +2743,7 @@
     "role": {
       "player": "Jugador",
       "coach": "Entrenador",
-      "observer": "Madre/padre",
+      "observer": "Familiar",
       "admin": "Administrador"
     },
     "status": {
@@ -2747,7 +2752,7 @@
       "accepted": "Aceptada",
       "rejected": "Rechazada",
       "revoked": "Revocada",
-      "planned": "Prevista",
+      "planned": "Previsto",
       "registered": "Inscrito",
       "maybe": "Quizá",
       "withdrawn": "Retirado",
@@ -2776,6 +2781,11 @@
       "hardReloadShortcut": "Cmd/Ctrl + Mayús + R",
       "restart": "Reinicia el servidor de desarrollo",
       "clearCache": "Vacía la caché:"
+    },
+    "intensityBadge": {
+      "low": "Intensidad baja",
+      "medium": "Intensidad media",
+      "high": "Intensidad alta"
     }
   },
   "states": {
@@ -2803,7 +2813,7 @@
     "load": {
       "trainings": "No se han podido cargar los entrenamientos.",
       "calendar": "No se ha podido cargar el calendario.",
-      "equipment": "No se ha podido cargar el equipamiento.",
+      "equipment": "No se ha podido cargar el material.",
       "finance": "No se han podido cargar los datos financieros.",
       "teams": "No se han podido cargar los equipos.",
       "requests": "No se han podido cargar las solicitudes de entrenamiento.",
@@ -2814,7 +2824,7 @@
       "plans": "No se han podido cargar los planes de entrenamiento.",
       "plan": "No se ha podido cargar este plan de entrenamiento.",
       "dashboard": "No se ha podido cargar el panel.",
-      "playerEquipment": "No se ha podido cargar el equipamiento de {name}."
+      "playerEquipment": "No se ha podido cargar el material de {name}."
     }
   },
   "toast": {
@@ -2826,12 +2836,12 @@
       "created": "Entrenamiento creado",
       "updated": "Entrenamiento actualizado",
       "deleted": "Entrenamiento eliminado",
-      "feedbackSaved": "Valoración guardada",
+      "feedbackSaved": "Opinión guardada",
       "analysisReady": "Análisis listo",
       "createFailed": "No se ha podido crear el entrenamiento",
       "updateFailed": "No se ha podido actualizar el entrenamiento",
       "deleteFailed": "No se ha podido eliminar el entrenamiento",
-      "feedbackFailed": "No se ha podido guardar la valoración",
+      "feedbackFailed": "No se ha podido guardar la opinión",
       "analyzeFailed": "No se ha podido analizar el entrenamiento",
       "attendanceFailed": "No se ha podido guardar la asistencia"
     },
@@ -2839,12 +2849,12 @@
       "sent": "Solicitud de entrenamiento enviada",
       "approved": "Solicitud aprobada",
       "declined": "Solicitud rechazada",
-      "rescheduled": "Nuevo horario propuesto",
+      "rescheduled": "Nueva hora propuesta",
       "cancelled": "Solicitud cancelada",
       "sendFailed": "No se ha podido enviar la solicitud",
       "approveFailed": "No se ha podido aprobar la solicitud",
       "declineFailed": "No se ha podido rechazar la solicitud",
-      "rescheduleFailed": "No se ha podido proponer un nuevo horario",
+      "rescheduleFailed": "No se ha podido proponer una hora nueva",
       "cancelFailed": "No se ha podido cancelar la solicitud"
     },
     "team": {
@@ -2900,12 +2910,12 @@
       "addFailed": "No se ha podido añadir el gasto"
     },
     "equipment": {
-      "added": "Equipamiento añadido",
-      "updated": "Equipamiento actualizado",
-      "removed": "Equipamiento eliminado",
-      "addFailed": "No se ha podido añadir el equipamiento",
-      "updateFailed": "No se ha podido actualizar el equipamiento",
-      "removeFailed": "No se ha podido eliminar el equipamiento"
+      "added": "Material añadido",
+      "updated": "Material actualizado",
+      "removed": "Material eliminado",
+      "addFailed": "No se ha podido añadir el material",
+      "updateFailed": "No se ha podido actualizar el material",
+      "removeFailed": "No se ha podido eliminar el material"
     },
     "notification": {
       "allRead": "Todas las notificaciones marcadas como leídas",

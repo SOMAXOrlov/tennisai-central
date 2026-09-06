@@ -142,7 +142,7 @@ export function AgendaView({
           })}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {t("calendar.agenda.useArrows", { range: t(`calendar.view.${range}`) })}
+          {t(`calendar.agenda.useArrows.${range}`)}
         </p>
       </div>
     );

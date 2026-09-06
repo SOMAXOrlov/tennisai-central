@@ -1454,12 +1454,16 @@
       "notAllowed": "Connection not allowed",
       "roleCannotSend": "Your role does not support sending connection requests.",
       "trySearching": "Try searching for a role you can connect with:",
-      "searchARole": "Search a {role}",
       "allowedConnections": "Allowed connections: ",
       "none": "None",
       "send": "Send Request",
       "notFound": "No user found with that ID. Please double-check and try again.",
-      "self": "You cannot send a connection request to yourself."
+      "self": "You cannot send a connection request to yourself.",
+      "searchRole": {
+        "player": "Search a player",
+        "coach": "Search a coach",
+        "observer": "Search a parent"
+      }
     },
     "validation": {
       "cannotSend": "Your role cannot send connection requests.",
@@ -1749,7 +1753,7 @@
     "drillsDescription": "Tick a drill off once it is done, or skip it — the status is saved on the plan",
     "noDrills": "This plan has no drills.",
     "noDrillsInPlan": "No drills in this plan",
-    "progress": "{done} of {total} done",
+    "progress": "{done} of {total, plural, one {# drill} other {# drills}} done",
     "skippedCount": "{count} skipped",
     "pct": "{pct}%",
     "you": "You",
@@ -1759,11 +1763,6 @@
       "tactical": "Tactical",
       "physical": "Physical",
       "mental": "Mental"
-    },
-    "intensity": {
-      "low": "Low intensity",
-      "medium": "Medium intensity",
-      "high": "High intensity"
     },
     "status": {
       "pending": "To do",
@@ -1813,7 +1812,6 @@
     "noSession": "No session yet",
     "noSessionHint": "Choose a goal and focus areas on the left, then hit {action} to build a full plan.",
     "saveToPlan": "Save to plan",
-    "intensityBadge": "{intensity} intensity",
     "groupBadge": "{format} · {count}",
     "what": "What:",
     "how": "How:",
@@ -2417,7 +2415,6 @@
     "eventCount": "{count, plural, one {# event} other {# events}}",
     "eventsSuffix": "events",
     "addEvent": "Add Event",
-    "exportView": "Export this {view}",
     "exportDescription": "Export the {count, plural, one {# event} other {# events}} shown for {period} as a calendar file (.ics)",
     "today": "Today",
     "filters": "Filters",
@@ -2583,8 +2580,16 @@
     "agenda": {
       "nothingIn": "Nothing in {period}",
       "thisWeek": "this week",
-      "useArrows": "Use the arrows to look at another {range}, or open Filters to add a tournament calendar.",
-      "showAll": "Show all {count} on {date}"
+      "showAll": "Show all {count} on {date}",
+      "useArrows": {
+        "month": "Use the arrows to look at another month, or open Filters to add a tournament calendar.",
+        "week": "Use the arrows to look at another week, or open Filters to add a tournament calendar."
+      }
+    },
+    "exportView": {
+      "month": "Export this month",
+      "week": "Export this week",
+      "day": "Export this day"
     }
   },
   "auth": {
@@ -2776,6 +2781,11 @@
       "hardReloadShortcut": "Cmd/Ctrl + Shift + R",
       "restart": "Restart dev server",
       "clearCache": "Clear cache:"
+    },
+    "intensityBadge": {
+      "low": "Low intensity",
+      "medium": "Medium intensity",
+      "high": "High intensity"
     }
   },
   "states": {
