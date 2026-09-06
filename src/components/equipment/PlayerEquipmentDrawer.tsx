@@ -13,6 +13,9 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEquipment } from "@/hooks/api/queries";
+import { ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import type { ConnectedPlayer, EquipmentCategory, EquipmentItem } from "@/types";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, getConditionLevel } from "./categories";
 
@@ -25,6 +28,7 @@ interface PlayerEquipmentDrawerProps {
 export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEquipmentDrawerProps) {
   const playerId = player?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
+  const { t } = useT();
 
   const grouped = useMemo(() => {
     const map: Record<EquipmentCategory, EquipmentItem[]> = { racket: [], string: [], shoes: [], balls: [], accessories: [] };
@@ -49,12 +53,14 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
 
         <div className="mt-6 space-y-4">
           {isLoading ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Loading equipment…</p>
+            <PageSkeleton variant="list" header={false} rows={3} />
           ) : error ? (
-            <div className="space-y-3 py-8 text-center">
-              <p className="text-sm text-muted-foreground">Couldn't load {player.firstName}'s equipment.</p>
-              <Button size="sm" variant="outline" onClick={() => refetch()}>Try again</Button>
-            </div>
+            <ErrorState
+              className="py-8"
+              error={error}
+              message={t("states.load.playerEquipment", { name: player.firstName })}
+              onRetry={() => void refetch()}
+            />
           ) : items.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
               {player.firstName} hasn't added any equipment yet.

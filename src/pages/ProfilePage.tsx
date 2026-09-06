@@ -12,7 +12,7 @@ import { useT } from "@/lib/i18n";
 import { User, Copy, Check, ClipboardList, Pencil, CalendarRange, Trophy } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
-import { toast } from "sonner";
+import { toastSuccess } from "@/lib/feedback";
 import { onboardingApi } from "@/api/endpoints/onboarding";
 import { questionsForRole } from "@/lib/onboarding/questions";
 import { OnboardingDialog } from "@/components/onboarding/OnboardingDialog";
@@ -58,7 +58,7 @@ export default function ProfilePage() {
   const copyId = () => {
     navigator.clipboard.writeText(publicId);
     setCopied(true);
-    toast.success("Public ID copied!");
+    toastSuccess("toast.profile.publicIdCopied");
     setTimeout(() => setCopied(false), 2000);
   };
 

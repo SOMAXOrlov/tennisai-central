@@ -5,7 +5,8 @@ import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { useT } from "@/lib/i18n";
 import { useFinanceEntries, useFinanceSummary, useCreateFinanceEntry } from "@/hooks/api/queries";
-import { ReadOnlyBanner, ReadOnlyBadge, LoadingState, ErrorState, EmptyState } from "@/components/ui/shared";
+import { ReadOnlyBanner, ReadOnlyBadge, ErrorState, EmptyState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { Button } from "@/components/ui/button";
@@ -41,8 +42,8 @@ export default function FinancePage() {
       : connectedPlayers[0]?.id ?? "";
   const playerId = !user ? "" : role === "player" ? user.id : observerPlayerId;
 
-  const { data: entries = [], isLoading, error } = useFinanceEntries(playerId);
-  const { data: summary } = useFinanceSummary(playerId);
+  const { data: entries = [], isLoading, error, refetch } = useFinanceEntries(playerId);
+  const { data: summary, refetch: refetchSummary } = useFinanceSummary(playerId);
   const createMut = useCreateFinanceEntry();
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ description: "", amount: "", category: "training" as FinanceCategory, date: "", currency: "USD" });
@@ -54,7 +55,7 @@ export default function FinancePage() {
     });
   };
 
-  if (!user) return <LoadingState message="Loading…" />;
+  if (!user) return <PageSkeleton variant="page" />;
 
   // Observer with nothing connected yet — no player to show finances for, no fake numbers.
   if (isObserver && connectedPlayers.length === 0) {
@@ -77,8 +78,8 @@ export default function FinancePage() {
     );
   }
 
-  if (isLoading) return <LoadingState message="Loading finance data…" />;
-  if (error) return <ErrorState message="Failed to load finance data" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="page" />;
+  if (error) return <ErrorState error={error} message={t("states.load.finance")} onRetry={() => { void refetch(); void refetchSummary(); }} />;
 
   const total = summary ? summary.totalTraining + summary.totalTravel + summary.totalTournament + summary.totalEquipment : 0;
 

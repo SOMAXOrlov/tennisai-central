@@ -1,9 +1,8 @@
 import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LocaleProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/auth/AuthContext";
@@ -71,12 +70,19 @@ const MatchesPage = lazy(() => import("./pages/matches/MatchesPage"));
 const TrainingPlansPage = lazy(() => import("./pages/trainingPlans/TrainingPlansPage"));
 
 /**
- * Per-route suspense boundary. Placed *inside* the layout route element so a
- * pending page chunk shows its placeholder in the content area while the
- * sidebar / top bar stay mounted, instead of blanking the whole shell.
+ * Per-route suspense + error boundary. Placed *inside* the layout route element
+ * so a pending page chunk shows its placeholder — and a crashing page shows its
+ * error fallback — in the content area while the sidebar / top bar stay
+ * mounted, instead of blanking the whole shell. The boundary forgets a crash
+ * when the pathname changes, so navigating away is a recovery.
  */
 function Page({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;
+  const { pathname } = useLocation();
+  return (
+    <ErrorBoundary scope="page" resetKey={pathname}>
+      <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+    </ErrorBoundary>
+  );
 }
 
 const queryClient = new QueryClient({
@@ -106,7 +112,8 @@ const App = () => (
       <AuthProvider>
         <ConnectionProvider>
           <TooltipProvider>
-          <Toaster />
+          {/* The one toast system. `@/hooks/use-toast` adapts the old
+              `toast({ title })` calls onto it. */}
           <Sonner />
           <BodyPointerEventsGuard />
           <DevHmrBanner />

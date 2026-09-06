@@ -1,6 +1,8 @@
 // Notification Settings — Toggle preferences via React Query
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/api/queries";
-import { LoadingState, ErrorState } from "@/components/ui/shared";
+import { ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -17,11 +19,12 @@ const SETTINGS: { key: keyof NotificationSettings; label: string; description: s
 ];
 
 export default function NotificationSettingsPage() {
-  const { data: prefs, isLoading, error } = useNotificationPreferences();
+  const { data: prefs, isLoading, error, refetch } = useNotificationPreferences();
+  const { t } = useT();
   const updateMut = useUpdateNotificationPreferences();
 
-  if (isLoading) return <LoadingState message="Loading preferences…" />;
-  if (error) return <ErrorState message="Failed to load preferences" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="list" rows={4} />;
+  if (error) return <ErrorState error={error} message={t("states.load.preferences")} onRetry={() => void refetch()} />;
   if (!prefs) return null;
 
   return (
@@ -35,7 +38,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">{s.icon}</div>
                 <div><Label htmlFor={`notif-${s.key}`} className="text-sm font-medium">{s.label}</Label><p className="text-xs text-muted-foreground">{s.description}</p></div>
               </div>
-              <Switch id={`notif-${s.key}`} checked={prefs[s.key]} onCheckedChange={(checked) => updateMut.mutate({ [s.key]: checked })} disabled={updateMut.isPending} />
+              <Switch id={`notif-${s.key}`} checked={prefs[s.key]} onCheckedChange={(checked) => updateMut.mutate({ [s.key]: checked })} />
             </div>
           ))}
         </div>

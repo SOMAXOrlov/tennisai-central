@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { t } from "@/lib/i18n";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ArrowUpRight,
@@ -277,13 +278,13 @@ export default function ConnectionsPage() {
                 currentUserId={userId}
                 onApprove={(id) => {
                   const res = updateStatus(id, "active");
-                  if (res.ok) toast({ title: "Connection approved" });
-                  else toast({ title: "Could not approve", description: res.reason, variant: "destructive" });
+                  if (res.ok) toast({ title: t("toast.connection.approved") });
+                  else toast({ title: t("toast.connection.approveFailed"), description: res.reason, variant: "destructive" });
                 }}
                 onReject={(id) => {
                   const res = updateStatus(id, "rejected");
-                  if (res.ok) toast({ title: "Request rejected" });
-                  else toast({ title: "Could not reject", description: res.reason, variant: "destructive" });
+                  if (res.ok) toast({ title: t("toast.connection.rejected") });
+                  else toast({ title: t("toast.connection.rejectFailed"), description: res.reason, variant: "destructive" });
                 }}
               />
                 ))}
@@ -341,8 +342,8 @@ export default function ConnectionsPage() {
                     currentUserId={userId}
                     onRevoke={(id) => {
                       const res = revokeRelationship(id);
-                      if (res.ok) toast({ title: "Connection revoked" });
-                      else toast({ title: "Could not revoke", description: res.reason, variant: "destructive" });
+                      if (res.ok) toast({ title: t("toast.connection.revoked") });
+                      else toast({ title: t("toast.connection.revokeFailed"), description: res.reason, variant: "destructive" });
                     }}
                   />
                 ))}

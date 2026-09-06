@@ -1,185 +1,80 @@
+// ============================================================
+// `useToast` / `toast({ title, description, variant })` — compatibility
+// adapter over sonner.
+//
+// The app used to mount TWO toast systems: this file's Radix/shadcn reducer
+// (rendered by ui/toaster.tsx) and sonner (ui/sonner.tsx). Only two call sites
+// still used the Radix shape, and its reducer had a `TOAST_REMOVE_DELAY` of
+// 1,000,000ms — a dismissed toast was never actually removed. Everything now
+// goes through sonner; this module keeps the old call signature working so
+// those call sites (and the tests that spy on this module) need no change.
+// ============================================================
+
 import * as React from "react";
+import { toast as sonnerToast } from "sonner";
+import { ERROR_TOAST_DURATION_MS, announceError } from "@/lib/feedback";
 
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
-
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
-
-type ToasterToast = ToastProps & {
-  id: string;
+export interface ToastOptions {
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
-};
-
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const;
-
-let count = 0;
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER;
-  return count.toString();
+  /** `destructive` → an error toast; anything else → a success toast. */
+  variant?: "default" | "destructive" | null;
+  /** Kept for signature compatibility; forwarded to sonner as-is. */
+  action?: React.ReactNode;
+  duration?: number;
 }
 
-type ActionType = typeof actionTypes;
-
-type Action =
-  | {
-      type: ActionType["ADD_TOAST"];
-      toast: ToasterToast;
-    }
-  | {
-      type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast>;
-    }
-  | {
-      type: ActionType["DISMISS_TOAST"];
-      toastId?: ToasterToast["id"];
-    }
-  | {
-      type: ActionType["REMOVE_TOAST"];
-      toastId?: ToasterToast["id"];
-    };
-
-interface State {
-  toasts: ToasterToast[];
+export interface ToastHandle {
+  id: string | number;
+  dismiss: () => void;
+  update: (next: ToastOptions) => void;
 }
 
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
-
-const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
-    return;
-  }
-
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId);
-    dispatch({
-      type: "REMOVE_TOAST",
-      toastId: toastId,
-    });
-  }, TOAST_REMOVE_DELAY);
-
-  toastTimeouts.set(toastId, timeout);
-};
-
-export const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "ADD_TOAST":
-      return {
-        ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
-      };
-
-    case "UPDATE_TOAST":
-      return {
-        ...state,
-        toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
-      };
-
-    case "DISMISS_TOAST": {
-      const { toastId } = action;
-
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
-      if (toastId) {
-        addToRemoveQueue(toastId);
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
-        });
-      }
-
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
-            ? {
-                ...t,
-                open: false,
-              }
-            : t,
-        ),
-      };
-    }
-    case "REMOVE_TOAST":
-      if (action.toastId === undefined) {
-        return {
-          ...state,
-          toasts: [],
-        };
-      }
-      return {
-        ...state,
-        toasts: state.toasts.filter((t) => t.id !== action.toastId),
-      };
-  }
-};
-
-const listeners: Array<(state: State) => void> = [];
-
-let memoryState: State = { toasts: [] };
-
-function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action);
-  listeners.forEach((listener) => {
-    listener(memoryState);
-  });
+/** Plain text for the screen-reader mirror; ReactNode content falls back to the string parts. */
+function announcementText(...parts: React.ReactNode[]): string {
+  return parts.filter((p): p is string | number => typeof p === "string" || typeof p === "number").join(". ");
 }
 
-type Toast = Omit<ToasterToast, "id">;
-
-function toast({ ...props }: Toast) {
-  const id = genId();
-
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    });
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
-
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss();
-      },
-    },
-  });
-
+/** Sonner puts the title first and everything else in an options bag. */
+function toSonnerArgs({ title, description, action, duration, variant }: ToastOptions) {
+  const isError = variant === "destructive";
   return {
-    id: id,
-    dismiss,
-    update,
+    message: title ?? description ?? "",
+    options: {
+      // If there is no title the description already IS the message.
+      description: title ? description : undefined,
+      action,
+      duration: duration ?? (isError ? ERROR_TOAST_DURATION_MS : undefined),
+    },
+    isError,
   };
 }
 
-function useToast() {
-  const [state, setState] = React.useState<State>(memoryState);
-
-  React.useEffect(() => {
-    listeners.push(setState);
-    return () => {
-      const index = listeners.indexOf(setState);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
-    };
-  }, [state]);
-
+function toast(options: ToastOptions): ToastHandle {
+  const { message, options: sonnerOptions, isError } = toSonnerArgs(options);
+  const id = isError ? sonnerToast.error(message, sonnerOptions) : sonnerToast.success(message, sonnerOptions);
+  // Errors are also mirrored into the assertive live region (see feedback.ts).
+  if (isError) announceError(announcementText(message, sonnerOptions.description));
   return {
-    ...state,
+    id,
+    dismiss: () => sonnerToast.dismiss(id),
+    update: (next) => {
+      const merged = toSonnerArgs({ ...options, ...next });
+      const show = merged.isError ? sonnerToast.error : sonnerToast.success;
+      show(merged.message, { ...merged.options, id });
+    },
+  };
+}
+
+/**
+ * Hook-shaped access for components written against the shadcn API. `toasts`
+ * is always empty: sonner owns the list and renders it itself.
+ */
+function useToast() {
+  return {
+    toasts: [] as never[],
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss: (toastId?: string | number) => sonnerToast.dismiss(toastId),
   };
 }
 

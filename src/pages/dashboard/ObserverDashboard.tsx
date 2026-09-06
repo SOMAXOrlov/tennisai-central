@@ -6,7 +6,8 @@ import { GetStartedCard } from "@/components/dashboard/GetStartedCard";
 import { observerItems } from "@/components/dashboard/firstRunItems";
 import { IncomingRequestsCard } from "@/components/dashboard/IncomingRequestsCard";
 import { statCardClass, statLinkClass } from "@/components/dashboard/statLinkStyles";
-import { StatusBadge, ReadOnlyBadge, ReadOnlyBanner, EmptyState, LoadingState, ErrorState } from "@/components/ui/shared";
+import { StatusBadge, ReadOnlyBadge, ReadOnlyBanner, EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import {
   Users,
   Calendar,
@@ -46,12 +47,14 @@ export default function ObserverDashboard() {
   const pendingRequests = requests.filter(
     (r) => r.status === "pending" && r.fromUserId === user?.id
   );
-  const { data: calendarEvents = [], isLoading: loadingEvents, error: errorEvents } = useCalendarEvents();
-  const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT } = usePlayerTournaments();
-  const { data: notifications = [], isLoading: loadingNotif, error: errorNotif } = useNotifications(user?.id ?? "");
+  const { data: calendarEvents = [], isLoading: loadingEvents, error: errorEvents, refetch: refetchEvents } = useCalendarEvents();
+  const { data: playerTournaments = [], isLoading: loadingPT, error: errorPT, refetch: refetchPT } = usePlayerTournaments();
+  const { data: notifications = [], isLoading: loadingNotif, error: errorNotif, refetch: refetchNotif } = useNotifications(user?.id ?? "");
 
   const isLoading = loadingEvents || loadingPT || loadingNotif;
   const hasError = errorEvents || errorPT || errorNotif;
+  // One "Try again" re-asks every failed query; a full reload would also throw away the cache.
+  const retryAll = () => { void refetchEvents(); void refetchPT(); void refetchNotif(); };
 
   const now = new Date();
   const upcomingEvents = [...calendarEvents]
@@ -60,8 +63,8 @@ export default function ObserverDashboard() {
     .slice(0, 4);
   const unreadNotifications = notifications.filter((n) => !n.read);
 
-  if (isLoading) return <LoadingState message={t("dashboard.observer.loading")} />;
-  if (hasError) return <ErrorState message={t("dashboard.common.loadError")} onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="dashboard" />;
+  if (hasError) return <ErrorState error={hasError} message={t("states.load.dashboard")} onRetry={retryAll} />;
 
   return (
     <div className="space-y-6">

@@ -2,7 +2,7 @@
 // surface. Kept out of the shared `@/hooks/api/queries.ts` per the notify
 // agent's file ownership — those hooks own the legacy category-only prefs.
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toastError } from "@/lib/feedback";
 import { notificationPrefsApi, type NotificationPreferencesFull, type PushSubscriptionInput } from "@/api/endpoints/notificationPrefs";
 
 const notificationPreferencesFullKey = ["notificationPreferencesFull"] as const;
@@ -15,15 +15,34 @@ export function useNotificationPreferencesFull() {
   });
 }
 
+/** Shared by every in-flight save, so a burst of toggles can be counted (see onSuccess). */
+const updatePreferencesMutationKey = ["updateNotificationPreferencesFull"] as const;
+
+// Optimistic: each switch is one boolean on a record the card already holds,
+// so it flips as it is tapped and is put back (with a toast) if the save fails.
+// The card says "Changes save automatically" — no success toast.
 export function useUpdateNotificationPreferencesFull() {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: updatePreferencesMutationKey,
     mutationFn: (patch: Partial<NotificationPreferencesFull>) => notificationPrefsApi.updatePreferences(patch),
-    onSuccess: (res) => {
-      qc.setQueryData(notificationPreferencesFullKey, res.data);
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: notificationPreferencesFullKey });
+      const previous = qc.getQueryData<NotificationPreferencesFull>(notificationPreferencesFullKey);
+      qc.setQueryData<NotificationPreferencesFull>(notificationPreferencesFullKey, (old) => (old ? { ...old, ...patch } : old));
+      return { previous };
     },
-    onError: () => {
-      toast.error("Couldn't save notification preferences");
+    onSuccess: (res) => {
+      // The server's record is the truth — but only once nothing else is in
+      // flight, or an early response would flick a later, still-saving switch
+      // back until its own response lands.
+      if (qc.isMutating({ mutationKey: updatePreferencesMutationKey }) === 1) {
+        qc.setQueryData(notificationPreferencesFullKey, res.data);
+      }
+    },
+    onError: (e: unknown, _patch, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData(notificationPreferencesFullKey, ctx.previous);
+      toastError("toast.notification.preferenceFailed", e);
     },
   });
 }

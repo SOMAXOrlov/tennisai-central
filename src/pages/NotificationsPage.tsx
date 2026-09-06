@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/api/queries";
 import { useT } from "@/lib/i18n";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/shared";
+import { ErrorState, EmptyState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCheck, ChevronRight, Inbox, Settings2 } from "lucide-react";
@@ -26,7 +27,7 @@ export default function NotificationsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const userId = user?.id ?? "";
-  const { data: notifications = [], isLoading, error } = useNotifications(userId);
+  const { data: notifications = [], isLoading, error, refetch } = useNotifications(userId);
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -39,8 +40,8 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  if (isLoading) return <LoadingState message="Loading notifications…" />;
-  if (error) return <ErrorState message="Failed to load notifications" onRetry={() => window.location.reload()} />;
+  if (isLoading) return <PageSkeleton variant="list" />;
+  if (error) return <ErrorState error={error} message={t("states.load.notifications")} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-6">

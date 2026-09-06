@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { RoleBadge } from "@/components/ui/shared";
 import { toast } from "@/hooks/use-toast";
+import { t } from "@/lib/i18n";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import type { ConnectionRequest } from "@/types";
@@ -89,10 +90,10 @@ export function IncomingRequestsCard({ max = 4 }: { max?: number }) {
   const decide = (id: string, next: "active" | "rejected") => {
     const res = updateStatus(id, next);
     if (res.ok) {
-      toast({ title: next === "active" ? "Connection approved" : "Request rejected" });
+      toast({ title: t(next === "active" ? "toast.connection.approved" : "toast.connection.rejected") });
     } else {
       toast({
-        title: next === "active" ? "Could not approve" : "Could not reject",
+        title: t(next === "active" ? "toast.connection.approveFailed" : "toast.connection.rejectFailed"),
         description: res.reason,
         variant: "destructive",
       });

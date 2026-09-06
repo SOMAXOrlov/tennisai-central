@@ -16,7 +16,7 @@ import { notificationsApi } from "@/api/endpoints/notifications";
 import { profileApi, calendarPreferencesApi, type CalendarPreferences } from "@/api/endpoints/profile";
 import { trainingPlansApi } from "@/api/endpoints/trainingPlans";
 import type { TrainingSession, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
-import { toast } from "sonner";
+import { toastSuccess, toastError } from "@/lib/feedback";
 
 // ─── Query Keys ───
 export const queryKeys = {
@@ -84,8 +84,8 @@ export function useCreateTraining() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: Omit<TrainingSession, "id" | "createdAt">) => trainingsApi.createTraining(data),
-    onSuccess: () => { inv.training(); toast.success("Training created"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to create training"),
+    onSuccess: () => { inv.training(); toastSuccess("toast.training.created"); },
+    onError: (e: unknown) => toastError("toast.training.createFailed", e),
   });
 }
 
@@ -93,8 +93,8 @@ export function useUpdateTraining() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<TrainingSession> }) => trainingsApi.updateTraining(id, data),
-    onSuccess: () => { inv.training(); toast.success("Training updated"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to update training"),
+    onSuccess: () => { inv.training(); toastSuccess("toast.training.updated"); },
+    onError: (e: unknown) => toastError("toast.training.updateFailed", e),
   });
 }
 
@@ -102,8 +102,8 @@ export function useDeleteTraining() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (id: string) => trainingsApi.deleteTraining(id),
-    onSuccess: () => { inv.training(); toast.success("Training deleted"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to delete training"),
+    onSuccess: () => { inv.training(); toastSuccess("toast.training.deleted"); },
+    onError: (e: unknown) => toastError("toast.training.deleteFailed", e),
   });
 }
 
@@ -118,8 +118,8 @@ export function useSaveTrainingFeedback() {
   return useMutation({
     mutationFn: ({ id, feedback }: { id: string; feedback: PlayerSessionFeedback }) =>
       trainingsApi.saveFeedback(id, feedback),
-    onSuccess: () => { inv.training(); toast.success("Feedback saved"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save feedback"),
+    onSuccess: () => { inv.training(); toastSuccess("toast.training.feedbackSaved"); },
+    onError: (e: unknown) => toastError("toast.training.feedbackFailed", e),
   });
 }
 
@@ -127,8 +127,8 @@ export function useAnalyzeTraining() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (id: string) => trainingsApi.analyzeTraining(id),
-    onSuccess: () => { inv.training(); toast.success("Analysis ready"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to analyze training"),
+    onSuccess: () => { inv.training(); toastSuccess("toast.training.analysisReady"); },
+    onError: (e: unknown) => toastError("toast.training.analyzeFailed", e),
   });
 }
 
@@ -145,8 +145,8 @@ export function useCreateTrainingRequest() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: Omit<TrainingRequest, "id" | "createdAt" | "updatedAt" | "status">) => trainingRequestsApi.createRequest(data),
-    onSuccess: () => { inv.trainingRequest(); toast.success("Training request sent"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to send request"),
+    onSuccess: () => { inv.trainingRequest(); toastSuccess("toast.request.sent"); },
+    onError: (e: unknown) => toastError("toast.request.sendFailed", e),
   });
 }
 
@@ -154,8 +154,8 @@ export function useApproveTrainingRequest() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, coachMessage }: { id: string; coachMessage?: string }) => trainingRequestsApi.approve(id, coachMessage),
-    onSuccess: () => { inv.trainingRequest(); toast.success("Request approved"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to approve"),
+    onSuccess: () => { inv.trainingRequest(); toastSuccess("toast.request.approved"); },
+    onError: (e: unknown) => toastError("toast.request.approveFailed", e),
   });
 }
 
@@ -163,8 +163,8 @@ export function useRejectTrainingRequest() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, coachMessage }: { id: string; coachMessage?: string }) => trainingRequestsApi.reject(id, coachMessage),
-    onSuccess: () => { inv.trainingRequest(); toast.success("Request declined"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to decline"),
+    onSuccess: () => { inv.trainingRequest(); toastSuccess("toast.request.declined"); },
+    onError: (e: unknown) => toastError("toast.request.declineFailed", e),
   });
 }
 
@@ -173,8 +173,8 @@ export function useRescheduleTrainingRequest() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: { proposedDate: string; proposedStartTime: string; proposedEndTime: string; coachMessage?: string } }) =>
       trainingRequestsApi.reschedule(id, data),
-    onSuccess: () => { inv.trainingRequest(); toast.success("New time proposed"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to reschedule"),
+    onSuccess: () => { inv.trainingRequest(); toastSuccess("toast.request.rescheduled"); },
+    onError: (e: unknown) => toastError("toast.request.rescheduleFailed", e),
   });
 }
 
@@ -182,8 +182,8 @@ export function useCancelTrainingRequest() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (id: string) => trainingRequestsApi.cancel(id),
-    onSuccess: () => { inv.trainingRequest(); toast.success("Request cancelled"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to cancel"),
+    onSuccess: () => { inv.trainingRequest(); toastSuccess("toast.request.cancelled"); },
+    onError: (e: unknown) => toastError("toast.request.cancelFailed", e),
   });
 }
 
@@ -200,8 +200,8 @@ export function useCreateTeam() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: { name: string; coachId: string; description?: string }) => teamsApi.createTeam(data),
-    onSuccess: () => { inv.team(); toast.success("Team created"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to create team"),
+    onSuccess: () => { inv.team(); toastSuccess("toast.team.created"); },
+    onError: (e: unknown) => toastError("toast.team.createFailed", e),
   });
 }
 
@@ -217,20 +217,36 @@ export function useCreateTrainingPlan() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: TrainingPlanCreateInput) => trainingPlansApi.create(input),
-    onSuccess: (res) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.trainingPlans });
-      toast.success(res.message ?? "Session saved");
+      toastSuccess("toast.plan.saved");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save session"),
+    onError: (e: unknown) => toastError("toast.plan.saveFailed", e),
   });
 }
 
+// Optimistic: renaming a team is a field patch on a row the coach is looking
+// at, and the rename dialog closes on submit — without this the old name would
+// sit on the card for a round trip. Restored verbatim if the save fails.
 export function useUpdateTeam() {
+  const qc = useQueryClient();
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Team> }) => teamsApi.updateTeam(id, data),
-    onSuccess: () => { inv.team(); toast.success("Team updated"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to update team"),
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.teams });
+      const previous = qc.getQueryData<Team[]>(queryKeys.teams);
+      qc.setQueryData<Team[]>(queryKeys.teams, (old) =>
+        old?.map((team) => (team.id === id ? { ...team, ...data } : team)),
+      );
+      return { previous };
+    },
+    onSuccess: () => { toastSuccess("toast.team.updated"); },
+    onError: (e: unknown, _vars, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.teams, ctx.previous);
+      toastError("toast.team.updateFailed", e);
+    },
+    onSettled: () => { inv.team(); },
   });
 }
 
@@ -238,8 +254,8 @@ export function useDeleteTeam() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (id: string) => teamsApi.deleteTeam(id),
-    onSuccess: () => { inv.team(); toast.success("Team deleted"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to delete team"),
+    onSuccess: () => { inv.team(); toastSuccess("toast.team.deleted"); },
+    onError: (e: unknown) => toastError("toast.team.deleteFailed", e),
   });
 }
 
@@ -247,8 +263,8 @@ export function useAddTeamMember() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ teamId, player }: { teamId: string; player: ConnectedPlayer }) => teamsApi.addTeamMember(teamId, player),
-    onSuccess: () => { inv.team(); toast.success("Player added to team"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to add player"),
+    onSuccess: () => { inv.team(); toastSuccess("toast.team.playerAdded"); },
+    onError: (e: unknown) => toastError("toast.team.addPlayerFailed", e),
   });
 }
 
@@ -256,8 +272,8 @@ export function useRemoveTeamMember() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ teamId, playerId }: { teamId: string; playerId: string }) => teamsApi.removeTeamMember(teamId, playerId),
-    onSuccess: () => { inv.team(); toast.success("Player removed from team"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to remove player"),
+    onSuccess: () => { inv.team(); toastSuccess("toast.team.playerRemoved"); },
+    onError: (e: unknown) => toastError("toast.team.removePlayerFailed", e),
   });
 }
 
@@ -274,8 +290,8 @@ export function useCreateCalendarEvent() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: Omit<CalendarEvent, "id">) => calendarApi.createEvent(data),
-    onSuccess: () => { inv.calendar(); toast.success("Event created"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to create event"),
+    onSuccess: () => { inv.calendar(); toastSuccess("toast.event.created"); },
+    onError: (e: unknown) => toastError("toast.event.createFailed", e),
   });
 }
 
@@ -283,8 +299,8 @@ export function useUpdateCalendarEvent() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CalendarEvent> }) => calendarApi.updateEvent(id, data),
-    onSuccess: () => { inv.calendar(); toast.success("Event updated"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to update event"),
+    onSuccess: () => { inv.calendar(); toastSuccess("toast.event.updated"); },
+    onError: (e: unknown) => toastError("toast.event.updateFailed", e),
   });
 }
 
@@ -292,8 +308,8 @@ export function useDeleteCalendarEvent() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (id: string) => calendarApi.deleteEvent(id),
-    onSuccess: () => { inv.calendar(); toast.success("Event deleted"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to delete event"),
+    onSuccess: () => { inv.calendar(); toastSuccess("toast.event.deleted"); },
+    onError: (e: unknown) => toastError("toast.event.deleteFailed", e),
   });
 }
 
@@ -328,10 +344,10 @@ export function useUpdatePlayerTournament() {
       );
       return { previous };
     },
-    onSuccess: () => { toast.success("Tournament status updated"); },
-    onError: (e: any, _vars, ctx) => {
+    onSuccess: () => { toastSuccess("toast.tournament.statusUpdated"); },
+    onError: (e: unknown, _vars, ctx) => {
       if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.playerTournaments, ctx.previous);
-      toast.error(e?.message ?? "Failed to update");
+      toastError("toast.tournament.statusFailed", e);
     },
     onSettled: () => { inv.tournament(); },
   });
@@ -341,8 +357,8 @@ export function useAddPlayerTournament() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: Omit<PlayerTournament, "id">) => tournamentsApi.addPlayerTournament(data),
-    onSuccess: () => { inv.tournament(); toast.success("Added to schedule"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to add"),
+    onSuccess: () => { inv.tournament(); toastSuccess("toast.tournament.addedToSchedule"); },
+    onError: (e: unknown) => toastError("toast.tournament.addFailed", e),
   });
 }
 
@@ -350,8 +366,8 @@ export function useRemovePlayerTournament() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (id: string) => tournamentsApi.removePlayerTournament(id),
-    onSuccess: () => { inv.tournament(); toast.success("Removed from schedule"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to remove"),
+    onSuccess: () => { inv.tournament(); toastSuccess("toast.tournament.removedFromSchedule"); },
+    onError: (e: unknown) => toastError("toast.tournament.removeFailed", e),
   });
 }
 
@@ -378,10 +394,10 @@ export function useHideTournament() {
       );
       return { previous };
     },
-    onSuccess: () => { toast.success("Tournament hidden"); },
-    onError: (e: any, _tournamentId, ctx) => {
+    onSuccess: () => { toastSuccess("toast.tournament.hidden"); },
+    onError: (e: unknown, _tournamentId, ctx) => {
       if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.hiddenTournaments, ctx.previous);
-      toast.error(e?.message ?? "Failed to hide tournament");
+      toastError("toast.tournament.hideFailed", e);
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hiddenTournaments });
@@ -400,10 +416,10 @@ export function useUnhideTournament() {
       qc.setQueryData<string[]>(queryKeys.hiddenTournaments, (old) => old?.filter((id) => id !== tournamentId));
       return { previous };
     },
-    onSuccess: () => { toast.success("Tournament unhidden"); },
-    onError: (e: any, _tournamentId, ctx) => {
+    onSuccess: () => { toastSuccess("toast.tournament.unhidden"); },
+    onError: (e: unknown, _tournamentId, ctx) => {
       if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.hiddenTournaments, ctx.previous);
-      toast.error(e?.message ?? "Failed to unhide tournament");
+      toastError("toast.tournament.unhideFailed", e);
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.hiddenTournaments });
@@ -435,8 +451,8 @@ export function useCreateFinanceEntry() {
   return useMutation({
     mutationFn: ({ playerId, data }: { playerId: string; data: Omit<FinanceEntry, "id" | "createdAt" | "playerId"> }) =>
       financeApi.createEntry(playerId, data),
-    onSuccess: (_, vars) => { inv.finance(vars.playerId); toast.success("Expense added"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to add expense"),
+    onSuccess: (_, vars) => { inv.finance(vars.playerId); toastSuccess("toast.finance.added"); },
+    onError: (e: unknown) => toastError("toast.finance.addFailed", e),
   });
 }
 
@@ -454,8 +470,8 @@ export function useCreateEquipment() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: Omit<EquipmentItem, "id">) => equipmentApi.createItem(data),
-    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toast.success("Equipment added"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to add equipment"),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toastSuccess("toast.equipment.added"); },
+    onError: (e: unknown) => toastError("toast.equipment.addFailed", e),
   });
 }
 
@@ -464,8 +480,8 @@ export function useUpdateEquipment() {
   return useMutation({
     mutationFn: ({ id, data, playerId }: { id: string; data: Partial<EquipmentItem>; playerId: string }) =>
       equipmentApi.updateItem(id, data),
-    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toast.success("Equipment updated"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to update"),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toastSuccess("toast.equipment.updated"); },
+    onError: (e: unknown) => toastError("toast.equipment.updateFailed", e),
   });
 }
 
@@ -473,8 +489,8 @@ export function useDeleteEquipment() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id, playerId }: { id: string; playerId: string }) => equipmentApi.deleteItem(id),
-    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toast.success("Equipment removed"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to delete"),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toastSuccess("toast.equipment.removed"); },
+    onError: (e: unknown) => toastError("toast.equipment.removeFailed", e),
   });
 }
 
@@ -504,8 +520,9 @@ export function useMarkNotificationRead() {
       );
       return { previous };
     },
-    onError: (_e, _id, ctx) => {
+    onError: (e: unknown, _id, ctx) => {
       ctx?.previous.forEach(([key, data]) => { qc.setQueryData(key, data); });
+      toastError("toast.notification.markReadFailed", e);
     },
     onSettled: () => { qc.invalidateQueries({ queryKey: ["notifications"] }); },
   });
@@ -515,7 +532,8 @@ export function useMarkAllNotificationsRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => notificationsApi.markAllRead(userId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["notifications"] }); toast.success("All marked as read"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["notifications"] }); toastSuccess("toast.notification.allRead"); },
+    onError: (e: unknown) => toastError("toast.notification.allReadFailed", e),
   });
 }
 
@@ -526,12 +544,36 @@ export function useNotificationPreferences() {
   });
 }
 
+/** Shared by every in-flight preference save, so a burst of toggles can be counted (see onSettled). */
+const NOTIFICATION_PREFS_MUTATION_KEY = ["updateNotificationPrefs"] as const;
+
+// Optimistic: a preference is one boolean on a record the client already
+// holds. The switch flips as it is tapped; if the save fails the record is put
+// back and a toast says so. No success toast — the switch staying flipped is
+// the confirmation, and six toasts for six toggles would be noise.
 export function useUpdateNotificationPreferences() {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: NOTIFICATION_PREFS_MUTATION_KEY,
     mutationFn: (data: Partial<NotificationSettings>) => notificationsApi.updatePreferences(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.notificationPrefs }); toast.success("Preferences saved"); },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save preferences"),
+    onMutate: async (data) => {
+      await qc.cancelQueries({ queryKey: queryKeys.notificationPrefs });
+      const previous = qc.getQueryData<NotificationSettings>(queryKeys.notificationPrefs);
+      qc.setQueryData<NotificationSettings>(queryKeys.notificationPrefs, (old) => (old ? { ...old, ...data } : old));
+      return { previous };
+    },
+    onError: (e: unknown, _data, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData(queryKeys.notificationPrefs, ctx.previous);
+      toastError("toast.notification.preferenceFailed", e);
+    },
+    // Refetch only when the LAST toggle settles: an early response would carry
+    // a record that predates the later taps and flick those switches back
+    // until their own responses land (the attendance register does the same).
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: NOTIFICATION_PREFS_MUTATION_KEY }) === 1) {
+        qc.invalidateQueries({ queryKey: queryKeys.notificationPrefs });
+      }
+    },
   });
 }
 
@@ -540,8 +582,8 @@ export function useUpdateNotificationPreferences() {
 export function useUpdateProfile() {
   return useMutation({
     mutationFn: (data: Partial<User>) => profileApi.updateProfile(data),
-    onSuccess: () => toast.success("Profile updated"),
-    onError: (e: any) => toast.error(e?.message ?? "Failed to update profile"),
+    onSuccess: () => toastSuccess("toast.profile.updated"),
+    onError: (e: unknown) => toastError("toast.profile.updateFailed", e),
   });
 }
 
@@ -577,11 +619,11 @@ export function useSaveCalendarPreferences() {
       });
       return { previous };
     },
-    onError: (e: any, _vars, context) => {
+    onError: (e: unknown, _vars, context) => {
       // Put the old choice back rather than leaving the UI showing a state the
       // server never accepted.
       if (context?.previous) queryClient.setQueryData(queryKeys.calendarPrefs, context.previous);
-      toast.error(e?.message ?? "Could not save your calendar choice");
+      toastError("toast.calendarPrefs.saveFailed", e);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.calendarPrefs }),
   });

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 
 /**
  * Counts a number up to its target on mount / when the target changes.
@@ -12,11 +13,12 @@ export function useCountUp(target: number, durationMs = 700) {
   const [value, setValue] = useState(target);
   const frame = useRef<number>();
   const from = useRef(target);
+  // Live, not a one-off read: someone who turns "reduce motion" on mid-session
+  // gets the next figure without a count-up.
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     // Respect the OS setting: land on the final number immediately.
-    const reduced =
-      typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced || !Number.isFinite(target)) {
       setValue(target);
       return;
@@ -42,7 +44,7 @@ export function useCountUp(target: number, durationMs = 700) {
       if (frame.current) cancelAnimationFrame(frame.current);
       from.current = target; // don't replay from stale state on the next change
     };
-  }, [target, durationMs]);
+  }, [target, durationMs, reduced]);
 
   return value;
 }

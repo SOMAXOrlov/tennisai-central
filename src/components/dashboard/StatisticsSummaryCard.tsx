@@ -14,6 +14,7 @@ import { ArrowRight, BarChart3, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { ErrorState, LoadingState } from "@/components/ui/shared";
+import { useT } from "@/lib/i18n";
 import { useMatchStats } from "@/hooks/api/matches";
 import { NO_VALUE, formatPct, formatWinLoss } from "@/lib/stats/format";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,7 @@ function FormChip({ entry }: { entry: RecentFormMatch }) {
 
 export function StatisticsSummaryCard() {
   const { data: stats, isLoading, error, refetch } = useMatchStats();
+  const { t } = useT();
 
   const card = (children: React.ReactNode) => (
     <DashboardCard
@@ -77,10 +79,10 @@ export function StatisticsSummaryCard() {
     </DashboardCard>
   );
 
-  if (isLoading) return card(<LoadingState className="py-8" message="Loading your statistics…" />);
+  if (isLoading) return card(<LoadingState className="py-8" rows={4} />);
   if (error || !stats) {
     return card(
-      <ErrorState className="py-8" message="Couldn't load your match statistics." onRetry={() => void refetch()} />,
+      <ErrorState className="py-8" error={error} message={t("states.load.stats")} onRetry={() => void refetch()} />,
     );
   }
 

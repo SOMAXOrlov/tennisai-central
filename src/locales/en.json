@@ -870,5 +870,175 @@
     "checkNow": "Check now",
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
+  },
+  "states": {
+    "loading": "Loading…",
+    "errorTitle": "Something went wrong",
+    "errorFallback": "We couldn't load this. Please try again.",
+    "retry": "Try again",
+    "offline": "You're offline. Reconnect and try again.",
+    "serverError": "The server didn't respond. Try again in a moment.",
+    "accessDenied": {
+      "title": "Access denied",
+      "body": "You don't have permission to view this page."
+    },
+    "boundary": {
+      "title": "Something went wrong",
+      "body": "An unexpected error interrupted this page. You can try again, reload, or head back to your dashboard.",
+      "tryAgain": "Try again",
+      "reload": "Reload",
+      "backToDashboard": "Back to dashboard",
+      "copyDiagnostics": "Copy diagnostics",
+      "copied": "Diagnostics copied",
+      "copyFailed": "Couldn't copy automatically — select the text below and copy it.",
+      "diagnosticsHint": "Diagnostics include the page, the time, the error and your browser. No account data."
+    },
+    "load": {
+      "trainings": "Couldn't load the trainings.",
+      "calendar": "Couldn't load the calendar.",
+      "equipment": "Couldn't load the equipment.",
+      "finance": "Couldn't load the finance data.",
+      "teams": "Couldn't load the teams.",
+      "requests": "Couldn't load the training requests.",
+      "notifications": "Couldn't load the notifications.",
+      "preferences": "Couldn't load the notification preferences.",
+      "stats": "Couldn't load the statistics.",
+      "matches": "Couldn't load the matches.",
+      "plans": "Couldn't load the training plans.",
+      "plan": "Couldn't load this training plan.",
+      "dashboard": "Couldn't load the dashboard.",
+      "playerEquipment": "Couldn't load {name}'s equipment."
+    }
+  },
+  "toast": {
+    "common": {
+      "nextStep": "Check your connection and try again.",
+      "undo": "Undo"
+    },
+    "training": {
+      "created": "Training created",
+      "updated": "Training updated",
+      "deleted": "Training deleted",
+      "feedbackSaved": "Feedback saved",
+      "analysisReady": "Analysis ready",
+      "createFailed": "Couldn't create the training",
+      "updateFailed": "Couldn't update the training",
+      "deleteFailed": "Couldn't delete the training",
+      "feedbackFailed": "Couldn't save the feedback",
+      "analyzeFailed": "Couldn't analyse the training",
+      "attendanceFailed": "Couldn't save the attendance"
+    },
+    "request": {
+      "sent": "Training request sent",
+      "approved": "Request approved",
+      "declined": "Request declined",
+      "rescheduled": "New time proposed",
+      "cancelled": "Request cancelled",
+      "sendFailed": "Couldn't send the request",
+      "approveFailed": "Couldn't approve the request",
+      "declineFailed": "Couldn't decline the request",
+      "rescheduleFailed": "Couldn't propose a new time",
+      "cancelFailed": "Couldn't cancel the request"
+    },
+    "team": {
+      "created": "Team created",
+      "updated": "Team updated",
+      "deleted": "Team deleted",
+      "playerAdded": "Player added to the team",
+      "playerRemoved": "Player removed from the team",
+      "createFailed": "Couldn't create the team",
+      "updateFailed": "Couldn't update the team",
+      "deleteFailed": "Couldn't delete the team",
+      "addPlayerFailed": "Couldn't add the player",
+      "removePlayerFailed": "Couldn't remove the player"
+    },
+    "plan": {
+      "saved": "Session saved",
+      "saveFailed": "Couldn't save the session",
+      "drillFailed": "Couldn't update the drill"
+    },
+    "event": {
+      "created": "Event created",
+      "updated": "Event updated",
+      "deleted": "Event deleted",
+      "rescheduled": "Event rescheduled",
+      "reassigned": "Event reassigned to {name}",
+      "movedToOwn": "Event moved to your schedule",
+      "reassignUndone": "Reassignment undone",
+      "seriesDeleted": "All events in the series deleted",
+      "occurrenceRemoved": "This occurrence removed",
+      "occurrenceRemoveFailed": "Couldn't remove this occurrence",
+      "notRecurring": "This event doesn't repeat, so there's no single occurrence to remove.",
+      "exported": "{count, plural, one {Exported # event} other {Exported # events}} — {heading}",
+      "createFailed": "Couldn't create the event",
+      "updateFailed": "Couldn't update the event",
+      "deleteFailed": "Couldn't delete the event"
+    },
+    "tournament": {
+      "statusUpdated": "Tournament status updated",
+      "addedToSchedule": "Added to the schedule",
+      "removedFromSchedule": "Removed from the schedule",
+      "hidden": "Tournament hidden",
+      "unhidden": "Tournament shown again",
+      "refreshed": "Tournaments refreshed",
+      "alreadyRegistered": "You're already registered for this tournament",
+      "statusFailed": "Couldn't update the tournament status",
+      "addFailed": "Couldn't add the tournament",
+      "removeFailed": "Couldn't remove the tournament",
+      "hideFailed": "Couldn't hide the tournament",
+      "unhideFailed": "Couldn't show the tournament again"
+    },
+    "finance": {
+      "added": "Expense added",
+      "addFailed": "Couldn't add the expense"
+    },
+    "equipment": {
+      "added": "Equipment added",
+      "updated": "Equipment updated",
+      "removed": "Equipment removed",
+      "addFailed": "Couldn't add the equipment",
+      "updateFailed": "Couldn't update the equipment",
+      "removeFailed": "Couldn't remove the equipment"
+    },
+    "notification": {
+      "allRead": "All notifications marked as read",
+      "allReadFailed": "Couldn't mark everything as read",
+      "markReadFailed": "Couldn't mark the notification as read",
+      "preferenceFailed": "Couldn't save the preference",
+      "pushEnabled": "Push notifications enabled on this device",
+      "pushFailed": "Couldn't enable push on this device"
+    },
+    "profile": {
+      "updated": "Profile updated",
+      "updateFailed": "Couldn't update the profile",
+      "publicIdCopied": "Public ID copied"
+    },
+    "calendarPrefs": {
+      "saveFailed": "Couldn't save the calendar choice"
+    },
+    "match": {
+      "logged": "Match logged",
+      "updated": "Match updated",
+      "deleted": "Match deleted",
+      "logFailed": "Couldn't log the match",
+      "updateFailed": "Couldn't update the match",
+      "deleteFailed": "Couldn't delete the match"
+    },
+    "opponent": {
+      "added": "Opponent added",
+      "updated": "Opponent updated",
+      "deleted": "Opponent deleted",
+      "addFailed": "Couldn't add the opponent",
+      "updateFailed": "Couldn't update the opponent",
+      "deleteFailed": "Couldn't delete the opponent"
+    },
+    "connection": {
+      "approved": "Connection approved",
+      "rejected": "Request rejected",
+      "revoked": "Connection revoked",
+      "approveFailed": "Couldn't approve the connection",
+      "rejectFailed": "Couldn't reject the request",
+      "revokeFailed": "Couldn't revoke the connection"
+    }
   }
 }

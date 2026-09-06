@@ -16,7 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/responsive-dialog";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/shared";
+import { EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { useT } from "@/lib/i18n";
 import { MatchForm, type MatchFormValues } from "@/components/matches/MatchForm";
 import { MatchList } from "@/components/matches/MatchList";
@@ -150,9 +151,9 @@ export default function MatchesPage() {
       </div>
 
       {isLoading ? (
-        <LoadingState message="Loading matches…" />
+        <PageSkeleton variant="list" header={false} />
       ) : error ? (
-        <ErrorState message="Failed to load your matches." onRetry={() => void refetch()} />
+        <ErrorState error={error} message={t("states.load.matches")} onRetry={() => void refetch()} />
       ) : matches.length === 0 ? (
         <EmptyState
           icon={<ClipboardList className="h-6 w-6 text-muted-foreground" />}

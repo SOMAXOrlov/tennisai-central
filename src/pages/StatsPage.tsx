@@ -16,7 +16,9 @@ import { Link } from "react-router-dom";
 import { Activity, BarChart3, ClipboardList, Loader2, Plus, Swords, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/shared";
+import { EmptyState, ErrorState } from "@/components/ui/shared";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { useT } from "@/lib/i18n";
 import {
   ExpandableMatchRow,
   HeadlineCard,
@@ -73,10 +75,10 @@ export default function StatsPage() {
     void refetchMatches();
   };
 
-  if (statsLoading || matchesLoading) return <LoadingState message="Computing your statistics…" />;
+  if (statsLoading || matchesLoading) return <PageSkeleton variant="dashboard" />;
 
   if (statsError || matchesError || !stats) {
-    return <ErrorState message="Failed to load your statistics." onRetry={retry} />;
+    return <ErrorState error={statsError ?? matchesError} message={t("states.load.stats")} onRetry={retry} />;
   }
 
   const header = (
