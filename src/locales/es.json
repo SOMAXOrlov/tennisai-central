@@ -1854,6 +1854,95 @@
       "physical": "Físico y acondicionamiento",
       "match_prep": "Preparación de partido",
       "recovery": "Recuperación o sesión suave"
+    },
+    "blockKind": {
+      "warmup": "Calentamiento",
+      "technical": "Técnica",
+      "tactical": "Táctica",
+      "live": "Bola viva",
+      "cooldown": "Vuelta a la calma",
+      "other": "Otro"
+    },
+    "blocks": {
+      "label": "Construye la sesión",
+      "empty": "Todavía no hay nada planificado. Añade un bloque por cada parte de la sesión: calentamiento, los ejercicios que tengas en mente, la vuelta a la calma.",
+      "add": "Añadir un bloque",
+      "full": "Es el máximo de bloques que puede tener una sesión ({max}).",
+      "titlePlaceholder": "p. ej. Escalera de peloteo cruzado",
+      "descriptionPlaceholder": "Qué pasa en este bloque, y cómo",
+      "coachNotesPlaceholder": "Nota privada: solo la ves tú",
+      "minutesPlaceholder": "min",
+      "plannedOnly": "{planned} min planificados",
+      "plannedMatches": "{planned} min planificados: coincide con la duración de la sesión",
+      "plannedDiffers": "{planned} min planificados de los {session} min reservados",
+      "titleAria": "Título del bloque {number}",
+      "kindAria": "Tipo del bloque {number}",
+      "minutesAria": "Minutos del bloque {number}",
+      "descriptionAria": "Descripción del bloque {number}",
+      "coachNotesAria": "Notas privadas del entrenador para el bloque {number}",
+      "moveUpAria": "Subir el bloque {number}",
+      "moveDownAria": "Bajar el bloque {number}",
+      "removeAria": "Eliminar el bloque {number}"
+    },
+    "sendToTraining": "Añadir a un entrenamiento",
+    "sentToTraining": "Sesión copiada: termina de programarla abajo",
+    "repeat": {
+      "label": "Repetir cada semana",
+      "hint": "Crea una sesión por cada fecha, así cada una tiene su propia lista de asistencia y sus notas.",
+      "days": "Repetir los",
+      "until": "Repetir hasta",
+      "untilRequired": "Elige una fecha para que termine la repetición.",
+      "daysRequired": "Elige al menos un día de la semana.",
+      "horizon": "Una repetición puede durar como máximo 26 semanas.",
+      "summary": "Se crearán {count} sesiones.",
+      "weekday": {
+        "0": "Dom",
+        "1": "Lun",
+        "2": "Mar",
+        "3": "Mié",
+        "4": "Jue",
+        "5": "Vie",
+        "6": "Sáb"
+      }
+    },
+    "scope": {
+      "label": "Aplicar a",
+      "one": "Solo esta sesión",
+      "following": "Esta y todas las siguientes",
+      "series": "Toda la repetición",
+      "pastNote": "Las sesiones que ya han ocurrido nunca se modifican."
+    },
+    "series": {
+      "badge": "Semanal",
+      "partOf": "Forma parte de una repetición semanal"
+    },
+    "cancel": {
+      "title": "¿Anular esta sesión?",
+      "body": "«{title}» se conserva y se muestra como anulada, así no pierdes la lista de asistencia ni tus notas. Se avisa a los jugadores.",
+      "confirm": "Anular la sesión",
+      "keep": "Dejarla",
+      "cancelling": "Anulando…",
+      "deleteInstead": "Eliminar definitivamente",
+      "deleteBlocked": "Ya se ha pasado lista, así que esta sesión solo se puede anular.",
+      "ariaLabel": "Anular {title}",
+      "action": "Anular sesión"
+    },
+    "cancelled": {
+      "badge": "Anulada"
+    },
+    "duplicate": {
+      "action": "Duplicar",
+      "title": "Repetir esta sesión",
+      "description": "Copia el plan y los jugadores a una fecha nueva. La lista de asistencia, la valoración y los comentarios se quedan en la original.",
+      "startDate": "Nuevo inicio",
+      "confirm": "Crear la copia",
+      "creating": "Copiando…",
+      "ariaLabel": "Duplicar {title}"
+    },
+    "detail": {
+      "plan": "Plan de la sesión",
+      "noPlan": "No se escribió ningún plan para esta sesión.",
+      "blockMinutes": "{count} min"
     }
   },
   "requests": {
@@ -2266,7 +2355,8 @@
       "saving": "Guardando…",
       "discardWhatNew": "el entrenamiento nuevo",
       "discardWhatChanges": "los cambios",
-      "saveError": "No se ha podido guardar el entrenamiento. Lo que escribiste sigue aquí: inténtalo otra vez."
+      "saveError": "No se ha podido guardar el entrenamiento. Lo que escribiste sigue aquí: inténtalo otra vez.",
+      "emptyTeam": "«{name}» todavía no tiene jugadores, así que no hay a quién entrenar. Añade jugadores al equipo, o elígelos uno a uno abajo."
     },
     "detail": {
       "title": "Detalle del entrenamiento",
@@ -2295,8 +2385,6 @@
       "editReview": "Editar la revisión",
       "reviewSession": "Revisar la sesión",
       "edit": "Editar",
-      "delete": "Eliminar",
-      "deleting": "Eliminando…",
       "editFeedback": "Editar mi opinión",
       "leaveFeedback": "Dejar mi opinión",
       "analyzeUnreachable": "No se ha podido contactar con el servicio de análisis. Revisa tu conexión e inténtalo de nuevo."
@@ -2308,14 +2396,7 @@
       "noPlayers": "Sin jugadores",
       "reviewSession": "Revisar la sesión",
       "leaveFeedback": "Dejar mi opinión",
-      "editAria": "Editar {title}",
-      "deleteAria": "Eliminar {title}"
-    },
-    "delete": {
-      "title": "Eliminar el entrenamiento",
-      "body": "¿Seguro que quieres eliminar {title}? Esta acción no se puede deshacer.",
-      "confirm": "Eliminar",
-      "deleting": "Eliminando…"
+      "editAria": "Editar {title}"
     },
     "discard": {
       "title": "¿Descartar {what}?",
@@ -2853,7 +2934,10 @@
       "deleteFailed": "No se ha podido eliminar el entrenamiento",
       "feedbackFailed": "No se ha podido guardar la opinión",
       "analyzeFailed": "No se ha podido analizar el entrenamiento",
-      "attendanceFailed": "No se ha podido guardar la asistencia"
+      "attendanceFailed": "No se ha podido guardar la asistencia",
+      "cancelled": "Entrenamiento anulado",
+      "duplicated": "Entrenamiento duplicado",
+      "duplicateFailed": "No se pudo duplicar el entrenamiento"
     },
     "request": {
       "sent": "Solicitud de entrenamiento enviada",

@@ -1854,6 +1854,95 @@
       "physical": "Physical / conditioning",
       "match_prep": "Match preparation",
       "recovery": "Recovery / light session"
+    },
+    "blockKind": {
+      "warmup": "Warm-up",
+      "technical": "Technical",
+      "tactical": "Tactical",
+      "live": "Live ball",
+      "cooldown": "Cool-down",
+      "other": "Other"
+    },
+    "blocks": {
+      "label": "Build the session",
+      "empty": "Nothing planned yet. Add a block for each part of the session — warm-up, the drills you have in mind, the cool-down.",
+      "add": "Add a block",
+      "full": "That is the most blocks one session can hold ({max}).",
+      "titlePlaceholder": "e.g. Cross-court rally ladder",
+      "descriptionPlaceholder": "What happens in this block, and how",
+      "coachNotesPlaceholder": "Private note — only you see this",
+      "minutesPlaceholder": "min",
+      "plannedOnly": "{planned} min planned",
+      "plannedMatches": "{planned} min planned — matches the session length",
+      "plannedDiffers": "{planned} min planned of {session} min booked",
+      "titleAria": "Block {number} title",
+      "kindAria": "Block {number} kind",
+      "minutesAria": "Block {number} minutes",
+      "descriptionAria": "Block {number} description",
+      "coachNotesAria": "Block {number} private coach notes",
+      "moveUpAria": "Move block {number} up",
+      "moveDownAria": "Move block {number} down",
+      "removeAria": "Remove block {number}"
+    },
+    "sendToTraining": "Add to a training",
+    "sentToTraining": "Session copied — finish scheduling it below",
+    "repeat": {
+      "label": "Repeat weekly",
+      "hint": "Creates one session for each date, so each one has its own register and notes.",
+      "days": "Repeat on",
+      "until": "Repeat until",
+      "untilRequired": "Pick a date for the repeat to end.",
+      "daysRequired": "Pick at least one day of the week.",
+      "horizon": "A repeat can run for at most 26 weeks.",
+      "summary": "{count} sessions will be created.",
+      "weekday": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      }
+    },
+    "scope": {
+      "label": "Apply to",
+      "one": "Only this session",
+      "following": "This and all later sessions",
+      "series": "The whole repeat",
+      "pastNote": "Sessions that have already happened are never changed."
+    },
+    "series": {
+      "badge": "Weekly",
+      "partOf": "Part of a weekly repeat"
+    },
+    "cancel": {
+      "title": "Cancel this session?",
+      "body": "“{title}” will be kept and shown as cancelled, so the register and your notes survive. The players are told.",
+      "confirm": "Cancel the session",
+      "keep": "Keep it",
+      "cancelling": "Cancelling…",
+      "deleteInstead": "Delete permanently",
+      "deleteBlocked": "The register has been taken, so this session can only be cancelled.",
+      "ariaLabel": "Cancel {title}",
+      "action": "Cancel session"
+    },
+    "cancelled": {
+      "badge": "Cancelled"
+    },
+    "duplicate": {
+      "action": "Duplicate",
+      "title": "Repeat this session",
+      "description": "Copies the plan and the players to a new date. The register, the review and the feedback stay with the original.",
+      "startDate": "New start",
+      "confirm": "Create the copy",
+      "creating": "Copying…",
+      "ariaLabel": "Duplicate {title}"
+    },
+    "detail": {
+      "plan": "Session plan",
+      "noPlan": "No plan was written for this session.",
+      "blockMinutes": "{count} min"
     }
   },
   "requests": {
@@ -2266,7 +2355,8 @@
       "saving": "Saving…",
       "discardWhatNew": "new training",
       "discardWhatChanges": "changes",
-      "saveError": "Could not save the training. Your input is still here — try again."
+      "saveError": "Could not save the training. Your input is still here — try again.",
+      "emptyTeam": "“{name}” has no players in it yet, so there is nobody to train. Add players to the team, or pick them individually below."
     },
     "detail": {
       "title": "Training Detail",
@@ -2295,8 +2385,6 @@
       "editReview": "Edit Review",
       "reviewSession": "Review Session",
       "edit": "Edit",
-      "delete": "Delete",
-      "deleting": "Deleting…",
       "editFeedback": "Edit Feedback",
       "leaveFeedback": "Leave Feedback",
       "analyzeUnreachable": "Unable to reach the analysis service. Check your connection and try again."
@@ -2308,14 +2396,7 @@
       "noPlayers": "No players",
       "reviewSession": "Review session",
       "leaveFeedback": "Leave feedback",
-      "editAria": "Edit {title}",
-      "deleteAria": "Delete {title}"
-    },
-    "delete": {
-      "title": "Delete Training",
-      "body": "Are you sure you want to delete {title}? This action cannot be undone.",
-      "confirm": "Delete",
-      "deleting": "Deleting…"
+      "editAria": "Edit {title}"
     },
     "discard": {
       "title": "Discard your {what}?",
@@ -2853,7 +2934,10 @@
       "deleteFailed": "Couldn't delete the training",
       "feedbackFailed": "Couldn't save the feedback",
       "analyzeFailed": "Couldn't analyse the training",
-      "attendanceFailed": "Couldn't save the attendance"
+      "attendanceFailed": "Couldn't save the attendance",
+      "cancelled": "Training cancelled",
+      "duplicated": "Training duplicated",
+      "duplicateFailed": "Couldn't duplicate the training"
     },
     "request": {
       "sent": "Training request sent",

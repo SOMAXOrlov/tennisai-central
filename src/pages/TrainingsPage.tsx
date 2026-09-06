@@ -1,10 +1,11 @@
 // Training Management — Full Coach CRUD via React Query
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useConnections } from "@/store/ConnectionStore";
 import { hasCoachCounterpart } from "@/lib/connections/hasCoachCounterpart";
 import { getDateFnsLocale, interleave, slot, t as translate, useT } from "@/lib/i18n";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
+import { toastSuccess } from "@/lib/feedback";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,9 @@ import { TeamFilterSelect } from "@/components/TeamFilterSelect";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { PlayerDetailDrawer } from "@/components/PlayerDetailDrawer";
 import {
-  Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil, Trash2,
+  Dumbbell, Plus, Calendar, MapPin, Clock, Users, Pencil,
   Target, Zap, StickyNote, Search, Star, ClipboardCheck, MessageCircle, Sparkles, RefreshCw, AlertCircle,
+  CopyPlus, Repeat, XCircle,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrainingReviewDialog } from "@/components/training/TrainingReviewDialog";
@@ -28,10 +30,19 @@ import { PlayerFeedbackDialog } from "@/components/training/PlayerFeedbackDialog
 import { DiscardChangesDialog } from "@/components/training/DiscardChangesDialog";
 import { TrainingAdvicePanel } from "@/components/training/TrainingAdvicePanel";
 import { AttendanceRegister } from "@/components/training/AttendanceRegister";
+import { SessionBlocksEditor } from "@/components/training/SessionBlocksEditor";
+import { SessionPlanView } from "@/components/training/SessionPlanView";
+import { SeriesScopeField } from "@/components/training/SeriesScopeField";
+import { CancelTrainingDialog } from "@/components/training/CancelTrainingDialog";
+import { DuplicateTrainingDialog } from "@/components/training/DuplicateTrainingDialog";
+import { WeeklyRepeatFields, emptyRepeat, type WeeklyRepeatValue } from "@/components/training/WeeklyRepeatFields";
 import type { AdviceSession } from "@/api/endpoints/aiAdvice";
-import type { TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback, AttendanceStatus } from "@/types";
+import type {
+  TrainingSession, TrainingType, ConnectedPlayer, PlayerSessionFeedback, AttendanceStatus,
+  TrainingBlockInput, TrainingScope,
+} from "@/types";
 import { useAuth } from "@/auth/AuthContext";
-import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useTeams, useAnalyzeTraining, useSaveTrainingFeedback } from "@/hooks/api/queries";
+import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, useDuplicateTraining, useTeams, useAnalyzeTraining, useSaveTrainingFeedback } from "@/hooks/api/queries";
 import { useMarkAttendance } from "@/hooks/api/useTrainingAttendance";
 import { format, parseISO, isPast } from "date-fns";
 
@@ -74,11 +85,18 @@ interface TrainingFormData {
   coachNotes: string;
   playerIds: string[];
   teamId: string;
+  /** What actually happens in the session, in the coach's own words. */
+  blocks: TrainingBlockInput[];
+  /** Create only — a live series is never re-shaped in place. */
+  repeat: WeeklyRepeatValue;
+  /** Edit only, and only when the session belongs to a series. */
+  scope: TrainingScope;
 }
 
 const emptyForm: TrainingFormData = {
   title: "", trainingType: "individual", startDate: "", endDate: "", location: "",
   goal: "", intensity: "medium", notes: "", coachNotes: "", playerIds: [], teamId: "",
+  blocks: [], repeat: emptyRepeat, scope: "one",
 };
 
 function toForm(t: TrainingSession): TrainingFormData {
@@ -90,16 +108,34 @@ function toForm(t: TrainingSession): TrainingFormData {
     intensity: t.intensity ?? "medium", notes: t.notes ?? "",
     coachNotes: t.coachNotes ?? "", playerIds: [...t.playerIds],
     teamId: t.teamId ?? "",
+    // Strip id and order: position in the array IS the order, and the server
+    // assigns fresh ids. Sending them back would invite two blocks to claim
+    // the same slot after a reorder.
+    blocks: [...(t.blocks ?? [])]
+      .sort((a, b) => a.order - b.order)
+      .map(({ id: _id, order: _order, ...rest }) => rest),
+    repeat: emptyRepeat,
+    scope: "one",
   };
 }
 
+/** The booked length of the session, for the block total to be shown against. */
+function sessionMinutesOf(startDate: string, endDate: string): number | undefined {
+  if (!startDate || !endDate) return undefined;
+  const ms = new Date(endDate).getTime() - new Date(startDate).getTime();
+  if (Number.isNaN(ms) || ms <= 0) return undefined;
+  return Math.round(ms / 60000);
+}
+
 function TrainingFormDialog({
-  open, onOpenChange, initial, onSave, saving, preselectedPlayerIds,
+  open, onOpenChange, initial, onSave, saving, preselectedPlayerIds, preselectedBlocks,
 }: {
   open: boolean; onOpenChange: (o: boolean) => void;
   /** Rejects when the save fails — the dialog then stays open with the input intact. */
   initial?: TrainingSession; onSave: (data: TrainingFormData) => void | Promise<void>; saving?: boolean;
   preselectedPlayerIds?: string[];
+  /** A session handed over from the Session Builder, for the coach to edit. */
+  preselectedBlocks?: TrainingBlockInput[];
 }) {
   const { connectedPlayers } = useConnections();
   const { t } = useT();
@@ -108,6 +144,7 @@ function TrainingFormDialog({
     if (initial) return toForm(initial);
     const base = { ...emptyForm };
     if (preselectedPlayerIds?.length) base.playerIds = [...preselectedPlayerIds];
+    if (preselectedBlocks?.length) base.blocks = preselectedBlocks.map((b) => ({ ...b }));
     return base;
   });
   const pristine = useRef(JSON.stringify(form));
@@ -127,11 +164,24 @@ function TrainingFormDialog({
     }));
   };
 
+  /**
+   * Picking a team fills the participant list from the roster AS IT STANDS NOW.
+   * That snapshot is the whole design: participants are stored as rows, so a
+   * player who joins the team next month is not retroactively added to sessions
+   * that already ran, and one who leaves does not vanish from the register of a
+   * session they attended. The coach can still add or remove individuals after.
+   */
   const selectTeam = (teamId: string) => {
     if (teamId === "__none__") { update("teamId", ""); return; }
     const team = teams.find((t) => t.id === teamId);
     if (team) { update("teamId", teamId); update("playerIds", team.players.map((p) => p.id)); }
   };
+
+  const selectedTeam = teams.find((team) => team.id === form.teamId);
+  // A team with nobody in it produces a session with no participants, no
+  // register to take and nobody to notify — and the coach finds out on the day.
+  // Refused here and, independently, on the server.
+  const emptyTeam = Boolean(selectedTeam) && form.playerIds.length === 0;
 
   /**
    * Fills the form from a suggestion. Deliberately additive and overwritable:
@@ -160,7 +210,17 @@ function TrainingFormDialog({
     });
   };
 
-  const valid = form.title.trim() && form.startDate && form.endDate;
+  // A repeat that cannot be expanded is not a repeat. Both parts are required
+  // the moment the box is ticked, or the coach saves one session believing he
+  // scheduled a term of them.
+  const repeatIncomplete =
+    form.repeat.enabled && (form.repeat.byWeekday.length === 0 || !form.repeat.until);
+  const everyBlockNamed = form.blocks.every((b) => b.title.trim().length > 0);
+  const valid =
+    Boolean(form.title.trim() && form.startDate && form.endDate) &&
+    !emptyTeam &&
+    !repeatIncomplete &&
+    everyBlockNamed;
 
   // Only close once the mutation has actually succeeded — a failed save must
   // leave the coach's input exactly where it was.
@@ -231,6 +291,12 @@ function TrainingFormDialog({
               </SelectContent>
             </Select>
           </div>
+          {emptyTeam && (
+            <p className="flex items-start gap-1.5 border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {t("training.form.emptyTeam", { name: selectedTeam?.name ?? "" })}
+            </p>
+          )}
           <div className="space-y-2">
             <Label>{t("training.form.players")}</Label>
             {connectedPlayers.length === 0 ? (
@@ -252,6 +318,37 @@ function TrainingFormDialog({
             teamId={form.teamId}
             onApply={applyAdvice}
           />
+
+          {/* The session itself — what actually happens on court. */}
+          <SessionBlocksEditor
+            value={form.blocks}
+            onChange={(blocks) => update("blocks", blocks)}
+            sessionMinutes={sessionMinutesOf(form.startDate, form.endDate)}
+            disabled={saving}
+          />
+
+          {/* Repeats are offered on CREATE only. Re-shaping a live series in
+              place would have to decide what happens to the registers already
+              taken on the occurrences it replaced. */}
+          {!initial && (
+            <WeeklyRepeatFields
+              value={form.repeat}
+              onChange={(repeat) => update("repeat", repeat)}
+              startDate={form.startDate}
+              disabled={saving}
+            />
+          )}
+
+          {/* And the mirror image: on an occurrence of an existing series, ask
+              which of them this edit is meant to reach. */}
+          {initial?.seriesId && (
+            <SeriesScopeField
+              value={form.scope}
+              onChange={(scope) => update("scope", scope)}
+              disabled={saving}
+              name="edit-scope"
+            />
+          )}
           <div className="space-y-1.5"><Label htmlFor="training-notes">{t("training.form.notes")}</Label><Textarea id="training-notes" value={form.notes} onChange={(e) => update("notes", e.target.value)} placeholder={t("training.form.notesPlaceholder")} rows={2} /></div>
           <div className="space-y-1.5"><Label htmlFor="training-coach-notes">{t("training.form.coachNotes")} <span className="text-muted-foreground">{t("training.form.coachNotesPrivate")}</span></Label><Textarea id="training-coach-notes" value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder={t("training.form.coachNotesPlaceholder")} rows={2} /></div>
           {saveError && (
@@ -282,11 +379,11 @@ function TrainingFormDialog({
 // ─── Training Detail Drawer ───
 
 function TrainingDetailDrawer({
-  training, open, onOpenChange, onEdit, onDelete, onReview, onPlayerFeedback, readOnly, isPlayer, deleting,
+  training, open, onOpenChange, onEdit, onDelete, onDuplicate, onReview, onPlayerFeedback, readOnly, isPlayer, deleting,
   onAnalyze, analyzing, analyzeError, canMarkAttendance, viewerId, onMarkAttendance, attendancePendingFor,
 }: {
   training: TrainingSession | null; open: boolean; onOpenChange: (o: boolean) => void;
-  onEdit: () => void; onDelete: () => void; onReview?: () => void; onPlayerFeedback?: () => void;
+  onEdit: () => void; onDelete: () => void; onDuplicate?: () => void; onReview?: () => void; onPlayerFeedback?: () => void;
   readOnly?: boolean; isPlayer?: boolean; deleting?: boolean;
   onAnalyze?: () => void; analyzing?: boolean; analyzeError?: string | null;
   canMarkAttendance?: boolean; viewerId?: string;
@@ -307,8 +404,16 @@ function TrainingDetailDrawer({
       <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader><SheetTitle className="flex items-center gap-2"><Dumbbell className="h-4 w-4 text-primary" />{t("training.detail.title")}</SheetTitle></SheetHeader>
         <div className="mt-4 space-y-5">
-          <h3 className="text-lg font-semibold text-foreground">{training.title}</h3>
+          <h3 className={`text-lg font-semibold text-foreground${training.status === "cancelled" ? " line-through" : ""}`}>{training.title}</h3>
           <div className="flex flex-wrap gap-2">
+            {training.status === "cancelled" && (
+              <span className="inline-flex items-center rounded-full bg-destructive/10 px-2.5 py-0.5 text-[11px] font-medium text-destructive">{t("session.cancelled.badge")}</span>
+            )}
+            {training.seriesId && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                <Repeat className="h-3 w-3" /> {t("session.series.partOf")}
+              </span>
+            )}
             <span className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[11px] font-medium text-foreground">{t(`training.type.${training.trainingType}`)}</span>
             {intensityCfg && <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${intensityCfg.color}`}><Zap className="mr-1 h-3 w-3" /> {t(`training.intensity.${intensityCfg.value}`)}</span>}
           </div>
@@ -320,6 +425,10 @@ function TrainingDetailDrawer({
             {training.notes && <div className="rounded-lg border border-border bg-secondary/30 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><StickyNote className="h-3 w-3" /> {t("training.detail.notes")}</div><p className="text-sm text-foreground">{training.notes}</p></div>}
             {!readOnly && training.coachNotes && <div className="rounded-lg border border-border bg-primary/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary"><StickyNote className="h-3 w-3" /> {t("training.detail.coachNotes")}</div><p className="text-sm text-primary/80">{training.coachNotes}</p></div>}
           </div>
+
+          {/* What the coach planned to do. Above the register because it is what
+              the session IS; the register is what happened to it. */}
+          <SessionPlanView blocks={training.blocks} />
 
           {/* Attendance register — the coach's record of who turned up. */}
           <AttendanceRegister
@@ -453,8 +562,13 @@ function TrainingDetailDrawer({
                   <ClipboardCheck className="h-3.5 w-3.5" /> {training.review ? t("training.detail.editReview") : t("training.detail.reviewSession")}
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> {t("training.detail.edit")}</Button>
-              <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? t("training.detail.deleting") : t("training.detail.delete")}</Button>
+              {training.status !== "cancelled" && (
+                <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> {t("training.detail.edit")}</Button>
+              )}
+              {onDuplicate && (
+                <Button size="sm" variant="outline" onClick={onDuplicate} className="gap-1.5"><CopyPlus className="h-3.5 w-3.5" /> {t("session.duplicate.action")}</Button>
+              )}
+              <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><XCircle className="h-3.5 w-3.5" /> {deleting ? t("session.cancel.cancelling") : t("session.cancel.action")}</Button>
             </div>
           )}
 
@@ -469,30 +583,6 @@ function TrainingDetailDrawer({
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function DeleteTrainingDialog({ open, onOpenChange, title, onConfirm, loading }: {
-  open: boolean; onOpenChange: (o: boolean) => void; title: string; onConfirm: () => void; loading?: boolean;
-}) {
-  const { t } = useT();
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("training.delete.title")}</DialogTitle>
-          <DialogDescription>
-            {interleave(t("training.delete.body", { title: slot(0) }), [
-              <span key="title" className="font-semibold text-foreground">“{title}”</span>,
-            ])}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
-          <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}><Trash2 className="mr-1.5 h-4 w-4" /> {loading ? t("training.delete.deleting") : t("training.delete.confirm")}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -515,6 +605,7 @@ export default function TrainingsPage() {
   const createMut = useCreateTraining();
   const updateMut = useUpdateTraining();
   const deleteMut = useDeleteTraining();
+  const duplicateMut = useDuplicateTraining();
   const analyzeMut = useAnalyzeTraining();
   const feedbackMut = useSaveTrainingFeedback();
   const attendanceMut = useMarkAttendance(user?.id);
@@ -523,8 +614,10 @@ export default function TrainingsPage() {
   const [editTarget, setEditTarget] = useState<TrainingSession | undefined>(undefined);
   const [detailTarget, setDetailTarget] = useState<TrainingSession | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<TrainingSession | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<TrainingSession | null>(null);
+  const [duplicateTarget, setDuplicateTarget] = useState<TrainingSession | null>(null);
   const [preselectedPlayerIds, setPreselectedPlayerIds] = useState<string[]>([]);
+  const [preselectedBlocks, setPreselectedBlocks] = useState<TrainingBlockInput[]>([]);
   const [reviewTarget, setReviewTarget] = useState<TrainingSession | null>(null);
   const [feedbackTarget, setFeedbackTarget] = useState<TrainingSession | null>(null);
 
@@ -587,6 +680,27 @@ export default function TrainingsPage() {
   const deepLinkApplied = useRef(false);
   const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
 
+  // ── Handover from the Session Builder ────────────────────────────────────
+  // The builder navigates here with the generated session already turned into
+  // editable blocks. Router state, not a query string: a session plan is far
+  // too big for a URL, and it should not survive a refresh or be shareable —
+  // it is a draft in flight, not a place.
+  const location = useLocation();
+  const handoffApplied = useRef(false);
+  useEffect(() => {
+    if (handoffApplied.current) return;
+    const handedOver = (location.state as { blocks?: TrainingBlockInput[] } | null)?.blocks;
+    if (!handedOver?.length || !isCoach) return;
+    handoffApplied.current = true;
+    handleCreate([], handedOver);
+    toastSuccess("session.sentToTraining");
+    // Clear the state so going back, or refreshing, does not reopen the form
+    // with a session the coach has already dealt with.
+    window.history.replaceState({}, "");
+    // Deliberately keyed on the handoff itself, not on `handleCreate`: the ref
+    // guard is what keeps this one-shot effect from running twice.
+  }, [location.state, isCoach]);
+
   useEffect(() => {
     if (deepLinkApplied.current) return;
     const filterParam = searchParams.get("filter");
@@ -617,9 +731,10 @@ export default function TrainingsPage() {
     if (match && isCoach) setReviewTarget(match);
   }, [pendingReviewId, isLoading, trainings, isCoach]);
 
-  const handleCreate = (playerIds?: string[]) => {
+  const handleCreate = (playerIds?: string[], blocks?: TrainingBlockInput[]) => {
     setEditTarget(undefined);
     setPreselectedPlayerIds(playerIds ?? []);
+    setPreselectedBlocks(blocks ?? []);
     setFormOpen(true);
   };
 
@@ -636,7 +751,11 @@ export default function TrainingsPage() {
           intensity: (data.intensity as "low" | "medium" | "high") || undefined,
           notes: data.notes || undefined, coachNotes: data.coachNotes || undefined,
           playerIds: data.playerIds, teamId: data.teamId || undefined,
+          blocks: data.blocks as TrainingSession["blocks"],
         },
+        // Only meaningful on an occurrence of a series; harmless otherwise, and
+        // the server treats it as "this one" on a session with no siblings.
+        scope: editTarget.seriesId ? data.scope : undefined,
       });
     } else {
       await createMut.mutateAsync({
@@ -648,16 +767,42 @@ export default function TrainingsPage() {
         location: data.location || undefined, goal: data.goal || undefined,
         intensity: (data.intensity as "low" | "medium" | "high") || undefined,
         notes: data.notes || undefined, coachNotes: data.coachNotes || undefined,
+        blocks: data.blocks as TrainingSession["blocks"],
+        recurrence: data.repeat.enabled
+          ? { freq: "weekly", byWeekday: data.repeat.byWeekday, until: data.repeat.until }
+          : undefined,
       });
     }
   };
 
-  const handleDelete = (id: string) => {
-    deleteMut.mutate(id, { onSuccess: () => { setDetailOpen(false); setDetailTarget(null); } });
+  /**
+   * Calling a session off. NOT a delete: the row stays, struck through, with
+   * its register and the coach's notes intact — which a hard delete would
+   * cascade away while telling the players about a session that no longer
+   * exists.
+   */
+  const handleCancelSession = (id: string, scope: TrainingScope) => {
+    updateMut.mutate(
+      { id, data: { status: "cancelled" }, scope },
+      { onSuccess: () => { setCancelTarget(null); setDetailOpen(false); setDetailTarget(null); } },
+    );
+  };
+
+  // Reserved for a session nobody has marked. The server refuses it with a 409
+  // otherwise, and the dialog only offers it when the register is untouched.
+  const handleDelete = (id: string, scope: TrainingScope) => {
+    deleteMut.mutate(
+      { id, scope },
+      { onSuccess: () => { setCancelTarget(null); setDetailOpen(false); setDetailTarget(null); } },
+    );
+  };
+
+  const handleDuplicate = (id: string, startDate: string) => {
+    duplicateMut.mutate({ id, startDate }, { onSuccess: () => setDuplicateTarget(null) });
   };
 
   const openDetail = (t: TrainingSession) => { setDetailTarget(t); setDetailOpen(true); };
-  const openEdit = (t: TrainingSession) => { setEditTarget(t); setPreselectedPlayerIds([]); setDetailOpen(false); setFormOpen(true); };
+  const openEdit = (t: TrainingSession) => { setEditTarget(t); setPreselectedPlayerIds([]); setPreselectedBlocks([]); setDetailOpen(false); setFormOpen(true); };
 
   const handleViewPlayerDetail = (player: ConnectedPlayer) => {
     setDetailPlayer(player);
@@ -738,6 +883,10 @@ export default function TrainingsPage() {
             const players = connectedPlayers.filter((p) => session.playerIds.includes(p.id));
             const intensityCfg = INTENSITY_OPTIONS.find((o) => o.value === session.intensity);
             const past = isPast(parseISO(session.endDate));
+            // Cancelled sessions stay in the list on purpose: the register and
+            // the notes are still there to read, and a session that vanished
+            // would leave a coach wondering whether he ever created it.
+            const cancelled = session.status === "cancelled";
             return (
               // A div, not a button: this row carries its own Edit and Delete
               // buttons, and a button nested inside a button is invalid HTML
@@ -758,7 +907,15 @@ export default function TrainingsPage() {
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Dumbbell className="h-5 w-5" /></div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{session.title}</h3>
+                    <h3 className={`font-semibold text-foreground${cancelled ? " line-through" : ""}`}>{session.title}</h3>
+                    {cancelled && (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">{t("session.cancelled.badge")}</span>
+                    )}
+                    {session.seriesId && (
+                      <span className="flex items-center gap-0.5 rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground" title={t("session.series.partOf")}>
+                        <Repeat className="h-2.5 w-2.5" /> {t("session.series.badge")}
+                      </span>
+                    )}
                     <span className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{t(`training.type.${session.trainingType}`)}</span>
                     {intensityCfg && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${intensityCfg.color}`}>{t(`training.intensity.${intensityCfg.value}`)}</span>}
                     {session.review && (
@@ -796,8 +953,9 @@ export default function TrainingsPage() {
                     {past && (
                       <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setReviewTarget(session); }} title={t("training.list.reviewSession")}><ClipboardCheck className="h-3.5 w-3.5" /></Button>
                     )}
-                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("training.list.editAria", { title: session.title })} onClick={(e) => { e.stopPropagation(); openEdit(session); }}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" aria-label={t("training.list.deleteAria", { title: session.title })} onClick={(e) => { e.stopPropagation(); setDeleteTarget(session); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("session.duplicate.ariaLabel", { title: session.title })} onClick={(e) => { e.stopPropagation(); setDuplicateTarget(session); }}><CopyPlus className="h-3.5 w-3.5" /></Button>
+                    {!cancelled && <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("training.list.editAria", { title: session.title })} onClick={(e) => { e.stopPropagation(); openEdit(session); }}><Pencil className="h-3.5 w-3.5" /></Button>}
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" aria-label={t("session.cancel.ariaLabel", { title: session.title })} onClick={(e) => { e.stopPropagation(); setCancelTarget(session); }}><XCircle className="h-3.5 w-3.5" /></Button>
                   </div>
                 )}
                 {!isCoach && past && (
@@ -811,9 +969,27 @@ export default function TrainingsPage() {
         </div>
       )}
 
-      {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
-      <TrainingDetailDrawer training={liveDetail} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) { setDetailTarget(null); analyzeMut.reset(); } }} onEdit={() => liveDetail && openEdit(liveDetail)} onDelete={() => liveDetail && setDeleteTarget(liveDetail)} onReview={isCoach ? () => { if (liveDetail) { setReviewTarget(liveDetail); } } : undefined} onPlayerFeedback={isPlayer ? () => { if (liveDetail) setFeedbackTarget(liveDetail); } : undefined} readOnly={readOnly} isPlayer={isPlayer} deleting={deleteMut.isPending} onAnalyze={liveDetail ? () => analyzeMut.mutate(liveDetail.id) : undefined} analyzing={analyzeMut.isPending} analyzeError={analyzeMut.isError ? (analyzeMut.error?.message ?? t("training.detail.analyzeUnreachable")) : null} canMarkAttendance={canMarkAttendance} viewerId={user?.id} onMarkAttendance={handleMarkAttendance} attendancePendingFor={attendancePendingFor} />
-      {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
+      {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} preselectedBlocks={preselectedBlocks} />}
+      <TrainingDetailDrawer training={liveDetail} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) { setDetailTarget(null); analyzeMut.reset(); } }} onEdit={() => liveDetail && openEdit(liveDetail)} onDelete={() => liveDetail && setCancelTarget(liveDetail)} onDuplicate={() => liveDetail && setDuplicateTarget(liveDetail)} onReview={isCoach ? () => { if (liveDetail) { setReviewTarget(liveDetail); } } : undefined} onPlayerFeedback={isPlayer ? () => { if (liveDetail) setFeedbackTarget(liveDetail); } : undefined} readOnly={readOnly} isPlayer={isPlayer} deleting={deleteMut.isPending} onAnalyze={liveDetail ? () => analyzeMut.mutate(liveDetail.id) : undefined} analyzing={analyzeMut.isPending} analyzeError={analyzeMut.isError ? (analyzeMut.error?.message ?? t("training.detail.analyzeUnreachable")) : null} canMarkAttendance={canMarkAttendance} viewerId={user?.id} onMarkAttendance={handleMarkAttendance} attendancePendingFor={attendancePendingFor} />
+      {cancelTarget && (
+        <CancelTrainingDialog
+          training={cancelTarget}
+          open={!!cancelTarget}
+          onOpenChange={(o) => !o && setCancelTarget(null)}
+          onCancelSession={(scope) => handleCancelSession(cancelTarget.id, scope)}
+          onDelete={(scope) => handleDelete(cancelTarget.id, scope)}
+          loading={updateMut.isPending || deleteMut.isPending}
+        />
+      )}
+      {duplicateTarget && (
+        <DuplicateTrainingDialog
+          training={duplicateTarget}
+          open={!!duplicateTarget}
+          onOpenChange={(o) => !o && setDuplicateTarget(null)}
+          onDuplicate={(startDate) => handleDuplicate(duplicateTarget.id, startDate)}
+          loading={duplicateMut.isPending}
+        />
+      )}
       {reviewTarget && <TrainingReviewDialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }} training={reviewTarget} onSave={async (review) => { await updateMut.mutateAsync({ id: reviewTarget.id, data: { review } }); }} saving={updateMut.isPending} />}
       {feedbackTarget && <PlayerFeedbackDialog open={!!feedbackTarget} onOpenChange={(o) => { if (!o) setFeedbackTarget(null); }} training={feedbackTarget} onSave={(feedback) => { feedbackMut.mutate({ id: feedbackTarget.id, feedback }); setFeedbackTarget(null); }} saving={feedbackMut.isPending} />}
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} onCreateTraining={(pid) => handleCreate([pid])} />

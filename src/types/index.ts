@@ -341,6 +341,64 @@ export interface TrainingAttendance {
   note?: string;
 }
 
+/**
+ * What a coach can call one part of a session.
+ *
+ * The five kinds the session generator already produces (`BlockKind` in
+ * `src/lib/session/types.ts`), plus `other` for the part of a session that is
+ * none of them — talking through Saturday's match, say. Kept as one vocabulary
+ * on purpose: a generated session drops straight into a training with no
+ * translation table to drift.
+ */
+export type TrainingBlockKind = "warmup" | "technical" | "tactical" | "live" | "cooldown" | "other";
+
+/**
+ * One part of a session, written by the coach.
+ *
+ * `coachNotes` is private and the SERVER withholds it from anyone but the
+ * owning coach, so it is simply absent for a player rather than present and
+ * hidden.
+ */
+export interface TrainingBlock {
+  id: string;
+  order: number;
+  kind: TrainingBlockKind;
+  title: string;
+  description?: string;
+  coachNotes?: string;
+  minutes?: number;
+  /** Optional citation of a library drill. Most blocks have none. */
+  libraryDrillId?: string;
+}
+
+/** A block as it is SENT: no id and no order — position in the array is the order. */
+export type TrainingBlockInput = Omit<TrainingBlock, "id" | "order">;
+
+/**
+ * How a weekly repeat was asked for. Recorded on the first occurrence only, and
+ * never expanded at read time — the occurrences are real rows.
+ */
+export interface TrainingRecurrence {
+  freq: "weekly";
+  /** 0 = Sunday … 6 = Saturday. */
+  byWeekday: number[];
+  /** ISO date; the repeat covers the whole of this day. */
+  until: string;
+  count?: number;
+}
+
+/**
+ * Which occurrences of a series a change reaches. `"one"` is the default and
+ * the only meaning a session that is not part of a series has.
+ */
+export type TrainingScope = "one" | "following" | "series";
+
+/**
+ * `scheduled | cancelled`. A cancelled session is kept, not deleted: it holds
+ * its register, its review and its notes, and is shown struck through.
+ */
+export type TrainingStatus = "scheduled" | "cancelled";
+
 export interface TrainingSession {
   id: string;
   title: string;
@@ -353,7 +411,18 @@ export interface TrainingSession {
    * session nobody has marked, so `attendance?.length` is not a head count.
    */
   attendance?: TrainingAttendance[];
+  /**
+   * The coach's plan for the session. An empty array is "no plan written";
+   * absent means the response did not carry one.
+   */
+  blocks?: TrainingBlock[];
   teamId?: string;
+  /** Absent on sessions created before cancelling existed; treat as scheduled. */
+  status?: TrainingStatus;
+  /** Shared by every occurrence of one weekly repeat. */
+  seriesId?: string;
+  /** Set on the first occurrence of a series only. */
+  recurrence?: TrainingRecurrence;
   startDate: string;
   endDate: string;
   location?: string;

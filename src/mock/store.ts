@@ -187,8 +187,23 @@ class MockStore {
   // ─── Trainings ───
   getTrainings() { return clone(this.trainings); }
   getTraining(id: string) { return clone(this.trainings.find((t) => t.id === id)); }
+  /**
+   * A weekly `recurrence` creates ONE session here, not a materialised series.
+   *
+   * This mock exists so the frontend runs and is tested with no API; it is not
+   * a second implementation of the server's rules, and half a copy of the
+   * expansion maths would be a thing to keep in step for no gain. The rule is
+   * still stored, so mock mode can say "repeats weekly" truthfully — there is
+   * simply one row behind it. Against the real API the same request produces
+   * every occurrence.
+   */
   createTraining(data: Omit<TrainingSession, "id" | "createdAt">) {
-    const training: TrainingSession = { ...data, id: this.nextId("tr"), createdAt: new Date().toISOString() };
+    const training: TrainingSession = {
+      status: "scheduled",
+      ...data,
+      id: this.nextId("tr"),
+      createdAt: new Date().toISOString(),
+    };
     this.trainings.push(training);
     return clone(training);
   }
@@ -197,6 +212,36 @@ class MockStore {
     if (idx === -1) throw new Error("Training not found");
     this.trainings[idx] = { ...this.trainings[idx], ...updates };
     return clone(this.trainings[idx]);
+  }
+  /**
+   * Copy a session and its plan to a new date, leaving behind everything that
+   * is a statement about the session that already happened: the register, the
+   * review, the player's feedback and the analysis. Mirrors what
+   * `POST /api/trainings/:id/duplicate` does on the server.
+   */
+  duplicateTraining(id: string, startDate: string, endDate?: string) {
+    const source = this.trainings.find((t) => t.id === id);
+    if (!source) throw new Error("Training not found");
+    const length = new Date(source.endDate).getTime() - new Date(source.startDate).getTime();
+    const {
+      id: _id,
+      createdAt: _createdAt,
+      attendance: _attendance,
+      review: _review,
+      playerSessionFeedback: _playerSessionFeedback,
+      analysis: _analysis,
+      seriesId: _seriesId,
+      recurrence: _recurrence,
+      ...carried
+    } = source;
+    return this.createTraining({
+      ...carried,
+      status: "scheduled",
+      startDate,
+      endDate: endDate ?? new Date(new Date(startDate).getTime() + length).toISOString(),
+      // The plan travels, with fresh ids so the copy is its own object.
+      blocks: (source.blocks ?? []).map((b, i) => ({ ...b, id: this.nextId("blk"), order: i })),
+    });
   }
   deleteTraining(id: string) { this.trainings = this.trainings.filter((t) => t.id !== id); }
 

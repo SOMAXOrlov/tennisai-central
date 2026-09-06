@@ -15,7 +15,7 @@ import { equipmentApi } from "@/api/endpoints/equipment";
 import { notificationsApi } from "@/api/endpoints/notifications";
 import { profileApi, calendarPreferencesApi, type CalendarPreferences } from "@/api/endpoints/profile";
 import { trainingPlansApi } from "@/api/endpoints/trainingPlans";
-import type { TrainingSession, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
+import type { TrainingSession, TrainingScope, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
 import { toastSuccess, toastError } from "@/lib/feedback";
 
 // ─── Query Keys ───
@@ -92,8 +92,14 @@ export function useCreateTraining() {
 export function useUpdateTraining() {
   const inv = useInvalidateRelated();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<TrainingSession> }) => trainingsApi.updateTraining(id, data),
-    onSuccess: () => { inv.training(); toastSuccess("toast.training.updated"); },
+    mutationFn: ({ id, data, scope }: { id: string; data: Partial<TrainingSession>; scope?: TrainingScope }) =>
+      trainingsApi.updateTraining(id, data, scope),
+    onSuccess: (_result, vars) => {
+      inv.training();
+      // "Cancelled" is not "updated". A coach who calls off next Tuesday and is
+      // told "Training updated" has to go and check what actually happened.
+      toastSuccess(vars.data.status === "cancelled" ? "toast.training.cancelled" : "toast.training.updated");
+    },
     onError: (e: unknown) => toastError("toast.training.updateFailed", e),
   });
 }
@@ -101,9 +107,21 @@ export function useUpdateTraining() {
 export function useDeleteTraining() {
   const inv = useInvalidateRelated();
   return useMutation({
-    mutationFn: (id: string) => trainingsApi.deleteTraining(id),
+    mutationFn: ({ id, scope }: { id: string; scope?: TrainingScope }) =>
+      trainingsApi.deleteTraining(id, scope),
     onSuccess: () => { inv.training(); toastSuccess("toast.training.deleted"); },
     onError: (e: unknown) => toastError("toast.training.deleteFailed", e),
+  });
+}
+
+/** Repeat a session on a new date — the coach's commonest real action. */
+export function useDuplicateTraining() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, startDate, endDate }: { id: string; startDate: string; endDate?: string }) =>
+      trainingsApi.duplicateTraining(id, startDate, endDate),
+    onSuccess: () => { inv.training(); toastSuccess("toast.training.duplicated"); },
+    onError: (e: unknown) => toastError("toast.training.duplicateFailed", e),
   });
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/shared";
 import { interleave, slot, useT } from "@/lib/i18n";
@@ -27,6 +27,7 @@ import {
   ClipboardList,
   Save,
   UserPlus,
+  CalendarPlus,
 } from "lucide-react";
 import {
   Dialog,
@@ -41,6 +42,7 @@ import { DraftRestoredNotice } from "@/lib/drafts/DraftRestoredNotice";
 import { useFormDraft } from "@/lib/drafts/useFormDraft";
 import { useCreateTrainingPlan } from "@/hooks/api/queries";
 import { sessionToTrainingPlanInput } from "@/lib/session/toTrainingPlan";
+import { sessionToTrainingBlocks } from "@/lib/session/toTrainingBlocks";
 import { generateSession } from "@/lib/session/generateSession";
 import {
   FOCUS_AREAS,
@@ -98,6 +100,7 @@ export default function SessionBuilderPage() {
   // Deep link: /session-builder?focus=<area> (from the match-issues "Build a
   // session" button) puts that focus area first. Runs after the draft restore
   // above, so the link wins over a stale draft; ignores unknown values.
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedFocus = searchParams.get("focus");
   useEffect(() => {
@@ -126,6 +129,19 @@ export default function SessionBuilderPage() {
     createPlan.mutate(sessionToTrainingPlanInput(session, savePlayerId), {
       onSuccess: () => setSaveOpen(false),
     });
+  };
+
+  /**
+   * Hand the generated session to the trainings page as editable blocks.
+   *
+   * Router state rather than a query string: a whole session plan is far too
+   * big for a URL, and a draft in flight should not be shareable or survive a
+   * refresh. Nothing is saved here — the coach lands in the create form with
+   * the blocks filled in, and it is still his to rewrite or abandon.
+   */
+  const sendToTraining = () => {
+    if (!session) return;
+    navigate("/trainings", { state: { blocks: sessionToTrainingBlocks(session) } });
   };
 
   const set = <K extends keyof SessionPreferences>(key: K, value: SessionPreferences[K]) =>
@@ -299,9 +315,18 @@ export default function SessionBuilderPage() {
                     <h2 className="text-lg font-bold text-foreground">{session.title}</h2>
                     <p className="mt-1 text-sm text-muted-foreground">{session.summary}</p>
                   </div>
-                  <Button size="sm" variant="outline" className="shrink-0 gap-1.5" onClick={openSave}>
-                    <Save className="h-3.5 w-3.5" /> {t("session.saveToPlan")}
-                  </Button>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    {/* Two real destinations, and they are not alternatives. A
+                        PLAN is a document assigned to one player. A TRAINING is
+                        a session in the calendar with a register and a review.
+                        Until now the generator could only reach the first. */}
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={openSave}>
+                      <Save className="h-3.5 w-3.5" /> {t("session.saveToPlan")}
+                    </Button>
+                    <Button size="sm" className="gap-1.5" onClick={sendToTraining}>
+                      <CalendarPlus className="h-3.5 w-3.5" /> {t("session.sendToTraining")}
+                    </Button>
+                  </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />{t("session.minutes", { count: session.totalMinutes })}</Badge>
