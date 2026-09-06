@@ -7,6 +7,8 @@
 // ============================================================
 
 import { createContext, createElement, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { enUS, es as esDateFns } from "date-fns/locale";
+import type { Locale as DateFnsLocale } from "date-fns";
 import en from "@/locales/en.json";
 import es from "@/locales/es.json";
 
@@ -174,6 +176,88 @@ export function formatDate(value: Date | string, options?: Intl.DateTimeFormatOp
   return new Intl.DateTimeFormat(currentLocale, options).format(date);
 }
 
+/**
+ * The `date-fns` locale object for the active locale, for the call sites that
+ * legitimately keep a `date-fns` pattern string (`"d MMM"`, `"EEEE"`, …).
+ * `format(date, pattern, { locale: getDateFnsLocale() })` then renders month
+ * and weekday names in the active language instead of always English.
+ * Everything else should use `formatDate` and let `Intl` pick the pattern.
+ */
+export function getDateFnsLocale(): DateFnsLocale {
+  return currentLocale === "es" ? esDateFns : enUS;
+}
+
+/** Milliseconds per unit, largest first — `formatRelativeTime` picks the first that fits. */
+const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+  ["year", 365 * 24 * 60 * 60 * 1000],
+  ["month", 30 * 24 * 60 * 60 * 1000],
+  ["week", 7 * 24 * 60 * 60 * 1000],
+  ["day", 24 * 60 * 60 * 1000],
+  ["hour", 60 * 60 * 1000],
+  ["minute", 60 * 1000],
+];
+
+/**
+ * "3 days ago" / "hace 3 días" — locale-aware relative time via
+ * `Intl.RelativeTimeFormat`. The unit is picked automatically (the largest one
+ * the gap fills); anything under a minute renders as "now"/"ahora".
+ */
+export function formatRelativeTime(
+  value: Date | string | number,
+  options?: { now?: Date | number; numeric?: Intl.RelativeTimeFormatNumeric },
+): string {
+  const date = value instanceof Date ? value : new Date(value);
+  const time = date.getTime();
+  if (!Number.isFinite(time)) return String(value);
+  const nowOption = options?.now;
+  const nowMs = nowOption instanceof Date ? nowOption.getTime() : nowOption ?? Date.now();
+  const diff = time - nowMs;
+  const rtf = new Intl.RelativeTimeFormat(currentLocale, { numeric: options?.numeric ?? "auto" });
+  for (const [unit, ms] of RELATIVE_UNITS) {
+    if (Math.abs(diff) >= ms) return rtf.format(Math.round(diff / ms), unit);
+  }
+  return rtf.format(0, "second");
+}
+
+/**
+ * "63.6%" in `en`, "63,6 %" in `es`. The app stores percentages as 0–100
+ * numbers and `Intl`'s percent style expects a fraction, so the division lives
+ * here — one place, so no call site has to remember it.
+ */
+export function formatPercent(value: number, options?: { maximumFractionDigits?: number }): string {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return String(value);
+  return new Intl.NumberFormat(currentLocale, {
+    style: "percent",
+    maximumFractionDigits: options?.maximumFractionDigits ?? 1,
+  }).format(n / 100);
+}
+
+/**
+ * "$1,250" / "1250 US$" — the amount in the active locale's number
+ * conventions, in the currency the entry was recorded in. Never converted: a
+ * euro expense stays euros for a Spanish reader and for an English one.
+ */
+export function formatCurrency(
+  amount: number,
+  currency: string,
+  options?: { maximumFractionDigits?: number },
+): string {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return String(amount);
+  const code = (currency || "USD").toUpperCase();
+  try {
+    return new Intl.NumberFormat(currentLocale, {
+      style: "currency",
+      currency: code,
+      maximumFractionDigits: options?.maximumFractionDigits ?? 0,
+    }).format(n);
+  } catch {
+    // An unknown or malformed currency code must not blank out the amount.
+    return `${formatNumber(n)} ${code}`;
+  }
+}
+
 // ------------------------------------------------------------------
 // React binding: LocaleProvider + useT()
 // ------------------------------------------------------------------
@@ -226,10 +310,24 @@ export function useLocale(): LocaleContextValue {
  */
 export function useT() {
   const { locale, setLocale } = useLocale();
-  // `t`/`formatNumber`/`formatBadgeCount`/`formatDate` read the shared
-  // module-level `currentLocale`, which `LocaleProvider` keeps in sync with
-  // `locale` — referencing it here ties this hook's identity to context
-  // updates so consuming components re-render with the new strings.
+  // `t` and the `format*` helpers read the shared module-level `currentLocale`,
+  // which `LocaleProvider` keeps in sync with `locale` — referencing it here
+  // ties this hook's identity to context updates so consuming components
+  // re-render with the new strings. Components must take the formatters from
+  // here rather than importing them directly, or a language switch leaves
+  // their dates and numbers on the previous locale until something else
+  // re-renders them.
   void locale;
-  return { t, formatNumber, formatBadgeCount, formatDate, locale, setLocale };
+  return {
+    t,
+    formatNumber,
+    formatBadgeCount,
+    formatDate,
+    formatRelativeTime,
+    formatPercent,
+    formatCurrency,
+    getDateFnsLocale,
+    locale,
+    setLocale,
+  };
 }
