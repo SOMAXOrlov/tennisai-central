@@ -105,7 +105,7 @@ model User {
   generatedSessionsAsPlayer GeneratedSession[] @relation("GeneratedSessionPlayer")
   coachPreferences          CoachPreference[]  @relation("CoachPreferenceCoach")
   // back-relations (gear domain — additive)
-  stringSetups StringSetup[] @relation("StringSetupPlayer")
+  stringSetups              StringSetup[]      @relation("StringSetupPlayer")
 
   @@map("users")
 }
@@ -116,12 +116,31 @@ model User {
 // The nested review / feedback / analysis objects are stored as JSON.
 
 model Training {
-  id                    String   @id @default(cuid())
-  title                 String
-  description           String?
-  trainingType          String // individual | team | match_practice | fitness | recovery | tactical
-  coachId               String
-  teamId                String? // FK relation added when the teams domain migrates
+  id           String  @id @default(cuid())
+  title        String
+  description  String?
+  trainingType String // individual | team | match_practice | fitness | recovery | tactical
+  coachId      String
+  // A real relation at last — this was a bare string with a comment promising
+  // one. `SetNull`, never `Cascade`: deleting a team must not delete the
+  // sessions it trained in. Participants are stored as rows at creation time,
+  // so the roster of a past session is already a snapshot; the team pointer is
+  // a label and a filter, never a live membership lookup at read time.
+  teamId       String?
+  // scheduled | cancelled. Cancelling is not deleting: a cancelled session
+  // keeps its register, its notes and its review, because "called off" is a
+  // fact worth keeping and the attendance cascade would destroy it. Hard
+  // delete stays available for a session nobody has marked.
+  status       String  @default("scheduled")
+  // Every occurrence of a weekly repeat shares one `seriesId`. Occurrences are
+  // MATERIALISED — one row each — because each carries its own register,
+  // review, feedback and notes, which a computed-on-the-fly occurrence cannot.
+  seriesId     String?
+  // Set on the FIRST occurrence only, and only to record how the series was
+  // asked for: { freq: "weekly", byWeekday: number[], until: ISO, count?: number }.
+  // A record of intent. Nothing expands it at read time.
+  recurrence   Json?
+
   startDate             DateTime
   endDate               DateTime
   location              String?
@@ -136,10 +155,14 @@ model Training {
   updatedAt             DateTime @updatedAt
 
   coach        User                  @relation("TrainingCoach", fields: [coachId], references: [id], onDelete: Cascade)
+  team         Team?                 @relation("TrainingTeam", fields: [teamId], references: [id], onDelete: SetNull)
   participants TrainingParticipant[]
+  blocks       TrainingBlock[]
 
   @@index([coachId])
   @@index([startDate])
+  @@index([seriesId])
+  @@index([teamId])
   @@map("trainings")
 }
 
@@ -165,6 +188,54 @@ model TrainingParticipant {
   @@unique([trainingId, playerId])
   @@index([playerId])
   @@map("training_participants")
+}
+
+/// What the coach actually plans to DO in the session, in his own words:
+/// "warm-up 15 min", "cross-court rally ladder 20 min", "serve targets 15 min".
+///
+/// A real table and not a JSON column on `Training`, for three reasons that
+/// each cost something to give up: blocks are reordered (so they need an
+/// `order` a database can hold unique), they are counted and summed (so the
+/// minutes have to be a number the database understands), and one day they
+/// link to the drill library — `libraryDrillId` is the seam for that.
+///
+/// `libraryDrillId` is nullable and stays nullable. The whole point of this
+/// model is that a coach can write a block that exists nowhere but in his
+/// head; a library drill is an optional citation, not a requirement.
+model TrainingBlock {
+  id             String  @id @default(cuid())
+  trainingId     String
+  /// 0-based position within the session. Unique per training, so two blocks
+  /// can never claim the same slot and a reorder is a whole-set replacement.
+  order          Int
+  /// warmup | technical | tactical | live | cooldown | other — the five kinds
+  /// the session generator already speaks (src/lib/session/types.ts), plus
+  /// "other" for the block that is none of them. Deliberately not a second,
+  /// parallel vocabulary.
+  kind           String
+  title          String
+  description    String?
+  /// Private to the coach, exactly like `Training.coachNotes`. A player
+  /// reading the session sees the title and the description, never this.
+  coachNotes     String?
+  /// The coach's own estimate. Their sum is shown against the session's
+  /// duration and is allowed to disagree with it: a plan is not a contract.
+  minutes        Int?
+  /// Optional pointer at the coaching library, kept so the knowledge-base work
+  /// can later report on which drills are actually used. `SetNull` because a
+  /// retired library drill must not take the coach's written block with it.
+  libraryDrillId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  training     Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  libraryDrill Drill?   @relation("TrainingBlockLibrary", fields: [libraryDrillId], references: [id], onDelete: SetNull)
+
+  @@unique([trainingId, order])
+  @@index([trainingId])
+  @@index([libraryDrillId])
+  @@map("training_blocks")
 }
 
 // ── Tournaments domain ───────────────────────────────────────────
@@ -280,6 +351,9 @@ model Team {
   coach   User         @relation("TeamCoach", fields: [coachId], references: [id], onDelete: Cascade)
   members TeamMember[]
 
+  // Sessions labelled with this team. `SetNull` on the far side: deleting a
+  // team unlabels its past sessions, it does not delete them.
+  trainings         Training[]         @relation("TrainingTeam")
   generatedSessions GeneratedSession[] @relation("GeneratedSessionTeam")
 
   @@index([coachId])
@@ -946,6 +1020,7 @@ model Drill {
   tags           DrillTag[]
   reviews        DrillReview[]
   trainingDrills TrainingDrill[] @relation("TrainingDrillLibrary")
+  trainingBlocks TrainingBlock[] @relation("TrainingBlockLibrary")
 
   @@index([status, visibility])
   @@index([domain])

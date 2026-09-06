@@ -73,6 +73,11 @@ const DELEGATES = [
   "postMatchReport",
   "match",
   "trainingParticipant",
+  // The coach's own written session content, next to the participant rows it
+  // shares a Training with. The trainings router writes both, and duplicates a
+  // session's blocks on POST /:id/duplicate, so a spec missing this delegate
+  // would silently exercise half a save and still pass.
+  "trainingBlock",
   "tournament",
   "playerTournament",
   "hiddenTournament",
