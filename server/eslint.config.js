@@ -32,13 +32,4 @@ export default tseslint.config(
       ],
     },
   },
-  {
-    // Same reasoning as the frontend config: test doubles are where `any` is
-    // the honest type. drillSchema.test.ts deliberately mutates a valid
-    // document into an invalid one, which no accurate type can describe.
-    files: ["**/*.test.ts", "src/test/**"],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-    },
-  },
 );

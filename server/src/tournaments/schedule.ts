@@ -12,8 +12,6 @@ import type { PrismaClient } from "@prisma/client";
 import { importTournaments } from "./feed";
 import { recordImport } from "./importStatus";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 /** Milliseconds from `now` until the next occurrence of `hourUtc`:00 UTC. */
 export function msUntilNextRun(now: Date, hourUtc: number): number {
   const next = new Date(now);
