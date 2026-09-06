@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState, ErrorState, StatusBadge, ReadOnlyBanner, ReadOnlyBadge } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
-import { useT } from "@/lib/i18n";
 import {
   useTrainingRequests,
   useCreateTrainingRequest,
@@ -335,7 +334,6 @@ export default function TrainingRequestsPage() {
   const isObserver = role === "observer";
 
   const { data: requests = [], isLoading, error, refetch } = useTrainingRequests();
-  const { t } = useT();
   const cancelMut = useCancelTrainingRequest();
 
   const [formOpen, setFormOpen] = useState(false);

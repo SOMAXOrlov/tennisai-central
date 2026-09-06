@@ -7,7 +7,6 @@ import { useT } from "@/lib/i18n";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
-import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -186,7 +185,6 @@ export default function TeamsPage() {
   const { connectedPlayers } = useConnections();
 
   const { data: allTeams = [], isLoading, error, refetch } = useTeams();
-  const { t } = useT();
   const teams = useMemo(() => allTeams.filter((t) => t.coachId === coachId), [allTeams, coachId]);
 
   const createMut = useCreateTeam();

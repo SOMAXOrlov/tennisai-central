@@ -68,7 +68,6 @@ export default function EquipmentPage() {
   const { user } = useAuth();
   const playerId = user?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
-  const { t } = useT();
   const createMut = useCreateEquipment();
   const deleteMut = useDeleteEquipment();
   const [addOpen, setAddOpen] = useState(false);

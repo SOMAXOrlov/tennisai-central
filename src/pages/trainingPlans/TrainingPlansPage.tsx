@@ -22,7 +22,6 @@ import { useT } from "@/lib/i18n";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { hasCoachCounterpart } from "@/lib/connections/hasCoachCounterpart";
-import { useT } from "@/lib/i18n";
 import { useTrainingPlanList } from "@/hooks/api/trainingPlans";
 import { PlanListItem } from "@/pages/trainingPlans/PlanListItem";
 import { TrainingPlanDetail } from "@/pages/trainingPlans/TrainingPlanDetail";
@@ -40,7 +39,6 @@ export default function TrainingPlansPage() {
   const [filter, setFilter] = useState<PlanFilter>("all");
 
   const { data: plans = [], isLoading, error, refetch } = useTrainingPlanList();
-  const { t } = useT();
 
   const isCoach = hasRole("coach");
 

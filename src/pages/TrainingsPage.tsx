@@ -495,7 +495,6 @@ export default function TrainingsPage() {
   const readOnly = !isCoach;
 
   const { data: trainings = [], isLoading, error, refetch } = useTrainings();
-  const { t } = useT();
   const { data: teams = [] } = useTeams();
   const createMut = useCreateTraining();
   const updateMut = useUpdateTraining();

@@ -625,7 +625,6 @@ export default function CalendarPage() {
   const isCompact = useIsMobile();
 
   const { data: events = [], isLoading, error, refetch } = useCalendarEvents();
-  const { t } = useT();
   const { data: teams = [] } = useTeams();
   const { data: tournaments = [], refetch: refetchTournaments, isFetching: isRefetchingTournaments } = useTournaments();
   const { data: playerTournaments = [] } = usePlayerTournaments();

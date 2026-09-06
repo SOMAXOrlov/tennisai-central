@@ -28,7 +28,6 @@ export default function NotificationsPage() {
   const navigate = useNavigate();
   const userId = user?.id ?? "";
   const { data: notifications = [], isLoading, error, refetch } = useNotifications(userId);
-  const { t } = useT();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const [filter, setFilter] = useState<"all" | "unread">("all");

@@ -7,7 +7,6 @@ import { useT } from "@/lib/i18n";
 import { useFinanceEntries, useFinanceSummary, useCreateFinanceEntry } from "@/hooks/api/queries";
 import { ReadOnlyBanner, ReadOnlyBadge, ErrorState, EmptyState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
-import { useT } from "@/lib/i18n";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { PlayerFilterSelect } from "@/components/PlayerFilterSelect";
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,6 @@ export default function FinancePage() {
 
   const { data: entries = [], isLoading, error, refetch } = useFinanceEntries(playerId);
   const { data: summary, refetch: refetchSummary } = useFinanceSummary(playerId);
-  const { t } = useT();
   const createMut = useCreateFinanceEntry();
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ description: "", amount: "", category: "training" as FinanceCategory, date: "", currency: "USD" });

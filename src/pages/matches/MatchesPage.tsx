@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/responsive-dialog";
-} from "@/components/ui/dialog";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { useT } from "@/lib/i18n";
@@ -82,7 +81,6 @@ export default function MatchesPage() {
   const [deleteTarget, setDeleteTarget] = useState<MatchView | null>(null);
 
   const { data: matches = [], isLoading, error, refetch } = useMatches();
-  const { t } = useT();
   const { data: opponents = [] } = useOpponents();
 
   const createMatch = useCreateMatch();

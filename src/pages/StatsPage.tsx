@@ -32,7 +32,6 @@ import {
   type StatsWindowId,
 } from "@/components/stats";
 import { useMatchStats, useMatches } from "@/hooks/api/matches";
-import { useT } from "@/lib/i18n";
 import {
   NO_VALUE,
   formatMatchDate,
@@ -49,7 +48,6 @@ export default function StatsPage() {
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
   const { data: matches = [], isLoading: matchesLoading, error: matchesError, refetch: refetchMatches } = useMatches();
-  const { t } = useT();
 
   // Windows are derived from the real list, so a window larger than the number
   // of logged matches is never offered.
