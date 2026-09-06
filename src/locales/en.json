@@ -1123,6 +1123,153 @@
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
   },
+  "auth": {
+    "backHome": "Back to home",
+    "backToLogin": "Back to login",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "signIn": "Sign in",
+    "goToLogin": "Go to login",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "submitting": "Signing in…",
+      "forgot": "Forgot your password?",
+      "createAccount": "Create account",
+      "failed": "Login failed",
+      "resend": "Send it again",
+      "guardian": {
+        "title": "Almost there",
+        "hint": "Ask them to check their inbox — including junk mail — for an email from TennisAI."
+      }
+    },
+    "signUp": {
+      "title": "Create your account",
+      "subtitle": "Choose your role to get started",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "dateOfBirth": "Date of birth",
+      "dateOfBirthInvalid": "That date doesn't look right — please check it.",
+      "dateOfBirthHint": "Under {age}? That's fine — we'll just ask a parent or guardian to approve your account.",
+      "confirmPassword": "Confirm password",
+      "ruleLength": "At least {count} characters",
+      "ruleMatch": "Both passwords match",
+      "terms": "I accept the {terms} and {privacy}",
+      "termsLink": "Terms of Service",
+      "privacyLink": "Privacy Policy",
+      "haveAccount": "Already have an account?",
+      "roles": {
+        "player": {
+          "label": "Player",
+          "description": "Track your game, stats, and tournaments"
+        },
+        "coach": {
+          "label": "Coach",
+          "description": "Manage players, teams, and training"
+        },
+        "observer": {
+          "label": "Observer",
+          "description": "Follow a player's progress (read-only)"
+        }
+      },
+      "guardian": {
+        "title": "A grown-up needs to say yes",
+        "body": "Because you're under {age}, we'll email your parent or guardian a link to approve your account. You can sign in as soon as they do.",
+        "name": "Parent or guardian's name",
+        "email": "Parent or guardian's email",
+        "emailHint": "This has to be different from your own email."
+      },
+      "done": {
+        "waiting": "Waiting for your parent or guardian",
+        "checkEmail": "Check your email",
+        "default": "Account created! Check your email to verify.",
+        "resend": "Didn't get the email? Resend it"
+      },
+      "errors": {
+        "role": "Please select a role",
+        "dateOfBirthMissing": "Please enter your date of birth",
+        "dateOfBirthInvalid": "Please enter a real date of birth",
+        "passwordLength": "Password must be at least {count} characters",
+        "passwordMismatch": "Passwords do not match",
+        "guardianMissing": "Please give a parent or guardian's name and email address",
+        "guardianSameEmail": "A parent or guardian's email has to be different from your own",
+        "terms": "You must accept the terms",
+        "failed": "Sign up failed"
+      }
+    },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we'll send you a link to set a new one.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "emptyEmail": "Enter the email address you signed up with",
+      "failed": "We couldn't send the reset link. Please try again in a moment.",
+      "sentTitle": "Check your email",
+      "unavailableTitle": "Reset isn't available yet",
+      "sentBody": "If {email} is registered, a reset link is on its way. The link works once and expires in an hour.",
+      "tryAgain": "Used a different email? Try again",
+      "remembered": "Remembered it?"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a password you haven't used before.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "lengthHint": "At least {count} characters.",
+      "submit": "Update password",
+      "submitting": "Updating password…",
+      "passwordLength": "Password must be at least {count} characters",
+      "passwordMismatch": "Passwords do not match",
+      "failed": "We couldn't reset your password. Please request a new link.",
+      "successDefault": "Your password has been updated.",
+      "successTitle": "Password updated",
+      "successHint": "Sign in with your new password.",
+      "noTokenTitle": "Reset link problem",
+      "noTokenBody": "This page needs a valid reset link. Request a new one and open it straight from your email.",
+      "requestNew": "Request a new link",
+      "requestNewLink": "Request a new reset link"
+    },
+    "verify": {
+      "verifying": "Verifying your email…",
+      "successTitle": "Email verified",
+      "successDefault": "Email verified! You can now sign in.",
+      "errorTitle": "Verification link problem",
+      "errorDefault": "This verification link is invalid or has expired.",
+      "promptTitle": "Verify your email",
+      "promptBody": "We've sent a verification link to your email. Click it to activate your account.",
+      "resendLabel": "Resend the verification link",
+      "resend": "Resend link",
+      "resendDefault": "If an unverified account exists for that email, a new link is on its way.",
+      "resendFailed": "Could not send the verification email."
+    },
+    "consent": {
+      "approvedTitle": "Approved",
+      "approvedNamed": "{name} can now sign in to TennisAI{role}.",
+      "approvedRole": " as a {role}",
+      "approvedUnnamed": "The account can now be used.",
+      "approvedDefault": "Thank you — the account is approved.",
+      "withdraw": "You can withdraw this at any time by contacting the coach or academy that runs this TennisAI account, and asking them to close it.",
+      "goToApp": "Go to TennisAI",
+      "errorTitle": "This link didn't work",
+      "errorDefault": "This approval link is invalid or has expired.",
+      "noToken": "This page needs the approval link from the email we sent you.",
+      "errorHelp": "Approval links stop working after 30 days, and each one can only be used once. If you have already approved this account, nothing more is needed. Otherwise ask your child's coach, or whoever set up TennisAI for them, to send a new approval link.",
+      "title": "Approve your child's account",
+      "subtitle": "Your child gave your address as their parent or guardian when they signed up for TennisAI. Their account is locked until you approve it.",
+      "agreeingTitle": "What you're agreeing to",
+      "point1": "A TennisAI account they use to plan training, log matches, and follow tournament calendars.",
+      "point2": "We store the details they entered — name, email, date of birth — and whatever they add themselves: training sessions, matches, and tournaments they're entering.",
+      "point3": "They can connect with a coach, who will then see the training and match data they share.",
+      "point4": "You can withdraw this later by asking their coach or academy to close the account, and you can ask us for a copy of their data or its deletion at any time.",
+      "privacyNote": "The {privacy} has the full detail.",
+      "privacyLink": "Privacy Policy",
+      "approve": "I'm their parent or guardian — approve this account",
+      "unexpected": "Weren't expecting this? Close this page. Without your approval the account stays locked and cannot be used."
+    }
+  },
   "common": {
     "role": {
       "player": "Player",

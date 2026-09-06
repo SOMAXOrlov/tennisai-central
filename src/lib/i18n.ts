@@ -170,6 +170,35 @@ export function t(key: string, vars: Vars = {}): string {
   return interpolate(withPlurals, vars);
 }
 
+// ------------------------------------------------------------------
+// Sentences with React nodes inside them
+// ------------------------------------------------------------------
+
+/**
+ * A marker for "a React node goes here", to be passed as an interpolation
+ * variable. It uses NUL, which no copy will ever contain, and carries the
+ * node's index so a translation may put the slots in a different order than
+ * English does.
+ *
+ *     {interleave(t("auth.signUp.terms", { terms: slot(0), privacy: slot(1) }), [
+ *       <Link key="terms" to="/terms">{t("auth.signUp.termsLink")}</Link>,
+ *       <Link key="privacy" to="/privacy">{t("auth.signUp.privacyLink")}</Link>,
+ *     ])}
+ *
+ * This exists so a sentence with a link or a bold phrase in it stays ONE
+ * translatable string. Splitting it into "before"/"after" fragments would hard-
+ * code English word order into the markup.
+ */
+export function slot(index: number): string {
+  return `\u0000${index}\u0000`;
+}
+
+/** Put the React nodes back into a translated sentence produced with `slot()`. */
+export function interleave(text: string, nodes: ReactNode[]): ReactNode[] {
+  // `split` with a capturing group alternates literal text and captured index.
+  return text.split(/\u0000(\d+)\u0000/).map((part, i) => (i % 2 === 1 ? nodes[Number(part)] : part));
+}
+
 /** Locale-aware date formatting — thin wrapper so migrated screens don't reach for `Intl` ad hoc. */
 export function formatDate(value: Date | string, options?: Intl.DateTimeFormatOptions): string {
   const date = typeof value === "string" ? new Date(value) : value;

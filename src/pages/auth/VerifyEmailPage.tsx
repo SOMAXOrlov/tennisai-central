@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, AlertCircle, Loader2, MailCheck } from "lucide-react";
 import { authApi } from "@/api/endpoints/auth";
+import { useT } from "@/lib/i18n";
 
 type Status = "verifying" | "success" | "error" | "prompt";
 
 export default function VerifyEmailPage() {
+  const { t } = useT();
   const [params] = useSearchParams();
   const token = params.get("token");
   const [status, setStatus] = useState<Status>(token ? "verifying" : "prompt");
@@ -25,11 +27,11 @@ export default function VerifyEmailPage() {
       .verifyEmail(token)
       .then((res) => {
         setStatus("success");
-        setMessage(res.message || "Email verified! You can now sign in.");
+        setMessage(res.message || t("auth.verify.successDefault"));
       })
       .catch((err) => {
         setStatus("error");
-        setMessage(err?.message || "This verification link is invalid or has expired.");
+        setMessage(err?.message || t("auth.verify.errorDefault"));
       });
   }, [token]);
 
@@ -40,9 +42,9 @@ export default function VerifyEmailPage() {
     try {
       const res = await authApi.resendVerification(email.trim());
       setResent(true);
-      setMessage(res.message || "If an unverified account exists for that email, a new link is on its way.");
+      setMessage(res.message || t("auth.verify.resendDefault"));
     } catch (err: any) {
-      setMessage(err?.message || "Could not send the verification email.");
+      setMessage(err?.message || t("auth.verify.resendFailed"));
     } finally {
       setResending(false);
     }
@@ -52,7 +54,7 @@ export default function VerifyEmailPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-6 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <h2 className="text-xl font-semibold text-foreground">Verifying your email…</h2>
+        <h2 className="text-xl font-semibold text-foreground">{t("auth.verify.verifying")}</h2>
       </div>
     );
   }
@@ -64,11 +66,11 @@ export default function VerifyEmailPage() {
           <CheckCircle2 className="h-6 w-6 text-primary" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold text-foreground">Email verified</h2>
+          <h2 className="text-xl font-semibold text-foreground">{t("auth.verify.successTitle")}</h2>
           <p className="text-sm text-muted-foreground">{message}</p>
         </div>
         <Button asChild>
-          <Link to="/login">Go to login</Link>
+          <Link to="/login">{t("auth.goToLogin")}</Link>
         </Button>
       </div>
     );
@@ -87,12 +89,10 @@ export default function VerifyEmailPage() {
         </div>
         <div className="space-y-1">
           <h2 className="text-xl font-semibold text-foreground">
-            {status === "error" ? "Verification link problem" : "Verify your email"}
+            {status === "error" ? t("auth.verify.errorTitle") : t("auth.verify.promptTitle")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {status === "error"
-              ? message
-              : "We've sent a verification link to your email. Click it to activate your account."}
+            {status === "error" ? message : t("auth.verify.promptBody")}
           </p>
         </div>
       </div>
@@ -104,25 +104,25 @@ export default function VerifyEmailPage() {
       ) : (
         <form className="space-y-3" onSubmit={handleResend}>
           <div className="space-y-1.5">
-            <Label htmlFor="resend-email">Resend the verification link</Label>
+            <Label htmlFor="resend-email">{t("auth.verify.resendLabel")}</Label>
             <Input
               id="resend-email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t("auth.emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
           <Button type="submit" className="w-full" disabled={resending || !email.trim()}>
-            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Resend link"}
+            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.verify.resend")}
           </Button>
         </form>
       )}
 
       <p className="text-center text-sm">
         <Link to="/login" className="text-muted-foreground hover:text-foreground">
-          Back to login
+          {t("auth.backToLogin")}
         </Link>
       </p>
     </div>

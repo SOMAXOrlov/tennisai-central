@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +33,7 @@ export default function LoginPage() {
       await login({ email, password });
       navigate("/dashboard");
     } catch (err: any) {
-      const message = err?.message || "Login failed";
+      const message = err?.message || t("auth.login.failed");
       setError(message);
       // Three distinguishable outcomes, by status:
       //   401 — the uniform "invalid email or password" (could be either).
@@ -50,12 +52,12 @@ export default function LoginPage() {
     <div className="space-y-4">
       <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground coarse:min-h-11">
         <ArrowLeft className="h-4 w-4" />
-        Back to home
+        {t("auth.backHome")}
       </Link>
       <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2 text-center">
-        <h2 className="text-xl font-semibold text-foreground">Welcome back</h2>
-        <p className="text-sm text-muted-foreground">Sign in to your account</p>
+        <h2 className="text-xl font-semibold text-foreground">{t("auth.login.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("auth.login.subtitle")}</p>
       </div>
       {/* Waiting on a guardian is not an error the person made — it gets its own
           neutral panel rather than the red "you got it wrong" one. */}
@@ -64,10 +66,10 @@ export default function LoginPage() {
           role="status"
           className="space-y-1 rounded-md border border-border bg-muted/50 p-3 text-sm text-muted-foreground"
         >
-          <p className="font-medium text-foreground">Almost there</p>
+          <p className="font-medium text-foreground">{t("auth.login.guardian.title")}</p>
           <p>{error}</p>
           <p className="text-xs">
-            Ask them to check their inbox — including junk mail — for an email from TennisAI.
+            {t("auth.login.guardian.hint")}
           </p>
         </div>
       ) : (
@@ -80,7 +82,7 @@ export default function LoginPage() {
             <>
               {" "}
               <Link to="/verify-email" className="font-medium underline underline-offset-4">
-                Send it again
+                {t("auth.login.resend")}
               </Link>
             </>
           )}
@@ -88,19 +90,19 @@ export default function LoginPage() {
         )
       )}
       <div className="space-y-1">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+        <Label htmlFor="email">{t("auth.email")}</Label>
+        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t("auth.emailPlaceholder")} />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("auth.password")}</Label>
         <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Signing in…" : "Sign in"}
+        {loading ? t("auth.login.submitting") : t("auth.signIn")}
       </Button>
       <div className="flex justify-between text-sm">
-        <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">Forgot your password?</Link>
-        <Link to="/signup" className="text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Create account</Link>
+        <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:items-center">{t("auth.login.forgot")}</Link>
+        <Link to="/signup" className="text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">{t("auth.login.createAccount")}</Link>
       </div>
     </form>
     </div>

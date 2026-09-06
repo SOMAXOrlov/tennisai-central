@@ -7,7 +7,7 @@ import type { UserRole, RelationshipStatus } from "@/types";
 import { Eye, Lock, AlertTriangle, Loader2, Inbox, ShieldX, WifiOff } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { useT } from "@/lib/i18n";
+import { interleave, slot, useT } from "@/lib/i18n";
 import { isAccessDenied } from "@/lib/errors";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
@@ -73,20 +73,19 @@ export function ReadOnlyBadge({ className }: { className?: string }) {
 
 // ─── ReadOnlyBanner ───
 
-/** A character no copy will ever contain, used to find an interpolated slot again. */
-const SLOT = "\u0000";
-
 export function ReadOnlyBanner({ message, className }: { message?: string; className?: string }) {
   const { t } = useT();
-  // The sentence emphasises the words "read-only" inside it. Translating it as
-  // one string with an {access} slot lets Spanish put that phrase where the
-  // grammar wants it; splitting on the filled slot puts the <strong> back.
-  const [before, after] = t("common.readOnly.banner", { access: SLOT }).split(SLOT);
+  // The sentence emphasises the words "read-only" inside it. It stays ONE
+  // translatable string with an {access} slot, so Spanish can put the phrase
+  // where its grammar wants it and still get the <strong>.
+  const sentence = interleave(t("common.readOnly.banner", { access: slot(0) }), [
+    <strong key="access">{t("common.readOnly.access")}</strong>,
+  ]);
   return (
     <div className={cn("flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-4 py-2.5", className)}>
       <Lock className="h-4 w-4 shrink-0 text-primary dark:text-primary" />
       <p className="text-sm text-primary dark:text-primary">
-        {message ?? <>{before}<strong>{t("common.readOnly.access")}</strong>{after}</>}
+        {message ?? sentence}
       </p>
     </div>
   );

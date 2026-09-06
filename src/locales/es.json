@@ -1123,6 +1123,153 @@
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   },
+  "auth": {
+    "backHome": "Volver al inicio",
+    "backToLogin": "Volver al inicio de sesión",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "password": "Contraseña",
+    "signIn": "Iniciar sesión",
+    "goToLogin": "Ir al inicio de sesión",
+    "login": {
+      "title": "Hola de nuevo",
+      "subtitle": "Inicia sesión en tu cuenta",
+      "submitting": "Iniciando sesión…",
+      "forgot": "¿Has olvidado la contraseña?",
+      "createAccount": "Crear cuenta",
+      "failed": "No se pudo iniciar sesión",
+      "resend": "Enviar de nuevo",
+      "guardian": {
+        "title": "Ya casi está",
+        "hint": "Pídeles que busquen en su bandeja de entrada —y en el correo no deseado— un mensaje de TennisAI."
+      }
+    },
+    "signUp": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Elige tu perfil para empezar",
+      "submit": "Crear cuenta",
+      "submitting": "Creando la cuenta…",
+      "firstName": "Nombre",
+      "lastName": "Apellidos",
+      "dateOfBirth": "Fecha de nacimiento",
+      "dateOfBirthInvalid": "Esa fecha no parece correcta; revísala.",
+      "dateOfBirthHint": "¿Tienes menos de {age}? No pasa nada: solo pediremos a tu madre, padre o tutor legal que apruebe la cuenta.",
+      "confirmPassword": "Repite la contraseña",
+      "ruleLength": "Al menos {count} caracteres",
+      "ruleMatch": "Las dos contraseñas coinciden",
+      "terms": "Acepto los {terms} y la {privacy}",
+      "termsLink": "Términos del servicio",
+      "privacyLink": "Política de privacidad",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "roles": {
+        "player": {
+          "label": "Jugador",
+          "description": "Sigue tu juego, tus estadísticas y tus torneos"
+        },
+        "coach": {
+          "label": "Entrenador",
+          "description": "Gestiona jugadores, equipos y entrenamientos"
+        },
+        "observer": {
+          "label": "Observador",
+          "description": "Sigue el progreso de un jugador (solo lectura)"
+        }
+      },
+      "guardian": {
+        "title": "Necesitamos el visto bueno de un adulto",
+        "body": "Como tienes menos de {age}, enviaremos a tu madre, padre o tutor legal un enlace para aprobar la cuenta. Podrás entrar en cuanto lo hagan.",
+        "name": "Nombre de la madre, el padre o el tutor legal",
+        "email": "Correo de la madre, el padre o el tutor legal",
+        "emailHint": "Tiene que ser distinto del tuyo."
+      },
+      "done": {
+        "waiting": "Esperando a tu madre, padre o tutor legal",
+        "checkEmail": "Revisa tu correo",
+        "default": "¡Cuenta creada! Revisa tu correo para confirmarla.",
+        "resend": "¿No te ha llegado? Envíalo otra vez"
+      },
+      "errors": {
+        "role": "Elige un perfil",
+        "dateOfBirthMissing": "Indica tu fecha de nacimiento",
+        "dateOfBirthInvalid": "Indica una fecha de nacimiento real",
+        "passwordLength": "La contraseña debe tener al menos {count} caracteres",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "guardianMissing": "Indica el nombre y el correo de tu madre, padre o tutor legal",
+        "guardianSameEmail": "El correo de tu madre, padre o tutor legal tiene que ser distinto del tuyo",
+        "terms": "Tienes que aceptar los términos",
+        "failed": "No se pudo crear la cuenta"
+      }
+    },
+    "forgot": {
+      "title": "¿Has olvidado la contraseña?",
+      "subtitle": "Escribe tu correo y te enviaremos un enlace para crear una nueva.",
+      "submit": "Enviar el enlace",
+      "submitting": "Enviando…",
+      "emptyEmail": "Escribe el correo con el que te registraste",
+      "failed": "No hemos podido enviar el enlace. Inténtalo de nuevo en un momento.",
+      "sentTitle": "Revisa tu correo",
+      "unavailableTitle": "El restablecimiento aún no está disponible",
+      "sentBody": "Si {email} está registrado, el enlace ya va en camino. Sirve una sola vez y caduca en una hora.",
+      "tryAgain": "¿Has usado otro correo? Vuelve a intentarlo",
+      "remembered": "¿Ya te acuerdas?"
+    },
+    "reset": {
+      "title": "Crea una contraseña nueva",
+      "subtitle": "Elige una contraseña que no hayas usado antes.",
+      "newPassword": "Contraseña nueva",
+      "confirmPassword": "Repite la contraseña nueva",
+      "lengthHint": "Al menos {count} caracteres.",
+      "submit": "Actualizar la contraseña",
+      "submitting": "Actualizando la contraseña…",
+      "passwordLength": "La contraseña debe tener al menos {count} caracteres",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "failed": "No hemos podido cambiar tu contraseña. Pide un enlace nuevo.",
+      "successDefault": "Tu contraseña se ha actualizado.",
+      "successTitle": "Contraseña actualizada",
+      "successHint": "Inicia sesión con tu contraseña nueva.",
+      "noTokenTitle": "Problema con el enlace",
+      "noTokenBody": "Esta página necesita un enlace válido. Pide uno nuevo y ábrelo directamente desde tu correo.",
+      "requestNew": "Pedir un enlace nuevo",
+      "requestNewLink": "Pedir un enlace nuevo"
+    },
+    "verify": {
+      "verifying": "Comprobando tu correo…",
+      "successTitle": "Correo confirmado",
+      "successDefault": "¡Correo confirmado! Ya puedes iniciar sesión.",
+      "errorTitle": "Problema con el enlace de confirmación",
+      "errorDefault": "Este enlace de confirmación no es válido o ha caducado.",
+      "promptTitle": "Confirma tu correo",
+      "promptBody": "Te hemos enviado un enlace de confirmación. Ábrelo para activar tu cuenta.",
+      "resendLabel": "Reenviar el enlace de confirmación",
+      "resend": "Reenviar el enlace",
+      "resendDefault": "Si existe una cuenta sin confirmar con ese correo, el enlace nuevo ya va en camino.",
+      "resendFailed": "No se ha podido enviar el correo de confirmación."
+    },
+    "consent": {
+      "approvedTitle": "Aprobada",
+      "approvedNamed": "{name} ya puede iniciar sesión en TennisAI{role}.",
+      "approvedRole": " como {role}",
+      "approvedUnnamed": "La cuenta ya se puede usar.",
+      "approvedDefault": "Gracias: la cuenta queda aprobada.",
+      "withdraw": "Puede retirar esta autorización cuando quiera: basta con pedir al entrenador o a la academia que gestiona esta cuenta de TennisAI que la cierre.",
+      "goToApp": "Ir a TennisAI",
+      "errorTitle": "Este enlace no ha funcionado",
+      "errorDefault": "Este enlace de aprobación no es válido o ha caducado.",
+      "noToken": "Esta página necesita el enlace de aprobación del correo que le enviamos.",
+      "errorHelp": "Los enlaces de aprobación caducan a los 30 días y solo se pueden usar una vez. Si ya ha aprobado esta cuenta, no hace falta nada más. Si no, pida al entrenador de su hijo o hija —o a quien le haya configurado TennisAI— que le envíe un enlace nuevo.",
+      "title": "Apruebe la cuenta de su hijo o hija",
+      "subtitle": "Su hijo o hija indicó su dirección como la de su madre, padre o tutor legal al registrarse en TennisAI. La cuenta está bloqueada hasta que usted la apruebe.",
+      "agreeingTitle": "Qué está autorizando",
+      "point1": "Una cuenta de TennisAI que usará para planificar entrenamientos, registrar partidos y seguir calendarios de torneos.",
+      "point2": "Guardamos los datos que ha introducido —nombre, correo y fecha de nacimiento— y todo lo que añada: sesiones de entrenamiento, partidos y torneos en los que participe.",
+      "point3": "Podrá conectarse con un entrenador, que verá los datos de entrenamiento y de partidos que comparta.",
+      "point4": "Puede retirar esta autorización más adelante pidiendo a su entrenador o a la academia que cierren la cuenta, y puede solicitarnos una copia de sus datos o su eliminación en cualquier momento.",
+      "privacyNote": "La {privacy} lo explica en detalle.",
+      "privacyLink": "Política de privacidad",
+      "approve": "Soy su madre, padre o tutor legal: apruebo esta cuenta",
+      "unexpected": "¿No esperaba este mensaje? Cierre la página. Sin su aprobación la cuenta seguirá bloqueada y no se podrá usar."
+    }
+  },
   "common": {
     "role": {
       "player": "Jugador",
