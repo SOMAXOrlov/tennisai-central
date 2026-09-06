@@ -44,26 +44,6 @@ const ALLOWED_FILES = new Set<string>([
 ]);
 
 /**
- * TEMPORARY. Files the i18n sweep has not reached yet, kept here only so the
- * suite is green at every commit while the sweep lands file by file. This set
- * MUST be empty before this branch merges — the assertion at the bottom of the
- * file enforces that it only ever shrinks.
- */
-const MIGRATION_BACKLOG = new Set<string>([
-  "src/components/dashboard/StatisticsSummaryCard.tsx",
-  "src/components/notifications/NotificationPreferencesCard.tsx",
-  "src/components/onboarding/OnboardingDialog.tsx",
-  "src/components/search/CommandPalette.tsx",
-  "src/components/search/SearchTrigger.tsx",
-  "src/pages/NotificationSettingsPage.tsx",
-  "src/pages/NotificationsPage.tsx",
-  "src/pages/ProfilePage.tsx",
-]);
-
-/** How many files were still unmigrated when the ratchet was installed. */
-const BACKLOG_HIGH_WATER_MARK = 58;
-
-/**
  * Literals that read the same in English and Spanish: the product name, unit
  * symbols, and codes.
  */
@@ -189,10 +169,7 @@ describe("no hard-coded user-visible strings", () => {
 
   it("every JSX text node, label and rendered literal goes through t()", () => {
     const offenders = files
-      .filter((file) => {
-        const relative = relativeOf(file);
-        return !ALLOWED_FILES.has(relative) && !MIGRATION_BACKLOG.has(relative);
-      })
+      .filter((file) => !ALLOWED_FILES.has(relativeOf(file)))
       .flatMap(scanFile)
       .map((f) => `${f.file}:${f.line} [${f.kind}] ${f.text}`);
     expect(offenders).toEqual([]);
@@ -204,22 +181,17 @@ describe("no hard-coded user-visible strings", () => {
     expect(ALLOWED_STRINGS.size).toBeLessThanOrEqual(10);
   });
 
-  it("the migration backlog only ever shrinks", () => {
-    expect(MIGRATION_BACKLOG.size).toBeLessThanOrEqual(BACKLOG_HIGH_WATER_MARK);
-  });
-
   it("does not exempt a file that no longer exists", () => {
-    const missing = [...ALLOWED_FILES, ...MIGRATION_BACKLOG].filter(
-      (file) => !fs.existsSync(path.join(ROOT, file)),
-    );
+    const missing = [...ALLOWED_FILES].filter((file) => !fs.existsSync(path.join(ROOT, file)));
     expect(missing).toEqual([]);
   });
 
-  it("does not keep a file on the backlog that is already clean", () => {
-    // Stops the backlog from turning into a permanent allowlist by accident.
-    const alreadyDone = [...MIGRATION_BACKLOG].filter(
+  it("does not exempt a file that is already clean", () => {
+    // An exemption that has stopped being needed is an exemption that will
+    // quietly cover the next regression in that file.
+    const alreadyClean = [...ALLOWED_FILES].filter(
       (relative) => scanFile(path.join(ROOT, relative)).length === 0,
     );
-    expect(alreadyDone).toEqual([]);
+    expect(alreadyClean).toEqual([]);
   });
 });

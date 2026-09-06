@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ export function OnboardingDialog({
   initialAnswers?: OnboardingAnswers;
 }) {
   const { refreshUser } = useAuth();
+  const { t } = useT();
   const questions = useMemo(() => questionsForRole(user.role), [user.role]);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>(initialAnswers ?? {});
@@ -104,9 +106,7 @@ export function OnboardingDialog({
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" /> {ROLE_ONBOARDING_TITLE[user.role]}
           </DialogTitle>
-          <DialogDescription>
-            Answer a few quick questions — pick an option or write your own. You can change these later.
-          </DialogDescription>
+          <DialogDescription>{t("onboarding.intro")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center gap-1.5">
@@ -114,7 +114,7 @@ export function OnboardingDialog({
             <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-primary" : "bg-muted"}`} />
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">Question {step + 1} of {questions.length}</p>
+        <p className="text-xs text-muted-foreground">{t("onboarding.progress", { step: step + 1, total: questions.length })}</p>
 
         <div className="space-y-3">
           <Label className="text-base text-foreground">{q.prompt}</Label>
@@ -191,7 +191,7 @@ export function OnboardingDialog({
               {q.allowCustom && (
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Add your own…"
+                    placeholder={t("onboarding.addOwn")}
                     value={customText}
                     onChange={(e) => setCustomText(e.target.value)}
                     onKeyDown={(e) => {
@@ -201,7 +201,7 @@ export function OnboardingDialog({
                       }
                     }}
                   />
-                  <Button type="button" variant="outline" onClick={addCustomMulti}>Add</Button>
+                  <Button type="button" variant="outline" onClick={addCustomMulti}>{t("onboarding.add")}</Button>
                 </div>
               )}
             </div>
@@ -209,20 +209,20 @@ export function OnboardingDialog({
         </div>
 
         <DialogFooter className="flex-row items-center justify-between sm:justify-between">
-          <Button variant="ghost" size="sm" disabled={saving} onClick={submit}>Skip for now</Button>
+          <Button variant="ghost" size="sm" disabled={saving} onClick={submit}>{t("onboarding.skip")}</Button>
           <div className="flex gap-2">
             {step > 0 && (
               <Button variant="outline" size="sm" onClick={goBack} disabled={saving}>
-                <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back
+                <ArrowLeft className="mr-1 h-3.5 w-3.5" /> {t("onboarding.back")}
               </Button>
             )}
             {isLast ? (
               <Button size="sm" onClick={submit} disabled={saving || !canAdvance}>
-                <Check className="mr-1 h-3.5 w-3.5" /> {saving ? "Saving…" : "Finish"}
+                <Check className="mr-1 h-3.5 w-3.5" /> {saving ? t("onboarding.saving") : t("onboarding.finish")}
               </Button>
             ) : (
               <Button size="sm" onClick={goNext} disabled={!canAdvance}>
-                Next <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                {t("onboarding.next")} <ArrowRight className="ml-1 h-3.5 w-3.5" />
               </Button>
             )}
           </div>

@@ -266,7 +266,6 @@
     "title": "Acciones rápidas",
     "description": "Dos toques, a pie de pista.",
     "back": "Atrás",
-    "cancel": "Cancelar",
     "menu": {
       "logTraining": {
         "title": "Registrar un entrenamiento",
@@ -963,7 +962,6 @@
       "trainingPlans": "Planes de entrenamiento",
       "trainingRequests": "Solicitudes de entrenamiento",
       "connections": "Conexiones",
-      "aiInsights": "Análisis con IA",
       "notifications": "Notificaciones",
       "adminUsers": "Usuarios",
       "adminRelationships": "Relaciones",
@@ -988,13 +986,11 @@
       "language": "Idioma"
     },
     "common": {
-      "loadError": "No se pudieron cargar los datos del panel",
       "manage": "Gestionar",
       "viewAll": "Ver todo",
       "fullCalendar": "Calendario completo",
       "explore": "Explorar",
       "details": "Detalles",
-      "open": "Abrir",
       "upcomingEvents": "Próximos eventos",
       "unreadNotifications": "Notificaciones sin leer",
       "noUpcomingEvents": "Aún no hay próximos eventos.",
@@ -1016,7 +1012,6 @@
         "title": "Hola de nuevo, {name}",
         "subtitle": "Este es tu resumen de tenis de hoy."
       },
-      "loading": "Cargando tu panel…",
       "stats": {
         "tournaments": "Torneos",
         "registeredTrend": "{count} inscritos"
@@ -1033,13 +1028,6 @@
         "title": "Equipamiento",
         "itemsTracked": "{count, plural, one {# artículo registrado} other {# artículos registrados}}",
         "empty": "Aún no hay equipamiento registrado."
-      },
-      "matchConditions": {
-        "title": "Condiciones del partido",
-        "description": "Superficie, pelota y clima, por torneo",
-        "cardTitle": "Consulta cómo se jugará un torneo",
-        "cardBody": "Abre cualquier torneo para ver su superficie, la pelota oficial, la temperatura y humedad previstas, y cómo afecta eso a la pelota.",
-        "browse": "Explorar torneos"
       }
     },
     "coach": {
@@ -1047,7 +1035,6 @@
         "title": "Hola de nuevo, coach {lastName}",
         "subtitle": "Gestiona tus jugadores, equipos y calendario de entrenamientos."
       },
-      "loading": "Cargando tu panel…",
       "createTeam": "Crear equipo",
       "newTraining": "Nuevo entrenamiento",
       "stats": {
@@ -1072,7 +1059,6 @@
       "teamsCard": {
         "title": "Mis equipos",
         "description": "{count, plural, one {# equipo} other {# equipos}}",
-        "playersCount": "{count, plural, one {# jugador} other {# jugadores}}",
         "createNew": "Crear nuevo equipo"
       },
       "needsReview": {
@@ -1105,7 +1091,6 @@
         "title": "Hola, {name}",
         "subtitle": "Viendo el progreso del jugador conectado."
       },
-      "loading": "Cargando panel…",
       "stats": {
         "connectedPlayers": "Jugadores conectados",
         "pendingRequests": "Solicitudes pendientes"
@@ -1249,6 +1234,159 @@
     "checkNow": "Comprobar ahora",
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "subtitle": "Gestiona tus datos personales.",
+    "information": "Datos del perfil",
+    "publicId": "Tu ID público",
+    "publicIdHint": "Comparte este ID para que otras personas puedan conectar contigo.",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "email": "Correo electrónico",
+    "saving": "Guardando…",
+    "save": "Guardar los cambios",
+    "questionnaire": "Cuestionario del perfil",
+    "questionnaireDescription": "Tus respuestas iniciales",
+    "editAnswers": "Editar las respuestas",
+    "notCompleted": "Todavía no has completado el cuestionario de tu perfil.",
+    "completeSetup": "Completar el perfil",
+    "calendars": "Calendarios de torneos",
+    "calendarsHint": "Qué circuitos aparecen en tu calendario. Al principio no hay ninguno activo: los feeds recogen miles de eventos de todo el mundo, y un calendario con todos no hay quien lo lea. Elige los que tus jugadores juegan de verdad.",
+    "federation": {
+      "ITF": "World Tennis Tour: júnior y entrada al circuito profesional",
+      "UTR": "Eventos con puntuación UTR, normalmente locales y frecuentes",
+      "ATP": "Circuito profesional masculino",
+      "WTA": "Circuito profesional femenino",
+      "USTA": "Eventos nacionales de Estados Unidos"
+    },
+    "ownSessionsAria": "Mostrar mis propias sesiones",
+    "ownSessions": "Mis propias sesiones",
+    "ownSessionsHint": "Entrenamientos, partidos y todo lo que tú o tu entrenador pongáis en el calendario."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "unreadCount": "{count, plural, one {# notificación sin leer} other {# notificaciones sin leer}}",
+    "allCaughtUp": "No tienes nada pendiente.",
+    "markAllRead": "Marcar todo como leído",
+    "hideSettings": "Ocultar los ajustes",
+    "settings": "Ajustes de notificaciones",
+    "tabAll": "Todas",
+    "tabUnread": "Sin leer",
+    "tabUnreadCount": "Sin leer ({count})",
+    "settingsTitle": "Ajustes de notificaciones",
+    "settingsSubtitle": "Elige qué notificaciones quieres recibir.",
+    "preferences": "Preferencias",
+    "setting": {
+      "trainingReminders": {
+        "label": "Avisos de entrenamiento",
+        "description": "Recibe avisos de las próximas sesiones"
+      },
+      "tournamentReminders": {
+        "label": "Avisos de torneos",
+        "description": "Recibe avisos de los próximos torneos"
+      },
+      "requestApprovals": {
+        "label": "Solicitudes de conexión",
+        "description": "Recibe un aviso cuando alguien te envíe una solicitud"
+      },
+      "financeUpdates": {
+        "label": "Novedades de gastos",
+        "description": "Recibe avisos de los cambios relacionados con gastos"
+      },
+      "aiInsightUpdates": {
+        "label": "Análisis con IA",
+        "description": "Recibe un aviso cuando haya nuevos análisis disponibles"
+      },
+      "systemNotifications": {
+        "label": "Avisos del sistema",
+        "description": "Actualizaciones y anuncios importantes"
+      }
+    },
+    "prefs": {
+      "title": "Preferencias de notificación",
+      "description": "Elige cómo quieres enterarte de lo que pasa y qué merece un aviso.",
+      "channels": "Canales",
+      "email": "Correo electrónico",
+      "emailHint": "Enviar un correo con las notificaciones que hayas activado",
+      "push": "Push",
+      "pushHint": "Enviar una notificación push a tus dispositivos registrados",
+      "pushNotConfigured": "Las notificaciones push aún no están configuradas en este servidor",
+      "thisDevice": "Este dispositivo",
+      "deviceEnabled": "Las notificaciones push están activadas en este dispositivo.",
+      "deviceUnsupported": "Este navegador no admite notificaciones push, o no se han podido activar.",
+      "deviceDenied": "El navegador ha denegado el permiso de notificaciones.",
+      "deviceIdle": "Registra este navegador para recibir notificaciones push.",
+      "enabling": "Activando…",
+      "enabled": "Activadas",
+      "enable": "Activar push en este dispositivo",
+      "categories": "De qué quieres que te avisemos",
+      "saving": "Guardando…",
+      "autoSave": "Los cambios se guardan solos.",
+      "category": {
+        "trainingReminders": {
+          "label": "Avisos de entrenamiento",
+          "description": "Próximas sesiones y cambios de horario"
+        },
+        "tournamentReminders": {
+          "label": "Avisos de torneos",
+          "description": "Inscripciones, plazos y próximos eventos"
+        },
+        "requestApprovals": {
+          "label": "Solicitudes",
+          "description": "Solicitudes de entrenamiento, aprobaciones y cambios de hora"
+        },
+        "financeUpdates": {
+          "label": "Novedades de gastos",
+          "description": "Nuevos gastos y movimientos"
+        },
+        "aiInsightUpdates": {
+          "label": "Novedades de los análisis",
+          "description": "Nuevos informes, planes de partido y análisis"
+        },
+        "systemNotifications": {
+          "label": "Avisos del sistema",
+          "description": "Notificaciones de la cuenta y generales de la app"
+        }
+      }
+    }
+  },
+  "search": {
+    "trigger": "Buscar: páginas, jugadores y torneos",
+    "placeholder": "Buscar…",
+    "dialogTitle": "Buscar en TennisAI",
+    "dialogDescription": "Busca páginas, jugadores y torneos. Usa las flechas para elegir un resultado y pulsa Intro para abrirlo.",
+    "inputPlaceholder": "Buscar páginas, jugadores, torneos…",
+    "searching": "Buscando torneos…",
+    "noMatches": "Ningún resultado para «{query}».",
+    "nothing": "No hay nada que mostrar."
+  },
+  "onboarding": {
+    "intro": "Responde unas preguntas rápidas: elige una opción o escribe la tuya. Podrás cambiarlas más adelante.",
+    "progress": "Pregunta {step} de {total}",
+    "addOwn": "Añade la tuya…",
+    "add": "Añadir",
+    "skip": "Ahora no",
+    "back": "Atrás",
+    "saving": "Guardando…",
+    "finish": "Terminar",
+    "next": "Siguiente"
+  },
+  "statsCard": {
+    "title": "Estadísticas",
+    "description": "Resumen del rendimiento de la temporada",
+    "fullStats": "Ver estadísticas",
+    "empty": "Todavía no hay datos de partidos. Tus estadísticas aparecerán aquí cuando registres alguno.",
+    "logMatch": "Registrar partido",
+    "winRate": "Porcentaje de victorias",
+    "fromWithResult": "de {count, plural, one {# partido} other {# partidos}} con resultado",
+    "noResults": "todavía sin victorias ni derrotas registradas",
+    "winLoss": "Victorias – derrotas",
+    "logged": "{count, plural, one {# partido registrado} other {# partidos registrados}}",
+    "recentForm": "Estado de forma · últimos {count}",
+    "noWinRate": "Ninguno de estos partidos tiene victoria o derrota registrada.",
+    "formSummary": "{record} · {rate} de victorias",
+    "fullBreakdown": "Ver el desglose"
   },
   "connections": {
     "title": "Conexiones y solicitudes",
@@ -2591,16 +2729,7 @@
     },
     "close": "Cerrar",
     "cancel": "Cancelar",
-    "save": "Guardar",
-    "saving": "Guardando…",
-    "delete": "Eliminar",
-    "remove": "Quitar",
-    "edit": "Editar",
-    "add": "Añadir",
-    "done": "Hecho",
-    "back": "Volver",
     "next": "Siguiente",
-    "previous": "Anterior",
     "dismiss": "Descartar",
     "notFound": {
       "title": "Vaya, esta página no existe",

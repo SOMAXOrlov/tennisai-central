@@ -266,7 +266,6 @@
     "title": "Quick actions",
     "description": "Two taps, courtside.",
     "back": "Back",
-    "cancel": "Cancel",
     "menu": {
       "logTraining": {
         "title": "Log a training",
@@ -963,7 +962,6 @@
       "trainingPlans": "Training plans",
       "trainingRequests": "Training requests",
       "connections": "Connections",
-      "aiInsights": "AI Insights",
       "notifications": "Notifications",
       "adminUsers": "Users",
       "adminRelationships": "Relationships",
@@ -988,13 +986,11 @@
       "language": "Language"
     },
     "common": {
-      "loadError": "Failed to load dashboard data",
       "manage": "Manage",
       "viewAll": "View all",
       "fullCalendar": "Full calendar",
       "explore": "Explore",
       "details": "Details",
-      "open": "Open",
       "upcomingEvents": "Upcoming Events",
       "unreadNotifications": "Unread Notifications",
       "noUpcomingEvents": "No upcoming events yet.",
@@ -1016,7 +1012,6 @@
         "title": "Welcome back, {name}",
         "subtitle": "Here's your tennis overview for today."
       },
-      "loading": "Loading your dashboard…",
       "stats": {
         "tournaments": "Tournaments",
         "registeredTrend": "{count} registered"
@@ -1033,13 +1028,6 @@
         "title": "Equipment",
         "itemsTracked": "{count, plural, one {# item tracked} other {# items tracked}}",
         "empty": "No equipment tracked yet."
-      },
-      "matchConditions": {
-        "title": "Match Conditions",
-        "description": "Surface, ball and weather, per tournament",
-        "cardTitle": "Check how a tournament will play",
-        "cardBody": "Open any tournament to see its surface, official ball, expected temperature and humidity, and what that does to the ball.",
-        "browse": "Browse tournaments"
       }
     },
     "coach": {
@@ -1047,7 +1035,6 @@
         "title": "Welcome back, Coach {lastName}",
         "subtitle": "Manage your players, teams, and training schedule."
       },
-      "loading": "Loading your dashboard…",
       "createTeam": "Create Team",
       "newTraining": "New Training",
       "stats": {
@@ -1072,7 +1059,6 @@
       "teamsCard": {
         "title": "My Teams",
         "description": "{count, plural, one {# team} other {# teams}}",
-        "playersCount": "{count, plural, one {# player} other {# players}}",
         "createNew": "Create New Team"
       },
       "needsReview": {
@@ -1105,7 +1091,6 @@
         "title": "Welcome, {name}",
         "subtitle": "Viewing connected player's progress."
       },
-      "loading": "Loading dashboard…",
       "stats": {
         "connectedPlayers": "Connected Players",
         "pendingRequests": "Pending Requests"
@@ -1249,6 +1234,159 @@
     "checkNow": "Check now",
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your personal information.",
+    "information": "Profile Information",
+    "publicId": "Your Public ID",
+    "publicIdHint": "Share this ID so others can connect with you.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "saving": "Saving…",
+    "save": "Save Changes",
+    "questionnaire": "Profile questionnaire",
+    "questionnaireDescription": "Your onboarding answers",
+    "editAnswers": "Edit answers",
+    "notCompleted": "You haven't completed your profile questionnaire yet.",
+    "completeSetup": "Complete setup",
+    "calendars": "Tournament calendars",
+    "calendarsHint": "Which tours appear on your calendar. Nothing is on to begin with — the feeds carry thousands of events worldwide, and a calendar showing all of them is one nobody can read. Pick the ones your players actually enter.",
+    "federation": {
+      "ITF": "World Tennis Tour — juniors and the professional entry level",
+      "UTR": "UTR-rated events, usually local and frequent",
+      "ATP": "Men's professional tour",
+      "WTA": "Women's professional tour",
+      "USTA": "United States national events"
+    },
+    "ownSessionsAria": "Show my own sessions",
+    "ownSessions": "My own sessions",
+    "ownSessionsHint": "Trainings, matches and anything you or your coach put on the calendar."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadCount": "{count, plural, one {# unread notification} other {# unread notifications}}",
+    "allCaughtUp": "You're all caught up.",
+    "markAllRead": "Mark all read",
+    "hideSettings": "Hide settings",
+    "settings": "Notification settings",
+    "tabAll": "All",
+    "tabUnread": "Unread",
+    "tabUnreadCount": "Unread ({count})",
+    "settingsTitle": "Notification Settings",
+    "settingsSubtitle": "Manage which notifications you receive.",
+    "preferences": "Preferences",
+    "setting": {
+      "trainingReminders": {
+        "label": "Training Reminders",
+        "description": "Get notified about upcoming training sessions"
+      },
+      "tournamentReminders": {
+        "label": "Tournament Reminders",
+        "description": "Get notified about upcoming tournaments"
+      },
+      "requestApprovals": {
+        "label": "Connection Requests",
+        "description": "Get notified when someone sends you a request"
+      },
+      "financeUpdates": {
+        "label": "Finance Updates",
+        "description": "Get notified about finance-related changes"
+      },
+      "aiInsightUpdates": {
+        "label": "AI Insights",
+        "description": "Get notified when new AI insights are available"
+      },
+      "systemNotifications": {
+        "label": "System Notifications",
+        "description": "Important system updates and announcements"
+      }
+    },
+    "prefs": {
+      "title": "Notification preferences",
+      "description": "Choose how you want to hear about activity, and what's worth a notification.",
+      "channels": "Channels",
+      "email": "Email",
+      "emailHint": "Send an email for notifications you've opted into",
+      "push": "Push",
+      "pushHint": "Send a push notification to your registered devices",
+      "pushNotConfigured": "Push isn't configured on this server yet",
+      "thisDevice": "This device",
+      "deviceEnabled": "Push is enabled on this device.",
+      "deviceUnsupported": "This browser doesn't support push notifications, or enabling it failed.",
+      "deviceDenied": "Notification permission was denied in the browser.",
+      "deviceIdle": "Register this browser to receive push notifications.",
+      "enabling": "Enabling…",
+      "enabled": "Enabled",
+      "enable": "Enable push on this device",
+      "categories": "What you're notified about",
+      "saving": "Saving…",
+      "autoSave": "Changes save automatically.",
+      "category": {
+        "trainingReminders": {
+          "label": "Training reminders",
+          "description": "Upcoming sessions and schedule changes"
+        },
+        "tournamentReminders": {
+          "label": "Tournament reminders",
+          "description": "Entries, deadlines and upcoming events"
+        },
+        "requestApprovals": {
+          "label": "Request approvals",
+          "description": "Training requests, approvals and reschedules"
+        },
+        "financeUpdates": {
+          "label": "Finance updates",
+          "description": "New expenses and finance entries"
+        },
+        "aiInsightUpdates": {
+          "label": "AI insight updates",
+          "description": "New scouting reports, game plans and analysis"
+        },
+        "systemNotifications": {
+          "label": "System notifications",
+          "description": "Account and general app notifications"
+        }
+      }
+    }
+  },
+  "search": {
+    "trigger": "Search — pages, players and tournaments",
+    "placeholder": "Search…",
+    "dialogTitle": "Search TennisAI",
+    "dialogDescription": "Search pages, players and tournaments. Use the arrow keys to choose a result and Enter to open it.",
+    "inputPlaceholder": "Search pages, players, tournaments…",
+    "searching": "Searching tournaments…",
+    "noMatches": "No matches for “{query}”.",
+    "nothing": "Nothing to show."
+  },
+  "onboarding": {
+    "intro": "Answer a few quick questions — pick an option or write your own. You can change these later.",
+    "progress": "Question {step} of {total}",
+    "addOwn": "Add your own…",
+    "add": "Add",
+    "skip": "Skip for now",
+    "back": "Back",
+    "saving": "Saving…",
+    "finish": "Finish",
+    "next": "Next"
+  },
+  "statsCard": {
+    "title": "Statistics",
+    "description": "Season performance overview",
+    "fullStats": "Full stats",
+    "empty": "No match data yet. Your stats will appear here once matches are recorded.",
+    "logMatch": "Log match",
+    "winRate": "Win rate",
+    "fromWithResult": "from {count, plural, one {# match} other {# matches}} with a result",
+    "noResults": "no win/loss recorded yet",
+    "winLoss": "Win – loss",
+    "logged": "{count, plural, one {# match} other {# matches}} logged",
+    "recentForm": "Recent form · last {count}",
+    "noWinRate": "None of these matches has a recorded win or loss.",
+    "formSummary": "{record} · {rate} win rate",
+    "fullBreakdown": "Full breakdown"
   },
   "connections": {
     "title": "Connections & Requests",
@@ -2591,16 +2729,7 @@
     },
     "close": "Close",
     "cancel": "Cancel",
-    "save": "Save",
-    "saving": "Saving…",
-    "delete": "Delete",
-    "remove": "Remove",
-    "edit": "Edit",
-    "add": "Add",
-    "done": "Done",
-    "back": "Back",
     "next": "Next",
-    "previous": "Previous",
     "dismiss": "Dismiss",
     "notFound": {
       "title": "Oops! Page not found",

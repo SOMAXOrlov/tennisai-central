@@ -47,20 +47,20 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-          <p className="text-muted-foreground">{unreadCount > 0 ? `${unreadCount} unread notification${unreadCount !== 1 ? "s" : ""}` : "You're all caught up."}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("notifications.title")}</h1>
+          <p className="text-muted-foreground">{unreadCount > 0 ? t("notifications.unreadCount", { count: unreadCount }) : t("notifications.allCaughtUp")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => markAllRead.mutate(userId)} disabled={markAllRead.isPending}>
-              <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+              <CheckCheck className="h-3.5 w-3.5" /> {t("notifications.markAllRead")}
             </Button>
           )}
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPrefs((v) => !v)}>
-            <Settings2 className="h-3.5 w-3.5" /> {showPrefs ? "Hide settings" : "Notification settings"}
+            <Settings2 className="h-3.5 w-3.5" /> {showPrefs ? t("notifications.hideSettings") : t("notifications.settings")}
           </Button>
           <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-            <TabsList><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="unread">Unread {unreadCount > 0 && `(${unreadCount})`}</TabsTrigger></TabsList>
+            <TabsList><TabsTrigger value="all">{t("notifications.tabAll")}</TabsTrigger><TabsTrigger value="unread">{unreadCount > 0 ? t("notifications.tabUnreadCount", { count: unreadCount }) : t("notifications.tabUnread")}</TabsTrigger></TabsList>
           </Tabs>
         </div>
       </div>

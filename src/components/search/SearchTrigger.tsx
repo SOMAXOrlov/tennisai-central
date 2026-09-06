@@ -10,6 +10,7 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 /**
  * ⌘ on a Mac, Ctrl everywhere else — showing the wrong one teaches the wrong
@@ -28,11 +29,12 @@ interface SearchTriggerProps {
 
 /** The sidebar row. Reads as a search field, behaves as a button. */
 export function SearchTrigger({ onClick, className }: SearchTriggerProps) {
+  const { t } = useT();
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Search — pages, players and tournaments"
+      aria-label={t("search.trigger")}
       aria-keyshortcuts="Control+K Meta+K"
       className={cn(
         // min-h, never h: a 36px row on a mouse, a 44px target under a finger.
@@ -44,7 +46,7 @@ export function SearchTrigger({ onClick, className }: SearchTriggerProps) {
       )}
     >
       <Search className="h-4 w-4 shrink-0" />
-      <span className="flex-1 truncate">Search…</span>
+      <span className="flex-1 truncate">{t("search.placeholder")}</span>
       {/* Desktop only. Below `md` this row is inside the mobile drawer, where
           there is no keyboard to press the shortcut on. Deliberately keyed on
           the breakpoint rather than `coarse:hidden`, because a `coarse:` and an
@@ -59,12 +61,13 @@ export function SearchTrigger({ onClick, className }: SearchTriggerProps) {
 
 /** The phone header's icon button, beside the theme switch. */
 export function SearchTriggerIcon({ onClick, className }: SearchTriggerProps) {
+  const { t } = useT();
   return (
     <Button
       variant="ghost"
       size="icon"
       onClick={onClick}
-      aria-label="Search — pages, players and tournaments"
+      aria-label={t("search.trigger")}
       aria-keyshortcuts="Control+K Meta+K"
       className={className}
     >
