@@ -11,6 +11,7 @@
 import { NO_VALUE, formatCount, formatPct, formatRatio } from "@/lib/stats/format";
 import { cn } from "@/lib/utils";
 import type { MatchComputedStats, MatchStatsRaw, MatchView } from "@/types";
+import { MatchIssuesPanel } from "@/components/matches/MatchIssuesPanel";
 
 function DetailRow({ label, value, hint }: { label: string; value: string; hint?: string }) {
   const missing = value === NO_VALUE;
@@ -83,6 +84,8 @@ export function MatchDetailPanel({ match, className }: { match: MatchView; class
       <p className="text-xs text-muted-foreground">
         Percentages are computed from the counts entered for this match — nothing is estimated.
       </p>
+
+      <MatchIssuesPanel matchId={match.id} />
     </div>
   );
 }

@@ -28,6 +28,14 @@ export function teamManageHref(teamId: string): string {
 }
 
 /**
+ * Session Builder with a focus area preselected — where "Build a session" on
+ * the match-issues card lands. SessionBuilderPage reads `?focus=` on mount.
+ */
+export function sessionBuilderHref(focusArea: string): string {
+  return `/session-builder?focus=${encodeURIComponent(focusArea)}`;
+}
+
+/**
  * Reads the entity params off a page's search params. An empty value counts as
  * absent, so `?player=` does not scope the page to a player called "".
  */
@@ -36,4 +44,13 @@ export function readEntityParams(params: URLSearchParams): { playerId: string | 
     playerId: params.get("player") || null,
     teamId: params.get("team") || null,
   };
+}
+
+/**
+ * The accessible name of an identity (avatar/name) trigger. Deliberately NOT
+ * "Actions for …" — a card may show both openers, and two buttons with one
+ * name would be indistinguishable to a screen reader (and to the tests).
+ */
+export function identityTriggerLabel(name: string): string {
+  return `Open menu for ${name}`;
 }

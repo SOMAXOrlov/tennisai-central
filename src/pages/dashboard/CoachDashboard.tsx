@@ -25,7 +25,7 @@ import {
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { useTrainings, useTeams, useCalendarEvents, usePlayerTournaments, useTrainingPlans } from "@/hooks/api/queries";
-import { PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { IdentityTrigger, PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
 import type { ConnectedPlayer } from "@/types";
@@ -153,13 +153,23 @@ export default function CoachDashboard() {
             <div className="space-y-3">
               {connectedPlayers.slice(0, 5).map((player) => (
                 <div key={player.id} className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                    {player.firstName[0]}{player.lastName[0]}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{player.firstName} {player.lastName}</p>
-                    <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
-                  </div>
+                  {/* Avatar and name open the player's menu (Schedule · Calendar · Stats · Equipment). */}
+                  <PlayerActionsMenu
+                    player={player}
+                    onViewStats={setStatsPlayer}
+                    onViewEquipment={setEquipmentPlayer}
+                    trigger={
+                      <IdentityTrigger name={`${player.firstName} ${player.lastName}`} className="-m-1 min-w-0 flex-1 p-1">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                          {player.firstName[0]}{player.lastName[0]}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium text-foreground">{player.firstName} {player.lastName}</span>
+                          <span className="block font-mono text-xs text-muted-foreground">{player.playerPublicId}</span>
+                        </span>
+                      </IdentityTrigger>
+                    }
+                  />
                   {/* ?player=<id> opens that player's stats drawer on /players. */}
                   <Button size="sm" variant="ghost" className="text-xs" asChild>
                     <Link to={`/players?player=${encodeURIComponent(player.id)}`}>
@@ -223,7 +233,15 @@ export default function CoachDashboard() {
           {teams.map((team) => (
             <div key={team.id} className="rounded-lg border border-border bg-secondary/30 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <h4 className="min-w-0 truncate text-sm font-semibold text-foreground">{team.name}</h4>
+                {/* The team name opens the same menu as the "…" button. */}
+                <TeamActionsMenu
+                  team={team}
+                  trigger={
+                    <IdentityTrigger name={team.name} className="-m-1 min-w-0 p-1">
+                      <span className="min-w-0 truncate text-sm font-semibold text-foreground">{team.name}</span>
+                    </IdentityTrigger>
+                  }
+                />
                 <div className="flex shrink-0 items-center gap-1">
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                     {team.players.length} players

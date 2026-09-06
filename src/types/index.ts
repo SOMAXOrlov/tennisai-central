@@ -5,6 +5,8 @@
 // Analytics domain (Stage 1): profile → opponent → match → scouting →
 // game plan → post-match → training plan. See ./analytics.ts.
 export * from "./analytics";
+// Post-match issues (tags + deterministic summaries). See ./matchIssues.ts.
+export * from "./matchIssues";
 // Roles & tenancy (Stage 2): academies, coach assignments, guardianships.
 export * from "./roles";
 

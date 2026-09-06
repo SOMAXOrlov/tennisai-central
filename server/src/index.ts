@@ -26,6 +26,7 @@ import { notificationsRouter } from "./notifications/routes";
 import { profileRouter } from "./profile/routes";
 import { trainingPlansRouter } from "./trainingPlans/routes";
 import { matchesRouter } from "./matches/routes";
+import { matchIssuesRouter } from "./matches/issues.routes";
 import { opponentsRouter } from "./opponents/routes";
 import { aiRouter } from "./ai/routes";
 import { conditionsRouter } from "./conditions/routes";
@@ -95,6 +96,10 @@ app.use("/api/training-requests", trainingRequestsRouter);
 app.use("/api/calendar", calendarRouter);
 app.use("/api/training-plans", trainingPlansRouter);
 app.use("/api/matches", matchesRouter);
+// Post-match issues + their computed summaries. Mounted at "/api" because it
+// spans /matches/:id/issues, /match-issues/:id and /players/:id/match-issues;
+// every route carries its own requireAuth.
+app.use("/api", matchIssuesRouter);
 app.use("/api/opponents", opponentsRouter);
 app.use("/api/me", profileRouter);
 app.use("/api/catalogue", catalogueRouter);

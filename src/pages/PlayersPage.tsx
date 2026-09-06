@@ -10,12 +10,16 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
-import { PlayerActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { IdentityTrigger, PlayerActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { PlayerTeamChips } from "@/components/coach/PlayerTeamChips";
+import { useTeams } from "@/hooks/api/queries";
 import type { ConnectedPlayer } from "@/types";
 
 export default function PlayersPage() {
   const { t } = useT();
   const { connectedPlayers } = useConnections();
+  // Team chips are derived from the teams the coach already has; no extra call per player.
+  const { data: teams = [] } = useTeams();
   const [search, setSearch] = useState("");
   const [statsPlayer, setStatsPlayer] = useState<ConnectedPlayer | null>(null);
   const [equipmentPlayer, setEquipmentPlayer] = useState<ConnectedPlayer | null>(null);
@@ -80,15 +84,29 @@ export default function PlayersPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((player) => (
-            <DashboardCard key={player.id} title={`${player.firstName} ${player.lastName}`}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
-                  {player.firstName[0]}{player.lastName[0]}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
-                  <p className="text-xs text-muted-foreground">Connected since {new Date(player.connectedSince).toLocaleDateString()}</p>
-                </div>
+            <DashboardCard
+              key={player.id}
+              title={
+                // Tapping the avatar or the name opens the same menu as "Actions".
+                <PlayerActionsMenu
+                  player={player}
+                  onViewStats={setStatsPlayer}
+                  onViewEquipment={setEquipmentPlayer}
+                  trigger={
+                    <IdentityTrigger name={`${player.firstName} ${player.lastName}`} className="-m-1 p-1">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+                        {player.firstName[0]}{player.lastName[0]}
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">{player.firstName} {player.lastName}</span>
+                    </IdentityTrigger>
+                  }
+                />
+              }
+            >
+              <div className="min-w-0 space-y-1.5">
+                <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
+                <p className="text-xs text-muted-foreground">Connected since {new Date(player.connectedSince).toLocaleDateString()}</p>
+                <PlayerTeamChips teams={teams} playerId={player.id} />
               </div>
               {/*
                 Everything a coach can do with one player sits behind one menu.

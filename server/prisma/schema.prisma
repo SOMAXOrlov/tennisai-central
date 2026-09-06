@@ -85,6 +85,7 @@ model User {
   gamePlansAsPlayer       GamePlan[]         @relation("GamePlanPlayer")
   gamePlansCreated        GamePlan[]         @relation("GamePlanCreatedBy")
   postMatchReportsCreated PostMatchReport[]  @relation("PostMatchCreatedBy")
+  matchIssuesAuthored     MatchIssue[]       @relation("MatchIssueAuthor")
   trainingPlansAsPlayer   TrainingPlan[]     @relation("TrainingPlanPlayer")
   trainingPlansCreated    TrainingPlan[]     @relation("TrainingPlanCreatedBy")
   aiGenerations           AiGeneration[]     @relation("AiGenUser")
@@ -706,6 +707,7 @@ model Match {
   player           User              @relation("MatchPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   opponent         Opponent?         @relation(fields: [opponentId], references: [id], onDelete: SetNull)
   postMatchReports PostMatchReport[]
+  issues           MatchIssue[]
 
   @@index([playerId])
   @@index([opponentId])
@@ -789,6 +791,28 @@ model PostMatchReport {
   @@index([matchId])
   @@index([createdById])
   @@map("post_match_reports")
+}
+
+// A match issue: one tag from a fixed list plus an optional sentence, written
+// by the player or their coach after a match. Several per match; each entry
+// keeps its author. Summaries are COMPUTED ON READ from these rows (see
+// src/matches/issueSummary.ts) and are never stored — unlike PostMatchReport,
+// which is the separate generated-report model.
+model MatchIssue {
+  id        String   @id @default(cuid())
+  matchId   String
+  authorId  String
+  tag       String // serve | return | forehand | backhand | net | footwork | fitness | mental | tactics | conditions
+  note      String? // one optional sentence, <= 280 chars (enforced by zod)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  match  Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  author User  @relation("MatchIssueAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([authorId])
+  @@map("match_issues")
 }
 
 // --- Training plan + measurable drills ──────────────────────────

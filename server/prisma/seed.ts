@@ -255,6 +255,18 @@ const DEMO_MATCHES = [
   },
 ];
 
+// What p1 and coach c1 tagged after those two matches (synthetic). Enough to
+// show the per-match summary and the "what keeps coming back" card; the card
+// stays at LOW confidence on purpose — two matches are not a pattern.
+const DEMO_MATCH_ISSUES = [
+  { id: "mi-seed-1", matchId: "match-seed-1", authorId: "p1", tag: "serve", note: "Second serve sat up in the second set." },
+  { id: "mi-seed-2", matchId: "match-seed-1", authorId: "c1", tag: "serve", note: "Ball toss drifted left under pressure." },
+  { id: "mi-seed-3", matchId: "match-seed-1", authorId: "c1", tag: "footwork", note: "Late to the wide forehand." },
+  { id: "mi-seed-4", matchId: "match-seed-2", authorId: "p1", tag: "serve", note: "Six double faults, most on break points." },
+  { id: "mi-seed-5", matchId: "match-seed-2", authorId: "p1", tag: "mental", note: "Rushed after losing the first set." },
+  { id: "mi-seed-6", matchId: "match-seed-2", authorId: "c1", tag: "tactics", note: "Kept trading from the baseline on clay instead of using the drop shot." },
+];
+
 /**
  * Whether this run is allowed to write demo data.
  *
@@ -452,6 +464,14 @@ async function main() {
     });
   }
 
+  for (const issue of DEMO_MATCH_ISSUES) {
+    await prisma.matchIssue.upsert({
+      where: { id: issue.id },
+      update: { tag: issue.tag, note: issue.note },
+      create: issue,
+    });
+  }
+
   console.log(`✅ Seeded ${DEMO_USERS.length} demo users (password: password123):`);
   DEMO_USERS.forEach((u) => console.log(`   • ${u.email} (${u.role})`));
   console.log(`✅ Seeded ${DEMO_TRAININGS.length} demo trainings for coach c1 / player p1.`);
@@ -466,7 +486,7 @@ async function main() {
   );
   console.log(`✅ Seeded ${DEMO_STRING_SETUPS.length} string setups for p1 on eq-1 (2 retired + 1 current).`);
   console.log(`✅ Seeded 1 academy + ${DEMO_ACADEMY_MEMBERSHIPS.length} memberships + ${DEMO_COACH_ASSIGNMENTS.length} coach assignment + ${DEMO_GUARDIANSHIPS.length} guardianship (consented).`);
-  console.log(`✅ Seeded ${DEMO_SUBSCRIPTIONS.length} subscription + ${DEMO_OPPONENTS.length} opponents + ${DEMO_MATCHES.length} matches for p1.`);
+  console.log(`✅ Seeded ${DEMO_SUBSCRIPTIONS.length} subscription + ${DEMO_OPPONENTS.length} opponents + ${DEMO_MATCHES.length} matches + ${DEMO_MATCH_ISSUES.length} match issues for p1.`);
 
   // The default session shape: the five blocks in order, with the share of the
   // session each takes. Pinned id so re-seeding updates it rather than adding a
