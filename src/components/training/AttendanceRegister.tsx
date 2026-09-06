@@ -19,27 +19,20 @@ import { Check, Clock, X, FileCheck, Loader2, ClipboardList } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AttendanceStatus, TrainingSession } from "@/types";
+import { useT } from "@/lib/i18n";
 
 /** Present first — it is what a coach taps most, so it sits under the thumb. */
 const STATUS_OPTIONS: {
   value: AttendanceStatus;
-  label: string;
   icon: typeof Check;
   /** Applied only when this state is the chosen one. */
   selected: string;
 }[] = [
-  { value: "present", label: "Present", icon: Check, selected: "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" },
-  { value: "late", label: "Late", icon: Clock, selected: "border-primary/50 bg-primary/15 text-primary hover:bg-primary/15 hover:text-primary" },
-  { value: "excused", label: "Excused", icon: FileCheck, selected: "border-foreground/30 bg-foreground/10 text-foreground hover:bg-foreground/10 hover:text-foreground" },
-  { value: "absent", label: "Absent", icon: X, selected: "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive hover:text-destructive-foreground" },
+  { value: "present", icon: Check, selected: "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" },
+  { value: "late", icon: Clock, selected: "border-primary/50 bg-primary/15 text-primary hover:bg-primary/15 hover:text-primary" },
+  { value: "excused", icon: FileCheck, selected: "border-foreground/30 bg-foreground/10 text-foreground hover:bg-foreground/10 hover:text-foreground" },
+  { value: "absent", icon: X, selected: "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive hover:text-destructive-foreground" },
 ];
-
-const STATUS_LABEL: Record<AttendanceStatus, string> = {
-  present: "Present",
-  absent: "Absent",
-  late: "Late",
-  excused: "Excused",
-};
 
 export interface AttendanceRegisterProps {
   training: TrainingSession;
@@ -62,6 +55,7 @@ export function AttendanceRegister({
   onMark,
   pendingPlayerId,
 }: AttendanceRegisterProps) {
+  const { t } = useT();
   const taken = training.attendance !== undefined;
   const statusOf = (playerId: string) =>
     training.attendance?.find((a) => a.playerId === playerId)?.status;
@@ -77,7 +71,7 @@ export function AttendanceRegister({
     // The viewer is never in their OWN connections list — that list is the
     // people connected TO them — so a player looking at their own row would
     // otherwise be labelled with a raw user id.
-    if (playerId === viewerId) return "You";
+    if (playerId === viewerId) return t("training.attendance.you");
     const p = players.find((x) => x.id === playerId);
     const name = `${p?.firstName ?? ""} ${p?.lastName ?? ""}`.trim();
     return name || playerId;
@@ -87,9 +81,7 @@ export function AttendanceRegister({
     return (
       <section className="rounded-lg border border-border bg-secondary/30 p-3">
         <RegisterHeading taken={taken} />
-        <p className="mt-2 text-xs text-muted-foreground">
-          No players are assigned to this session yet.
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground">{t("training.attendance.noPlayers")}</p>
       </section>
     );
   }
@@ -100,9 +92,7 @@ export function AttendanceRegister({
 
       {!taken && (
         <p className="text-xs text-muted-foreground">
-          {canMark
-            ? "Nobody has been marked yet. Tap a state for each player — it saves as you go."
-            : "Your coach has not taken the register for this session yet."}
+          {canMark ? t("training.attendance.coachHint") : t("training.attendance.playerHint")}
         </p>
       )}
 
@@ -118,7 +108,7 @@ export function AttendanceRegister({
                 </span>
                 {saving ? (
                   <span className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Saving…
+                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> {t("training.attendance.saving")}
                   </span>
                 ) : (
                   <StatusPill status={status} />
@@ -128,7 +118,7 @@ export function AttendanceRegister({
               {canMark && onMark && (
                 <div
                   role="group"
-                  aria-label={`Attendance for ${nameOf(playerId)}`}
+                  aria-label={t("training.attendance.groupAria", { name: nameOf(playerId) })}
                   className="grid grid-cols-4 gap-1.5"
                 >
                   {STATUS_OPTIONS.map((option) => {
@@ -151,7 +141,7 @@ export function AttendanceRegister({
                         )}
                       >
                         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span className="truncate">{option.label}</span>
+                        <span className="truncate">{t(`training.attendance.status.${option.value}`)}</span>
                       </Button>
                     );
                   })}
@@ -166,14 +156,15 @@ export function AttendanceRegister({
 }
 
 function RegisterHeading({ taken }: { taken: boolean }) {
+  const { t } = useT();
   return (
     <div className="flex items-center justify-between gap-2">
       <h4 className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        <ClipboardList className="h-3 w-3" aria-hidden="true" /> Attendance
+        <ClipboardList className="h-3 w-3" aria-hidden="true" /> {t("training.attendance.heading")}
       </h4>
       {!taken && (
         <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-          Register not taken
+          {t("training.attendance.notTaken")}
         </span>
       )}
     </div>
@@ -186,10 +177,11 @@ function RegisterHeading({ taken }: { taken: boolean }) {
  * about the session.
  */
 function StatusPill({ status }: { status?: AttendanceStatus }) {
+  const { t } = useT();
   if (!status) {
     return (
       <span className="shrink-0 rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-        Not marked
+        {t("training.attendance.notMarked")}
       </span>
     );
   }
@@ -201,7 +193,7 @@ function StatusPill({ status }: { status?: AttendanceStatus }) {
   };
   return (
     <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium", tone[status])}>
-      {STATUS_LABEL[status]}
+      {t(`training.attendance.status.${status}`)}
     </span>
   );
 }

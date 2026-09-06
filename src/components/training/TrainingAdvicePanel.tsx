@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { AiGenerationsRemaining } from "@/components/ai/AiGenerationsRemaining";
 import { aiAdviceApi, type AdviceSession } from "@/api/endpoints/aiAdvice";
 import { useAiStatus, useInvalidateAiUsage } from "@/hooks/api/ai";
+import { useT } from "@/lib/i18n";
 
 export function TrainingAdvicePanel({
   playerIds,
@@ -20,6 +21,7 @@ export function TrainingAdvicePanel({
   /** Fills the surrounding form with a suggestion. The coach can still edit it. */
   onApply: (session: AdviceSession) => void;
 }) {
+  const { t } = useT();
   // Cheap, cacheable, and never throws — an unconfigured server is a normal state.
   const { data: status } = useAiStatus();
   const invalidateUsage = useInvalidateAiUsage();
@@ -37,7 +39,7 @@ export function TrainingAdvicePanel({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">Advice from past sessions</span>
+          <span className="text-sm font-medium text-foreground">{t("training.advice.heading")}</span>
         </div>
         <AiGenerationsRemaining />
       </div>
@@ -47,14 +49,11 @@ export function TrainingAdvicePanel({
         // has no AI provider configured. Never silently substitute canned text.
         <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          Not enabled on this server — an administrator needs to configure an AI provider.
+          {t("training.advice.notConfigured")}
         </p>
       ) : (
         <>
-          <p className="text-xs text-muted-foreground">
-            Reads your completed sessions with the selected players, your reviews, and their
-            feedback, then suggests what to train next.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("training.advice.explainer")}</p>
 
           <Button
             type="button"
@@ -66,23 +65,23 @@ export function TrainingAdvicePanel({
           >
             {advise.isPending ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading past sessions…
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("training.advice.working")}
               </>
             ) : (
               <>
-                <Wand2 className="h-3.5 w-3.5" /> Suggest from history
+                <Wand2 className="h-3.5 w-3.5" /> {t("training.advice.suggest")}
               </>
             )}
           </Button>
 
           {!hasTarget && (
-            <p className="text-xs text-muted-foreground">Pick a player or a team first.</p>
+            <p className="text-xs text-muted-foreground">{t("training.advice.pickTarget")}</p>
           )}
 
           {advise.isError && (
             <p className="flex items-start gap-1.5 border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              {(advise.error as { message?: string })?.message ?? "Could not generate advice."}
+              {(advise.error as { message?: string })?.message ?? t("training.advice.failed")}
             </p>
           )}
 
@@ -91,15 +90,17 @@ export function TrainingAdvicePanel({
               {/* Provenance first: the coach should see what this was derived
                   from before reading what it concluded. */}
               <p className="text-xs text-muted-foreground">
-                Based on {advise.data.basedOn.sessions} completed session
-                {advise.data.basedOn.sessions === 1 ? "" : "s"} · {advise.data.basedOn.reviewed}{" "}
-                reviewed · {advise.data.basedOn.withPlayerFeedback} with player feedback
+                {t("training.advice.basedOn", {
+                  sessions: advise.data.basedOn.sessions,
+                  reviewed: advise.data.basedOn.reviewed,
+                  withFeedback: advise.data.basedOn.withPlayerFeedback,
+                })}
               </p>
 
               {advise.data.basedOn.thin && (
                 <p className="flex items-start gap-1.5 border border-border bg-background p-2 text-xs text-muted-foreground">
                   <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  That is a small sample — treat this as a starting point, not a plan.
+                  {t("training.advice.thin")}
                 </p>
               )}
 
@@ -121,11 +122,15 @@ export function TrainingAdvicePanel({
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">{s.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {s.trainingType.replace("_", " ")} · {s.intensity} · {s.durationMinutes} min
+                        {t("training.advice.sessionMeta", {
+                          type: t(`training.type.${s.trainingType}`),
+                          intensity: t(`training.intensity.${s.intensity}`),
+                          minutes: s.durationMinutes,
+                        })}
                       </p>
                     </div>
                     <Button type="button" size="sm" variant="ghost" onClick={() => onApply(s)}>
-                      Use this
+                      {t("training.advice.use")}
                     </Button>
                   </div>
                   <p className="text-xs text-foreground">{s.goal}</p>
@@ -154,8 +159,7 @@ export function TrainingAdvicePanel({
               {/* Attribution, not decoration: a coach acting on this deserves to
                   know it came from a model, and which one. */}
               <p className="text-[11px] text-muted-foreground">
-                Generated by {advise.data.provider} · {advise.data.model}. A suggestion — your
-                judgement decides.
+                {t("training.advice.attribution", { provider: advise.data.provider, model: advise.data.model })}
               </p>
             </div>
           )}

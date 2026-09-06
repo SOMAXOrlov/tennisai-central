@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useConnections } from "@/store/ConnectionStore";
 import { hasCoachCounterpart } from "@/lib/connections/hasCoachCounterpart";
-import { useT } from "@/lib/i18n";
+import { getDateFnsLocale, interleave, slot, t as translate, useT } from "@/lib/i18n";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
@@ -35,24 +35,30 @@ import { useTrainings, useCreateTraining, useUpdateTraining, useDeleteTraining, 
 import { useMarkAttendance } from "@/hooks/api/useTrainingAttendance";
 import { format, parseISO, isPast } from "date-fns";
 
-const TRAINING_TYPES: { value: TrainingType; label: string }[] = [
-  { value: "individual", label: "Individual Training" },
-  { value: "team", label: "Team Training" },
-  { value: "match_practice", label: "Match Practice" },
-  { value: "fitness", label: "Fitness" },
-  { value: "recovery", label: "Recovery" },
-  { value: "tactical", label: "Tactical Session" },
+// Keys only — the labels are looked up as `training.type.<key>` at render time.
+// A translated string frozen into a module constant would keep whichever
+// locale happened to be active when this module first evaluated.
+const TRAINING_TYPES: TrainingType[] = [
+  "individual",
+  "team",
+  "match_practice",
+  "fitness",
+  "recovery",
+  "tactical",
 ];
 
-const TRAINING_TYPE_LABELS: Record<TrainingType, string> = Object.fromEntries(
-  TRAINING_TYPES.map((t) => [t.value, t.label])
-) as Record<TrainingType, string>;
-
 const INTENSITY_OPTIONS = [
-  { value: "low", label: "Low", color: "bg-muted text-foreground dark:text-foreground" },
-  { value: "medium", label: "Medium", color: "bg-primary/10 text-primary dark:text-primary" },
-  { value: "high", label: "High", color: "bg-primary/10 text-primary dark:text-primary" },
+  { value: "low", color: "bg-muted text-foreground dark:text-foreground" },
+  { value: "medium", color: "bg-primary/10 text-primary dark:text-primary" },
+  { value: "high", color: "bg-primary/10 text-primary dark:text-primary" },
 ] as const;
+
+// Intl option sets for this page's dates.
+const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
+const WEEKDAY_DATE: Intl.DateTimeFormatOptions = { weekday: "long", month: "short", day: "numeric" };
+const SHORT_DATE_TIME: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" };
+const DATE_AT_TIME: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" };
+const FULL_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 
 // ─── Training Form ───
 
@@ -96,6 +102,7 @@ function TrainingFormDialog({
   preselectedPlayerIds?: string[];
 }) {
   const { connectedPlayers } = useConnections();
+  const { t } = useT();
   const { data: teams = [] } = useTeams();
   const [form, setForm] = useState<TrainingFormData>(() => {
     if (initial) return toForm(initial);
@@ -182,52 +189,52 @@ function TrainingFormDialog({
         onInteractOutside={(e) => { if (dirty || saving) e.preventDefault(); }}
       >
         <DialogHeader>
-          <DialogTitle>{initial ? "Edit Training" : "Create Training"}</DialogTitle>
+          <DialogTitle>{initial ? t("training.form.editTitle") : t("training.form.createTitle")}</DialogTitle>
           <DialogDescription>
-            {initial ? "Update training details." : "Schedule a new training session for your connected players."}
+            {initial ? t("training.form.editDescription") : t("training.form.createDescription")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label htmlFor="training-title">Title *</Label>
-            <Input id="training-title" aria-required="true" value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="e.g. Morning Drills" />
+            <Label htmlFor="training-title">{t("training.form.title")}</Label>
+            <Input id="training-title" aria-required="true" value={form.title} onChange={(e) => update("title", e.target.value)} placeholder={t("training.form.titlePlaceholder")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="training-type">Training Type</Label>
+              <Label htmlFor="training-type">{t("training.form.type")}</Label>
               <Select value={form.trainingType} onValueChange={(v) => update("trainingType", v as TrainingType)}>
                 <SelectTrigger id="training-type"><SelectValue /></SelectTrigger>
-                <SelectContent>{TRAINING_TYPES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}</SelectContent>
+                <SelectContent>{TRAINING_TYPES.map((type) => (<SelectItem key={type} value={type}>{t(`training.type.${type}`)}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="training-intensity">Intensity</Label>
+              <Label htmlFor="training-intensity">{t("training.form.intensity")}</Label>
               <Select value={form.intensity} onValueChange={(v) => update("intensity", v)}>
                 <SelectTrigger id="training-intensity"><SelectValue /></SelectTrigger>
-                <SelectContent>{INTENSITY_OPTIONS.map((o) => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent>
+                <SelectContent>{INTENSITY_OPTIONS.map((o) => (<SelectItem key={o.value} value={o.value}>{t(`training.intensity.${o.value}`)}</SelectItem>))}</SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label htmlFor="training-start">Start *</Label><Input id="training-start" aria-required="true" type="datetime-local" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} /></div>
-            <div className="space-y-1.5"><Label htmlFor="training-end">End *</Label><Input id="training-end" aria-required="true" type="datetime-local" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="training-start">{t("training.form.start")}</Label><Input id="training-start" aria-required="true" type="datetime-local" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="training-end">{t("training.form.end")}</Label><Input id="training-end" aria-required="true" type="datetime-local" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} /></div>
           </div>
-          <div className="space-y-1.5"><Label htmlFor="training-location">Location</Label><Input id="training-location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Court A, Gym, etc." /></div>
-          <div className="space-y-1.5"><Label htmlFor="training-goal">Training Goal</Label><Input id="training-goal" value={form.goal} onChange={(e) => update("goal", e.target.value)} placeholder="e.g. Improve backhand consistency" /></div>
+          <div className="space-y-1.5"><Label htmlFor="training-location">{t("training.form.location")}</Label><Input id="training-location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder={t("training.form.locationPlaceholder")} /></div>
+          <div className="space-y-1.5"><Label htmlFor="training-goal">{t("training.form.goal")}</Label><Input id="training-goal" value={form.goal} onChange={(e) => update("goal", e.target.value)} placeholder={t("training.form.goalPlaceholder")} /></div>
           <div className="space-y-1.5">
-            <Label htmlFor="training-team">Assign to Team</Label>
+            <Label htmlFor="training-team">{t("training.form.team")}</Label>
             <Select value={form.teamId || "__none__"} onValueChange={selectTeam}>
-              <SelectTrigger id="training-team"><SelectValue placeholder="No team — pick players manually" /></SelectTrigger>
+              <SelectTrigger id="training-team"><SelectValue placeholder={t("training.form.teamPlaceholder")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">No team</SelectItem>
-                {teams.map((t) => (<SelectItem key={t.id} value={t.id}>{t.name} ({t.players.length} players)</SelectItem>))}
+                <SelectItem value="__none__">{t("training.form.noTeam")}</SelectItem>
+                {teams.map((team) => (<SelectItem key={team.id} value={team.id}>{t("training.form.teamOption", { name: team.name, count: team.players.length })}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Assign Players</Label>
+            <Label>{t("training.form.players")}</Label>
             {connectedPlayers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No connected players.</p>
+              <p className="text-sm text-muted-foreground">{t("training.form.noPlayers")}</p>
             ) : (
               <div className="space-y-2 max-h-40 overflow-y-auto rounded-lg border border-border p-2">
                 {connectedPlayers.map((p) => (
@@ -245,8 +252,8 @@ function TrainingFormDialog({
             teamId={form.teamId}
             onApply={applyAdvice}
           />
-          <div className="space-y-1.5"><Label htmlFor="training-notes">Notes</Label><Textarea id="training-notes" value={form.notes} onChange={(e) => update("notes", e.target.value)} placeholder="Visible to players" rows={2} /></div>
-          <div className="space-y-1.5"><Label htmlFor="training-coach-notes">Coach Notes <span className="text-muted-foreground">(private)</span></Label><Textarea id="training-coach-notes" value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder="Only visible to you" rows={2} /></div>
+          <div className="space-y-1.5"><Label htmlFor="training-notes">{t("training.form.notes")}</Label><Textarea id="training-notes" value={form.notes} onChange={(e) => update("notes", e.target.value)} placeholder={t("training.form.notesPlaceholder")} rows={2} /></div>
+          <div className="space-y-1.5"><Label htmlFor="training-coach-notes">{t("training.form.coachNotes")} <span className="text-muted-foreground">{t("training.form.coachNotesPrivate")}</span></Label><Textarea id="training-coach-notes" value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder={t("training.form.coachNotesPlaceholder")} rows={2} /></div>
           {saveError && (
             <p className="flex items-start gap-1.5 border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive">
               <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {saveError}
@@ -254,9 +261,9 @@ function TrainingFormDialog({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={requestClose} disabled={saving}>Cancel</Button>
+          <Button variant="outline" onClick={requestClose} disabled={saving}>{t("common.cancel")}</Button>
           <Button onClick={handleSave} disabled={!valid || saving}>
-            {saving ? "Saving…" : initial ? "Save Changes" : "Create Training"}
+            {saving ? t("training.form.saving") : initial ? t("training.form.save") : t("training.form.createTitle")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -265,7 +272,7 @@ function TrainingFormDialog({
     <DiscardChangesDialog
       open={confirmDiscard}
       onOpenChange={setConfirmDiscard}
-      what={initial ? "changes" : "new training"}
+      what={initial ? t("training.form.discardWhatChanges") : t("training.form.discardWhatNew")}
       onConfirm={() => onOpenChange(false)}
     />
     </>
@@ -287,6 +294,7 @@ function TrainingDetailDrawer({
   attendancePendingFor?: string | null;
 }) {
   const { connectedPlayers } = useConnections();
+  const { t, formatDate } = useT();
   if (!training) return null;
   const players = connectedPlayers.filter((p) => training.playerIds.includes(p.id));
   const intensityCfg = INTENSITY_OPTIONS.find((o) => o.value === training.intensity);
@@ -297,20 +305,20 @@ function TrainingDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md overflow-y-auto">
-        <SheetHeader><SheetTitle className="flex items-center gap-2"><Dumbbell className="h-4 w-4 text-primary" />Training Detail</SheetTitle></SheetHeader>
+        <SheetHeader><SheetTitle className="flex items-center gap-2"><Dumbbell className="h-4 w-4 text-primary" />{t("training.detail.title")}</SheetTitle></SheetHeader>
         <div className="mt-4 space-y-5">
           <h3 className="text-lg font-semibold text-foreground">{training.title}</h3>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[11px] font-medium text-foreground">{TRAINING_TYPE_LABELS[training.trainingType]}</span>
-            {intensityCfg && <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${intensityCfg.color}`}><Zap className="mr-1 h-3 w-3" /> {intensityCfg.label}</span>}
+            <span className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[11px] font-medium text-foreground">{t(`training.type.${training.trainingType}`)}</span>
+            {intensityCfg && <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${intensityCfg.color}`}><Zap className="mr-1 h-3 w-3" /> {t(`training.intensity.${intensityCfg.value}`)}</span>}
           </div>
           <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4 shrink-0" />{format(parseISO(training.startDate), "EEEE, MMM d")} · {format(parseISO(training.startDate), "h:mm a")} – {format(parseISO(training.endDate), "h:mm a")}</div>
+            <div className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4 shrink-0" />{formatDate(parseISO(training.startDate), WEEKDAY_DATE)} · {formatDate(parseISO(training.startDate), TIME_ONLY)} – {formatDate(parseISO(training.endDate), TIME_ONLY)}</div>
             {training.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{training.location}</div>}
             {training.goal && <div className="flex items-center gap-2 text-muted-foreground"><Target className="h-4 w-4 shrink-0" />{training.goal}</div>}
-            <div className="flex items-start gap-2 text-muted-foreground"><Users className="h-4 w-4 shrink-0 mt-0.5" /><div>{players.length > 0 ? players.map((p) => `${p.firstName} ${p.lastName}`).join(", ") : "No players assigned"}</div></div>
-            {training.notes && <div className="rounded-lg border border-border bg-secondary/30 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><StickyNote className="h-3 w-3" /> Notes</div><p className="text-sm text-foreground">{training.notes}</p></div>}
-            {!readOnly && training.coachNotes && <div className="rounded-lg border border-border bg-primary/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary"><StickyNote className="h-3 w-3" /> Coach Notes (private)</div><p className="text-sm text-primary/80">{training.coachNotes}</p></div>}
+            <div className="flex items-start gap-2 text-muted-foreground"><Users className="h-4 w-4 shrink-0 mt-0.5" /><div>{players.length > 0 ? players.map((p) => `${p.firstName} ${p.lastName}`).join(", ") : t("training.detail.noPlayersAssigned")}</div></div>
+            {training.notes && <div className="rounded-lg border border-border bg-secondary/30 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><StickyNote className="h-3 w-3" /> {t("training.detail.notes")}</div><p className="text-sm text-foreground">{training.notes}</p></div>}
+            {!readOnly && training.coachNotes && <div className="rounded-lg border border-border bg-primary/5 p-3"><div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary"><StickyNote className="h-3 w-3" /> {t("training.detail.coachNotes")}</div><p className="text-sm text-primary/80">{training.coachNotes}</p></div>}
           </div>
 
           {/* Attendance register — the coach's record of who turned up. */}
@@ -328,7 +336,7 @@ function TrainingDetailDrawer({
             <div className="rounded-lg border border-primary/25 bg-primary/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-medium text-primary dark:text-primary">
-                  <ClipboardCheck className="h-3 w-3" /> Session Review
+                  <ClipboardCheck className="h-3 w-3" /> {t("training.detail.review")}
                 </div>
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
@@ -337,11 +345,11 @@ function TrainingDetailDrawer({
                 </div>
               </div>
               <div className="space-y-1.5">
-                <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">Worked on:</span> {training.review.workedOn}</p>
-                {training.review.nextSteps && <p className="text-xs text-primary"><span className="font-medium">Next steps:</span> {training.review.nextSteps}</p>}
-                {training.review.playerFeedback && <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">Player feedback:</span> {training.review.playerFeedback}</p>}
+                <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">{t("training.detail.workedOn")}</span> {training.review.workedOn}</p>
+                {training.review.nextSteps && <p className="text-xs text-primary"><span className="font-medium">{t("training.detail.nextSteps")}</span> {training.review.nextSteps}</p>}
+                {training.review.playerFeedback && <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">{t("training.detail.playerFeedback")}</span> {training.review.playerFeedback}</p>}
               </div>
-              <p className="text-[10px] text-muted-foreground">Reviewed {format(parseISO(training.review.reviewedAt), "MMM d, yyyy 'at' h:mm a")}</p>
+              <p className="text-[10px] text-muted-foreground">{t("training.detail.reviewedAt", { date: formatDate(parseISO(training.review.reviewedAt), DATE_AT_TIME) })}</p>
             </div>
           )}
 
@@ -350,24 +358,24 @@ function TrainingDetailDrawer({
             <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <MessageCircle className="h-3 w-3" /> Player Feedback
+                  <MessageCircle className="h-3 w-3" /> {t("training.detail.feedbackTitle")}
                 </div>
                 <span className="text-lg">{FEELING_EMOJI[training.playerSessionFeedback.feeling] ?? ""}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Energy: {training.playerSessionFeedback.energyLevel}/5</span>
+                <span>{t("training.detail.energy", { level: training.playerSessionFeedback.energyLevel })}</span>
               </div>
               {training.playerSessionFeedback.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {training.playerSessionFeedback.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{tag}</span>
+                    <span key={tag} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{t(`training.feedback.tag.${tag}`)}</span>
                   ))}
                 </div>
               )}
               {training.playerSessionFeedback.note && (
                 <p className="text-xs text-foreground italic">"{training.playerSessionFeedback.note}"</p>
               )}
-              <p className="text-[10px] text-muted-foreground">Submitted {format(parseISO(training.playerSessionFeedback.submittedAt), "MMM d, yyyy")}</p>
+              <p className="text-[10px] text-muted-foreground">{t("training.detail.submittedAt", { date: formatDate(parseISO(training.playerSessionFeedback.submittedAt), FULL_DATE) })}</p>
             </div>
           )}
 
@@ -376,7 +384,7 @@ function TrainingDetailDrawer({
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                  <Sparkles className="h-3 w-3" /> Session Summary
+                  <Sparkles className="h-3 w-3" /> {t("training.detail.summary")}
                 </div>
                 {onAnalyze && past && !analyzing && (
                   <Button
@@ -386,18 +394,18 @@ function TrainingDetailDrawer({
                     onClick={onAnalyze}
                   >
                     <RefreshCw className="h-3 w-3" />
-                    {analyzeError ? "Try again" : training.analysis ? "Re-analyze" : "Analyze"}
+                    {analyzeError ? t("training.detail.tryAgain") : training.analysis ? t("training.detail.reanalyze") : t("training.detail.analyze")}
                   </Button>
                 )}
               </div>
               {analyzing ? (
-                <div className="space-y-1.5" role="status" aria-label="Generating analysis">
+                <div className="space-y-1.5" role="status" aria-label={t("training.detail.generatingAria")}>
                   <Skeleton className="h-3 w-full" />
                   <Skeleton className="h-3 w-[92%]" />
                   <Skeleton className="h-3 w-[78%]" />
                   <Skeleton className="h-3 w-[60%]" />
                   <p className="pt-1 text-[10px] text-muted-foreground flex items-center gap-1">
-                    <RefreshCw className="h-2.5 w-2.5 animate-spin" /> Generating summary…
+                    <RefreshCw className="h-2.5 w-2.5 animate-spin" /> {t("training.detail.generating")}
                   </p>
                 </div>
               ) : analyzeError ? (
@@ -405,18 +413,18 @@ function TrainingDetailDrawer({
                   <div className="flex items-start gap-1.5 text-xs text-destructive">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
-                      <p className="font-medium">Analysis failed</p>
+                      <p className="font-medium">{t("training.detail.analysisFailed")}</p>
                       <p className="text-destructive/80">{analyzeError}</p>
                     </div>
                   </div>
                   {onAnalyze && (
                     <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={onAnalyze}>
-                      <RefreshCw className="h-3 w-3" /> Retry
+                      <RefreshCw className="h-3 w-3" /> {t("training.detail.retry")}
                     </Button>
                   )}
                   {training.analysis && (
                     <p className="text-[10px] text-muted-foreground">
-                      Showing the last successful summary below.
+                      {t("training.detail.lastSummary")}
                     </p>
                   )}
                 </div>
@@ -425,13 +433,13 @@ function TrainingDetailDrawer({
                 <>
                   <p className="text-xs leading-relaxed text-foreground">{training.analysis.summary}</p>
                   <p className="text-[10px] text-muted-foreground">
-                    Generated {format(parseISO(training.analysis.generatedAt), "MMM d, yyyy 'at' h:mm a")}
+                    {t("training.detail.generatedAt", { date: formatDate(parseISO(training.analysis.generatedAt), DATE_AT_TIME) })}
                     {training.analysis.model ? ` · ${training.analysis.model}` : ""}
                   </p>
                 </>
               ) : !analyzing && !analyzeError ? (
                 <p className="text-xs text-muted-foreground">
-                  Generate a structured performance summary of this session.
+                  {t("training.detail.generatePrompt")}
                 </p>
               ) : null}
             </div>
@@ -442,11 +450,11 @@ function TrainingDetailDrawer({
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
               {past && onReview && (
                 <Button size="sm" variant="outline" onClick={onReview} className="gap-1.5">
-                  <ClipboardCheck className="h-3.5 w-3.5" /> {training.review ? "Edit Review" : "Review Session"}
+                  <ClipboardCheck className="h-3.5 w-3.5" /> {training.review ? t("training.detail.editReview") : t("training.detail.reviewSession")}
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-              <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
+              <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> {t("training.detail.edit")}</Button>
+              <Button size="sm" variant="outline" onClick={onDelete} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? t("training.detail.deleting") : t("training.detail.delete")}</Button>
             </div>
           )}
 
@@ -454,7 +462,7 @@ function TrainingDetailDrawer({
           {isPlayer && past && onPlayerFeedback && (
             <div className="border-t border-border pt-4">
               <Button size="sm" variant="outline" onClick={onPlayerFeedback} className="gap-1.5">
-                <MessageCircle className="h-3.5 w-3.5" /> {training.playerSessionFeedback ? "Edit Feedback" : "Leave Feedback"}
+                <MessageCircle className="h-3.5 w-3.5" /> {training.playerSessionFeedback ? t("training.detail.editFeedback") : t("training.detail.leaveFeedback")}
               </Button>
             </div>
           )}
@@ -467,13 +475,21 @@ function TrainingDetailDrawer({
 function DeleteTrainingDialog({ open, onOpenChange, title, onConfirm, loading }: {
   open: boolean; onOpenChange: (o: boolean) => void; title: string; onConfirm: () => void; loading?: boolean;
 }) {
+  const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader><DialogTitle>Delete Training</DialogTitle><DialogDescription>Are you sure you want to delete <span className="font-semibold text-foreground">"{title}"</span>? This action cannot be undone.</DialogDescription></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{t("training.delete.title")}</DialogTitle>
+          <DialogDescription>
+            {interleave(t("training.delete.body", { title: slot(0) }), [
+              <span key="title" className="font-semibold text-foreground">“{title}”</span>,
+            ])}
+          </DialogDescription>
+        </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}><Trash2 className="mr-1.5 h-4 w-4" /> {loading ? "Deleting…" : "Delete"}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
+          <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}><Trash2 className="mr-1.5 h-4 w-4" /> {loading ? t("training.delete.deleting") : t("training.delete.confirm")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -483,7 +499,7 @@ function DeleteTrainingDialog({ open, onOpenChange, title, onConfirm, loading }:
 // ─── Page ───
 
 export default function TrainingsPage() {
-  const { t } = useT();
+  const { t, formatDate } = useT();
   const { user } = useAuth();
   const { connectedPlayers, activeRelationships } = useConnections();
   const role = user?.role ?? "player";
@@ -676,18 +692,18 @@ export default function TrainingsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Trainings</h1>
-          <p className="text-sm text-muted-foreground">{isCoach ? "Create and manage training sessions for your connected players." : "View your assigned training sessions."}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("training.title")}</h1>
+          <p className="text-sm text-muted-foreground">{isCoach ? t("training.subtitle.coach") : t("training.subtitle.player")}</p>
         </div>
-        {isCoach && <Button className="gap-2 self-start" onClick={() => handleCreate()}><Plus className="h-4 w-4" /> Create Training</Button>}
+        {isCoach && <Button className="gap-2 self-start" onClick={() => handleCreate()}><Plus className="h-4 w-4" /> {t("training.create")}</Button>}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label={t("a11y.search.trainings")} placeholder="Search trainings…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
+        <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label={t("a11y.search.trainings")} placeholder={t("training.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
         {isCoach && <TeamFilterSelect teams={teams} value={teamFilter} onValueChange={(v) => { setTeamFilter(v); setPlayerFilter("__all__"); }} />}
         <PlayerFilterSelect players={filteredPlayers} value={playerFilter} onValueChange={setPlayerFilter} onViewDetail={isCoach ? handleViewPlayerDetail : undefined} />
-        <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger aria-label={t("a11y.filters.trainingType")} className="w-[170px]"><SelectValue placeholder="All Types" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Types</SelectItem>{TRAINING_TYPES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}</SelectContent></Select>
-        <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}><TabsList><TabsTrigger value="upcoming">Upcoming</TabsTrigger><TabsTrigger value="past">Past</TabsTrigger><TabsTrigger value="all">All</TabsTrigger></TabsList></Tabs>
+        <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger aria-label={t("a11y.filters.trainingType")} className="w-[170px]"><SelectValue placeholder={t("training.allTypes")} /></SelectTrigger><SelectContent><SelectItem value="__all__">{t("training.allTypes")}</SelectItem>{TRAINING_TYPES.map((type) => (<SelectItem key={type} value={type}>{t(`training.type.${type}`)}</SelectItem>))}</SelectContent></Select>
+        <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}><TabsList><TabsTrigger value="upcoming">{t("training.tabs.upcoming")}</TabsTrigger><TabsTrigger value="past">{t("training.tabs.past")}</TabsTrigger><TabsTrigger value="all">{t("training.tabs.all")}</TabsTrigger></TabsList></Tabs>
       </div>
 
       {filtered.length === 0 ? (
@@ -715,75 +731,75 @@ export default function TrainingsPage() {
         )
       ) : (
         <div className="space-y-3">
-          {filtered.map((t) => {
-            const players = connectedPlayers.filter((p) => t.playerIds.includes(p.id));
-            const intensityCfg = INTENSITY_OPTIONS.find((o) => o.value === t.intensity);
-            const past = isPast(parseISO(t.endDate));
+          {filtered.map((session) => {
+            const players = connectedPlayers.filter((p) => session.playerIds.includes(p.id));
+            const intensityCfg = INTENSITY_OPTIONS.find((o) => o.value === session.intensity);
+            const past = isPast(parseISO(session.endDate));
             return (
               // A div, not a button: this row carries its own Edit and Delete
               // buttons, and a button nested inside a button is invalid HTML
               // that browsers and screen readers resolve differently. role +
               // keydown keep the row clickable and reachable from the keyboard.
               <div
-                key={t.id}
+                key={session.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => openDetail(t)}
+                onClick={() => openDetail(session)}
                 onKeyDown={(e) => {
                   // Let the inner buttons handle their own Enter/Space.
                   if (e.target !== e.currentTarget) return;
-                  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(t); }
+                  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(session); }
                 }}
                 className={`flex w-full cursor-pointer items-start gap-4 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/20 hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${past ? "opacity-60" : ""}`}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Dumbbell className="h-5 w-5" /></div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{t.title}</h3>
-                    <span className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{TRAINING_TYPE_LABELS[t.trainingType]}</span>
-                    {intensityCfg && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${intensityCfg.color}`}>{intensityCfg.label}</span>}
-                    {t.review && (
+                    <h3 className="font-semibold text-foreground">{session.title}</h3>
+                    <span className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{t(`training.type.${session.trainingType}`)}</span>
+                    {intensityCfg && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${intensityCfg.color}`}>{t(`training.intensity.${intensityCfg.value}`)}</span>}
+                    {session.review && (
                       <span className="flex items-center gap-0.5 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary dark:text-primary">
-                        <Star className="h-2.5 w-2.5 fill-current" /> {t.review.rating}
+                        <Star className="h-2.5 w-2.5 fill-current" /> {session.review.rating}
                       </span>
                     )}
-                    {past && !t.review && isCoach && (
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Unreviewed</span>
+                    {past && !session.review && isCoach && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{t("training.list.unreviewed")}</span>
                     )}
                     {/* Only for the owning coach, and only once the session is
                         over — an unmarked register on a session that has not
                         happened yet is simply the normal state of things. */}
-                    {past && isCoach && t.coachId === user?.id && t.playerIds.length > 0 && !t.attendance && (
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">No register</span>
+                    {past && isCoach && session.coachId === user?.id && session.playerIds.length > 0 && !session.attendance && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{t("training.list.noRegister")}</span>
                     )}
-                    {t.playerSessionFeedback && (
+                    {session.playerSessionFeedback && (
                       <span className="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {({ awful: "😫", bad: "😕", okay: "😐", good: "🙂", great: "🤩" })[t.playerSessionFeedback.feeling]}
+                        {({ awful: "😫", bad: "😕", okay: "😐", good: "🙂", great: "🤩" })[session.playerSessionFeedback.feeling]}
                       </span>
                     )}
-                    {isPlayer && past && !t.playerSessionFeedback && (
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Give feedback</span>
+                    {isPlayer && past && !session.playerSessionFeedback && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{t("training.list.giveFeedback")}</span>
                     )}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(parseISO(t.startDate), "MMM d, h:mm a")} – {format(parseISO(t.endDate), "h:mm a")}</span>
-                    {t.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {t.location}</span>}
-                    <span className="flex items-center gap-1"><Users className="h-3 w-3" />{players.length > 0 ? players.map((p) => p.firstName).join(", ") : "No players"}</span>
+                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {formatDate(parseISO(session.startDate), SHORT_DATE_TIME)} – {formatDate(parseISO(session.endDate), TIME_ONLY)}</span>
+                    {session.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {session.location}</span>}
+                    <span className="flex items-center gap-1"><Users className="h-3 w-3" />{players.length > 0 ? players.map((p) => p.firstName).join(", ") : t("training.list.noPlayers")}</span>
                   </div>
-                  {t.goal && <p className="mt-1 text-xs text-muted-foreground"><Target className="mr-1 inline h-3 w-3" />{t.goal}</p>}
+                  {session.goal && <p className="mt-1 text-xs text-muted-foreground"><Target className="mr-1 inline h-3 w-3" />{session.goal}</p>}
                 </div>
                 {isCoach && (
                   <div className="flex items-center gap-1 shrink-0">
                     {past && (
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setReviewTarget(t); }} title="Review session"><ClipboardCheck className="h-3.5 w-3.5" /></Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setReviewTarget(session); }} title={t("training.list.reviewSession")}><ClipboardCheck className="h-3.5 w-3.5" /></Button>
                     )}
-                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={`Edit ${t.title}`} onClick={(e) => { e.stopPropagation(); openEdit(t); }}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" aria-label={`Delete ${t.title}`} onClick={(e) => { e.stopPropagation(); setDeleteTarget(t); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("training.list.editAria", { title: session.title })} onClick={(e) => { e.stopPropagation(); openEdit(session); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" aria-label={t("training.list.deleteAria", { title: session.title })} onClick={(e) => { e.stopPropagation(); setDeleteTarget(session); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
                 )}
                 {!isCoach && past && (
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setFeedbackTarget(t); }} title="Leave feedback"><MessageCircle className="h-3.5 w-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setFeedbackTarget(session); }} title={t("training.list.leaveFeedback")}><MessageCircle className="h-3.5 w-3.5" /></Button>
                   </div>
                 )}
               </div>
@@ -793,7 +809,7 @@ export default function TrainingsPage() {
       )}
 
       {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
-      <TrainingDetailDrawer training={liveDetail} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) { setDetailTarget(null); analyzeMut.reset(); } }} onEdit={() => liveDetail && openEdit(liveDetail)} onDelete={() => liveDetail && setDeleteTarget(liveDetail)} onReview={isCoach ? () => { if (liveDetail) { setReviewTarget(liveDetail); } } : undefined} onPlayerFeedback={isPlayer ? () => { if (liveDetail) setFeedbackTarget(liveDetail); } : undefined} readOnly={readOnly} isPlayer={isPlayer} deleting={deleteMut.isPending} onAnalyze={liveDetail ? () => analyzeMut.mutate(liveDetail.id) : undefined} analyzing={analyzeMut.isPending} analyzeError={analyzeMut.isError ? ((analyzeMut.error as any)?.message ?? "Unable to reach the analysis service. Check your connection and try again.") : null} canMarkAttendance={canMarkAttendance} viewerId={user?.id} onMarkAttendance={handleMarkAttendance} attendancePendingFor={attendancePendingFor} />
+      <TrainingDetailDrawer training={liveDetail} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) { setDetailTarget(null); analyzeMut.reset(); } }} onEdit={() => liveDetail && openEdit(liveDetail)} onDelete={() => liveDetail && setDeleteTarget(liveDetail)} onReview={isCoach ? () => { if (liveDetail) { setReviewTarget(liveDetail); } } : undefined} onPlayerFeedback={isPlayer ? () => { if (liveDetail) setFeedbackTarget(liveDetail); } : undefined} readOnly={readOnly} isPlayer={isPlayer} deleting={deleteMut.isPending} onAnalyze={liveDetail ? () => analyzeMut.mutate(liveDetail.id) : undefined} analyzing={analyzeMut.isPending} analyzeError={analyzeMut.isError ? ((analyzeMut.error as any)?.message ?? t("training.detail.analyzeUnreachable")) : null} canMarkAttendance={canMarkAttendance} viewerId={user?.id} onMarkAttendance={handleMarkAttendance} attendancePendingFor={attendancePendingFor} />
       {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
       {reviewTarget && <TrainingReviewDialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }} training={reviewTarget} onSave={async (review) => { await updateMut.mutateAsync({ id: reviewTarget.id, data: { review } }); }} saving={updateMut.isPending} />}
       {feedbackTarget && <PlayerFeedbackDialog open={!!feedbackTarget} onOpenChange={(o) => { if (!o) setFeedbackTarget(null); }} training={feedbackTarget} onSave={(feedback) => { feedbackMut.mutate({ id: feedbackTarget.id, feedback }); setFeedbackTarget(null); }} saving={feedbackMut.isPending} />}
