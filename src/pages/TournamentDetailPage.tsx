@@ -34,7 +34,7 @@ function Fact({ label, value }: { label: string; value?: string | number | null 
 
 export default function TournamentDetailPage() {
   const { id } = useParams();
-  const { t, formatDate } = useT();
+  const { t, formatDate, locale } = useT();
   const { user } = useAuth();
   const { data: tournaments = [], isLoading, error } = useTournaments();
   const { data: entries = [] } = usePlayerTournaments();
@@ -63,13 +63,13 @@ export default function TournamentDetailPage() {
 
   // Who a coach could prepare here: exactly the squad members entered. A
   // player always prepares themselves, so no list is passed for them.
-  const prepCandidates = useMemo<PrepCandidate[] | undefined>(
-    () =>
-      isCoach
-        ? going.map((e) => ({ id: e.playerId, name: e.playerName ?? t("tournaments.detail.player") }))
-        : undefined,
-    [isCoach, going, t],
-  );
+  const prepCandidates = useMemo<PrepCandidate[] | undefined>(() => {
+    // `t` is a module-level function with a stable identity, so listing it here
+    // would not be enough — `locale` is what actually invalidates this.
+    void locale;
+    if (!isCoach) return undefined;
+    return going.map((e) => ({ id: e.playerId, name: e.playerName ?? t("tournaments.detail.player") }));
+  }, [isCoach, going, t, locale]);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState message={t("tournaments.detail.loadError")} />;

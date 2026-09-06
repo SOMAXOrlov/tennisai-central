@@ -23,7 +23,7 @@ function internalPath(linkTo: string | undefined): string | null {
 }
 
 export default function NotificationsPage() {
-  const { t } = useT();
+  const { t, formatDate } = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const userId = user?.id ?? "";
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
                   <p className={`text-sm ${n.read ? "text-muted-foreground" : "font-medium text-foreground"}`}>{n.title}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">{n.message}</p>
                 </div>
-                <span className="shrink-0 text-[10px] text-muted-foreground">{format(new Date(n.createdAt), "MMM d, h:mm a")}</span>
+                <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(new Date(n.createdAt), { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
                 {target && (
                   <ChevronRight
                     aria-hidden="true"

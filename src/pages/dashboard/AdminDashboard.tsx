@@ -76,17 +76,22 @@ const mockAdminTournaments: AdminTournament[] = [
 interface SystemAlert {
   id: string;
   type: "warning" | "error" | "info";
-  title: string;
-  message: string;
+  titleKey: string;
+  messageKey: string;
   timestamp: string;
   resolved: boolean;
 }
 
+/**
+ * Sample alerts for the preview card (the banner above the grid says so). The
+ * text is held as message keys rather than English literals so the illustration
+ * reads in the viewer's language like the rest of the page.
+ */
 const mockAlerts: SystemAlert[] = [
-  { id: "a1", type: "warning", title: "High API Latency", message: "Average response time exceeded 2s in the last hour.", timestamp: "2026-03-08T08:45:00Z", resolved: false },
-  { id: "a2", type: "error", title: "Failed Email Delivery", message: "12 verification emails bounced in the last 24 hours.", timestamp: "2026-03-07T22:10:00Z", resolved: false },
-  { id: "a3", type: "info", title: "Scheduled Maintenance", message: "Database maintenance planned for March 12, 02:00–04:00 UTC.", timestamp: "2026-03-07T10:00:00Z", resolved: false },
-  { id: "a4", type: "warning", title: "Unusual Signup Spike", message: "50% increase in registrations detected from a single IP range.", timestamp: "2026-03-06T15:30:00Z", resolved: true },
+  { id: "a1", type: "warning", titleKey: "latencyTitle", messageKey: "latencyMessage", timestamp: "2026-03-08T08:45:00Z", resolved: false },
+  { id: "a2", type: "error", titleKey: "emailTitle", messageKey: "emailMessage", timestamp: "2026-03-07T22:10:00Z", resolved: false },
+  { id: "a3", type: "info", titleKey: "maintenanceTitle", messageKey: "maintenanceMessage", timestamp: "2026-03-07T10:00:00Z", resolved: false },
+  { id: "a4", type: "warning", titleKey: "signupsTitle", messageKey: "signupsMessage", timestamp: "2026-03-06T15:30:00Z", resolved: true },
 ];
 
 // ── Helpers ──
@@ -229,7 +234,7 @@ export default function AdminDashboard() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className={`text-sm font-medium ${alert.resolved ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                      {alert.title}
+                      {t(`dashboard.admin.sampleAlerts.${alert.titleKey}`)}
                     </p>
                     {alert.resolved && (
                       <span className="flex items-center gap-1 text-[10px] text-primary">
@@ -237,7 +242,7 @@ export default function AdminDashboard() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">{alert.message}</p>
+                  <p className="text-xs text-muted-foreground">{t(`dashboard.admin.sampleAlerts.${alert.messageKey}`)}</p>
                   <p className="mt-1 text-[10px] text-muted-foreground">{formatDateTime(alert.timestamp)}</p>
                 </div>
                 {!alert.resolved && (

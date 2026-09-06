@@ -171,7 +171,7 @@ function TrainingFormDialog({
       await onSave(form);
       onOpenChange(false);
     } catch (e) {
-      setSaveError((e as { message?: string })?.message ?? "Could not save the training. Your input is still here — try again.");
+      setSaveError((e as { message?: string })?.message ?? t("training.form.saveError"));
     }
   };
 

@@ -276,7 +276,7 @@ export default function TournamentsPage() {
   const handleRefreshTournaments = async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.tournaments });
     await refetchTournaments();
-    toast.success("Tournaments refreshed");
+    toast.success(tr("toast.tournament.refreshed"));
   };
 
   /**
@@ -695,7 +695,7 @@ export default function TournamentsPage() {
                       <div className="min-w-[220px] flex-1">
                         <p className="font-medium text-foreground">{t.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {t.city}, {t.country} · {format(new Date(t.startDate), "MMM d")} – {format(new Date(t.endDate), "MMM d, yyyy")}
+                          {t.city}, {t.country} · {formatDate(new Date(t.startDate), { month: "short", day: "numeric" })} – {formatDate(new Date(t.endDate), { year: "numeric", month: "short", day: "numeric" })}
                         </p>
                         <ProvenanceChip tournament={t} className="mt-1" />
                       </div>

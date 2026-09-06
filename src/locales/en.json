@@ -1169,6 +1169,16 @@
         "columnParticipants": "Participants",
         "columnStatus": "Status",
         "columnActions": "Actions"
+      },
+      "sampleAlerts": {
+        "latencyTitle": "High API Latency",
+        "latencyMessage": "Average response time exceeded 2s in the last hour.",
+        "emailTitle": "Failed Email Delivery",
+        "emailMessage": "12 verification emails bounced in the last 24 hours.",
+        "maintenanceTitle": "Scheduled Maintenance",
+        "maintenanceMessage": "Database maintenance planned for March 12, 02:00–04:00 UTC.",
+        "signupsTitle": "Unusual Signup Spike",
+        "signupsMessage": "50% increase in registrations detected from a single IP range."
       }
     }
   },
@@ -1467,6 +1477,19 @@
       "connections": "Connections",
       "waiting": "{count, plural, one {# request} other {# requests}} waiting for your decision",
       "moreOn": "+{count} more on the {link} page."
+    },
+    "errors": {
+      "signedOut": "You must be signed in.",
+      "self": "You cannot connect with yourself.",
+      "already": "You're already connected with this user.",
+      "pending": "A pending request already exists between you.",
+      "requestNotFound": "Request not found.",
+      "notRecipient": "Only the recipient can act on this request.",
+      "alreadyResolved": "This request has already been {status}.",
+      "badTransition": "Invalid status transition.",
+      "relationshipNotFound": "Relationship not found.",
+      "notActive": "Only active relationships can be revoked.",
+      "notYours": "You are not part of this relationship."
     }
   },
   "admin": {
@@ -2234,7 +2257,8 @@
       "save": "Save Changes",
       "saving": "Saving…",
       "discardWhatNew": "new training",
-      "discardWhatChanges": "changes"
+      "discardWhatChanges": "changes",
+      "saveError": "Could not save the training. Your input is still here — try again."
     },
     "detail": {
       "title": "Training Detail",
@@ -2490,13 +2514,16 @@
       "body": "Are you sure you want to reassign {event} to {target}?",
       "confirm": "Reassign",
       "dropHint": "Drop on a name to reassign:",
-      "mySchedule": "My schedule"
+      "mySchedule": "My schedule",
+      "thisEvent": "this event",
+      "yourSchedule": "your schedule"
     },
     "scope": {
       "label": "Scope",
       "allPlayers": "All players",
       "mySchedule": "My schedule",
-      "playersGroup": "Players"
+      "playersGroup": "Players",
+      "allTeams": "All teams"
     },
     "types": {
       "label": "Types"

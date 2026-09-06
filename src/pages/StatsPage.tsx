@@ -45,7 +45,7 @@ import {
 const DEFAULT_WINDOW: StatsWindowId = "last10";
 
 export default function StatsPage() {
-  const { t, formatNumber } = useT();
+  const { t, formatNumber, locale } = useT();
   const [windowId, setWindowId] = useState<StatsWindowId>(DEFAULT_WINDOW);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
   const { user } = useAuth();
@@ -54,7 +54,11 @@ export default function StatsPage() {
 
   // Windows are derived from the real list, so a window larger than the number
   // of logged matches is never offered.
-  const windowOptions = useMemo(() => buildWindowOptions(matches), [matches]);
+  const windowOptions = useMemo(() => {
+    // The option labels ("Last 10", "Season 2026") are translated.
+    void locale;
+    return buildWindowOptions(matches);
+  }, [matches, locale]);
   // The default window may not be on offer yet (too few matches) — fall back to
   // the widest one so the control never highlights an option that isn't there.
   const activeWindow = windowOptions.find((o) => o.id === windowId) ?? windowOptions[windowOptions.length - 1];

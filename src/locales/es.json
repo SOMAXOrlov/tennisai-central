@@ -1169,6 +1169,16 @@
         "columnParticipants": "Participantes",
         "columnStatus": "Estado",
         "columnActions": "Acciones"
+      },
+      "sampleAlerts": {
+        "latencyTitle": "Latencia alta en la API",
+        "latencyMessage": "El tiempo medio de respuesta superó los 2 s en la última hora.",
+        "emailTitle": "Fallos en el envío de correos",
+        "emailMessage": "12 correos de verificación rebotaron en las últimas 24 horas.",
+        "maintenanceTitle": "Mantenimiento programado",
+        "maintenanceMessage": "Mantenimiento de la base de datos previsto para el 12 de marzo, 02:00–04:00 UTC.",
+        "signupsTitle": "Pico de registros inusual",
+        "signupsMessage": "Un 50 % más de registros desde un mismo rango de IP."
       }
     }
   },
@@ -1467,6 +1477,19 @@
       "connections": "Conexiones",
       "waiting": "{count, plural, one {# solicitud esperando} other {# solicitudes esperando}} tu decisión",
       "moreOn": "+{count} más en la página {link}."
+    },
+    "errors": {
+      "signedOut": "Tienes que iniciar sesión.",
+      "self": "No puedes conectarte contigo mismo.",
+      "already": "Ya tienes una conexión con esta persona.",
+      "pending": "Ya hay una solicitud pendiente entre vosotros.",
+      "requestNotFound": "No encontramos la solicitud.",
+      "notRecipient": "Solo quien recibe la solicitud puede responderla.",
+      "alreadyResolved": "Esta solicitud ya está {status}.",
+      "badTransition": "Ese cambio de estado no es válido.",
+      "relationshipNotFound": "No encontramos la conexión.",
+      "notActive": "Solo se pueden revocar las conexiones activas.",
+      "notYours": "No formas parte de esta conexión."
     }
   },
   "admin": {
@@ -2234,7 +2257,8 @@
       "save": "Guardar los cambios",
       "saving": "Guardando…",
       "discardWhatNew": "el entrenamiento nuevo",
-      "discardWhatChanges": "los cambios"
+      "discardWhatChanges": "los cambios",
+      "saveError": "No se ha podido guardar el entrenamiento. Lo que escribiste sigue aquí: inténtalo otra vez."
     },
     "detail": {
       "title": "Detalle del entrenamiento",
@@ -2490,13 +2514,16 @@
       "body": "¿Seguro que quieres reasignar {event} a {target}?",
       "confirm": "Reasignar",
       "dropHint": "Suelta sobre un nombre para reasignar:",
-      "mySchedule": "Mi agenda"
+      "mySchedule": "Mi agenda",
+      "thisEvent": "este evento",
+      "yourSchedule": "tu agenda"
     },
     "scope": {
       "label": "Ámbito",
       "allPlayers": "Todos los jugadores",
       "mySchedule": "Mi agenda",
-      "playersGroup": "Jugadores"
+      "playersGroup": "Jugadores",
+      "allTeams": "Todos los equipos"
     },
     "types": {
       "label": "Tipos"

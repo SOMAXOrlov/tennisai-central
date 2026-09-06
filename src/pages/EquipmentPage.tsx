@@ -38,7 +38,7 @@ function getUpgradeSuggestions(items: EquipmentItem[]): { category: EquipmentCat
 // ─── Main Page ───
 
 export default function EquipmentPage() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const { user } = useAuth();
   const playerId = user?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
@@ -57,7 +57,11 @@ export default function EquipmentPage() {
   }, [items]);
 
   // AI suggestions for items in poor/fair condition
-  const aiSuggestions = useMemo(() => getUpgradeSuggestions(items), [items]);
+  const aiSuggestions = useMemo(() => {
+    // The suggestion text itself is translated inside the helper.
+    void locale;
+    return getUpgradeSuggestions(items);
+  }, [items, locale]);
 
   const toggleGroup = (cat: EquipmentCategory) => {
     setOpenGroups((prev) => {

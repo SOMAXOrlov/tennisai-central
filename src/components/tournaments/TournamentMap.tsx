@@ -155,7 +155,7 @@ function hasCoords(t: Tournament): t is PlottableTournament {
 }
 
 export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide, canAdd = true, className }: TournamentMapProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const plotted = useMemo(() => tournaments.filter(hasCoords), [tournaments]);
 
   const [view, setView] = useState<{ zoom: number; bounds: Bounds | null }>({ zoom: 3, bounds: null });
@@ -178,6 +178,9 @@ export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide
   // instead of for every pin on every render.
   const [selected, setSelected] = useState<PlottableTournament | null>(null);
   const selectedDetail = useMemo(() => {
+    // The date range below is formatted once here rather than on every render,
+    // so a language switch has to invalidate it.
+    void locale;
     if (!selected) return null;
     return {
       t: selected,
@@ -186,7 +189,7 @@ export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide
         ? haversineKm(userCoords, { lat: selected.latitude, lng: selected.longitude })
         : null,
     };
-  }, [selected, userCoords]);
+  }, [selected, userCoords, locale]);
 
   // A pin panned out of view should not leave its popup floating over the sea.
   useEffect(() => {

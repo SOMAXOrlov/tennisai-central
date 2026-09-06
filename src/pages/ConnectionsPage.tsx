@@ -24,10 +24,11 @@ import {
   Unlink,
 } from "lucide-react";
 import type { RelationshipStatus } from "@/types";
-import { format } from "date-fns";
+import { formatDate as formatDateIntl } from "@/lib/i18n";
 
+/** Intl, not date-fns: the clock and month conventions follow the reader. */
 function formatDate(iso: string) {
-  return format(new Date(iso), "MMM d, yyyy");
+  return formatDateIntl(new Date(iso), { year: "numeric", month: "short", day: "numeric" });
 }
 
 // ─── Request Row ───

@@ -77,11 +77,15 @@ export interface PerformanceTrendChartProps {
 }
 
 export function PerformanceTrendChart({ matches, windowSize, windowLabel }: PerformanceTrendChartProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [metric, setMetric] = useState<TrendMetricId>("firstServePct");
 
   const meta = trendMetricMeta(metric);
-  const series = useMemo(() => buildTrendSeries(matches, metric, windowSize), [matches, metric, windowSize]);
+  const series = useMemo(() => {
+    // Every point carries a formatted date label for the x axis.
+    void locale;
+    return buildTrendSeries(matches, metric, windowSize);
+  }, [matches, metric, windowSize, locale]);
 
   const chartConfig: ChartConfig = {
     value: { label: meta.label, color: "hsl(var(--primary))" },

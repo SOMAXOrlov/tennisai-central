@@ -84,14 +84,16 @@ interface PaletteResultsProps {
  * pays for the tournaments request.
  */
 function PaletteResults({ role, query, onSelect }: PaletteResultsProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const { connectedPlayers } = useConnections();
   const { data: tournaments = [], isLoading: tournamentsLoading } = useTournaments();
 
-  const groups = useMemo(
-    () => buildSearchResults({ role, query, players: connectedPlayers, tournaments }),
-    [role, query, connectedPlayers, tournaments],
-  );
+  const groups = useMemo(() => {
+    // The group headings and result subtitles are translated inside
+    // buildSearchResults, so the list has to be rebuilt when the language is.
+    void locale;
+    return buildSearchResults({ role, query, players: connectedPlayers, tournaments });
+  }, [role, query, connectedPlayers, tournaments, locale]);
 
   const total = countResults(groups);
   // Honest states: while the tournament list is still in flight we say so

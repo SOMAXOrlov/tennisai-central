@@ -4,7 +4,16 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
-import { getDateFnsLocale, interleave, slot, t as translate, useT } from "@/lib/i18n";
+import { formatDate as formatDateIntl, getDateFnsLocale, interleave, slot, t as translate, useT } from "@/lib/i18n";
+
+/**
+ * Clock time in the reader's own convention — 9:30 AM in English, 9:30 in
+ * Spanish. date-fns would need a different pattern per language to do that;
+ * Intl already knows.
+ */
+function formatTime(date: Date): string {
+  return formatDateIntl(date, { hour: "numeric", minute: "2-digit" });
+}
 import { ReadOnlyBanner, ReadOnlyBadge, EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
@@ -529,7 +538,7 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
               className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""} ${isDragOver ? "ring-2 ring-inset ring-primary/50 bg-primary/10" : ""}`}
             >
               <div className="mb-3 text-center">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE", { locale: getDateFnsLocale() })}</div>
                 <div className={`mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"}`}>{format(day, "d")}</div>
               </div>
               <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} draggable={canDrag} registered={registeredIntlIds?.has(e.id)} />))}</div>
@@ -555,7 +564,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
         <div className="flex items-center gap-3">
           <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-foreground"}`}>{format(currentDate, "d")}</div>
           <div>
-            <div className="text-lg font-semibold text-foreground">{format(currentDate, "EEEE")}</div>
+            <div className="text-lg font-semibold text-foreground">{format(currentDate, "EEEE", { locale: getDateFnsLocale() })}</div>
             <div className="text-sm text-muted-foreground">{format(currentDate, "MMMM yyyy", { locale: getDateFnsLocale() })} · {translate("calendar.eventCount", { count: dayEvents.length })}</div>
           </div>
         </div>
@@ -574,10 +583,9 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
           return (
             <button key={event.id} onClick={() => onSelectEvent(event)} className="flex w-full items-start gap-4 px-6 py-4 text-left transition-colors hover:bg-accent/10">
               <div className="flex shrink-0 flex-col items-center pt-0.5">
-                <span className="text-sm font-semibold text-foreground">{format(start, "h:mm")}</span>
-                <span className="text-[10px] text-muted-foreground">{format(start, "a")}</span>
+                <span className="text-sm font-semibold text-foreground">{formatTime(start)}</span>
                 <div className="mt-1.5 h-8 w-0.5 rounded-full" style={{ backgroundColor: showPlayerLabel && event.playerId ? entityColor(event.playerId) : eventBaseColor(event.type, event.title) }} />
-                <span className="mt-1.5 text-[10px] text-muted-foreground">{format(end, "h:mm a")}</span>
+                <span className="mt-1.5 text-[10px] text-muted-foreground">{formatTime(end)}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -887,9 +895,11 @@ export default function CalendarPage() {
       : null
     : null;
   const reassignEventName = reassignPending
-    ? events?.find((e) => e.id === reassignPending.eventId)?.title ?? "this event"
+    ? events?.find((e) => e.id === reassignPending.eventId)?.title ?? t("calendar.reassign.thisEvent")
     : "";
-  const reassignTargetName = reassignTarget ? `${reassignTarget.firstName} ${reassignTarget.lastName}` : "your schedule";
+  const reassignTargetName = reassignTarget
+    ? `${reassignTarget.firstName} ${reassignTarget.lastName}`
+    : t("calendar.reassign.yourSchedule");
 
   const handleReassignToPlayer = useCallback((eventId: string, newPlayerId: string | null) => {
     setReassignPending({ eventId, newPlayerId });
@@ -1415,15 +1425,15 @@ export default function CalendarPage() {
           onToggleCountry={toggleCountry}
           onClearCountries={() => setActiveCountries(new Set())}
           scopeOptions={isCoach && connectedPlayers.length > 0 ? [
-            { value: "all", label: "All players" },
-            { value: "mine", label: "My schedule" },
+            { value: "all", label: t("calendar.scope.allPlayers") },
+            { value: "mine", label: t("calendar.scope.mySchedule") },
             ...visiblePlayers.map((p) => ({ value: p.id, label: `${p.firstName} ${p.lastName}`, color: entityColor(p.id) })),
           ] : undefined}
           scopeValue={playerScope}
           onScopeChange={isCoach ? setPlayerScope : undefined}
           teamOptions={isCoach && teams.length > 0 ? [
-            { value: "__all__", label: "All teams" },
-            ...teams.map((t) => ({ value: t.id, label: t.name })),
+            { value: "__all__", label: t("calendar.scope.allTeams") },
+            ...teams.map((team) => ({ value: team.id, label: team.name })),
           ] : undefined}
           teamValue={teamScope}
           onTeamChange={isCoach ? (v) => { setTeamScope(v); setPlayerScope("all"); } : undefined}
