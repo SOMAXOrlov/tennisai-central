@@ -32,7 +32,6 @@ import {
   type StatsWindowId,
 } from "@/components/stats";
 import { useMatchStats, useMatches } from "@/hooks/api/matches";
-import { useT } from "@/lib/i18n";
 import { IssueSummaryCard } from "@/components/matches/IssueSummaryCard";
 import { useAuth } from "@/auth/AuthContext";
 import {
