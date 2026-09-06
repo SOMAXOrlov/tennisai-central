@@ -85,7 +85,7 @@ describe("i18n formatters", () => {
     // for decimals — the two conventions an English-only formatter gets wrong.
     expect(probe.read("number")).toBe("12.500");
     // Intl puts a non-breaking space before the Spanish percent sign.
-    expect(probe.read("percent")?.replace(/ /g, " ")).toBe("63,6 %");
+    expect(probe.read("percent")?.replace(/\u00A0/g, " ")).toBe("63,6 %");
     expect(probe.read("date")).toContain("marzo");
     expect(probe.read("relative")).toBe("hace 3 días");
     expect(probe.read("dateFns")).toBe("es");

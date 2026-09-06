@@ -122,7 +122,9 @@ export default function TournamentsPage() {
   const myEntryFor = (tournamentId: string) =>
     playerTournaments.find((pt) => pt.tournamentId === tournamentId && pt.playerId === user?.id);
 
-  const connectedIds = new Set(connectedPlayers.map((p) => p.id));
+  // Memoised because the filter memo below depends on it: rebuilt inline it was
+  // a fresh Set every render, which made that memo recompute every render too.
+  const connectedIds = useMemo(() => new Set(connectedPlayers.map((p) => p.id)), [connectedPlayers]);
   const showPlayerTournaments = isCoach || isObserver;
 
   // Clicking a tournament opens what it will be like to play there. From a
@@ -151,7 +153,7 @@ export default function TournamentsPage() {
   const subscribed = useMemo(() => new Set(calendarPrefs?.federations ?? []), [calendarPrefs]);
   const toggleFederation = (f: string) => {
     const next = new Set(subscribed);
-    next.has(f) ? next.delete(f) : next.add(f);
+    if (next.has(f)) next.delete(f); else next.add(f);
     saveCalendarPrefs.mutate({ federations: [...next] });
   };
 
@@ -213,7 +215,10 @@ export default function TournamentsPage() {
       if (statusFilter !== ALL && pt.status !== statusFilter) return false;
       return true;
     });
-  }, [playerTournaments, search, surface, category, country, playerFilter, statusFilter, teamFilter, isCoach, isObserver, isPlayer, connectedIds, user?.id, teamPlayerIds]);
+    // `teamFilter` is not read here — only the memoised `teamPlayerIds` it
+    // derives, which is already listed and changes identity whenever the team
+    // selection does.
+  }, [playerTournaments, search, surface, category, country, playerFilter, statusFilter, isCoach, isObserver, isPlayer, connectedIds, user?.id, teamPlayerIds]);
 
   // Shared catalog filters (search/surface/category/country) — used by both the
   // Browse tab and the Map tab. Hidden-tournament exclusion is applied

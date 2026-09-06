@@ -135,7 +135,7 @@ export default function ProfilePage() {
                   checked={on}
                   onCheckedChange={() => {
                     const next = new Set(subscribed);
-                    next.has(f) ? next.delete(f) : next.add(f);
+                    if (next.has(f)) next.delete(f); else next.add(f);
                     saveCalendarPrefs.mutate({ federations: [...next] });
                   }}
                   aria-label={f}

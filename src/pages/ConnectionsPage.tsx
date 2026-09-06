@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { useT } from "@/lib/i18n";
@@ -23,7 +23,7 @@ import {
   LinkIcon,
   Unlink,
 } from "lucide-react";
-import type { RelationshipStatus } from "@/types";
+import type { RelationshipStatus, UserRole } from "@/types";
 import { formatDate as formatDateIntl } from "@/lib/i18n";
 
 /** Intl, not date-fns: the clock and month conventions follow the reader. */
@@ -41,7 +41,10 @@ export function RequestRow({
   onReject,
   onRevoke,
 }: {
-  req: { id: string; fromUserId: string; fromUserName: string; fromUserRole: string; toUserId: string; toUserName: string; toUserRole: string; status: RelationshipStatus; createdAt: string };
+  // The role fields are `UserRole`, not `string`: every caller already passes a
+  // `Relationship`, which types them that way, and widening them here was the
+  // only reason the badge below needed a cast.
+  req: { id: string; fromUserId: string; fromUserName: string; fromUserRole: UserRole; toUserId: string; toUserName: string; toUserRole: UserRole; status: RelationshipStatus; createdAt: string };
   perspective: "sent" | "received";
   currentUserId: string;
   onApprove?: (id: string) => void;
@@ -66,7 +69,7 @@ export function RequestRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-medium text-foreground">{name}</span>
-          <RoleBadge role={role as any} />
+          <RoleBadge role={role} />
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           {isSent ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
@@ -160,34 +163,40 @@ export default function ConnectionsPage() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const matchesSearch = (name: string) => !search || name.toLowerCase().includes(search.toLowerCase());
+  // Memoised so the five lists below can depend on the predicate itself rather
+  // than restating its `search` dependency. Identity changes exactly when
+  // `search` does, so the lists recompute on the same keystrokes as before.
+  const matchesSearch = useCallback(
+    (name: string) => !search || name.toLowerCase().includes(search.toLowerCase()),
+    [search],
+  );
 
   const incoming = useMemo(
     () => requests.filter((r) => r.toUserId === userId && r.status === "pending" && matchesSearch(r.fromUserName)),
-    [requests, userId, search]
+    [requests, userId, matchesSearch]
   );
 
   const sent = useMemo(
     () => requests.filter((r) => r.fromUserId === userId && r.status === "pending" && matchesSearch(r.toUserName)),
-    [requests, userId, search]
+    [requests, userId, matchesSearch]
   );
 
   const active = useMemo(
     () => requests.filter((r) => r.status === "active" && (r.fromUserId === userId || r.toUserId === userId))
       .filter((r) => matchesSearch(r.fromUserId === userId ? r.toUserName : r.fromUserName)),
-    [requests, userId, search]
+    [requests, userId, matchesSearch]
   );
 
   const revoked = useMemo(
     () => requests.filter((r) => r.status === "revoked" && (r.fromUserId === userId || r.toUserId === userId))
       .filter((r) => matchesSearch(r.fromUserId === userId ? r.toUserName : r.fromUserName)),
-    [requests, userId, search]
+    [requests, userId, matchesSearch]
   );
 
   const rejected = useMemo(
     () => requests.filter((r) => r.status === "rejected" && (r.fromUserId === userId || r.toUserId === userId))
       .filter((r) => matchesSearch(r.fromUserId === userId ? r.toUserName : r.fromUserName)),
-    [requests, userId, search]
+    [requests, userId, matchesSearch]
   );
 
   // Role-based: Player only sees incoming. Coach/Observer can send.

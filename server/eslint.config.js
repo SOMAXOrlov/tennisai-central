@@ -20,6 +20,16 @@ export default tseslint.config(
       // an empty case when the next label is on the very next line; the comment
       // is exactly what that layout heuristic exists to prompt for.
       "no-fallthrough": ["error", { allowEmptyCase: true }],
+      // Two deliberate-ignore conventions the rule's defaults reject.
+      // `_`-prefixed names: Express only recognises a terminal error handler if
+      // it declares all four parameters, so `_req`/`_next` must exist and must
+      // go unused (http.ts). `ignoreRestSiblings`: publicUser.ts strips secrets
+      // by destructuring them away from `...rest`, so naming `passwordHash` is
+      // precisely how it is removed — the "unused" binding is the mechanism.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true },
+      ],
     },
   },
 );

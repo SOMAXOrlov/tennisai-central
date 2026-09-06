@@ -33,7 +33,10 @@ export default function VerifyEmailPage() {
         setStatus("error");
         setMessage(err?.message || t("auth.verify.errorDefault"));
       });
-  }, [token]);
+    // `t` is the module-level lookup re-exported by `useT()`, so its identity
+    // never changes and listing it costs nothing; the `ran` ref already makes a
+    // re-run a no-op in any case.
+  }, [token, t]);
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +46,7 @@ export default function VerifyEmailPage() {
       const res = await authApi.resendVerification(email.trim());
       setResent(true);
       setMessage(res.message || t("auth.verify.resendDefault"));
-    } catch (err: any) {
+    } catch (err) {
       setMessage(err?.message || t("auth.verify.resendFailed"));
     } finally {
       setResending(false);

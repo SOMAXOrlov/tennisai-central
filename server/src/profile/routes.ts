@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { Prisma, type User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 import { env } from "../env";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";

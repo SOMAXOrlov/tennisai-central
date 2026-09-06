@@ -23,6 +23,9 @@ function loadExemplar(): Record<string, unknown> {
 }
 
 /** Deep-ish clone so a mutation in one case cannot leak into the next. */
+// The callers below reach deep into the document to make it invalid on purpose
+// — the shapes they produce are exactly the ones no type describes.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mutate(fn: (doc: any) => void): Record<string, unknown> {
   const doc = JSON.parse(JSON.stringify(loadExemplar()));
   fn(doc);

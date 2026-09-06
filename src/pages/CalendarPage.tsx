@@ -718,7 +718,7 @@ export default function CalendarPage() {
   );
   const toggleFederation = (f: TournamentCircuit) => {
     const next = new Set(activeFederations);
-    next.has(f) ? next.delete(f) : next.add(f);
+    if (next.has(f)) next.delete(f); else next.add(f);
     saveCalendarPrefs.mutate({ federations: [...next] });
   };
   // Own trainings, matches and events. Saved alongside the subscriptions, so a
@@ -731,7 +731,7 @@ export default function CalendarPage() {
   const toggleCountry = (c: string) =>
     setActiveCountries((prev) => {
       const next = new Set(prev);
-      next.has(c) ? next.delete(c) : next.add(c);
+      if (next.has(c)) next.delete(c); else next.add(c);
       return next;
     });
 
@@ -839,10 +839,14 @@ export default function CalendarPage() {
     const personalTournamentTitles = new Set(myEvents.filter((e) => e.type === "tournament").map((e) => e.title));
     const uniqueIntl = internationalEvents.filter((e) => !personalTournamentTitles.has(e.title) && activeFilters.has(e.type));
     return [...myEvents, ...uniqueIntl];
-  }, [events, activeFilters, role, playerScope, teamScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds, showOwnEvents, internationalEvents]);
+    // `role` and `teamScope` are not read here: the body branches on the
+    // `isPlayer`/`isCoach`/`isObserver` booleans derived from `role`, and reads
+    // `teamScope` only through the memoised `teamPlayerIds`. Both derivations
+    // are already in this list, so nothing recomputes less often.
+  }, [events, activeFilters, playerScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds, showOwnEvents, internationalEvents]);
 
   const toggleFilter = (type: CalendarEventType) => {
-    setActiveFilters((prev) => { const next = new Set(prev); next.has(type) ? next.delete(type) : next.add(type); return next; });
+    setActiveFilters((prev) => { const next = new Set(prev); if (next.has(type)) next.delete(type); else next.add(type); return next; });
   };
 
   const navigate = (dir: 1 | -1) => {
@@ -1458,7 +1462,7 @@ export default function CalendarPage() {
         if (!tournament) return;
         const alreadyRegistered = playerTournaments.some(pt => pt.tournamentId === tournamentId);
         if (alreadyRegistered) { toastInfo("toast.tournament.alreadyRegistered"); return; }
-        registerMut.mutate({ tournamentId, tournament, playerId: user!.id, playerName: `${user!.firstName} ${user!.lastName}`, status: "registered" } as any, { onSuccess: () => { setDrawerOpen(false); setSelectedEvent(null); } });
+        registerMut.mutate({ tournamentId, tournament, playerId: user!.id, playerName: `${user!.firstName} ${user!.lastName}`, status: "registered" }, { onSuccess: () => { setDrawerOpen(false); setSelectedEvent(null); } });
       } : undefined} />
       <EventFormDialog key={editingEvent?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editingEvent} onSave={handleSave} playerOptions={playerOptions} saving={createMut.isPending || updateMut.isPending} />
       <PlayerDetailDrawer player={detailPlayer} open={playerDetailOpen} onOpenChange={setPlayerDetailOpen} readOnly={isObserver} />

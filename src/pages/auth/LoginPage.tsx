@@ -32,7 +32,7 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       const message = err?.message || t("auth.login.failed");
       setError(message);
       // Three distinguishable outcomes, by status:

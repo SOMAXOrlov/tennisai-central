@@ -128,7 +128,13 @@ export function useAnalyzeTraining() {
   return useMutation({
     mutationFn: (id: string) => trainingsApi.analyzeTraining(id),
     onSuccess: () => { inv.training(); toastSuccess("toast.training.analysisReady"); },
-    onError: (e: unknown) => toastError("toast.training.analyzeFailed", e),
+    // `Error`, not `unknown` like its neighbours: TrainingsPage reads
+    // `analyzeMut.error?.message` inline, and annotating this handler `unknown`
+    // widens the mutation's error type to match, which is what forced an
+    // `as any` at that read. `Error` is react-query's own default and the shape
+    // `ApiError` has; the optional chain still covers the mock endpoints'
+    // plain `{ status, message }` throws. Annotation only — erased at runtime.
+    onError: (e: Error) => toastError("toast.training.analyzeFailed", e),
   });
 }
 

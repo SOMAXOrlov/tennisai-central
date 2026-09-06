@@ -573,7 +573,10 @@ export default function TrainingsPage() {
       if (timeFilter === "past" && !isPast(parseISO(t.endDate))) return false;
       return true;
     }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  }, [trainings, search, playerFilter, teamFilter, typeFilter, timeFilter, teamPlayerIds]);
+    // `teamFilter` is not read here — only the memoised `teamPlayerIds` it
+    // derives, which is already listed and changes identity whenever the team
+    // selection does.
+  }, [trainings, search, playerFilter, typeFilter, timeFilter, teamPlayerIds]);
 
   // ── Deep link: /trainings?filter=past&review=<trainingId>&player=<id>&team=<id>
   // Applied once per mount. The `review` param is dropped from the URL as soon
@@ -809,7 +812,7 @@ export default function TrainingsPage() {
       )}
 
       {formOpen && <TrainingFormDialog key={editTarget?.id ?? "new"} open={formOpen} onOpenChange={setFormOpen} initial={editTarget} onSave={handleSave} saving={createMut.isPending || updateMut.isPending} preselectedPlayerIds={preselectedPlayerIds} />}
-      <TrainingDetailDrawer training={liveDetail} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) { setDetailTarget(null); analyzeMut.reset(); } }} onEdit={() => liveDetail && openEdit(liveDetail)} onDelete={() => liveDetail && setDeleteTarget(liveDetail)} onReview={isCoach ? () => { if (liveDetail) { setReviewTarget(liveDetail); } } : undefined} onPlayerFeedback={isPlayer ? () => { if (liveDetail) setFeedbackTarget(liveDetail); } : undefined} readOnly={readOnly} isPlayer={isPlayer} deleting={deleteMut.isPending} onAnalyze={liveDetail ? () => analyzeMut.mutate(liveDetail.id) : undefined} analyzing={analyzeMut.isPending} analyzeError={analyzeMut.isError ? ((analyzeMut.error as any)?.message ?? t("training.detail.analyzeUnreachable")) : null} canMarkAttendance={canMarkAttendance} viewerId={user?.id} onMarkAttendance={handleMarkAttendance} attendancePendingFor={attendancePendingFor} />
+      <TrainingDetailDrawer training={liveDetail} open={detailOpen} onOpenChange={(o) => { setDetailOpen(o); if (!o) { setDetailTarget(null); analyzeMut.reset(); } }} onEdit={() => liveDetail && openEdit(liveDetail)} onDelete={() => liveDetail && setDeleteTarget(liveDetail)} onReview={isCoach ? () => { if (liveDetail) { setReviewTarget(liveDetail); } } : undefined} onPlayerFeedback={isPlayer ? () => { if (liveDetail) setFeedbackTarget(liveDetail); } : undefined} readOnly={readOnly} isPlayer={isPlayer} deleting={deleteMut.isPending} onAnalyze={liveDetail ? () => analyzeMut.mutate(liveDetail.id) : undefined} analyzing={analyzeMut.isPending} analyzeError={analyzeMut.isError ? (analyzeMut.error?.message ?? t("training.detail.analyzeUnreachable")) : null} canMarkAttendance={canMarkAttendance} viewerId={user?.id} onMarkAttendance={handleMarkAttendance} attendancePendingFor={attendancePendingFor} />
       {deleteTarget && <DeleteTrainingDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} title={deleteTarget.title} onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
       {reviewTarget && <TrainingReviewDialog open={!!reviewTarget} onOpenChange={(o) => { if (!o) setReviewTarget(null); }} training={reviewTarget} onSave={async (review) => { await updateMut.mutateAsync({ id: reviewTarget.id, data: { review } }); }} saving={updateMut.isPending} />}
       {feedbackTarget && <PlayerFeedbackDialog open={!!feedbackTarget} onOpenChange={(o) => { if (!o) setFeedbackTarget(null); }} training={feedbackTarget} onSave={(feedback) => { feedbackMut.mutate({ id: feedbackTarget.id, feedback }); setFeedbackTarget(null); }} saving={feedbackMut.isPending} />}
