@@ -1123,6 +1123,183 @@
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   },
+  "calendar": {
+    "title": "Calendario",
+    "subtitle": {
+      "player": "Toda tu agenda: entrenamientos, partidos, torneos y más.",
+      "coach": "Gestiona tu agenda y los eventos de los jugadores conectados.",
+      "observer": "Vista de solo lectura de la agenda del jugador conectado.",
+      "admin": "Vista general del calendario de toda la plataforma."
+    },
+    "eventCount": "{count, plural, one {# evento} other {# eventos}}",
+    "eventsSuffix": "eventos",
+    "addEvent": "Añadir evento",
+    "exportView": "Exportar este {view}",
+    "exportDescription": "Exportar {count, plural, one {el # evento} other {los # eventos}} de {period} como archivo de calendario (.ics)",
+    "today": "Hoy",
+    "filters": "Filtros",
+    "previousView": "{view} anterior",
+    "nextView": "{view} siguiente",
+    "playersLegend": "Jugadores:",
+    "hideMini": "Ocultar el minicalendario",
+    "showMini": "Mostrar el minicalendario",
+    "refreshTournaments": "Actualizar los torneos",
+    "noEvents": "No hay nada programado",
+    "registered": "Inscrito",
+    "weekOf": "Semana del {start} al {end}",
+    "view": {
+      "month": "mes",
+      "week": "semana",
+      "day": "día",
+      "agenda": "Agenda"
+    },
+    "type": {
+      "training": "Entrenamiento",
+      "tournament": "Torneo",
+      "match": "Partido",
+      "travel": "Viaje",
+      "recovery": "Recuperación"
+    },
+    "state": {
+      "requested": "Solicitado",
+      "tentative": "Provisional",
+      "confirmed": "Confirmado",
+      "cancelled": "Cancelado",
+      "completed": "Completado"
+    },
+    "frequency": {
+      "daily": "Cada día",
+      "weekly": "Cada semana",
+      "biweekly": "Cada 2 semanas",
+      "monthly": "Cada mes"
+    },
+    "detail": {
+      "recurring": "Se repite",
+      "repeats": "Se repite: {frequency}",
+      "repeatsInSeries": "forma parte de una serie",
+      "repeatsCount": " · {count, plural, one {# vez} other {# veces}}",
+      "repeatsUntil": " · hasta el {date}",
+      "coachNotes": "Notas del entrenador",
+      "register": "Inscribirse en el torneo",
+      "registering": "Inscribiendo…",
+      "alreadyRegistered": "Ya estás inscrito en este torneo",
+      "managedOnTrainings": "Esta sesión se gestiona en la página {link}, donde puede editarse, revisarse y cancelarse.",
+      "trainingsLink": "Entrenamientos",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando…"
+    },
+    "deleteSeries": {
+      "title": "Eliminar un evento que se repite",
+      "body": "Este evento se repite. ¿Qué quieres eliminar?",
+      "single": "Solo este evento",
+      "all": "Toda la serie"
+    },
+    "form": {
+      "editTitle": "Editar el evento",
+      "newTitle": "Nuevo evento",
+      "title": "Título",
+      "titlePlaceholder": "Título del evento",
+      "type": "Tipo",
+      "status": "Estado",
+      "assign": "Asignar a un jugador",
+      "assignPlaceholder": "Opcional: agenda del entrenador",
+      "mySchedule": "Mi agenda",
+      "start": "Inicio",
+      "end": "Fin",
+      "location": "Lugar",
+      "description": "Descripción",
+      "optional": "Opcional",
+      "recurrence": "Repetición",
+      "frequency": "Frecuencia",
+      "noRepeat": "No se repite (evento único)",
+      "ends": "Termina",
+      "never": "Nunca",
+      "afterCount": "Tras un número de repeticiones",
+      "onDate": "En una fecha concreta",
+      "occurrences": "Número de repeticiones",
+      "endDate": "Fecha de fin",
+      "coachNotes": "Notas del entrenador",
+      "coachNotesPrivate": "(privadas)",
+      "coachNotesPlaceholder": "No se muestran a las familias",
+      "save": "Guardar los cambios",
+      "add": "Añadir evento",
+      "saving": "Guardando…"
+    },
+    "reassign": {
+      "title": "Reasignar el evento",
+      "body": "¿Seguro que quieres reasignar {event} a {target}?",
+      "confirm": "Reasignar",
+      "dropHint": "Suelta sobre un nombre para reasignar:",
+      "mySchedule": "Mi agenda"
+    },
+    "scope": {
+      "label": "Ámbito",
+      "allPlayers": "Todos los jugadores",
+      "mySchedule": "Mi agenda",
+      "playersGroup": "Jugadores"
+    },
+    "types": {
+      "label": "Tipos"
+    },
+    "legend": {
+      "eventTypes": "Tipos de evento",
+      "tournamentCalendars": "Calendarios de torneos",
+      "saved": "Guardado en tu cuenta.",
+      "none": "Solo se muestran tus sesiones. Elige un calendario para añadir torneos.",
+      "status": "Estado",
+      "confirmed": "Confirmado",
+      "confirmedHint": "relleno",
+      "tentative": "Provisional / Solicitado",
+      "tentativeHint": "borde discontinuo",
+      "completed": "Completado",
+      "completedHint": "atenuado",
+      "cancelled": "Cancelado",
+      "cancelledHint": "discontinuo y tachado",
+      "footnote": "Los torneos se colorean por federación; la barra izquierda y el punto indican el jugador o el equipo.",
+      "trigger": "Leyenda de colores"
+    },
+    "sheet": {
+      "description": "Lo que muestra el calendario.",
+      "all": "Todos",
+      "none": "Ninguno",
+      "refresh": "Actualizar",
+      "countries": "Países",
+      "clear": "Quitar",
+      "everywhere": "Todos los países. Elige alguno para acotar.",
+      "showFewer": "Ver menos",
+      "showAllCountries": "Ver los {count} países",
+      "whoseEvents": "Eventos de quién",
+      "team": "Equipo",
+      "playerColours": "Colores de los jugadores",
+      "done": "Listo"
+    },
+    "menus": {
+      "searchCountries": "Buscar países…",
+      "noCountryMatch": "Ningún país coincide con “{query}”.",
+      "showEverywhere": "Ver todos los países",
+      "location": "Lugar"
+    },
+    "mini": {
+      "previousMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "allDay": "Todo el día",
+      "moreOnDay": "+{count} más — abre el día para verlos todos",
+      "upcoming": "Próximamente"
+    },
+    "day": {
+      "fallbackTitle": "Día",
+      "yoursSuffix": "{count} tuyos",
+      "nothing": "No hay nada este día.",
+      "entered": "Inscrito"
+    },
+    "agenda": {
+      "nothingIn": "No hay nada en {period}",
+      "thisWeek": "esta semana",
+      "useArrows": "Usa las flechas para ver otro/a {range}, o abre Filtros para añadir un calendario de torneos.",
+      "showAll": "Ver los {count} del {date}"
+    }
+  },
   "auth": {
     "backHome": "Volver al inicio",
     "backToLogin": "Volver al inicio de sesión",

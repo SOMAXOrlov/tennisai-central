@@ -1,6 +1,7 @@
 import { Check, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useT } from "@/lib/i18n";
 
 interface LegendProps {
   typeItems: { label: string; color: string; count: number }[];
@@ -26,10 +27,11 @@ interface LegendProps {
  * the popover form stays available for space-constrained placements.
  */
 export function CalendarLegendPanel({ typeItems, circuitItems, onToggleCircuit, savingCircuits }: LegendProps) {
+  const { t } = useT();
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card p-3 shadow-sm">
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Event types</h3>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("calendar.legend.eventTypes")}</h3>
           <div className="space-y-1.5">
             {typeItems.map((t) => (
               <div key={t.label} className="flex items-center justify-between text-xs">
@@ -44,7 +46,7 @@ export function CalendarLegendPanel({ typeItems, circuitItems, onToggleCircuit, 
         </div>
         <div>
           <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Tournament calendars
+            {t("calendar.legend.tournamentCalendars")}
             {savingCircuits && <Loader2 className="h-3 w-3 animate-spin" />}
           </h3>
 
@@ -81,8 +83,8 @@ export function CalendarLegendPanel({ typeItems, circuitItems, onToggleCircuit, 
               ))}
               <p className="px-1.5 pt-1.5 text-[11px] text-muted-foreground">
                 {circuitItems.some((c) => c.on)
-                  ? "Saved to your account."
-                  : "Showing only your own sessions. Pick a calendar to add tournaments."}
+                  ? t("calendar.legend.saved")
+                  : t("calendar.legend.none")}
               </p>
             </div>
           ) : (
@@ -97,16 +99,16 @@ export function CalendarLegendPanel({ typeItems, circuitItems, onToggleCircuit, 
           )}
         </div>
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</h3>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("calendar.legend.status")}</h3>
           <div className="space-y-1 text-[11px] text-muted-foreground">
-            <p><span className="text-foreground">Confirmed</span> — solid</p>
-            <p><span className="text-foreground">Tentative / Requested</span> — dashed outline</p>
-            <p><span className="text-foreground">Completed</span> — dimmed</p>
-            <p><span className="text-foreground">Cancelled</span> — dashed &amp; struck through</p>
+            <p><span className="text-foreground">{t("calendar.legend.confirmed")}</span> — {t("calendar.legend.confirmedHint")}</p>
+            <p><span className="text-foreground">{t("calendar.legend.tentative")}</span> — {t("calendar.legend.tentativeHint")}</p>
+            <p><span className="text-foreground">{t("calendar.legend.completed")}</span> — {t("calendar.legend.completedHint")}</p>
+            <p><span className="text-foreground">{t("calendar.legend.cancelled")}</span> — {t("calendar.legend.cancelledHint")}</p>
           </div>
         </div>
         <p className="border-t border-border pt-2 text-[11px] text-muted-foreground">
-          Tournaments are coloured by federation; the left bar &amp; dot show the player/team.
+          {t("calendar.legend.footnote")}
         </p>
     </div>
   );
@@ -114,6 +116,7 @@ export function CalendarLegendPanel({ typeItems, circuitItems, onToggleCircuit, 
 
 /** Popover form of the same key, for toolbars with no room for a panel. */
 export function CalendarLegend(props: LegendProps) {
+  const { t } = useT();
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -121,8 +124,8 @@ export function CalendarLegend(props: LegendProps) {
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          title="Colour legend"
-          aria-label="Colour legend"
+          title={t("calendar.legend.trigger")}
+          aria-label={t("calendar.legend.trigger")}
         >
           <Info className="h-3.5 w-3.5" />
         </Button>

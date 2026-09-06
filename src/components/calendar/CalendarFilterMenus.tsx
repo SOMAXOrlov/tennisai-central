@@ -7,6 +7,7 @@ import {
   DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useT } from "@/lib/i18n";
 
 /**
  * The calendar toolbar's filter dropdowns.
@@ -70,6 +71,7 @@ export function MultiFilterMenu({
   onSelectAll: () => void;
   onSelectNone: () => void;
 }) {
+  const { t } = useT();
   const allOn = options.length > 0 && options.every((o) => selected.has(o.value));
   return (
     <DropdownMenu>
@@ -104,10 +106,10 @@ export function MultiFilterMenu({
         <DropdownMenuSeparator />
         <div className="flex gap-1 px-1 pb-0.5">
           <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onSelectAll(); }} className="flex-1 justify-center text-xs font-medium">
-            All
+            {t("calendar.sheet.all")}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onSelectNone(); }} className="flex-1 justify-center text-xs font-medium">
-            None
+            {t("calendar.sheet.none")}
           </DropdownMenuItem>
         </div>
       </DropdownMenuContent>
@@ -128,7 +130,7 @@ export function MultiFilterMenu({
  * you have not opened yet.
  */
 export function LocationFilterMenu({
-  label = "Location",
+  label,
   icon,
   options,
   selected,
@@ -154,13 +156,14 @@ export function LocationFilterMenu({
     return [...selectedOnes, ...matched].slice(0, 60);
   }, [options, query, selected]);
 
+  const { t } = useT();
   const active = selected.size > 0;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <TriggerButton icon={icon} active={active}>
-          <span>{label}</span>
+          <span>{label ?? t("calendar.menus.location")}</span>
           {active && <span className="font-semibold">· {selected.size}</span>}
         </TriggerButton>
       </DropdownMenuTrigger>
@@ -171,7 +174,7 @@ export function LocationFilterMenu({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search countries…"
+              placeholder={t("calendar.menus.searchCountries")}
               className="h-8 pl-7 text-xs"
               // The menu steals the first keystroke to its own type-ahead
               // otherwise, and the box appears not to work.
@@ -183,7 +186,7 @@ export function LocationFilterMenu({
         <div className="max-h-64 overflow-y-auto">
           {shown.length === 0 ? (
             <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-              Nowhere matches “{query}”.
+              {t("calendar.menus.noCountryMatch", { query })}
             </p>
           ) : (
             shown.map((o) => (
@@ -209,7 +212,7 @@ export function LocationFilterMenu({
               onSelect={(e) => { e.preventDefault(); onSelectNone(); }}
               className="justify-center text-xs font-medium"
             >
-              Show everywhere
+              {t("calendar.menus.showEverywhere")}
             </DropdownMenuItem>
           </>
         )}
@@ -280,11 +283,12 @@ export function ReassignDropStrip({
   targets: { id: string | null; label: string; color?: string }[];
   onAssign: (eventId: string, playerId: string | null) => void;
 }) {
+  const { t } = useT();
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2">
-      <span className="text-xs font-medium text-primary">Drop on a name to reassign:</span>
-      {targets.map((t) => (
-        <DropTarget key={t.id ?? "__mine__"} label={t.label} color={t.color} onDrop={(eventId) => onAssign(eventId, t.id)} />
+      <span className="text-xs font-medium text-primary">{t("calendar.reassign.dropHint")}</span>
+      {targets.map((target) => (
+        <DropTarget key={target.id ?? "__mine__"} label={target.label} color={target.color} onDrop={(eventId) => onAssign(eventId, target.id)} />
       ))}
     </div>
   );

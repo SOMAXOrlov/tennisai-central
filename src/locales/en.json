@@ -1123,6 +1123,183 @@
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
   },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": {
+      "player": "Your unified schedule — trainings, matches, tournaments & more.",
+      "coach": "Manage your schedule and connected player events.",
+      "observer": "Read-only view of the connected player's schedule.",
+      "admin": "Platform-wide calendar overview."
+    },
+    "eventCount": "{count, plural, one {# event} other {# events}}",
+    "eventsSuffix": "events",
+    "addEvent": "Add Event",
+    "exportView": "Export this {view}",
+    "exportDescription": "Export the {count, plural, one {# event} other {# events}} shown for {period} as a calendar file (.ics)",
+    "today": "Today",
+    "filters": "Filters",
+    "previousView": "Previous {view}",
+    "nextView": "Next {view}",
+    "playersLegend": "Players:",
+    "hideMini": "Hide the mini calendar",
+    "showMini": "Show the mini calendar",
+    "refreshTournaments": "Refresh tournaments",
+    "noEvents": "No events scheduled",
+    "registered": "Registered",
+    "weekOf": "Week of {start} – {end}",
+    "view": {
+      "month": "month",
+      "week": "week",
+      "day": "day",
+      "agenda": "Agenda"
+    },
+    "type": {
+      "training": "Training",
+      "tournament": "Tournament",
+      "match": "Match",
+      "travel": "Travel",
+      "recovery": "Recovery"
+    },
+    "state": {
+      "requested": "Requested",
+      "tentative": "Tentative",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "biweekly": "Every 2 weeks",
+      "monthly": "Monthly"
+    },
+    "detail": {
+      "recurring": "Recurring",
+      "repeats": "Repeats {frequency}",
+      "repeatsInSeries": "as part of a series",
+      "repeatsCount": " · {count, plural, one {# time} other {# times}}",
+      "repeatsUntil": " · until {date}",
+      "coachNotes": "Coach Notes",
+      "register": "Register for Tournament",
+      "registering": "Registering…",
+      "alreadyRegistered": "You're registered for this tournament",
+      "managedOnTrainings": "This session is managed on the {link} page, where it can be edited, reviewed and cancelled.",
+      "trainingsLink": "Trainings",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…"
+    },
+    "deleteSeries": {
+      "title": "Delete Recurring Event",
+      "body": "This is a recurring event. What would you like to delete?",
+      "single": "This event only",
+      "all": "All events in series"
+    },
+    "form": {
+      "editTitle": "Edit Event",
+      "newTitle": "New Event",
+      "title": "Title",
+      "titlePlaceholder": "Event title",
+      "type": "Type",
+      "status": "Status",
+      "assign": "Assign to Player",
+      "assignPlaceholder": "Optional — coach schedule",
+      "mySchedule": "My Schedule",
+      "start": "Start",
+      "end": "End",
+      "location": "Location",
+      "description": "Description",
+      "optional": "Optional",
+      "recurrence": "Recurrence",
+      "frequency": "Frequency",
+      "noRepeat": "None (single event)",
+      "ends": "Ends",
+      "never": "Never",
+      "afterCount": "After N occurrences",
+      "onDate": "On a specific date",
+      "occurrences": "Number of occurrences",
+      "endDate": "End date",
+      "coachNotes": "Coach Notes",
+      "coachNotesPrivate": "(private)",
+      "coachNotesPlaceholder": "Not visible to observers",
+      "save": "Save Changes",
+      "add": "Add Event",
+      "saving": "Saving…"
+    },
+    "reassign": {
+      "title": "Reassign Event",
+      "body": "Are you sure you want to reassign {event} to {target}?",
+      "confirm": "Reassign",
+      "dropHint": "Drop on a name to reassign:",
+      "mySchedule": "My schedule"
+    },
+    "scope": {
+      "label": "Scope",
+      "allPlayers": "All players",
+      "mySchedule": "My schedule",
+      "playersGroup": "Players"
+    },
+    "types": {
+      "label": "Types"
+    },
+    "legend": {
+      "eventTypes": "Event types",
+      "tournamentCalendars": "Tournament calendars",
+      "saved": "Saved to your account.",
+      "none": "Showing only your own sessions. Pick a calendar to add tournaments.",
+      "status": "Status",
+      "confirmed": "Confirmed",
+      "confirmedHint": "solid",
+      "tentative": "Tentative / Requested",
+      "tentativeHint": "dashed outline",
+      "completed": "Completed",
+      "completedHint": "dimmed",
+      "cancelled": "Cancelled",
+      "cancelledHint": "dashed & struck through",
+      "footnote": "Tournaments are coloured by federation; the left bar & dot show the player/team.",
+      "trigger": "Colour legend"
+    },
+    "sheet": {
+      "description": "What the calendar shows.",
+      "all": "All",
+      "none": "None",
+      "refresh": "Refresh",
+      "countries": "Countries",
+      "clear": "Clear",
+      "everywhere": "Everywhere. Pick countries to narrow.",
+      "showFewer": "Show fewer",
+      "showAllCountries": "Show all {count} countries",
+      "whoseEvents": "Whose events",
+      "team": "Team",
+      "playerColours": "Player colours",
+      "done": "Done"
+    },
+    "menus": {
+      "searchCountries": "Search countries…",
+      "noCountryMatch": "Nowhere matches “{query}”.",
+      "showEverywhere": "Show everywhere",
+      "location": "Location"
+    },
+    "mini": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "allDay": "All day",
+      "moreOnDay": "+{count} more — click the day to see all",
+      "upcoming": "Upcoming"
+    },
+    "day": {
+      "fallbackTitle": "Day",
+      "yoursSuffix": "{count} yours",
+      "nothing": "Nothing on this day.",
+      "entered": "Entered"
+    },
+    "agenda": {
+      "nothingIn": "Nothing in {period}",
+      "thisWeek": "this week",
+      "useArrows": "Use the arrows to look at another {range}, or open Filters to add a tournament calendar.",
+      "showAll": "Show all {count} on {date}"
+    }
+  },
   "auth": {
     "backHome": "Back to home",
     "backToLogin": "Back to login",
