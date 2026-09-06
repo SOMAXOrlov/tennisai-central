@@ -1250,6 +1250,180 @@
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   },
+  "equipment": {
+    "title": "Material",
+    "subtitle": "Gestiona tus raquetas, cordajes, zapatillas y demás.",
+    "addItem": "Añadir un artículo",
+    "recommendations": "Recomendaciones para renovar tu material",
+    "needsAttention": "Necesita atención",
+    "drawerTitle": "{name} — Material",
+    "drawerHint": "Solo lectura. Únicamente {name} puede añadir o cambiar artículos.",
+    "drawerEmpty": "{name} todavía no ha añadido material.",
+    "add": {
+      "title": "Añadir material",
+      "description": "Registra una nueva pieza de material de tenis.",
+      "name": "Nombre *",
+      "namePlaceholder": "Ej.: Wilson Pro Staff 97",
+      "category": "Categoría",
+      "brand": "Marca",
+      "brandPlaceholder": "Wilson, Babolat…",
+      "condition": "Estado",
+      "conditionPlaceholder": "Elige el estado…",
+      "model": "Modelo",
+      "notes": "Notas",
+      "notesPlaceholder": "Ej.: tensión 52 lb",
+      "adding": "Añadiendo…",
+      "submit": "Añadir material"
+    },
+    "category": {
+      "racket": {
+        "label": "Raqueta",
+        "plural": "Raquetas"
+      },
+      "string": {
+        "label": "Cordaje",
+        "plural": "Cordajes"
+      },
+      "shoes": {
+        "label": "Zapatillas",
+        "plural": "Zapatillas"
+      },
+      "balls": {
+        "label": "Pelotas",
+        "plural": "Pelotas"
+      },
+      "accessories": {
+        "label": "Accesorios",
+        "plural": "Accesorios"
+      }
+    },
+    "condition": {
+      "racket": {
+        "New": "Nueva — recién sacada del plástico",
+        "Excellent": "Excelente — desgaste mínimo, sin desconchones",
+        "Good": "Buena — desgaste estético leve, juega muy bien",
+        "Fair": "Regular — desgaste visible, posibles microfisuras",
+        "Poor": "Mala — marco agrietado, tacto muerto"
+      },
+      "string": {
+        "Fresh": "Recién encordado — tensión completa",
+        "Good": "Bueno — mantiene bien la tensión",
+        "Losing Tension": "Perdiendo tensión — caída notable",
+        "Fraying": "Deshilachado — muescas visibles, a punto de romper",
+        "Broken": "Roto — hay que encordar ya"
+      },
+      "shoes": {
+        "New": "Nuevas — sin estrenar",
+        "Good": "Buenas — suela en buen estado, cómodas",
+        "Worn Tread": "Suela gastada — menos agarre en pista",
+        "Worn Out": "Acabadas — sin dibujo, suela despegada"
+      },
+      "balls": {
+        "New": "Nuevas — presurizadas, bote completo",
+        "Practice": "De entrenamiento — algo usadas, buen bote",
+        "Flat": "Flojas — poco bote, solo para entrenar",
+        "Dead": "Muertas — sin bote, cámbialas ya"
+      },
+      "accessories": {
+        "New": "Nuevos",
+        "Good": "Buenos — funcionan bien",
+        "Worn": "Gastados — habrá que cambiarlos pronto",
+        "Replace": "Para cambiar — han pasado su vida útil"
+      }
+    },
+    "upgrade": {
+      "racket": {
+        "tip1": "Plantéate pasar a un marco más nuevo: las raquetas actuales amortiguan mejor y transmiten más potencia",
+        "tip2": "Un marco agrietado o con tacto muerto afecta al control. Mira la Wilson Clash o la Babolat Pure Aero como recambio",
+        "tip3": "Reserva un día de pruebas en tu tienda especializada para probar modelos nuevos antes de comprar"
+      },
+      "string": {
+        "tip1": "Un cordaje deshilachado pierde tensión de forma imprevisible: encorda antes del próximo partido",
+        "tip2": "Plantéate un poliéster más duradero, como Luxilon ALU Power o Solinco Hyper-G",
+        "tip3": "Si rompes cordaje a menudo, prueba un híbrido (poliéster en verticales, tripa sintética en horizontales)"
+      },
+      "shoes": {
+        "tip1": "Una suela gastada aumenta mucho el riesgo de resbalar en pista dura: cambia las zapatillas cuanto antes",
+        "tip2": "Busca zapatillas con puntera reforzada si arrastras el pie al sacar",
+        "tip3": "Plantéate las ASICS Gel-Resolution o las adidas Barricade para la máxima durabilidad en pista"
+      },
+      "balls": {
+        "tip1": "Las pelotas muertas cambian el bote y crean malos hábitos de timing: usa pelotas nuevas para entrenar partidos",
+        "tip2": "Ten una rotación: pelotas nuevas para partido, usadas para calentar y muertas para la máquina"
+      },
+      "accessories": {
+        "tip1": "Un overgrip gastado resta control: cámbialo cada 3 a 5 sesiones",
+        "tip2": "Revisa antivibradores, muñequeras y bolsas por si el desgaste afecta a tu juego o a tu comodidad"
+      }
+    }
+  },
+  "finance": {
+    "title": "Finanzas",
+    "subtitle": "Controle los gastos de entrenamiento, viajes, torneos y material.",
+    "addExpense": "Añadir un gasto",
+    "total": "Total",
+    "transactions": "Movimientos",
+    "entryCount": "{count, plural, one {# movimiento} other {# movimientos}}",
+    "entryMeta": "{category} · {date}",
+    "category": {
+      "training": "Entrenamiento",
+      "travel": "Viajes",
+      "tournament": "Torneos",
+      "equipment": "Material"
+    },
+    "add": {
+      "title": "Añadir un gasto",
+      "description": "Registra un gasto nuevo relacionado con el tenis.",
+      "descriptionLabel": "Descripción *",
+      "descriptionPlaceholder": "Ej.: clases semanales",
+      "amount": "Importe *",
+      "amountPlaceholder": "0,00",
+      "category": "Categoría",
+      "date": "Fecha",
+      "adding": "Añadiendo…",
+      "submit": "Añadir el gasto"
+    }
+  },
+  "playerDetail": {
+    "title": "Ficha del jugador",
+    "connectedSince": "Conectado desde el {date}",
+    "createTraining": "Crear entrenamiento",
+    "calendar": "Calendario",
+    "tournaments": "Torneos",
+    "teams": "Equipos",
+    "noTeams": "No está en ningún equipo",
+    "teamPlayers": "{count, plural, one {# jugador} other {# jugadores}}",
+    "upcomingTrainings": "Próximos entrenamientos",
+    "noTrainings": "No hay entrenamientos próximos",
+    "noTournaments": "No hay torneos próximos",
+    "equipment": "Material",
+    "noEquipment": "Sin material registrado",
+    "moreEquipment": "+{count} más",
+    "financeSummary": "Resumen de gastos",
+    "financeTraining": "Entrenamiento",
+    "financeTravel": "Viajes",
+    "financeTournament": "Torneos",
+    "financeEquipment": "Material",
+    "financeTotal": "Total: {amount}",
+    "fullCalendar": "Ver el calendario",
+    "allTrainings": "Ver los entrenamientos",
+    "stats": {
+      "title": "Estadísticas del jugador",
+      "trainings": "Entrenamientos",
+      "upcomingCount": "{count} próximos",
+      "hours": "Horas",
+      "totalTraining": "de entrenamiento en total",
+      "avgRating": "Puntuación media",
+      "reviewedCount": "{count} revisados",
+      "tournaments": "Torneos",
+      "registered": "inscrito",
+      "breakdown": "Desglose de entrenamientos",
+      "recentReviews": "Revisiones recientes",
+      "workedOn": "Se trabajó:",
+      "next": "Siguiente:",
+      "noHistory": "Este jugador todavía no tiene historial de entrenamientos."
+    }
+  },
   "teams": {
     "title": "Equipos",
     "subtitle": "Crea equipos y organiza a tus jugadores conectados en grupos.",

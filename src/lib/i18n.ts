@@ -170,6 +170,28 @@ export function t(key: string, vars: Vars = {}): string {
   return interpolate(withPlurals, vars);
 }
 
+/**
+ * A LIST of copy items stored as a JSON array, e.g. the equipment upgrade tips.
+ * Returns the strings in order for the active locale, falling back to English,
+ * and an empty list when the key is missing — a caller mapping over it then
+ * renders nothing rather than a key path.
+ */
+export function tList(key: string): string[] {
+  const read = (bundle: MessageBundle | undefined): string[] | undefined => {
+    if (!bundle) return undefined;
+    const segments = key.split(".");
+    let node: MessageNode | undefined = bundle as MessageNode;
+    for (const segment of segments) {
+      if (node === undefined || typeof node === "string") return undefined;
+      node = (node as { [k: string]: MessageNode })[segment];
+    }
+    if (!node || typeof node === "string") return undefined;
+    const values = Object.values(node);
+    return values.every((v): v is string => typeof v === "string") ? values : undefined;
+  };
+  return read(messages[currentLocale]) ?? read(messages[DEFAULT_LOCALE]) ?? [];
+}
+
 // ------------------------------------------------------------------
 // Sentences with React nodes inside them
 // ------------------------------------------------------------------

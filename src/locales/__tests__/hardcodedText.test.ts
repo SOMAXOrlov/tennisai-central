@@ -50,20 +50,15 @@ const ALLOWED_FILES = new Set<string>([
  * file enforces that it only ever shrinks.
  */
 const MIGRATION_BACKLOG = new Set<string>([
-  "src/components/PlayerDetailDrawer.tsx",
   "src/components/connections/NewConnectionDialog.tsx",
   "src/components/dashboard/IncomingRequestsCard.tsx",
   "src/components/dashboard/StatisticsSummaryCard.tsx",
-  "src/components/equipment/PlayerEquipmentDrawer.tsx",
   "src/components/notifications/NotificationPreferencesCard.tsx",
   "src/components/onboarding/OnboardingDialog.tsx",
-  "src/components/players/PlayerStatsDrawer.tsx",
   "src/components/search/CommandPalette.tsx",
   "src/components/search/SearchTrigger.tsx",
   "src/pages/AdminPage.tsx",
   "src/pages/ConnectionsPage.tsx",
-  "src/pages/EquipmentPage.tsx",
-  "src/pages/FinancePage.tsx",
   "src/pages/NotificationSettingsPage.tsx",
   "src/pages/NotificationsPage.tsx",
   "src/pages/ProfilePage.tsx",

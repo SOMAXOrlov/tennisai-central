@@ -1250,6 +1250,180 @@
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
   },
+  "equipment": {
+    "title": "Equipment",
+    "subtitle": "Manage your rackets, strings, shoes, and more.",
+    "addItem": "Add Item",
+    "recommendations": "Equipment Upgrade Recommendations",
+    "needsAttention": "Needs attention",
+    "drawerTitle": "{name} — Equipment",
+    "drawerHint": "Read-only. Only {name} can add or change items.",
+    "drawerEmpty": "{name} hasn't added any equipment yet.",
+    "add": {
+      "title": "Add Equipment",
+      "description": "Track a new piece of tennis equipment.",
+      "name": "Name *",
+      "namePlaceholder": "e.g. Wilson Pro Staff 97",
+      "category": "Category",
+      "brand": "Brand",
+      "brandPlaceholder": "Wilson, Babolat…",
+      "condition": "Condition",
+      "conditionPlaceholder": "Select condition…",
+      "model": "Model",
+      "notes": "Notes",
+      "notesPlaceholder": "e.g. Tension: 52 lbs",
+      "adding": "Adding…",
+      "submit": "Add Equipment"
+    },
+    "category": {
+      "racket": {
+        "label": "Racket",
+        "plural": "Rackets"
+      },
+      "string": {
+        "label": "Strings",
+        "plural": "Strings"
+      },
+      "shoes": {
+        "label": "Shoes",
+        "plural": "Shoes"
+      },
+      "balls": {
+        "label": "Balls",
+        "plural": "Balls"
+      },
+      "accessories": {
+        "label": "Accessories",
+        "plural": "Accessories"
+      }
+    },
+    "condition": {
+      "racket": {
+        "New": "New — Fresh out of wrapper",
+        "Excellent": "Excellent — Minimal wear, no paint chips",
+        "Good": "Good — Minor cosmetic wear, plays great",
+        "Fair": "Fair — Visible wear, hairline cracks possible",
+        "Poor": "Poor — Cracked frame, dead feel"
+      },
+      "string": {
+        "Fresh": "Fresh — Just strung, full tension",
+        "Good": "Good — Holding tension well",
+        "Losing Tension": "Losing Tension — Noticeable drop",
+        "Fraying": "Fraying — Visible notching, near breaking",
+        "Broken": "Broken — Needs immediate restring"
+      },
+      "shoes": {
+        "New": "New — Unworn",
+        "Good": "Good — Solid tread, comfortable",
+        "Worn Tread": "Worn Tread — Reduced grip on court",
+        "Worn Out": "Worn Out — No tread left, sole separation"
+      },
+      "balls": {
+        "New": "New — Pressurized, full bounce",
+        "Practice": "Practice — Slightly used, still good bounce",
+        "Flat": "Flat — Low bounce, training only",
+        "Dead": "Dead — No bounce, replace immediately"
+      },
+      "accessories": {
+        "New": "New",
+        "Good": "Good — Functional",
+        "Worn": "Worn — Needs replacing soon",
+        "Replace": "Replace — Past useful life"
+      }
+    },
+    "upgrade": {
+      "racket": {
+        "tip1": "Consider upgrading to a newer frame — modern rackets offer better dampening and power transfer",
+        "tip2": "A cracked or dead-feeling frame affects shot control. Look at the Wilson Clash or Babolat Pure Aero for replacements",
+        "tip3": "Schedule a demo day at your local pro shop to test newer models before buying"
+      },
+      "string": {
+        "tip1": "Fraying strings lose tension unpredictably — restring before your next match",
+        "tip2": "Consider switching to a more durable polyester like Luxilon ALU Power or Solinco Hyper-G",
+        "tip3": "If you break strings frequently, try a hybrid setup (poly mains, synthetic gut crosses)"
+      },
+      "shoes": {
+        "tip1": "Worn treads significantly increase slip risk on hard courts — prioritize replacing shoes",
+        "tip2": "Look into shoes with reinforced toe caps if you drag your feet on serves",
+        "tip3": "Consider the ASICS Gel-Resolution or adidas Barricade for maximum court durability"
+      },
+      "balls": {
+        "tip1": "Dead balls alter bounce patterns and can develop bad timing habits — use fresh balls for match practice",
+        "tip2": "Keep a rotation: new balls for match play, used for warm-up, dead for ball machine drills"
+      },
+      "accessories": {
+        "tip1": "Worn overgrips reduce racket control — replace every 3-5 sessions",
+        "tip2": "Check dampeners, wristbands, and bags for wear that could affect your game or comfort"
+      }
+    }
+  },
+  "finance": {
+    "title": "Finance",
+    "subtitle": "Track training, travel, tournament, and equipment costs.",
+    "addExpense": "Add Expense",
+    "total": "Total",
+    "transactions": "Transactions",
+    "entryCount": "{count, plural, one {# entry} other {# entries}}",
+    "entryMeta": "{category} · {date}",
+    "category": {
+      "training": "Training",
+      "travel": "Travel",
+      "tournament": "Tournament",
+      "equipment": "Equipment"
+    },
+    "add": {
+      "title": "Add Expense",
+      "description": "Track a new tennis-related expense.",
+      "descriptionLabel": "Description *",
+      "descriptionPlaceholder": "e.g. Weekly coaching",
+      "amount": "Amount *",
+      "amountPlaceholder": "0.00",
+      "category": "Category",
+      "date": "Date",
+      "adding": "Adding…",
+      "submit": "Add Expense"
+    }
+  },
+  "playerDetail": {
+    "title": "Player Detail",
+    "connectedSince": "Connected since {date}",
+    "createTraining": "Create Training",
+    "calendar": "Calendar",
+    "tournaments": "Tournaments",
+    "teams": "Teams",
+    "noTeams": "Not assigned to any team",
+    "teamPlayers": "{count, plural, one {# player} other {# players}}",
+    "upcomingTrainings": "Upcoming Trainings",
+    "noTrainings": "No upcoming trainings",
+    "noTournaments": "No upcoming tournaments",
+    "equipment": "Equipment",
+    "noEquipment": "No equipment tracked",
+    "moreEquipment": "+{count} more",
+    "financeSummary": "Finance Summary",
+    "financeTraining": "Training",
+    "financeTravel": "Travel",
+    "financeTournament": "Tournament",
+    "financeEquipment": "Equipment",
+    "financeTotal": "Total: {amount}",
+    "fullCalendar": "Full Calendar",
+    "allTrainings": "All Trainings",
+    "stats": {
+      "title": "Player Stats",
+      "trainings": "Trainings",
+      "upcomingCount": "{count} upcoming",
+      "hours": "Hours",
+      "totalTraining": "total training",
+      "avgRating": "Avg Rating",
+      "reviewedCount": "{count} reviewed",
+      "tournaments": "Tournaments",
+      "registered": "registered",
+      "breakdown": "Training Breakdown",
+      "recentReviews": "Recent Training Reviews",
+      "workedOn": "Worked on:",
+      "next": "Next:",
+      "noHistory": "No training history yet for this player."
+    }
+  },
   "teams": {
     "title": "Teams",
     "subtitle": "Create teams and organize your connected players into groups.",

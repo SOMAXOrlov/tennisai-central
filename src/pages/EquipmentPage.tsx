@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/api/queries";
-import { useT } from "@/lib/i18n";
+import { tList, useT } from "@/lib/i18n";
 import { ErrorState, EmptyState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
@@ -16,35 +16,9 @@ import {
   Package, Plus, Trash2, ChevronDown, Lightbulb,
 } from "lucide-react";
 import type { EquipmentCategory, EquipmentItem } from "@/types";
-import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, getConditionLevel } from "@/components/equipment/categories";
+import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryLabel, categoryPlural, conditionLabel, getConditionLevel } from "@/components/equipment/categories";
 
 // ─── AI Upgrade Suggestions ───
-
-const UPGRADE_SUGGESTIONS: Record<EquipmentCategory, string[]> = {
-  racket: [
-    "Consider upgrading to a newer frame — modern rackets offer better dampening and power transfer",
-    "A cracked or dead-feeling frame affects shot control. Look at the Wilson Clash or Babolat Pure Aero for replacements",
-    "Schedule a demo day at your local pro shop to test newer models before buying",
-  ],
-  string: [
-    "Fraying strings lose tension unpredictably — restring before your next match",
-    "Consider switching to a more durable polyester like Luxilon ALU Power or Solinco Hyper-G",
-    "If you break strings frequently, try a hybrid setup (poly mains, synthetic gut crosses)",
-  ],
-  shoes: [
-    "Worn treads significantly increase slip risk on hard courts — prioritize replacing shoes",
-    "Look into shoes with reinforced toe caps if you drag your feet on serves",
-    "Consider the ASICS Gel-Resolution or adidas Barricade for maximum court durability",
-  ],
-  balls: [
-    "Dead balls alter bounce patterns and can develop bad timing habits — use fresh balls for match practice",
-    "Keep a rotation: new balls for match play, used for warm-up, dead for ball machine drills",
-  ],
-  accessories: [
-    "Worn overgrips reduce racket control — replace every 3-5 sessions",
-    "Check dampeners, wristbands, and bags for wear that could affect your game or comfort",
-  ],
-};
 
 function getUpgradeSuggestions(items: EquipmentItem[]): { category: EquipmentCategory; itemName: string; suggestions: string[] }[] {
   const results: { category: EquipmentCategory; itemName: string; suggestions: string[] }[] = [];
@@ -54,7 +28,7 @@ function getUpgradeSuggestions(items: EquipmentItem[]): { category: EquipmentCat
       results.push({
         category: item.category,
         itemName: item.name,
-        suggestions: UPGRADE_SUGGESTIONS[item.category] ?? [],
+        suggestions: tList(`equipment.upgrade.${item.category}`),
       });
     }
   }
@@ -118,11 +92,11 @@ export default function EquipmentPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Equipment</h1>
-          <p className="text-muted-foreground">Manage your rackets, strings, shoes, and more.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("equipment.title")}</h1>
+          <p className="text-muted-foreground">{t("equipment.subtitle")}</p>
         </div>
         <Button className="gap-2 self-start" onClick={() => openAddDialog()}>
-          <Plus className="h-4 w-4" /> Add Item
+          <Plus className="h-4 w-4" /> {t("equipment.addItem")}
         </Button>
       </div>
 
@@ -131,17 +105,17 @@ export default function EquipmentPage() {
         <div className="rounded-xl border border-primary/25 bg-primary/10 p-5 space-y-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-primary dark:text-primary">
             <Lightbulb className="h-4 w-4" />
-            Equipment Upgrade Recommendations
+            {t("equipment.recommendations")}
           </div>
           <div className="space-y-3">
             {aiSuggestions.map((s, i) => (
               <div key={i} className="space-y-1.5">
                 <p className="text-xs font-medium text-foreground">
                   <Badge variant="outline" className={`mr-2 text-[10px] ${CONDITION_STYLES[getConditionLevel(s.category, undefined)]}`}>
-                    {CATEGORY_CONFIG[s.category].label}
+                    {categoryLabel(s.category)}
                   </Badge>
                   {s.itemName}
-                  <span className={`ml-2 inline-flex rounded-full border px-1.5 py-0 text-[10px] font-medium ${CONDITION_STYLES.poor}`}>Needs attention</span>
+                  <span className={`ml-2 inline-flex rounded-full border px-1.5 py-0 text-[10px] font-medium ${CONDITION_STYLES.poor}`}>{t("equipment.needsAttention")}</span>
                 </p>
                 <ul className="space-y-1 pl-4">
                   {s.suggestions.slice(0, 2).map((tip, j) => (
@@ -180,7 +154,7 @@ export default function EquipmentPage() {
                     <button className="flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-accent/10">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">{cfg.icon}</div>
-                        <span className="text-sm font-semibold text-foreground">{cfg.plural}</span>
+                        <span className="text-sm font-semibold text-foreground">{categoryPlural(cat)}</span>
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{catItems.length}</Badge>
                       </div>
                       <div className="flex items-center gap-2">
@@ -202,7 +176,7 @@ export default function EquipmentPage() {
                                 <h3 className="text-sm font-medium text-foreground truncate">{item.name}</h3>
                                 {item.condition && (
                                   <span className={`inline-flex rounded-full border px-2 py-0 text-[10px] font-medium ${CONDITION_STYLES[level]}`}>
-                                    {item.condition}
+                                    {conditionLabel(item.category, item.condition)}
                                   </span>
                                 )}
                               </div>
@@ -232,43 +206,43 @@ export default function EquipmentPage() {
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Equipment</DialogTitle>
-            <DialogDescription>Track a new piece of tennis equipment.</DialogDescription>
+            <DialogTitle>{t("equipment.add.title")}</DialogTitle>
+            <DialogDescription>{t("equipment.add.description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="equipment-name">Name *</Label>
-              <Input id="equipment-name" aria-required="true" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Wilson Pro Staff 97" />
+              <Label htmlFor="equipment-name">{t("equipment.add.name")}</Label>
+              <Input id="equipment-name" aria-required="true" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("equipment.add.namePlaceholder")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="equipment-category">Category</Label>
+                <Label htmlFor="equipment-category">{t("equipment.add.category")}</Label>
                 <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as EquipmentCategory, condition: "" }))}>
                   <SelectTrigger id="equipment-category"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CATEGORY_ORDER.map((c) => (
                       <SelectItem key={c} value={c}>
-                        <span className="flex items-center gap-2">{CATEGORY_CONFIG[c].icon}{CATEGORY_CONFIG[c].label}</span>
+                        <span className="flex items-center gap-2">{CATEGORY_CONFIG[c].icon}{categoryLabel(c)}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="equipment-brand">Brand</Label>
-                <Input id="equipment-brand" value={form.brand} onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))} placeholder="Wilson, Babolat…" />
+                <Label htmlFor="equipment-brand">{t("equipment.add.brand")}</Label>
+                <Input id="equipment-brand" value={form.brand} onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))} placeholder={t("equipment.add.brandPlaceholder")} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="equipment-condition">Condition</Label>
+              <Label htmlFor="equipment-condition">{t("equipment.add.condition")}</Label>
               <Select value={form.condition} onValueChange={(v) => setForm((f) => ({ ...f, condition: v }))}>
-                <SelectTrigger id="equipment-condition"><SelectValue placeholder="Select condition…" /></SelectTrigger>
+                <SelectTrigger id="equipment-condition"><SelectValue placeholder={t("equipment.add.conditionPlaceholder")} /></SelectTrigger>
                 <SelectContent>
                   {currentConditions.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
                       <span className="flex items-center gap-2">
                         <span className={`h-2 w-2 rounded-full ${CONDITION_STYLES[c.level].split(" ")[0].replace("/10", "")}`} />
-                        {c.label}
+                        {conditionLabel(form.category, c.value)}
                       </span>
                     </SelectItem>
                   ))}
@@ -277,19 +251,19 @@ export default function EquipmentPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="equipment-model">Model</Label>
+                <Label htmlFor="equipment-model">{t("equipment.add.model")}</Label>
                 <Input id="equipment-model" value={form.model} onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="equipment-notes">Notes</Label>
-                <Input id="equipment-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="e.g. Tension: 52 lbs" />
+                <Label htmlFor="equipment-notes">{t("equipment.add.notes")}</Label>
+                <Input id="equipment-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder={t("equipment.add.notesPlaceholder")} />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>{t("common.cancel")}</Button>
             <Button onClick={handleAdd} disabled={!form.name.trim() || createMut.isPending}>
-              {createMut.isPending ? "Adding…" : "Add Equipment"}
+              {createMut.isPending ? t("equipment.add.adding") : t("equipment.add.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>
