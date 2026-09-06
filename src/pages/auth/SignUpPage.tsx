@@ -123,7 +123,7 @@ export default function SignUpPage() {
       });
       setAwaitingGuardian(isMinor);
       setSuccessMsg(msg || t("auth.signUp.done.default"));
-    } catch (err: any) {
+    } catch (err) {
       setError(err?.message || t("auth.signUp.errors.failed"));
     } finally {
       setLoading(false);

@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
       setMailUnavailable(res?.data?.emailConfigured === false);
       setSentTo(address);
       setSent(true);
-    } catch (err: any) {
+    } catch (err) {
       // Only transport / rate-limit failures land here — a successful request is
       // always a generic 200, so nothing here reveals whether the account exists.
       setError(err?.message || t("auth.forgot.failed"));

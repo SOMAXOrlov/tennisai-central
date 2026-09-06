@@ -89,7 +89,6 @@ function warnMissingKey(locale: string, key: string): void {
   const dedupeKey = `${locale}:${key}`;
   if (warnedMissingKeys.has(dedupeKey)) return;
   warnedMissingKeys.add(dedupeKey);
-  // eslint-disable-next-line no-console
   console.warn(`[i18n] Missing translation for key "${key}" in locale "${locale}".`);
 }
 
@@ -209,6 +208,8 @@ export function tList(key: string): string[] {
 // Sentences with React nodes inside them
 // ------------------------------------------------------------------
 
+const SLOT_SENTINEL = "\u0000";
+
 /**
  * A marker for "a React node goes here", to be passed as an interpolation
  * variable. It uses NUL, which no copy will ever contain, and carries the
@@ -225,13 +226,16 @@ export function tList(key: string): string[] {
  * code English word order into the markup.
  */
 export function slot(index: number): string {
-  return `\u0000${index}\u0000`;
+  return `${SLOT_SENTINEL}${index}${SLOT_SENTINEL}`;
 }
 
 /** Put the React nodes back into a translated sentence produced with `slot()`. */
 export function interleave(text: string, nodes: ReactNode[]): ReactNode[] {
-  // `split` with a capturing group alternates literal text and captured index.
-  return text.split(/\u0000(\d+)\u0000/).map((part, i) => (i % 2 === 1 ? nodes[Number(part)] : part));
+  // Every marker is `NUL<index>NUL` and NUL appears nowhere else, so a plain
+  // split on the sentinel alternates literal text and node index exactly as the
+  // capturing-group regex it replaces did — without putting a control character
+  // inside a regex literal, which is what `no-control-regex` exists to catch.
+  return text.split(SLOT_SENTINEL).map((part, i) => (i % 2 === 1 ? nodes[Number(part)] : part));
 }
 
 /** Locale-aware date formatting — thin wrapper so migrated screens don't reach for `Intl` ad hoc. */

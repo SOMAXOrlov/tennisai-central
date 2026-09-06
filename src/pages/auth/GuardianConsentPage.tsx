@@ -41,7 +41,7 @@ export default function GuardianConsentPage() {
       setResult(res.data ?? null);
       setMessage(res.message || t("auth.consent.approvedDefault"));
       setStatus("approved");
-    } catch (err: any) {
+    } catch (err) {
       setMessage(err?.message || t("auth.consent.errorDefault"));
       setStatus("error");
     }

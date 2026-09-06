@@ -41,7 +41,7 @@ export default function ResetPasswordPage() {
       const res = await authApi.resetPassword(token, password);
       setMessage(res.message || t("auth.reset.successDefault"));
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
       setServerRejected(true);
       setError(err?.message || t("auth.reset.failed"));
     } finally {
