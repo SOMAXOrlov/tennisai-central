@@ -214,7 +214,7 @@ const Index = () => {
                 className={
                   "border-b border-border p-6 md:p-8 " +
                   (i < ROLES.length - 1 ? "lg:border-r " : "") +
-                  (i % 2 === 0 ? "sm:border-r sm:lg:border-r " : "")
+                  (i % 2 === 0 ? "sm:border-r " : "")
                 }
               >
                 <Marker />

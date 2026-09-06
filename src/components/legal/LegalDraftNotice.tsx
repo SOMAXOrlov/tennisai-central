@@ -20,7 +20,7 @@ export function LegalDraftNotice() {
       aria-label={t("legal.draft.label")}
       className="border-l-2 border-primary bg-muted/60 py-4 pl-5 pr-4"
     >
-      <p className="text-[0.6875rem] font-bold uppercase tracking-[0.22em] text-primary">
+      <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
         {t("legal.draft.label")}
       </p>
       <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground">

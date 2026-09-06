@@ -18,7 +18,7 @@ export function LegalToken({ value, className }: { value: string; className?: st
     <span
       className={cn(
         "inline-flex items-center gap-1 border border-dashed border-foreground/30 bg-muted px-1.5 py-0.5",
-        "font-mono text-[0.8125rem] leading-tight text-foreground",
+        "font-mono text-xs leading-tight text-foreground",
         className,
       )}
       data-legal-token=""
