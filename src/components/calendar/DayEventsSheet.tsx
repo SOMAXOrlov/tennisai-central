@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import type { CalendarEvent } from "@/types";
+import { useT } from "@/lib/i18n";
 
 export interface DayEventsSheetProps {
   day: Date | null;
@@ -35,6 +36,8 @@ export function DayEventsSheet({
   onSelectEvent,
   registeredIds,
 }: DayEventsSheetProps) {
+  const { t, getDateFnsLocale } = useT();
+  const dfl = { locale: getDateFnsLocale() };
   // Own sessions first, then everything else by time. On a day with two hundred
   // tournaments the coach's own training is the thing they came to find.
   const ordered = useMemo(() => {
@@ -58,8 +61,8 @@ export function DayEventsSheet({
     const start = new Date(e.startDate);
     const end = new Date(e.endDate);
     const days = differenceInCalendarDays(end, start);
-    if (days >= 1) return `${format(start, "d MMM")} – ${format(end, "d MMM")}`;
-    return format(start, "HH:mm");
+    if (days >= 1) return `${format(start, "d MMM", dfl)} – ${format(end, "d MMM", dfl)}`;
+    return format(start, "HH:mm", dfl);
   };
 
   return (
@@ -68,11 +71,11 @@ export function DayEventsSheet({
         <SheetHeader className="pb-3">
           <SheetTitle className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-primary" />
-            {day ? format(day, "EEEE d MMMM yyyy") : "Day"}
+            {day ? format(day, "EEEE d MMMM yyyy", dfl) : t("calendar.day.fallbackTitle")}
           </SheetTitle>
           <SheetDescription>
-            {ordered.length} {ordered.length === 1 ? "event" : "events"}
-            {ownCount > 0 && ownCount !== ordered.length && <> · {ownCount} yours</>}
+            {t("calendar.eventCount", { count: ordered.length })}
+            {ownCount > 0 && ownCount !== ordered.length && <> · {t("calendar.day.yoursSuffix", { count: ownCount })}</>}
           </SheetDescription>
         </SheetHeader>
 
@@ -81,7 +84,7 @@ export function DayEventsSheet({
         <div className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6 pb-6">
           {ordered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Nothing on this day.
+              {t("calendar.day.nothing")}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -96,7 +99,7 @@ export function DayEventsSheet({
                       <span className="min-w-0 text-sm font-medium text-foreground">{e.title}</span>
                       {registeredIds?.has(e.id) && (
                         <Badge variant="outline" className="shrink-0 text-[10px]">
-                          Entered
+                          {t("calendar.day.entered")}
                         </Badge>
                       )}
                     </div>

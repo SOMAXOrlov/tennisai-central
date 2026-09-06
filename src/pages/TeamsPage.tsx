@@ -3,7 +3,11 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
-import { useT } from "@/lib/i18n";
+import { interleave, slot, useT } from "@/lib/i18n";
+
+// Intl option sets for the team meta lines.
+const MONTH_YEAR: Intl.DateTimeFormatOptions = { year: "numeric", month: "short" };
+const FULL_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
@@ -31,7 +35,7 @@ function PlayerAvatar({ player, size = "md" }: { player: ConnectedPlayer; size?:
 function TeamCard({ team, onSelect, onRename, onDelete }: {
   team: Team; onSelect: () => void; onRename: () => void; onDelete: () => void;
 }) {
-  const { t } = useT();
+  const { t, formatDate } = useT();
   return (
     <div className="group flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:bg-accent/20">
       <div className="flex items-start justify-between">
@@ -44,7 +48,7 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></span>
               <span className="min-w-0">
                 <span className="block font-semibold text-foreground">{team.name}</span>
-                <span className="block text-xs text-muted-foreground">{team.players.length} player{team.players.length !== 1 ? "s" : ""} · Created {format(new Date(team.createdAt), "MMM yyyy")}</span>
+                <span className="block text-xs text-muted-foreground">{t("teams.metaLine", { players: t("teams.playerCount", { count: team.players.length }), created: t("teams.createdOn", { date: formatDate(new Date(team.createdAt), MONTH_YEAR) }) })}</span>
               </span>
             </IdentityTrigger>
           }
@@ -59,10 +63,10 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
       </div>
       <div className="flex items-center gap-2">
         <div className="flex -space-x-2">{team.players.slice(0, 5).map((p) => (<PlayerAvatar key={p.id} player={p} size="sm" />))}</div>
-        {team.players.length > 5 && <span className="text-xs text-muted-foreground">+{team.players.length - 5} more</span>}
-        {team.players.length === 0 && <span className="text-xs text-muted-foreground">No players yet</span>}
+        {team.players.length > 5 && <span className="text-xs text-muted-foreground">{t("teams.morePlayers", { count: team.players.length - 5 })}</span>}
+        {team.players.length === 0 && <span className="text-xs text-muted-foreground">{t("teams.noPlayersYet")}</span>}
       </div>
-      <Button variant="outline" className="w-full gap-1.5" onClick={onSelect}>Manage Team<ArrowLeft className="h-3.5 w-3.5 rotate-180" /></Button>
+      <Button variant="outline" className="w-full gap-1.5" onClick={onSelect}>{t("teams.manage")}<ArrowLeft className="h-3.5 w-3.5 rotate-180" /></Button>
     </div>
   );
 }
@@ -72,7 +76,7 @@ function TeamDetail({ team, connectedPlayers, onBack, onAddPlayer, onRemovePlaye
   onAddPlayer: (player: ConnectedPlayer) => void; onRemovePlayer: (playerId: string) => void;
   onRename: () => void; addingPlayer?: boolean; removingPlayer?: boolean;
 }) {
-  const { t } = useT();
+  const { t, formatDate } = useT();
   const [search, setSearch] = useState("");
   const [statsPlayer, setStatsPlayer] = useState<ConnectedPlayer | null>(null);
   const [equipmentPlayer, setEquipmentPlayer] = useState<ConnectedPlayer | null>(null);
@@ -90,14 +94,14 @@ function TeamDetail({ team, connectedPlayers, onBack, onAddPlayer, onRemovePlaye
             <h2 className="text-xl font-bold text-foreground">{team.name}</h2>
             <Button variant="ghost" size="icon" aria-label={t("a11y.teams.rename", { name: team.name })} className="h-7 w-7" onClick={onRename}><Pencil className="h-3.5 w-3.5" /></Button>
           </div>
-          <p className="text-sm text-muted-foreground">{team.players.length} player{team.players.length !== 1 ? "s" : ""} · Created {format(new Date(team.createdAt), "MMM d, yyyy")}</p>
+          <p className="text-sm text-muted-foreground">{t("teams.metaLine", { players: t("teams.playerCount", { count: team.players.length }), created: t("teams.createdOn", { date: formatDate(new Date(team.createdAt), FULL_DATE) }) })}</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <DashboardCard title="Team Roster" description={`${team.players.length} player${team.players.length !== 1 ? "s" : ""}`} icon={<Users className="h-4 w-4" />}>
+        <DashboardCard title={t("teams.roster")} description={t("teams.playerCount", { count: team.players.length })} icon={<Users className="h-4 w-4" />}>
           {team.players.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">No players in this team yet.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">{t("teams.rosterEmpty")}</p>
           ) : (
             <div className="space-y-2">
               {team.players.map((player) => (
@@ -119,20 +123,20 @@ function TeamDetail({ team, connectedPlayers, onBack, onAddPlayer, onRemovePlaye
                   />
                   <PlayerActionsMenu player={player} compact onViewStats={setStatsPlayer} onViewEquipment={setEquipmentPlayer} />
                   <Button size="sm" variant="ghost" disabled={removingPlayer} className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => onRemovePlayer(player.id)}>
-                    <UserMinus className="h-3.5 w-3.5" /> Remove
+                    <UserMinus className="h-3.5 w-3.5" /> {t("teams.remove")}
                   </Button>
                 </div>
               ))}
             </div>
           )}
         </DashboardCard>
-        <DashboardCard title="Add Connected Players" description="Only players with accepted connections" icon={<UserPlus className="h-4 w-4" />}>
+        <DashboardCard title={t("teams.addPlayers")} description={t("teams.addPlayersHint")} icon={<UserPlus className="h-4 w-4" />}>
           <div className="space-y-3">
-            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search connected players…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
+            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder={t("teams.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
             {connectedPlayers.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No connected players yet.</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">{t("teams.noConnected")}</p>
             ) : availablePlayers.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{search ? "No matching players found." : "All connected players are already in this team."}</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">{search ? t("teams.noMatch") : t("teams.allInTeam")}</p>
             ) : (
               <div className="space-y-2">
                 {availablePlayers.map((player) => (
@@ -143,7 +147,7 @@ function TeamDetail({ team, connectedPlayers, onBack, onAddPlayer, onRemovePlaye
                       <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
                     </div>
                     <Button size="sm" variant="outline" disabled={addingPlayer} className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => onAddPlayer(player)}>
-                      <Plus className="h-3.5 w-3.5" /> Add
+                      <Plus className="h-3.5 w-3.5" /> {t("teams.add")}
                     </Button>
                   </div>
                 ))}
@@ -163,16 +167,17 @@ function TeamNameDialog({ open, onOpenChange, title, description, initialName, o
   open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string;
   initialName: string; onSubmit: (name: string) => void; loading?: boolean;
 }) {
+  const { t } = useT();
   const [name, setName] = useState(initialName);
   const handleSubmit = () => { if (!name.trim()) return; onSubmit(name.trim()); onOpenChange(false); };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader><DialogTitle>{title}</DialogTitle><DialogDescription>{description}</DialogDescription></DialogHeader>
-        <div className="space-y-2"><Label htmlFor="team-name">Team Name</Label><Input id="team-name" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} placeholder="e.g. Junior Elite Squad" /></div>
+        <div className="space-y-2"><Label htmlFor="team-name">{t("teams.nameLabel")}</Label><Input id="team-name" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} placeholder={t("teams.namePlaceholder")} /></div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={!name.trim() || loading}><Check className="mr-1.5 h-4 w-4" /> {loading ? "Saving…" : "Save"}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
+          <Button onClick={handleSubmit} disabled={!name.trim() || loading}><Check className="mr-1.5 h-4 w-4" /> {loading ? t("teams.saving") : t("teams.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -182,13 +187,21 @@ function TeamNameDialog({ open, onOpenChange, title, description, initialName, o
 function DeleteTeamDialog({ open, onOpenChange, teamName, onConfirm, loading }: {
   open: boolean; onOpenChange: (open: boolean) => void; teamName: string; onConfirm: () => void; loading?: boolean;
 }) {
+  const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader><DialogTitle>Delete Team</DialogTitle><DialogDescription>Are you sure you want to delete <span className="font-semibold text-foreground">{teamName}</span>? This won't affect the player connections.</DialogDescription></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{t("teams.deleteTitle")}</DialogTitle>
+          <DialogDescription>
+            {interleave(t("teams.deleteBody", { name: slot(0) }), [
+              <span key="name" className="font-semibold text-foreground">{teamName}</span>,
+            ])}
+          </DialogDescription>
+        </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}><Trash2 className="mr-1.5 h-4 w-4" /> {loading ? "Deleting…" : "Delete Team"}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
+          <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}><Trash2 className="mr-1.5 h-4 w-4" /> {loading ? t("teams.deleting") : t("teams.deleteConfirm")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -250,7 +263,7 @@ export default function TeamsPage() {
           addingPlayer={addMemberMut.isPending}
           removingPlayer={removeMemberMut.isPending}
         />
-        {renameTarget && <TeamNameDialog open={!!renameTarget} onOpenChange={(v) => !v && setRenameTarget(null)} title="Rename Team" description="Enter a new name for this team." initialName={renameTarget.name} onSubmit={(name) => { updateMut.mutate({ id: renameTarget.id, data: { name } }); setRenameTarget(null); }} loading={updateMut.isPending} />}
+        {renameTarget && <TeamNameDialog open={!!renameTarget} onOpenChange={(v) => !v && setRenameTarget(null)} title={t("teams.renameTitle")} description={t("teams.renameDescription")} initialName={renameTarget.name} onSubmit={(name) => { updateMut.mutate({ id: renameTarget.id, data: { name } }); setRenameTarget(null); }} loading={updateMut.isPending} />}
       </div>
     );
   }
@@ -258,14 +271,14 @@ export default function TeamsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div><h1 className="text-2xl font-bold text-foreground">Teams</h1><p className="text-sm text-muted-foreground">Create teams and organize your connected players into groups.</p></div>
-        <Button className="gap-2 self-start" onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> Create Team</Button>
+        <div><h1 className="text-2xl font-bold text-foreground">{t("teams.title")}</h1><p className="text-sm text-muted-foreground">{t("teams.subtitle")}</p></div>
+        <Button className="gap-2 self-start" onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> {t("teams.create")}</Button>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-4 w-4" /></div><div><div className="text-xl font-bold text-foreground">{teams.length}</div><div className="text-xs text-muted-foreground">Teams</div></div></div>
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><UserPlus className="h-4 w-4" /></div><div><div className="text-xl font-bold text-foreground">{connectedPlayers.length}</div><div className="text-xs text-muted-foreground">Connected Players</div></div></div>
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-4 w-4" /></div><div><div className="text-xl font-bold text-foreground">{new Set(teams.flatMap((t) => t.players.map((p) => p.id))).size}</div><div className="text-xs text-muted-foreground">Players in Teams</div></div></div>
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-4 w-4" /></div><div><div className="text-xl font-bold text-foreground">{teams.length}</div><div className="text-xs text-muted-foreground">{t("teams.statTeams")}</div></div></div>
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><UserPlus className="h-4 w-4" /></div><div><div className="text-xl font-bold text-foreground">{connectedPlayers.length}</div><div className="text-xs text-muted-foreground">{t("teams.statConnected")}</div></div></div>
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-4 w-4" /></div><div><div className="text-xl font-bold text-foreground">{new Set(teams.flatMap((t) => t.players.map((p) => p.id))).size}</div><div className="text-xs text-muted-foreground">{t("teams.statInTeams")}</div></div></div>
       </div>
 
       {teams.length === 0 ? (
@@ -278,12 +291,12 @@ export default function TeamsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (<TeamCard key={team.id} team={team} onSelect={() => setSelectedTeamId(team.id)} onRename={() => setRenameTarget(team)} onDelete={() => setDeleteTarget(team)} />))}
-          <button onClick={() => setCreateOpen(true)} className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border p-8 text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"><Plus className="h-8 w-8" /><span className="text-sm font-medium">Create New Team</span></button>
+          <button onClick={() => setCreateOpen(true)} className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border p-8 text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"><Plus className="h-8 w-8" /><span className="text-sm font-medium">{t("teams.createNew")}</span></button>
         </div>
       )}
 
-      <TeamNameDialog open={createOpen} onOpenChange={setCreateOpen} title="Create Team" description="Give your new team a name." initialName="" onSubmit={(name) => createMut.mutate({ name, coachId })} loading={createMut.isPending} />
-      {renameTarget && <TeamNameDialog open={!!renameTarget} onOpenChange={(v) => !v && setRenameTarget(null)} title="Rename Team" description="Enter a new name for this team." initialName={renameTarget.name} onSubmit={(name) => { updateMut.mutate({ id: renameTarget.id, data: { name } }); setRenameTarget(null); }} loading={updateMut.isPending} />}
+      <TeamNameDialog open={createOpen} onOpenChange={setCreateOpen} title={t("teams.createTitle")} description={t("teams.createDescription")} initialName="" onSubmit={(name) => createMut.mutate({ name, coachId })} loading={createMut.isPending} />
+      {renameTarget && <TeamNameDialog open={!!renameTarget} onOpenChange={(v) => !v && setRenameTarget(null)} title={t("teams.renameTitle")} description={t("teams.renameDescription")} initialName={renameTarget.name} onSubmit={(name) => { updateMut.mutate({ id: renameTarget.id, data: { name } }); setRenameTarget(null); }} loading={updateMut.isPending} />}
       {deleteTarget && <DeleteTeamDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)} teamName={deleteTarget.name} onConfirm={() => { deleteMut.mutate(deleteTarget.id); setDeleteTarget(null); }} loading={deleteMut.isPending} />}
     </div>
   );

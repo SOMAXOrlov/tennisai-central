@@ -16,7 +16,8 @@ export {
 export type { StatsWindowId, StatsWindowOption } from "./StatsWindowControl";
 export {
   MIN_TREND_POINTS,
-  TREND_METRICS,
+  TREND_METRIC_IDS,
+  trendMetrics,
   buildTrendSeries,
   trendMetricMeta,
   windowedChronological,

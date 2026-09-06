@@ -2,31 +2,31 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export interface DiscardChangesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** What is being thrown away, e.g. "review" or "training". */
+  /** What is being thrown away, already translated (e.g. "the review"). */
   what?: string;
   onConfirm: () => void;
 }
 
-export function DiscardChangesDialog({ open, onOpenChange, what = "changes", onConfirm }: DiscardChangesDialogProps) {
+export function DiscardChangesDialog({ open, onOpenChange, what, onConfirm }: DiscardChangesDialogProps) {
+  const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Discard your {what}?</DialogTitle>
-          <DialogDescription>
-            You have unsaved input. Closing now will discard what you have written — this cannot be undone.
-          </DialogDescription>
+          <DialogTitle>{t("training.discard.title", { what: what ?? t("training.discard.changes") })}</DialogTitle>
+          <DialogDescription>{t("training.discard.body")}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Keep editing
+            {t("training.discard.keep")}
           </Button>
           <Button variant="destructive" onClick={() => { onConfirm(); onOpenChange(false); }}>
-            <Trash2 className="mr-1.5 h-4 w-4" /> Discard
+            <Trash2 className="mr-1.5 h-4 w-4" /> {t("training.discard.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

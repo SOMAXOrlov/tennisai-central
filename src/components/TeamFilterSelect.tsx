@@ -21,12 +21,12 @@ export function TeamFilterSelect({ teams, value, onValueChange, className, showI
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger aria-label={tr("a11y.filters.team")} className={className ?? "w-[160px]"}>
         {showIcon && <Shield className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />}
-        <SelectValue placeholder="All Teams" />
+        <SelectValue placeholder={tr("players.allTeams")} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>All Teams</SelectItem>
-        {teams.map((t) => (
-          <SelectItem key={t.id} value={t.id}>{t.name} ({t.players.length})</SelectItem>
+        <SelectItem value={ALL}>{tr("players.allTeams")}</SelectItem>
+        {teams.map((team) => (
+          <SelectItem key={team.id} value={team.id}>{tr("players.teamOption", { name: team.name, count: team.players.length })}</SelectItem>
         ))}
       </SelectContent>
     </Select>

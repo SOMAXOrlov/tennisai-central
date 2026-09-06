@@ -20,13 +20,15 @@ import {
 import { enablePushOnThisDevice, isPushSupported } from "./pushClient";
 import type { NotificationPreferencesFull } from "@/api/endpoints/notificationPrefs";
 
-const CATEGORY_FIELDS: { key: keyof NotificationPreferencesFull; label: string; description: string }[] = [
-  { key: "trainingReminders", label: "Training reminders", description: "Upcoming sessions and schedule changes" },
-  { key: "tournamentReminders", label: "Tournament reminders", description: "Entries, deadlines and upcoming events" },
-  { key: "requestApprovals", label: "Request approvals", description: "Training requests, approvals and reschedules" },
-  { key: "financeUpdates", label: "Finance updates", description: "New expenses and finance entries" },
-  { key: "aiInsightUpdates", label: "AI insight updates", description: "New scouting reports, game plans and analysis" },
-  { key: "systemNotifications", label: "System notifications", description: "Account and general app notifications" },
+// Keys only; each name and blurb comes from
+// `notifications.prefs.category.<key>` at render time.
+const CATEGORY_FIELDS: (keyof NotificationPreferencesFull)[] = [
+  "trainingReminders",
+  "tournamentReminders",
+  "requestApprovals",
+  "financeUpdates",
+  "aiInsightUpdates",
+  "systemNotifications",
 ];
 
 type DeviceStatus = "idle" | "enabled" | "unsupported" | "denied";
@@ -77,20 +79,20 @@ export function NotificationPreferencesCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <BellRing className="h-5 w-5 text-primary" /> Notification preferences
+          <BellRing className="h-5 w-5 text-primary" /> {t("notifications.prefs.title")}
         </CardTitle>
-        <CardDescription>Choose how you want to hear about activity, and what's worth a notification.</CardDescription>
+        <CardDescription>{t("notifications.prefs.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-3">
-          <p className="text-sm font-medium text-foreground">Channels</p>
+          <p className="text-sm font-medium text-foreground">{t("notifications.prefs.channels")}</p>
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <Label htmlFor="pref-email-enabled">Email</Label>
-                <p className="text-xs text-muted-foreground">Send an email for notifications you've opted into</p>
+                <Label htmlFor="pref-email-enabled">{t("notifications.prefs.email")}</Label>
+                <p className="text-xs text-muted-foreground">{t("notifications.prefs.emailHint")}</p>
               </div>
             </div>
             <Switch
@@ -105,11 +107,9 @@ export function NotificationPreferencesCard() {
             <div className="flex items-center gap-3">
               <Smartphone className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <Label htmlFor="pref-push-enabled">Push</Label>
+                <Label htmlFor="pref-push-enabled">{t("notifications.prefs.push")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  {pushConfigured
-                    ? "Send a push notification to your registered devices"
-                    : "Push isn't configured on this server yet"}
+                  {pushConfigured ? t("notifications.prefs.pushHint") : t("notifications.prefs.pushNotConfigured")}
                 </p>
               </div>
             </div>
@@ -124,12 +124,12 @@ export function NotificationPreferencesCard() {
           {pushConfigured && (
             <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-border p-3">
               <div>
-                <p className="text-sm text-foreground">This device</p>
+                <p className="text-sm text-foreground">{t("notifications.prefs.thisDevice")}</p>
                 <p className="text-xs text-muted-foreground">
-                  {deviceStatus === "enabled" && "Push is enabled on this device."}
-                  {deviceStatus === "unsupported" && "This browser doesn't support push notifications, or enabling it failed."}
-                  {deviceStatus === "denied" && "Notification permission was denied in the browser."}
-                  {deviceStatus === "idle" && "Register this browser to receive push notifications."}
+                  {deviceStatus === "enabled" && t("notifications.prefs.deviceEnabled")}
+                  {deviceStatus === "unsupported" && t("notifications.prefs.deviceUnsupported")}
+                  {deviceStatus === "denied" && t("notifications.prefs.deviceDenied")}
+                  {deviceStatus === "idle" && t("notifications.prefs.deviceIdle")}
                 </p>
               </div>
               <Button
@@ -139,19 +139,19 @@ export function NotificationPreferencesCard() {
                 onClick={handleEnablePush}
                 disabled={enabling || deviceStatus === "enabled" || !isPushSupported()}
               >
-                {enabling ? "Enabling…" : deviceStatus === "enabled" ? "Enabled" : "Enable push on this device"}
+                {enabling ? t("notifications.prefs.enabling") : deviceStatus === "enabled" ? t("notifications.prefs.enabled") : t("notifications.prefs.enable")}
               </Button>
             </div>
           )}
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm font-medium text-foreground">What you're notified about</p>
-          {CATEGORY_FIELDS.map(({ key, label, description }) => (
+          <p className="text-sm font-medium text-foreground">{t("notifications.prefs.categories")}</p>
+          {CATEGORY_FIELDS.map((key) => (
             <div key={key} className="flex items-center justify-between rounded-lg border border-border p-3">
               <div>
-                <Label htmlFor={`pref-${key}`}>{label}</Label>
-                <p className="text-xs text-muted-foreground">{description}</p>
+                <Label htmlFor={`pref-${key}`}>{t(`notifications.prefs.category.${key}.label`)}</Label>
+                <p className="text-xs text-muted-foreground">{t(`notifications.prefs.category.${key}.description`)}</p>
               </div>
               <Switch
                 id={`pref-${key}`}
@@ -164,7 +164,7 @@ export function NotificationPreferencesCard() {
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-xs text-muted-foreground">{update.isPending ? "Saving…" : "Changes save automatically."}</p>
+        <p className="text-xs text-muted-foreground">{update.isPending ? t("notifications.prefs.saving") : t("notifications.prefs.autoSave")}</p>
       </CardFooter>
     </Card>
   );

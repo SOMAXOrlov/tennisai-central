@@ -9,12 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ageFromIsoDate, todayUtc, toIsoDate } from "@/lib/age";
 import { FALLBACK_SIGNUP_POLICY, fetchSignupPolicy, type SignupPolicy } from "./signupPolicy";
 import type { UserRole } from "@/types";
+import { interleave, slot, useT } from "@/lib/i18n";
 
-const roles: { value: UserRole; label: string; description: string }[] = [
-  { value: "player", label: "Player", description: "Track your game, stats, and tournaments" },
-  { value: "coach", label: "Coach", description: "Manage players, teams, and training" },
-  { value: "observer", label: "Observer", description: "Follow a player's progress (read-only)" },
-];
+// Only the role keys live here; the label and blurb are looked up during render
+// so a language switch reaches them (a module constant would freeze to "en").
+const roles: UserRole[] = ["player", "coach", "observer"];
 
 /** One live-checked rule under the password box. */
 function Rule({ met, children }: { met: boolean; children: React.ReactNode }) {
@@ -32,6 +31,7 @@ function Rule({ met, children }: { met: boolean; children: React.ReactNode }) {
 
 export default function SignUpPage() {
   const { signUp } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
   const [role, setRole] = useState<UserRole | null>(null);
   const [form, setForm] = useState({
@@ -88,19 +88,19 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!role) return setError("Please select a role");
-    if (!form.dateOfBirth) return setError("Please enter your date of birth");
-    if (age === null) return setError("Please enter a real date of birth");
+    if (!role) return setError(t("auth.signUp.errors.role"));
+    if (!form.dateOfBirth) return setError(t("auth.signUp.errors.dateOfBirthMissing"));
+    if (age === null) return setError(t("auth.signUp.errors.dateOfBirthInvalid"));
     if (!passwordLongEnough)
-      return setError(`Password must be at least ${policy.passwordMinLength} characters`);
-    if (form.password !== form.confirmPassword) return setError("Passwords do not match");
+      return setError(t("auth.signUp.errors.passwordLength", { count: policy.passwordMinLength }));
+    if (form.password !== form.confirmPassword) return setError(t("auth.signUp.errors.passwordMismatch"));
     if (isMinor && (!form.guardianName.trim() || !form.guardianEmail.trim())) {
-      return setError("Please give a parent or guardian's name and email address");
+      return setError(t("auth.signUp.errors.guardianMissing"));
     }
     if (isMinor && form.guardianEmail.trim().toLowerCase() === form.email.trim().toLowerCase()) {
-      return setError("A parent or guardian's email has to be different from your own");
+      return setError(t("auth.signUp.errors.guardianSameEmail"));
     }
-    if (!termsAccepted) return setError("You must accept the terms");
+    if (!termsAccepted) return setError(t("auth.signUp.errors.terms"));
 
     setLoading(true);
     try {
@@ -122,9 +122,9 @@ export default function SignUpPage() {
           : {}),
       });
       setAwaitingGuardian(isMinor);
-      setSuccessMsg(msg || "Account created! Check your email to verify.");
+      setSuccessMsg(msg || t("auth.signUp.done.default"));
     } catch (err: any) {
-      setError(err?.message || "Sign up failed");
+      setError(err?.message || t("auth.signUp.errors.failed"));
     } finally {
       setLoading(false);
     }
@@ -134,11 +134,11 @@ export default function SignUpPage() {
     return (
       <div className="space-y-4 text-center">
         <h2 className="text-xl font-semibold text-foreground">
-          {awaitingGuardian ? "Waiting for your parent or guardian" : "Check your email"}
+          {awaitingGuardian ? t("auth.signUp.done.waiting") : t("auth.signUp.done.checkEmail")}
         </h2>
         <p className="text-sm text-muted-foreground">{successMsg}</p>
         <div className="flex flex-col items-center gap-2">
-          <Button variant="outline" onClick={() => navigate("/login")}>Go to login</Button>
+          <Button variant="outline" onClick={() => navigate("/login")}>{t("auth.goToLogin")}</Button>
           {/* The resend link is about EMAIL VERIFICATION, which is not what a
               minor is waiting on — offering it here would send them chasing the
               wrong email. */}
@@ -148,7 +148,7 @@ export default function SignUpPage() {
               onClick={() => navigate("/verify-email")}
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
-              Didn't get the email? Resend it
+              {t("auth.signUp.done.resend")}
             </button>
           )}
         </div>
@@ -159,40 +159,40 @@ export default function SignUpPage() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2 text-center">
-        <h2 className="text-xl font-semibold text-foreground">Create your account</h2>
-        <p className="text-sm text-muted-foreground">Choose your role to get started</p>
+        <h2 className="text-xl font-semibold text-foreground">{t("auth.signUp.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("auth.signUp.subtitle")}</p>
       </div>
       {error && <div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
       {/* Role selector */}
       <div className="grid grid-cols-3 gap-2">
         {roles.map((r) => (
           <button
-            key={r.value}
+            key={r}
             type="button"
-            onClick={() => setRole(r.value)}
+            onClick={() => setRole(r)}
             className={`rounded-lg border p-3 text-center text-sm transition-colors ${
-              role === r.value
+              role === r
                 ? "border-primary bg-primary/10 text-foreground"
                 : "border-border text-muted-foreground hover:border-primary/50"
             }`}
           >
-            <div className="font-medium">{r.label}</div>
-            <div className="mt-1 text-xs leading-tight">{r.description}</div>
+            <div className="font-medium">{t(`auth.signUp.roles.${r}.label`)}</div>
+            <div className="mt-1 text-xs leading-tight">{t(`auth.signUp.roles.${r}.description`)}</div>
           </button>
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label htmlFor="firstName">First name</Label>
+          <Label htmlFor="firstName">{t("auth.signUp.firstName")}</Label>
           <Input id="firstName" value={form.firstName} onChange={(e) => update("firstName", e.target.value)} required />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="lastName">Last name</Label>
+          <Label htmlFor="lastName">{t("auth.signUp.lastName")}</Label>
           <Input id="lastName" value={form.lastName} onChange={(e) => update("lastName", e.target.value)} required />
         </div>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("auth.email")}</Label>
         <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} required />
       </div>
 
@@ -200,7 +200,7 @@ export default function SignUpPage() {
           ships ITF JUNIOR calendars, so under-16s are core users rather than an
           edge case — they need a way in, not a box they have to lie in. */}
       <div className="space-y-1">
-        <Label htmlFor="dateOfBirth">Date of birth</Label>
+        <Label htmlFor="dateOfBirth">{t("auth.signUp.dateOfBirth")}</Label>
         <Input
           id="dateOfBirth"
           type="date"
@@ -213,13 +213,13 @@ export default function SignUpPage() {
         />
         <p id="dob-hint" className="text-xs text-muted-foreground">
           {dateOfBirthInvalid
-            ? "That date doesn't look right — please check it."
-            : `Under ${policy.minorAgeThreshold}? That's fine — we'll just ask a parent or guardian to approve your account.`}
+            ? t("auth.signUp.dateOfBirthInvalid")
+            : t("auth.signUp.dateOfBirthHint", { age: policy.minorAgeThreshold })}
         </p>
       </div>
 
       <div className="space-y-1">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("auth.password")}</Label>
         <Input
           id="password"
           type="password"
@@ -231,12 +231,12 @@ export default function SignUpPage() {
         {/* The rule, stated up front and checked as you type — rather than
             revealed only by a rejected submit. */}
         <ul id="password-rules" className="space-y-0.5 pt-0.5 text-xs" aria-live="polite">
-          <Rule met={passwordLongEnough}>At least {policy.passwordMinLength} characters</Rule>
-          {passwordTouched && <Rule met={passwordsMatch}>Both passwords match</Rule>}
+          <Rule met={passwordLongEnough}>{t("auth.signUp.ruleLength", { count: policy.passwordMinLength })}</Rule>
+          {passwordTouched && <Rule met={passwordsMatch}>{t("auth.signUp.ruleMatch")}</Rule>}
         </ul>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Label htmlFor="confirmPassword">{t("auth.signUp.confirmPassword")}</Label>
         <Input id="confirmPassword" type="password" value={form.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} required />
       </div>
 
@@ -245,14 +245,13 @@ export default function SignUpPage() {
       {isMinor && (
         <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3">
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-foreground">A grown-up needs to say yes</h3>
+            <h3 className="text-sm font-medium text-foreground">{t("auth.signUp.guardian.title")}</h3>
             <p className="text-xs text-muted-foreground">
-              Because you're under {policy.minorAgeThreshold}, we'll email your parent or guardian a link to
-              approve your account. You can sign in as soon as they do.
+              {t("auth.signUp.guardian.body", { age: policy.minorAgeThreshold })}
             </p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="guardianName">Parent or guardian's name</Label>
+            <Label htmlFor="guardianName">{t("auth.signUp.guardian.name")}</Label>
             <Input
               id="guardianName"
               value={form.guardianName}
@@ -261,7 +260,7 @@ export default function SignUpPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="guardianEmail">Parent or guardian's email</Label>
+            <Label htmlFor="guardianEmail">{t("auth.signUp.guardian.email")}</Label>
             <Input
               id="guardianEmail"
               type="email"
@@ -269,7 +268,7 @@ export default function SignUpPage() {
               onChange={(e) => update("guardianEmail", e.target.value)}
               required
             />
-            <p className="text-xs text-muted-foreground">This has to be different from your own email.</p>
+            <p className="text-xs text-muted-foreground">{t("auth.signUp.guardian.emailHint")}</p>
           </div>
         </div>
       )}
@@ -277,19 +276,23 @@ export default function SignUpPage() {
       <div className="flex items-center gap-2">
         <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(!!v)} />
         <Label htmlFor="terms" className="text-sm text-muted-foreground">
-          I accept the{" "}
-          <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:no-underline">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:no-underline">
-            Privacy Policy
-          </Link>
+          {/* One sentence with two links in it: the copy carries {terms} and
+              {privacy} as slots so Spanish can order them its own way, and the
+              filled slots are split back out to hang the <Link>s on. */}
+          {interleave(t("auth.signUp.terms", { terms: slot(0), privacy: slot(1) }), [
+            <Link key="terms" to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:no-underline">
+              {t("auth.signUp.termsLink")}
+            </Link>,
+            <Link key="privacy" to="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:no-underline">
+              {t("auth.signUp.privacyLink")}
+            </Link>,
+          ])}
         </Label>
       </div>
-      <Button type="submit" className="w-full" disabled={loading}>{loading ? "Creating account…" : "Create account"}</Button>
+      <Button type="submit" className="w-full" disabled={loading}>{loading ? t("auth.signUp.submitting") : t("auth.signUp.submit")}</Button>
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account? <Link to="/login" className="text-primary hover:underline">Sign in</Link>
+        {t("auth.signUp.haveAccount")}{" "}
+        <Link to="/login" className="text-primary hover:underline">{t("auth.signIn")}</Link>
       </p>
     </form>
   );

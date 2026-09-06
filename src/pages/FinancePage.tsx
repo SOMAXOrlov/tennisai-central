@@ -20,15 +20,18 @@ import { format } from "date-fns";
 
 const ALL_PLAYERS = "__all__";
 
-const CATEGORIES: { value: FinanceCategory; label: string; icon: React.ReactNode }[] = [
-  { value: "training", label: "Training", icon: <Dumbbell className="h-4 w-4" /> },
-  { value: "travel", label: "Travel", icon: <Plane className="h-4 w-4" /> },
-  { value: "tournament", label: "Tournament", icon: <Trophy className="h-4 w-4" /> },
-  { value: "equipment", label: "Equipment", icon: <Package className="h-4 w-4" /> },
+// Keys and icons only; each name is looked up as `finance.category.<value>`.
+const CATEGORIES: { value: FinanceCategory; icon: React.ReactNode }[] = [
+  { value: "training", icon: <Dumbbell className="h-4 w-4" /> },
+  { value: "travel", icon: <Plane className="h-4 w-4" /> },
+  { value: "tournament", icon: <Trophy className="h-4 w-4" /> },
+  { value: "equipment", icon: <Package className="h-4 w-4" /> },
 ];
 
+const ENTRY_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
+
 export default function FinancePage() {
-  const { t } = useT();
+  const { t, formatDate, formatCurrency } = useT();
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
   const role = user?.role ?? "player";
@@ -63,8 +66,8 @@ export default function FinancePage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Finance</h1><ReadOnlyBadge /></div>
-            <p className="text-muted-foreground">Track training, travel, tournament, and equipment costs.</p>
+            <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">{t("finance.title")}</h1><ReadOnlyBadge /></div>
+            <p className="text-muted-foreground">{t("finance.subtitle")}</p>
           </div>
         </div>
         <ReadOnlyBanner />
@@ -87,8 +90,8 @@ export default function FinancePage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Finance</h1>{isObserver && <ReadOnlyBadge />}</div>
-          <p className="text-muted-foreground">Track training, travel, tournament, and equipment costs.</p>
+          <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">{t("finance.title")}</h1>{isObserver && <ReadOnlyBadge />}</div>
+          <p className="text-muted-foreground">{t("finance.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 self-start">
           {isObserver && connectedPlayers.length > 1 && (
@@ -98,7 +101,7 @@ export default function FinancePage() {
               onValueChange={setSelectedPlayerId}
             />
           )}
-          {!isObserver && <Button className="gap-2" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" /> Add Expense</Button>}
+          {!isObserver && <Button className="gap-2" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" /> {t("finance.addExpense")}</Button>}
         </div>
       </div>
 
@@ -111,13 +114,13 @@ export default function FinancePage() {
             return (
               <div key={c.value} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">{c.icon}</div>
-                <div><div className="text-lg font-bold text-foreground">${val.toLocaleString()}</div><div className="text-xs text-muted-foreground">{c.label}</div></div>
+                <div><div className="text-lg font-bold text-foreground">{formatCurrency(val, summary.currency)}</div><div className="text-xs text-muted-foreground">{t(`finance.category.${c.value}`)}</div></div>
               </div>
             );
           })}
           <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><Wallet className="h-4 w-4" /></div>
-            <div><div className="text-lg font-bold text-foreground">${total.toLocaleString()}</div><div className="text-xs text-muted-foreground">Total</div></div>
+            <div><div className="text-lg font-bold text-foreground">{formatCurrency(total, summary.currency)}</div><div className="text-xs text-muted-foreground">{t("finance.total")}</div></div>
           </div>
         </div>
       )}
@@ -131,15 +134,15 @@ export default function FinancePage() {
           action={!isObserver ? <Button onClick={() => setAddOpen(true)} className="gap-1.5"><Plus className="h-4 w-4" /> {t("empty.finance.player.action")}</Button> : undefined}
         />
       ) : (
-        <DashboardCard title="Transactions" description={`${entries.length} entries`} icon={<Wallet className="h-4 w-4" />}>
+        <DashboardCard title={t("finance.transactions")} description={t("finance.entryCount", { count: entries.length })} icon={<Wallet className="h-4 w-4" />}>
           <div className="space-y-2">
             {entries.map((e) => (
               <div key={e.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground">{e.description}</p>
-                  <p className="text-xs capitalize text-muted-foreground">{e.category} · {format(new Date(e.date), "MMM d, yyyy")}</p>
+                  <p className="text-xs text-muted-foreground">{t("finance.entryMeta", { category: t(`finance.category.${e.category}`), date: formatDate(new Date(e.date), ENTRY_DATE) })}</p>
                 </div>
-                <span className="font-semibold text-foreground">${e.amount.toLocaleString()}</span>
+                <span className="font-semibold text-foreground">{formatCurrency(e.amount, e.currency)}</span>
               </div>
             ))}
           </div>
@@ -148,18 +151,18 @@ export default function FinancePage() {
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Add Expense</DialogTitle><DialogDescription>Track a new tennis-related expense.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t("finance.add.title")}</DialogTitle><DialogDescription>{t("finance.add.description")}</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5"><Label htmlFor="finance-description">Description *</Label><Input id="finance-description" aria-required="true" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="e.g. Weekly coaching" /></div>
+            <div className="space-y-1.5"><Label htmlFor="finance-description">{t("finance.add.descriptionLabel")}</Label><Input id="finance-description" aria-required="true" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder={t("finance.add.descriptionPlaceholder")} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label htmlFor="finance-amount">Amount *</Label><Input id="finance-amount" aria-required="true" type="number" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} placeholder="0.00" /></div>
-              <div className="space-y-1.5"><Label htmlFor="finance-category">Category</Label><Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as FinanceCategory }))}><SelectTrigger id="finance-category"><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map((c) => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}</SelectContent></Select></div>
+              <div className="space-y-1.5"><Label htmlFor="finance-amount">{t("finance.add.amount")}</Label><Input id="finance-amount" aria-required="true" type="number" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} placeholder={t("finance.add.amountPlaceholder")} /></div>
+              <div className="space-y-1.5"><Label htmlFor="finance-category">{t("finance.add.category")}</Label><Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as FinanceCategory }))}><SelectTrigger id="finance-category"><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map((c) => (<SelectItem key={c.value} value={c.value}>{t(`finance.category.${c.value}`)}</SelectItem>))}</SelectContent></Select></div>
             </div>
-            <div className="space-y-1.5"><Label htmlFor="finance-date">Date</Label><Input id="finance-date" type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} /></div>
+            <div className="space-y-1.5"><Label htmlFor="finance-date">{t("finance.add.date")}</Label><Input id="finance-date" type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} /></div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button onClick={handleAdd} disabled={!form.description.trim() || !form.amount || createMut.isPending}>{createMut.isPending ? "Adding…" : "Add Expense"}</Button>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>{t("common.cancel")}</Button>
+            <Button onClick={handleAdd} disabled={!form.description.trim() || !form.amount || createMut.isPending}>{createMut.isPending ? t("finance.add.adding") : t("finance.add.submit")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -13,6 +13,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toCalendarDate } from "@/lib/stats/format";
 import type { MatchView } from "@/types";
+import { t, useT } from "@/lib/i18n";
 
 /** Server cap: GET /api/matches/stats validates `recent` as 1…50. */
 export const MAX_RECENT = 50;
@@ -26,10 +27,10 @@ export interface StatsWindowOption {
   size: number;
 }
 
-const NOMINAL: { id: StatsWindowId; label: string; size: number }[] = [
-  { id: "last5", label: "Last 5", size: 5 },
-  { id: "last10", label: "Last 10", size: 10 },
-  { id: "last20", label: "Last 20", size: 20 },
+const NOMINAL: { id: StatsWindowId; size: number }[] = [
+  { id: "last5", size: 5 },
+  { id: "last10", size: 10 },
+  { id: "last20", size: 20 },
 ];
 
 /**
@@ -63,22 +64,25 @@ export function buildWindowOptions(matches: MatchView[]): StatsWindowOption[] {
    * so — the two scopes are then always the identical set of matches.
    */
   const clamp = (size: number, label: string): StatsWindowOption["label"] =>
-    size > MAX_RECENT ? `${label} (last ${MAX_RECENT})` : label;
+    size > MAX_RECENT ? t("stats.window.clamped", { label, max: MAX_RECENT }) : label;
 
-  const options: StatsWindowOption[] = NOMINAL.filter((o) => o.size < total).map((o) => ({ ...o }));
+  const options: StatsWindowOption[] = NOMINAL.filter((o) => o.size < total).map((o) => ({
+    ...o,
+    label: t("stats.window.last", { count: o.size }),
+  }));
 
   const season = seasonSize(matches);
   if (season > 0 && season < total) {
     options.push({
       id: "season",
-      label: clamp(season, `Season ${new Date().getFullYear()}`),
+      label: clamp(season, t("stats.window.season", { year: String(new Date().getFullYear()) })),
       size: Math.min(season, MAX_RECENT),
     });
   }
 
   options.push({
     id: "all",
-    label: total > MAX_RECENT ? `Last ${MAX_RECENT}` : "All",
+    label: total > MAX_RECENT ? t("stats.window.lastMax", { max: MAX_RECENT }) : t("stats.window.all"),
     size: Math.min(total, MAX_RECENT),
   });
   return options;
@@ -106,11 +110,12 @@ export interface StatsWindowControlProps {
 }
 
 export function StatsWindowControl({ options, value, onChange, hint }: StatsWindowControlProps) {
+  const { t: tr } = useT();
   if (options.length <= 1) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Window</span>
+      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{tr("stats.window.label")}</span>
       <Tabs value={value} onValueChange={(next) => onChange(next as StatsWindowId)}>
         <TabsList className="h-9 rounded-none border border-border bg-muted p-0.5">
           {options.map((option) => (

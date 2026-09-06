@@ -36,10 +36,11 @@ function Figure({ label, value, caption }: { label: string; value: string; capti
 
 /** W / L chip — matches the Stats page treatment; "—" when no result was entered. */
 function FormChip({ entry }: { entry: RecentFormMatch }) {
+  const { t } = useT();
   if (entry.result !== "win" && entry.result !== "loss") {
     return (
       <span
-        title="Result not recorded"
+        title={t("stats.form.resultNotRecorded")}
         className="flex h-6 w-6 items-center justify-center border border-dashed border-border text-[11px] text-muted-foreground"
       >
         {NO_VALUE}
@@ -64,13 +65,13 @@ export function StatisticsSummaryCard() {
 
   const card = (children: React.ReactNode) => (
     <DashboardCard
-      title="Statistics"
-      description="Season performance overview"
+      title={t("statsCard.title")}
+      description={t("statsCard.description")}
       icon={<BarChart3 className="h-4 w-4" />}
       action={
         <Button variant="ghost" size="sm" asChild>
           <Link to="/stats">
-            Full stats <ArrowRight className="ml-1 h-3 w-3" />
+            {t("statsCard.fullStats")} <ArrowRight className="ml-1 h-3 w-3" />
           </Link>
         </Button>
       }
@@ -91,11 +92,11 @@ export function StatisticsSummaryCard() {
     return card(
       <div className="py-4 text-center">
         <p className="text-sm text-muted-foreground">
-          No match data yet. Your stats will appear here once matches are recorded.
+          {t("statsCard.empty")}
         </p>
         <Button size="sm" variant="outline" className="mt-3" asChild>
           <Link to="/matches">
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> Log match
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("statsCard.logMatch")}
           </Link>
         </Button>
       </div>,
@@ -108,25 +109,25 @@ export function StatisticsSummaryCard() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Figure
-          label="Win rate"
+          label={t("statsCard.winRate")}
           value={formatPct(stats.winRatePct)}
           caption={
             stats.resultsRecorded > 0
-              ? `from ${stats.resultsRecorded} match${stats.resultsRecorded === 1 ? "" : "es"} with a result`
-              : "no win/loss recorded yet"
+              ? t("statsCard.fromWithResult", { count: stats.resultsRecorded })
+              : t("statsCard.noResults")
           }
         />
         <Figure
-          label="Win – loss"
+          label={t("statsCard.winLoss")}
           value={formatWinLoss(stats.wins, stats.losses)}
-          caption={`${stats.matchesPlayed} match${stats.matchesPlayed === 1 ? "" : "es"} logged`}
+          caption={t("statsCard.logged", { count: stats.matchesPlayed })}
         />
       </div>
 
       {recent.matches.length > 0 && (
         <div className="space-y-2 border-t border-border pt-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Recent form · last {recent.sampleSize}
+            {t("statsCard.recentForm", { count: recent.sampleSize })}
           </p>
           <div className="flex flex-wrap items-center gap-1.5">
             {recent.matches.map((entry) => (
@@ -135,8 +136,11 @@ export function StatisticsSummaryCard() {
           </div>
           <p className="text-[11px] text-muted-foreground">
             {recent.winRatePct === null
-              ? "None of these matches has a recorded win or loss."
-              : `${formatWinLoss(recent.wins, recent.losses)} · ${formatPct(recent.winRatePct)} win rate`}
+              ? t("statsCard.noWinRate")
+              : t("statsCard.formSummary", {
+                  record: formatWinLoss(recent.wins, recent.losses),
+                  rate: formatPct(recent.winRatePct),
+                })}
           </p>
         </div>
       )}
@@ -144,12 +148,12 @@ export function StatisticsSummaryCard() {
       <div className="flex flex-wrap gap-2 border-t border-border pt-3">
         <Button size="sm" variant="outline" asChild>
           <Link to="/matches">
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> Log match
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("statsCard.logMatch")}
           </Link>
         </Button>
         <Button size="sm" variant="ghost" asChild>
           <Link to="/stats">
-            Full breakdown <ArrowRight className="ml-1 h-3 w-3" />
+            {t("statsCard.fullBreakdown")} <ArrowRight className="ml-1 h-3 w-3" />
           </Link>
         </Button>
       </div>

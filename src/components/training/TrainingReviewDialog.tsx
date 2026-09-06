@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Star } from "lucide-react";
 import { DiscardChangesDialog } from "@/components/training/DiscardChangesDialog";
 import type { TrainingSession, TrainingReview } from "@/types";
+import { useT } from "@/lib/i18n";
 
 interface TrainingReviewDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ interface TrainingReviewDialogProps {
 }
 
 export function TrainingReviewDialog({ open, onOpenChange, training, onSave, saving }: TrainingReviewDialogProps) {
+  const { t } = useT();
   const existing = training.review;
   const [rating, setRating] = useState(existing?.rating ?? 0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -49,7 +51,7 @@ export function TrainingReviewDialog({ open, onOpenChange, training, onSave, sav
       });
       onOpenChange(false);
     } catch (e) {
-      setSaveError((e as { message?: string })?.message ?? "Could not save the review. Your text is still here — try again.");
+      setSaveError((e as { message?: string })?.message ?? t("training.reviewDialog.saveFailed"));
     }
   };
 
@@ -68,20 +70,18 @@ export function TrainingReviewDialog({ open, onOpenChange, training, onSave, sav
           onInteractOutside={(e) => { if (dirty || saving) e.preventDefault(); }}
         >
           <DialogHeader>
-            <DialogTitle>{existing ? "Edit Review" : "Review Training Session"}</DialogTitle>
-            <DialogDescription>
-              Rate "{training.title}" and note what was covered and what to focus on next.
-            </DialogDescription>
+            <DialogTitle>{existing ? t("training.reviewDialog.editTitle") : t("training.reviewDialog.newTitle")}</DialogTitle>
+            <DialogDescription>{t("training.reviewDialog.description", { title: training.title })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Rating *</Label>
+              <Label>{t("training.reviewDialog.rating")}</Label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
-                    aria-label={`Rate ${star} out of 5`}
+                    aria-label={t("training.reviewDialog.ratingAria", { star })}
                     aria-pressed={star === rating}
                     className="p-0.5 transition-transform hover:scale-110"
                     onMouseEnter={() => setHoverRating(star)}
@@ -97,33 +97,33 @@ export function TrainingReviewDialog({ open, onOpenChange, training, onSave, sav
                     />
                   </button>
                 ))}
-                {rating > 0 && <span className="ml-2 self-center text-sm text-muted-foreground">{rating}/5</span>}
+                {rating > 0 && <span className="ml-2 self-center text-sm text-muted-foreground">{t("training.reviewDialog.ratingValue", { rating })}</span>}
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="review-worked-on">What was worked on *</Label>
+              <Label htmlFor="review-worked-on">{t("training.reviewDialog.workedOn")}</Label>
               <Textarea id="review-worked-on" aria-required="true"
                 value={workedOn}
                 onChange={(e) => setWorkedOn(e.target.value)}
-                placeholder="e.g. Lateral footwork drills, split-step timing, recovery steps"
+                placeholder={t("training.reviewDialog.workedOnPlaceholder")}
                 rows={3}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="review-next-steps">What to do next</Label>
+              <Label htmlFor="review-next-steps">{t("training.reviewDialog.nextSteps")}</Label>
               <Textarea id="review-next-steps"
                 value={nextSteps}
                 onChange={(e) => setNextSteps(e.target.value)}
-                placeholder="e.g. Increase drill speed, add weighted vest, focus on backhand"
+                placeholder={t("training.reviewDialog.nextStepsPlaceholder")}
                 rows={3}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="review-player-feedback">Player feedback <span className="text-muted-foreground">(optional)</span></Label>
+              <Label htmlFor="review-player-feedback">{t("training.reviewDialog.playerFeedback")} <span className="text-muted-foreground">{t("training.reviewDialog.playerFeedbackOptional")}</span></Label>
               <Textarea id="review-player-feedback"
                 value={playerFeedback}
                 onChange={(e) => setPlayerFeedback(e.target.value)}
-                placeholder="Any feedback from the player about the session"
+                placeholder={t("training.reviewDialog.playerFeedbackPlaceholder")}
                 rows={2}
               />
             </div>
@@ -134,9 +134,9 @@ export function TrainingReviewDialog({ open, onOpenChange, training, onSave, sav
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={requestClose} disabled={saving}>Cancel</Button>
+            <Button variant="outline" onClick={requestClose} disabled={saving}>{t("common.cancel")}</Button>
             <Button onClick={handleSave} disabled={!valid || saving}>
-              {saving ? "Saving…" : existing ? "Update Review" : "Save Review"}
+              {saving ? t("training.reviewDialog.saving") : existing ? t("training.reviewDialog.update") : t("training.reviewDialog.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -145,7 +145,7 @@ export function TrainingReviewDialog({ open, onOpenChange, training, onSave, sav
       <DiscardChangesDialog
         open={confirmDiscard}
         onOpenChange={setConfirmDiscard}
-        what="review"
+        what={t("training.discard.review")}
         onConfirm={() => onOpenChange(false)}
       />
     </>

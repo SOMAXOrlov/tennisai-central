@@ -18,13 +18,9 @@ import { questionsForRole } from "@/lib/onboarding/questions";
 import { OnboardingDialog } from "@/components/onboarding/OnboardingDialog";
 
 /** The tours a user can subscribe to, described in a coach's terms. */
-const FEDERATION_OPTIONS = [
-  { value: "ITF", label: "ITF", hint: "World Tennis Tour — juniors and the professional entry level" },
-  { value: "UTR", label: "UTR", hint: "UTR-rated events, usually local and frequent" },
-  { value: "ATP", label: "ATP", hint: "Men's professional tour" },
-  { value: "WTA", label: "WTA", hint: "Women's professional tour" },
-  { value: "USTA", label: "USTA", hint: "United States national events" },
-] as const;
+// The federation code doubles as its own label (they are codes, not words to
+// translate); only the one-line explanation is copy, looked up per render.
+const FEDERATION_OPTIONS = ["ITF", "UTR", "ATP", "WTA", "USTA"] as const;
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -68,8 +64,8 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold text-foreground">My Profile</h1><p className="text-sm text-muted-foreground">Manage your personal information.</p></div>
-      <DashboardCard title="Profile Information" icon={<User className="h-4 w-4" />}>
+      <div><h1 className="text-2xl font-bold text-foreground">{t("profile.title")}</h1><p className="text-sm text-muted-foreground">{t("profile.subtitle")}</p></div>
+      <DashboardCard title={t("profile.information")} icon={<User className="h-4 w-4" />}>
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">{user?.firstName?.[0]}{user?.lastName?.[0]}</div>
@@ -80,37 +76,37 @@ export default function ProfilePage() {
           </div>
           {user?.role !== "admin" && (
             <div className="rounded-lg border border-border bg-secondary/30 p-4">
-              <Label className="text-xs text-muted-foreground">Your Public ID</Label>
+              <Label className="text-xs text-muted-foreground">{t("profile.publicId")}</Label>
               <div className="mt-1 flex items-center gap-2">
                 <code className="flex-1 font-mono text-lg font-bold tracking-wider text-foreground">{publicId}</code>
                 <Button variant="outline" size="icon" aria-label={copied ? t("a11y.profile.publicIdCopied") : t("a11y.profile.copyPublicId")} onClick={copyId}>{copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}</Button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Share this ID so others can connect with you.</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("profile.publicIdHint")}</p>
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label htmlFor="profile-first-name">First Name</Label><Input id="profile-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label htmlFor="profile-last-name">Last Name</Label><Input id="profile-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label htmlFor="profile-email">Email</Label><Input id="profile-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></div>
+            <div className="space-y-1.5"><Label htmlFor="profile-first-name">{t("profile.firstName")}</Label><Input id="profile-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="profile-last-name">{t("profile.lastName")}</Label><Input id="profile-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="profile-email">{t("profile.email")}</Label><Input id="profile-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></div>
           </div>
-          <Button onClick={handleSave} disabled={updateMut.isPending}>{updateMut.isPending ? "Saving…" : "Save Changes"}</Button>
+          <Button onClick={handleSave} disabled={updateMut.isPending}>{updateMut.isPending ? t("profile.saving") : t("profile.save")}</Button>
         </div>
       </DashboardCard>
 
       <DashboardCard
-        title="Profile questionnaire"
-        description="Your onboarding answers"
+        title={t("profile.questionnaire")}
+        description={t("profile.questionnaireDescription")}
         icon={<ClipboardList className="h-4 w-4" />}
         action={
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setEditOpen(true)}>
-            <Pencil className="h-3.5 w-3.5" /> Edit answers
+            <Pencil className="h-3.5 w-3.5" /> {t("profile.editAnswers")}
           </Button>
         }
       >
         {answeredQuestions.length === 0 ? (
           <div className="py-4 text-center">
-            <p className="text-sm text-muted-foreground">You haven't completed your profile questionnaire yet.</p>
-            <Button size="sm" className="mt-3" onClick={() => setEditOpen(true)}>Complete setup</Button>
+            <p className="text-sm text-muted-foreground">{t("profile.notCompleted")}</p>
+            <Button size="sm" className="mt-3" onClick={() => setEditOpen(true)}>{t("profile.completeSetup")}</Button>
           </div>
         ) : (
           <dl className="space-y-3">
@@ -124,33 +120,29 @@ export default function ProfilePage() {
         )}
       </DashboardCard>
 
-      <DashboardCard title="Tournament calendars" icon={<CalendarRange className="h-4 w-4" />}>
-        <p className="mb-3 text-sm text-muted-foreground">
-          Which tours appear on your calendar. Nothing is on to begin with — the
-          feeds carry thousands of events worldwide, and a calendar showing all of
-          them is one nobody can read. Pick the ones your players actually enter.
-        </p>
+      <DashboardCard title={t("profile.calendars")} icon={<CalendarRange className="h-4 w-4" />}>
+        <p className="mb-3 text-sm text-muted-foreground">{t("profile.calendarsHint")}</p>
 
         <div className="space-y-1">
           {FEDERATION_OPTIONS.map((f) => {
-            const on = subscribed.has(f.value);
+            const on = subscribed.has(f);
             return (
               <label
-                key={f.value}
+                key={f}
                 className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent/20"
               >
                 <Switch
                   checked={on}
                   onCheckedChange={() => {
                     const next = new Set(subscribed);
-                    next.has(f.value) ? next.delete(f.value) : next.add(f.value);
+                    next.has(f) ? next.delete(f) : next.add(f);
                     saveCalendarPrefs.mutate({ federations: [...next] });
                   }}
-                  aria-label={f.label}
+                  aria-label={f}
                 />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-foreground">{f.label}</span>
-                  <span className="block text-xs text-muted-foreground">{f.hint}</span>
+                  <span className="block text-sm font-medium text-foreground">{f}</span>
+                  <span className="block text-xs text-muted-foreground">{t(`profile.federation.${f}`)}</span>
                 </span>
               </label>
             );
@@ -163,13 +155,11 @@ export default function ProfilePage() {
             onCheckedChange={(checked) =>
               saveCalendarPrefs.mutate({ federations: [...subscribed], showOwnEvents: checked })
             }
-            aria-label="Show my own sessions"
+            aria-label={t("profile.ownSessionsAria")}
           />
           <span>
-            <span className="block text-sm font-medium text-foreground">My own sessions</span>
-            <span className="block text-xs text-muted-foreground">
-              Trainings, matches and anything you or your coach put on the calendar.
-            </span>
+            <span className="block text-sm font-medium text-foreground">{t("profile.ownSessions")}</span>
+            <span className="block text-xs text-muted-foreground">{t("profile.ownSessionsHint")}</span>
           </span>
         </label>
       </DashboardCard>

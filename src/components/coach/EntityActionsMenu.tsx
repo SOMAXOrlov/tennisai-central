@@ -29,6 +29,7 @@ import type { ConnectedPlayer, Team } from "@/types";
 import {
   identityTriggerLabel, playerCalendarHref, playerScheduleHref, teamCalendarHref, teamManageHref, teamScheduleHref,
 } from "./entityLinks";
+import { useT } from "@/lib/i18n";
 
 interface TriggerProps {
   /** Accessible name — says WHOSE menu this is, since a page shows many. */
@@ -43,6 +44,7 @@ interface TriggerProps {
  * on a row. Both keep the 44px touch target the rest of the app promises.
  */
 function MenuTrigger({ label, compact, className }: TriggerProps) {
+  const { t } = useT();
   if (compact) {
     return (
       <DropdownMenuTrigger asChild>
@@ -60,7 +62,7 @@ function MenuTrigger({ label, compact, className }: TriggerProps) {
   return (
     <DropdownMenuTrigger asChild>
       <Button size="sm" variant="outline" aria-label={label} className={cn("gap-1 text-xs coarse:min-h-11", className)}>
-        Actions <ChevronDown className="h-3 w-3" />
+        {t("players.actions")} <ChevronDown className="h-3 w-3" />
       </Button>
     </DropdownMenuTrigger>
   );
@@ -124,28 +126,29 @@ export interface PlayerActionsMenuProps {
 
 export function PlayerActionsMenu({ player, onViewStats, onViewEquipment, compact, className, trigger }: PlayerActionsMenuProps) {
   const navigate = useNavigate();
+  const { t } = useT();
   const name = `${player.firstName} ${player.lastName}`;
 
   return (
     <DropdownMenu>
-      <Opener trigger={trigger} label={`Actions for ${name}`} compact={compact} className={className} />
+      <Opener trigger={trigger} label={t("players.actionsFor", { name })} compact={compact} className={className} />
       <DropdownMenuContent align="end" className="w-[13rem]">
         <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">{name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem className={ITEM} onSelect={() => navigate(playerScheduleHref(player.id))}>
-          <ListChecks className="h-4 w-4" /> Schedule
+          <ListChecks className="h-4 w-4" /> {t("players.menu.schedule")}
         </DropdownMenuItem>
         <DropdownMenuItem className={ITEM} onSelect={() => navigate(playerCalendarHref(player.id))}>
-          <CalendarDays className="h-4 w-4" /> Calendar
+          <CalendarDays className="h-4 w-4" /> {t("players.menu.calendar")}
         </DropdownMenuItem>
         {onViewStats && (
           <DropdownMenuItem className={ITEM} onSelect={() => onViewStats(player)}>
-            <BarChart3 className="h-4 w-4" /> Stats
+            <BarChart3 className="h-4 w-4" /> {t("players.menu.stats")}
           </DropdownMenuItem>
         )}
         {onViewEquipment && (
           <DropdownMenuItem className={ITEM} onSelect={() => onViewEquipment(player)}>
-            <Package className="h-4 w-4" /> Equipment
+            <Package className="h-4 w-4" /> {t("players.menu.equipment")}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -168,25 +171,26 @@ export interface TeamActionsMenuProps {
 
 export function TeamActionsMenu({ team, onManage, compact, className, trigger }: TeamActionsMenuProps) {
   const navigate = useNavigate();
+  const { t } = useT();
 
   return (
     <DropdownMenu>
-      <Opener trigger={trigger} label={`Actions for ${team.name}`} compact={compact} className={className} />
+      <Opener trigger={trigger} label={t("players.actionsFor", { name: team.name })} compact={compact} className={className} />
       <DropdownMenuContent align="end" className="w-[13rem]">
         <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">{team.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem className={ITEM} onSelect={() => navigate(teamScheduleHref(team.id))}>
-          <ListChecks className="h-4 w-4" /> Schedule
+          <ListChecks className="h-4 w-4" /> {t("players.menu.schedule")}
         </DropdownMenuItem>
         <DropdownMenuItem className={ITEM} onSelect={() => navigate(teamCalendarHref(team.id))}>
-          <CalendarDays className="h-4 w-4" /> Calendar
+          <CalendarDays className="h-4 w-4" /> {t("players.menu.calendar")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className={ITEM}
           onSelect={() => (onManage ? onManage(team) : navigate(teamManageHref(team.id)))}
         >
-          <Settings2 className="h-4 w-4" /> Manage team
+          <Settings2 className="h-4 w-4" /> {t("players.menu.manageTeam")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

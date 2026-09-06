@@ -37,7 +37,7 @@ import {
 } from "@/hooks/api/queries";
 import { queryKeys } from "@/hooks/api/queries";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { useT } from "@/lib/i18n";
+import { interleave, slot, useT } from "@/lib/i18n";
 import { CITIES } from "@/lib/geo/cities";
 import { haversineKm, formatDistanceKm } from "@/lib/geo/distance";
 import type { TournamentStatus, ConnectedPlayer, Tournament } from "@/types";
@@ -60,6 +60,10 @@ const surfaceColor: Record<string, string> = {
 const STATUS_OPTIONS: TournamentStatus[] = ["planned", "registered", "maybe", "withdrawn", "played"];
 const MAX_RADIUS_KM = 20000; // ~ half the Earth's circumference — effectively "any distance"
 
+// Intl option sets for this page's dates.
+const SHORT_DATE: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+const FULL_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
+
 function distanceFromUser(userCoords: { lat: number; lng: number } | null, t: Tournament): number | null {
   if (!userCoords || typeof t.latitude !== "number" || typeof t.longitude !== "number") return null;
   return haversineKm(userCoords, { lat: t.latitude, lng: t.longitude });
@@ -69,20 +73,22 @@ function distanceFromUser(userCoords: { lat: number; lng: number } | null, t: To
 function RemoveFromScheduleDialog({ open, onOpenChange, tournamentName, onConfirm, loading }: {
   open: boolean; onOpenChange: (o: boolean) => void; tournamentName: string; onConfirm: () => void; loading?: boolean;
 }) {
+  const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Remove from your schedule?</DialogTitle>
+          <DialogTitle>{t("tournaments.removeDialog.title")}</DialogTitle>
           <DialogDescription>
-            <span className="font-semibold text-foreground">{tournamentName}</span> will be taken off your schedule,
-            along with the status you set for it. You can add it again from the Browse tab.
+            {interleave(t("tournaments.removeDialog.body", { name: slot(0) }), [
+              <span key="name" className="font-semibold text-foreground">{tournamentName}</span>,
+            ])}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Keep it</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("tournaments.removeDialog.keep")}</Button>
           <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}>
-            <Trash2 className="mr-1.5 h-4 w-4" /> {loading ? "Removing…" : "Remove"}
+            <Trash2 className="mr-1.5 h-4 w-4" /> {loading ? t("tournaments.removeDialog.removing") : t("tournaments.removeDialog.remove")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -95,7 +101,7 @@ export default function TournamentsPage() {
   const { connectedPlayers } = useConnections();
   const queryClient = useQueryClient();
   // `t` is already the tournament row inside the map callbacks below.
-  const { t: tr } = useT();
+  const { t: tr, formatDate } = useT();
   const role = user?.role ?? "player";
   const isCoach = role === "coach";
   const isObserver = role === "observer";
@@ -270,7 +276,7 @@ export default function TournamentsPage() {
   const handleRefreshTournaments = async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.tournaments });
     await refetchTournaments();
-    toast.success("Tournaments refreshed");
+    toast.success(tr("toast.tournament.refreshed"));
   };
 
   /**
@@ -284,23 +290,23 @@ export default function TournamentsPage() {
     setAddTarget(t);
   };
 
-  if (loadingT || loadingPT) return <LoadingState message="Loading tournaments…" />;
-  if (errorT || errorPT) return <ErrorState message="Failed to load tournaments" onRetry={() => window.location.reload()} />;
+  if (loadingT || loadingPT) return <LoadingState message={tr("tournaments.page.loading")} />;
+  if (errorT || errorPT) return <ErrorState message={tr("tournaments.page.loadError")} onRetry={() => window.location.reload()} />;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Tournaments</h1>{isObserver && <ReadOnlyBadge />}</div>
-          <p className="text-muted-foreground">{isCoach ? "View tournaments and your connected players' participation." : isObserver ? "Read-only view of connected player tournaments." : "Browse upcoming tournaments and manage your entries."}</p>
+          <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">{tr("tournaments.page.title")}</h1>{isObserver && <ReadOnlyBadge />}</div>
+          <p className="text-muted-foreground">{isCoach ? tr("tournaments.page.subtitle.coach") : isObserver ? tr("tournaments.page.subtitle.observer") : tr("tournaments.page.subtitle.player")}</p>
         </div>
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
           <TabsList>
             {(showPlayerTournaments || isPlayer) && (
-              <TabsTrigger value="players" className="gap-1.5"><Users className="h-3.5 w-3.5" /> {isPlayer ? "My Schedule" : "Player View"}</TabsTrigger>
+              <TabsTrigger value="players" className="gap-1.5"><Users className="h-3.5 w-3.5" /> {isPlayer ? tr("tournaments.page.tabs.mySchedule") : tr("tournaments.page.tabs.playerView")}</TabsTrigger>
             )}
-            <TabsTrigger value="tournaments" className="gap-1.5"><Trophy className="h-3.5 w-3.5" /> {isPlayer ? "Add Tournaments" : "Browse All"}</TabsTrigger>
-            <TabsTrigger value="map" className="gap-1.5"><MapPin className="h-3.5 w-3.5" /> Map</TabsTrigger>
+            <TabsTrigger value="tournaments" className="gap-1.5"><Trophy className="h-3.5 w-3.5" /> {isPlayer ? tr("tournaments.page.tabs.addTournaments") : tr("tournaments.page.tabs.browseAll")}</TabsTrigger>
+            <TabsTrigger value="map" className="gap-1.5"><MapPin className="h-3.5 w-3.5" /> {tr("tournaments.page.tabs.map")}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -309,17 +315,17 @@ export default function TournamentsPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder={tr("tournaments.list.searchPlaceholder")} aria-label={tr("tournaments.list.searchAria")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
-        <Select value={surface} onValueChange={setSurface}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Surface" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Surfaces</SelectItem>{surfaces.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
-        <Select value={category} onValueChange={setCategory}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Categories</SelectItem>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
-        <Select value={country} onValueChange={setCountry}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Country" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Countries</SelectItem>{countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+        <Select value={surface} onValueChange={setSurface}><SelectTrigger className="w-[140px]"><SelectValue placeholder={tr("tournaments.page.filters.surface")} /></SelectTrigger><SelectContent><SelectItem value={ALL}>{tr("tournaments.page.filters.allSurfaces")}</SelectItem>{surfaces.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+        <Select value={category} onValueChange={setCategory}><SelectTrigger className="w-[160px]"><SelectValue placeholder={tr("tournaments.page.filters.category")} /></SelectTrigger><SelectContent><SelectItem value={ALL}>{tr("tournaments.page.filters.allCategories")}</SelectItem>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+        <Select value={country} onValueChange={setCountry}><SelectTrigger className="w-[140px]"><SelectValue placeholder={tr("tournaments.page.filters.country")} /></SelectTrigger><SelectContent><SelectItem value={ALL}>{tr("tournaments.page.filters.allCountries")}</SelectItem>{countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
         {(showPlayerTournaments && viewMode === "players") && (
           <>
             {isCoach && <TeamFilterSelect teams={teams} value={teamFilter} onValueChange={(v) => { setTeamFilter(v); setPlayerFilter(ALL); }} />}
             <PlayerFilterSelect players={filteredPlayers} value={playerFilter} onValueChange={setPlayerFilter} onViewDetail={isCoach ? handleViewPlayerDetail : undefined} />
-            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[150px]"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value={ALL}>All Statuses</SelectItem>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>))}</SelectContent></Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[150px]"><SelectValue placeholder={tr("tournaments.page.filters.status")} /></SelectTrigger><SelectContent><SelectItem value={ALL}>{tr("tournaments.page.filters.status")}</SelectItem>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s}>{tr(`common.status.${s}`)}</SelectItem>))}</SelectContent></Select>
           </>
         )}
-        {hasFilters && <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground"><X className="mr-1 h-4 w-4" /> Reset</Button>}
+        {hasFilters && <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground"><X className="mr-1 h-4 w-4" /> {tr("tournaments.page.filters.reset")}</Button>}
         <Button
           variant="ghost"
           size="sm"
@@ -328,19 +334,19 @@ export default function TournamentsPage() {
           className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isRefetchingTournaments ? "animate-spin" : ""}`} />
-          {isRefetchingTournaments ? "Refreshing…" : "Refresh tournaments"}
+          {isRefetchingTournaments ? tr("tournaments.page.filters.refreshing") : tr("tournaments.page.filters.refresh")}
         </Button>
       </div>
 
       {hasFilters && (
         <div className="flex flex-wrap gap-2">
-          {search && <Badge variant="secondary" className="gap-1">Search: "{search}" <X className="h-3 w-3 cursor-pointer" onClick={() => setSearch("")} /></Badge>}
+          {search && <Badge variant="secondary" className="gap-1">{tr("tournaments.page.filters.searchChip", { query: search })} <X className="h-3 w-3 cursor-pointer" onClick={() => setSearch("")} /></Badge>}
           {surface !== ALL && <Badge variant="secondary" className="gap-1">{surface} <X className="h-3 w-3 cursor-pointer" onClick={() => setSurface(ALL)} /></Badge>}
           {category !== ALL && <Badge variant="secondary" className="gap-1">{category} <X className="h-3 w-3 cursor-pointer" onClick={() => setCategory(ALL)} /></Badge>}
           {country !== ALL && <Badge variant="secondary" className="gap-1">{country} <X className="h-3 w-3 cursor-pointer" onClick={() => setCountry(ALL)} /></Badge>}
-          {teamFilter !== ALL && <Badge variant="secondary" className="gap-1">{teams.find((t) => t.id === teamFilter)?.name ?? "Team"}<X className="h-3 w-3 cursor-pointer" onClick={() => setTeamFilter(ALL)} /></Badge>}
-          {playerFilter !== ALL && <Badge variant="secondary" className="gap-1">{connectedPlayers.find((p) => p.id === playerFilter)?.firstName ?? "Player"}<X className="h-3 w-3 cursor-pointer" onClick={() => setPlayerFilter(ALL)} /></Badge>}
-          {statusFilter !== ALL && <Badge variant="secondary" className="gap-1 capitalize">{statusFilter} <X className="h-3 w-3 cursor-pointer" onClick={() => setStatusFilter(ALL)} /></Badge>}
+          {teamFilter !== ALL && <Badge variant="secondary" className="gap-1">{teams.find((team) => team.id === teamFilter)?.name ?? tr("tournaments.page.filters.teamChip")}<X className="h-3 w-3 cursor-pointer" onClick={() => setTeamFilter(ALL)} /></Badge>}
+          {playerFilter !== ALL && <Badge variant="secondary" className="gap-1">{connectedPlayers.find((p) => p.id === playerFilter)?.firstName ?? tr("tournaments.page.filters.playerChip")}<X className="h-3 w-3 cursor-pointer" onClick={() => setPlayerFilter(ALL)} /></Badge>}
+          {statusFilter !== ALL && <Badge variant="secondary" className="gap-1">{tr(`common.status.${statusFilter}`)} <X className="h-3 w-3 cursor-pointer" onClick={() => setStatusFilter(ALL)} /></Badge>}
         </div>
       )}
 
@@ -350,18 +356,18 @@ export default function TournamentsPage() {
       {/* Player tournament view */}
       {(showPlayerTournaments || isPlayer) && viewMode === "players" && (
         filteredPlayerTournaments.length === 0 ? (
-          <EmptyState icon={<Trophy className="h-6 w-6 text-muted-foreground" />} title="No player tournaments" description={hasFilters ? "No results match your filters." : "No tournament entries yet."} />
+          <EmptyState icon={<Trophy className="h-6 w-6 text-muted-foreground" />} title={tr("tournaments.page.table.empty")} description={hasFilters ? tr("tournaments.page.table.emptyFiltered") : tr("tournaments.page.table.emptyNone")} />
         ) : (
           <div className="overflow-hidden rounded-xl border border-border">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Tournament</th>
-                  {!isPlayer && <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Player</th>}
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Surface</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.table.tournament")}</th>
+                  {!isPlayer && <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.table.player")}</th>}
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.table.location")}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.table.date")}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.table.surface")}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.table.status")}</th>
                 </tr></thead>
                 <tbody className="divide-y divide-border">
                   {filteredPlayerTournaments.map((pt) => (
@@ -395,21 +401,21 @@ export default function TournamentsPage() {
                         </button>
                       </td>}
                       <td className="px-4 py-3 text-muted-foreground">{pt.tournament.city}, {pt.tournament.country}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{format(new Date(pt.tournament.startDate), "MMM d")} – {format(new Date(pt.tournament.endDate), "MMM d")}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{formatDate(new Date(pt.tournament.startDate), SHORT_DATE)} – {formatDate(new Date(pt.tournament.endDate), SHORT_DATE)}</td>
                       <td className="px-4 py-3"><Badge variant="outline" className={surfaceColor[pt.tournament.surface] ?? ""}>{pt.tournament.surface}</Badge></td>
                       <td className="px-4 py-3">
                         {isPlayer ? (
                           <div className="flex items-center gap-2">
                             <Select value={pt.status} onValueChange={(v) => updatePT.mutate({ id: pt.id, data: { status: v as TournamentStatus } })}>
                               <SelectTrigger className="h-7 w-[120px] text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>))}</SelectContent>
+                              <SelectContent>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s}>{tr(`common.status.${s}`)}</SelectItem>))}</SelectContent>
                             </Select>
                             <Button
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              title="Remove from schedule"
-                              aria-label={`Remove ${pt.tournament.name} from your schedule`}
+                              title={tr("tournaments.page.table.removeTitle")}
+                              aria-label={tr("tournaments.page.table.removeAria", { name: pt.tournament.name })}
                               disabled={removePT.isPending}
                               onClick={() => setRemoveTarget({ id: pt.id, name: pt.tournament.name })}
                             >
@@ -432,7 +438,7 @@ export default function TournamentsPage() {
       {viewMode === "tournaments" && subscribed.size > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Following
+            {tr("tournaments.page.following")}
           </span>
           {FEDERATION_CHOICES.map((f) => {
             const on = subscribed.has(f.value);
@@ -460,11 +466,8 @@ export default function TournamentsPage() {
           // The page asks before it shows anything. Browsing every circuit on
           // Earth at once is not browsing.
           <div className="rounded-xl border border-border bg-card p-6">
-            <h2 className="text-base font-semibold text-foreground">Which tours do you follow?</h2>
-            <p className="mt-1 max-w-prose text-sm text-muted-foreground">
-              Pick one to start browsing. The feeds carry thousands of events worldwide, so nothing
-              is shown until you choose. Your choice is saved and used on the calendar too.
-            </p>
+            <h2 className="text-base font-semibold text-foreground">{tr("tournaments.page.pick.title")}</h2>
+            <p className="mt-1 max-w-prose text-sm text-muted-foreground">{tr("tournaments.page.pick.body")}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {FEDERATION_CHOICES.map((f) => (
                 <Button
@@ -481,7 +484,7 @@ export default function TournamentsPage() {
             </div>
           </div>
         ) : visibleBrowseTournaments.length === 0 ? (
-          <EmptyState icon={<Trophy className="h-6 w-6 text-muted-foreground" />} title="No tournaments found" description="No tournaments match your filters." />
+          <EmptyState icon={<Trophy className="h-6 w-6 text-muted-foreground" />} title={tr("tournaments.page.noneFound")} description={tr("tournaments.page.noneMatch")} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {visibleBrowseTournaments.slice(0, shown).map((t) => {
@@ -499,7 +502,7 @@ export default function TournamentsPage() {
                         type="button"
                         onClick={() => setConditionsFor({ id: t.id })}
                         className="text-left underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        aria-label={`Playing conditions for ${t.name}`}
+                        aria-label={tr("tournaments.page.conditionsAria", { name: t.name })}
                       >
                         {t.name}
                       </button>
@@ -510,8 +513,8 @@ export default function TournamentsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                        title="Hide from suggestions"
-                        aria-label={`Hide ${t.name} from suggestions`}
+                        title={tr("tournaments.page.hideTitle")}
+                        aria-label={tr("tournaments.page.hideAria", { name: t.name })}
                         disabled={hideTournament.isPending}
                         onClick={() => hideTournament.mutate(t.id)}
                       >
@@ -522,13 +525,13 @@ export default function TournamentsPage() {
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{t.city}, {t.country}</div>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  <div className="flex items-center gap-1.5 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{format(new Date(t.startDate), "MMM d")} – {format(new Date(t.endDate), "MMM d, yyyy")}</div>
+                  <div className="flex items-center gap-1.5 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{formatDate(new Date(t.startDate), SHORT_DATE)} – {formatDate(new Date(t.endDate), FULL_DATE)}</div>
                   <div className="flex flex-wrap gap-1.5">
                     {t.category && <Badge variant="secondary">{t.category}</Badge>}
                     {t.level && <Badge variant="secondary">{t.level}</Badge>}
-                    <Badge variant="outline" className="capitalize">{t.indoorOutdoor === "indoor" ? <><Warehouse className="mr-1 h-3 w-3" />Indoor</> : <><Sun className="mr-1 h-3 w-3" />Outdoor</>}</Badge>
-                    {t.altitude != null && t.altitude > 0 && <Badge variant="outline"><Mountain className="mr-1 h-3 w-3" />{t.altitude}m</Badge>}
-                    {distance != null && <Badge variant="outline" className="border-primary/40 text-primary"><MapPin className="mr-1 h-3 w-3" />{formatDistanceKm(distance)} away</Badge>}
+                    <Badge variant="outline">{t.indoorOutdoor === "indoor" ? <><Warehouse className="mr-1 h-3 w-3" />{tr("tournaments.page.indoor")}</> : <><Sun className="mr-1 h-3 w-3" />{tr("tournaments.page.outdoor")}</>}</Badge>
+                    {t.altitude != null && t.altitude > 0 && <Badge variant="outline"><Mountain className="mr-1 h-3 w-3" />{tr("tournaments.page.altitudeM", { m: t.altitude })}</Badge>}
+                    {distance != null && <Badge variant="outline" className="border-primary/40 text-primary"><MapPin className="mr-1 h-3 w-3" />{tr("tournaments.page.away", { distance: formatDistanceKm(distance) })}</Badge>}
                   </div>
                   <ProvenanceChip tournament={t} />
                   {isCoach && (() => {
@@ -536,7 +539,7 @@ export default function TournamentsPage() {
                     if (pts.length === 0) return null;
                     return (
                       <div className="rounded-lg border border-border bg-secondary/30 p-2">
-                        <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Your Players</p>
+                        <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{tr("tournaments.page.yourPlayers")}</p>
                         <div className="space-y-1">{pts.map((pt) => (<div key={pt.id} className="flex items-center justify-between"><span className="text-xs text-foreground">{pt.playerName}</span><StatusBadge status={pt.status} /></div>))}</div>
                       </div>
                     );
@@ -549,11 +552,11 @@ export default function TournamentsPage() {
                         variant="outline"
                         size="sm"
                         className="w-full gap-1.5 text-destructive hover:text-destructive"
-                        aria-label={`Remove ${t.name} from your schedule`}
+                        aria-label={tr("tournaments.page.table.removeAria", { name: t.name })}
                         disabled={removePT.isPending}
                         onClick={() => setRemoveTarget({ id: entry.id, name: t.name })}
                       >
-                        <Check className="h-3.5 w-3.5" /> In schedule — remove
+                        <Check className="h-3.5 w-3.5" /> {tr("tournaments.page.inScheduleRemove")}
                       </Button>
                     ) : (
                       <Button
@@ -562,7 +565,7 @@ export default function TournamentsPage() {
                         disabled={addPT.isPending}
                         onClick={() => handleAddToSchedule(t)}
                       >
-                        <Plus className="h-3.5 w-3.5" /> Add to schedule
+                        <Plus className="h-3.5 w-3.5" /> {tr("tournaments.page.addToSchedule")}
                       </Button>
                     );
                   })()}
@@ -577,10 +580,10 @@ export default function TournamentsPage() {
       {viewMode === "tournaments" && visibleBrowseTournaments.length > shown && (
         <div className="flex flex-col items-center gap-2 py-2">
           <p className="text-xs text-muted-foreground">
-            Showing {shown.toLocaleString()} of {visibleBrowseTournaments.length.toLocaleString()}
+            {tr("tournaments.page.showingOf", { shown, total: visibleBrowseTournaments.length })}
           </p>
           <Button variant="outline" onClick={() => setShown((n) => n + PAGE)}>
-            Show more
+            {tr("tournaments.page.showMore")}
           </Button>
         </div>
       )}
@@ -597,7 +600,7 @@ export default function TournamentsPage() {
                 disabled={geoStatus === "prompting"}
               >
                 {geoStatus === "prompting" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LocateFixed className="h-3.5 w-3.5" />}
-                {geoStatus === "prompting" ? "Locating…" : "Use my location"}
+                {geoStatus === "prompting" ? tr("tournaments.map.locating") : tr("tournaments.map.useLocation")}
               </Button>
 
               <Select
@@ -607,7 +610,7 @@ export default function TournamentsPage() {
                   if (city) setManualLocation({ lat: city.lat, lng: city.lng }, `${city.name}, ${city.country}`);
                 }}
               >
-                <SelectTrigger className="w-[190px]"><SelectValue placeholder="Or pick a city…" /></SelectTrigger>
+                <SelectTrigger className="w-[190px]"><SelectValue placeholder={tr("tournaments.map.pickCity")} /></SelectTrigger>
                 <SelectContent>
                   {CITIES.map((c) => (<SelectItem key={c.name} value={c.name}>{c.name}, {c.country}</SelectItem>))}
                 </SelectContent>
@@ -615,19 +618,21 @@ export default function TournamentsPage() {
 
               {userCoords && (
                 <Badge variant="secondary" className="gap-1.5">
-                  <MapPin className="h-3 w-3" /> {userCoords.label ?? "Your location"}
+                  <MapPin className="h-3 w-3" /> {userCoords.label ?? tr("tournaments.map.yourLocation")}
                   <X className="h-3 w-3 cursor-pointer" onClick={clearLocation} />
                 </Badge>
               )}
 
-              {geoStatus === "denied" && <p className="text-xs text-muted-foreground">Location access denied — pick a city instead.</p>}
-              {geoStatus === "unsupported" && <p className="text-xs text-muted-foreground">Geolocation isn't available in this browser — pick a city instead.</p>}
+              {geoStatus === "denied" && <p className="text-xs text-muted-foreground">{tr("tournaments.map.denied")}</p>}
+              {geoStatus === "unsupported" && <p className="text-xs text-muted-foreground">{tr("tournaments.map.unsupported")}</p>}
             </div>
 
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-3">
                 <Label className="whitespace-nowrap text-xs text-muted-foreground">
-                  Within {radiusKm >= MAX_RADIUS_KM ? "any distance" : `${radiusKm.toLocaleString()} km`}
+                  {tr("tournaments.map.within", {
+                    radius: radiusKm >= MAX_RADIUS_KM ? tr("tournaments.map.anyDistance") : tr("tournaments.map.radiusKm", { km: radiusKm }),
+                  })}
                 </Label>
                 <Slider
                   className="w-[160px]"
@@ -642,31 +647,34 @@ export default function TournamentsPage() {
 
               <div className="flex items-center gap-2">
                 <Switch id="sort-nearest" checked={sortByNearest} onCheckedChange={setSortByNearest} disabled={!userCoords} />
-                <Label htmlFor="sort-nearest" className="text-xs text-muted-foreground">Sort by nearest</Label>
+                <Label htmlFor="sort-nearest" className="text-xs text-muted-foreground">{tr("tournaments.map.sortNearest")}</Label>
               </div>
 
               <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => setShowHidden((v) => !v)}>
                 {showHidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                Hidden ({hiddenIds.length}) — {showHidden ? "Hide" : "Show"}
+                {tr("tournaments.map.hiddenToggle", {
+                  count: hiddenIds.length,
+                  action: showHidden ? tr("tournaments.page.hide") : tr("tournaments.page.unhide"),
+                })}
               </Button>
             </div>
 
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Lock className="h-3 w-3" /> Your location stays on your device.
+              <Lock className="h-3 w-3" /> {tr("tournaments.map.privacy")}
             </p>
           </div>
 
           {!userCoords && (
             <div className="border border-dashed border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-              Set your location to see distances from you.
+              {tr("tournaments.map.setLocation")}
             </div>
           )}
 
           {sortedMapTournaments.length === 0 ? (
-            <EmptyState icon={<MapPin className="h-6 w-6 text-muted-foreground" />} title="No tournaments found" description="No tournaments match your filters." />
+            <EmptyState icon={<MapPin className="h-6 w-6 text-muted-foreground" />} title={tr("tournaments.page.noneFound")} description={tr("tournaments.page.noneMatch")} />
           ) : (
             <div className="space-y-4">
-              <Suspense fallback={<LoadingState message="Loading map…" />}>
+              <Suspense fallback={<LoadingState message={tr("tournaments.map.loading")} />}>
                 <TournamentMap
                   tournaments={sortedMapTournaments}
                   userCoords={userCoords}
@@ -687,7 +695,7 @@ export default function TournamentsPage() {
                       <div className="min-w-[220px] flex-1">
                         <p className="font-medium text-foreground">{t.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {t.city}, {t.country} · {format(new Date(t.startDate), "MMM d")} – {format(new Date(t.endDate), "MMM d, yyyy")}
+                          {t.city}, {t.country} · {formatDate(new Date(t.startDate), { month: "short", day: "numeric" })} – {formatDate(new Date(t.endDate), { year: "numeric", month: "short", day: "numeric" })}
                         </p>
                         <ProvenanceChip tournament={t} className="mt-1" />
                       </div>
@@ -703,18 +711,18 @@ export default function TournamentsPage() {
                               variant="outline"
                               size="sm"
                               className="group gap-1 text-muted-foreground hover:text-destructive focus-visible:text-destructive"
-                              aria-label={`Remove ${t.name} from your schedule`}
+                              aria-label={tr("tournaments.page.table.removeAria", { name: t.name })}
                               disabled={removePT.isPending}
                               onClick={() => setRemoveTarget({ id: entry.id, name: t.name })}
                             >
                               <Check className="h-3.5 w-3.5 group-hover:hidden group-focus-visible:hidden" />
                               <X className="hidden h-3.5 w-3.5 group-hover:block group-focus-visible:block" />
-                              <span className="group-hover:hidden group-focus-visible:hidden">In schedule</span>
-                              <span className="hidden group-hover:inline group-focus-visible:inline">Remove</span>
+                              <span className="group-hover:hidden group-focus-visible:hidden">{tr("tournaments.page.inSchedule")}</span>
+                              <span className="hidden group-hover:inline group-focus-visible:inline">{tr("tournaments.page.remove")}</span>
                             </Button>
                           ) : (
                             <Button size="sm" className="gap-1" disabled={addPT.isPending} onClick={() => handleAddToSchedule(t)}>
-                              <Plus className="h-3.5 w-3.5" /> Add
+                              <Plus className="h-3.5 w-3.5" /> {tr("tournaments.page.add")}
                             </Button>
                           )
                         )}
@@ -725,7 +733,7 @@ export default function TournamentsPage() {
                           disabled={hideTournament.isPending || unhideTournament.isPending}
                           onClick={() => (isHidden ? unhideTournament.mutate(t.id) : hideTournament.mutate(t.id))}
                         >
-                          {isHidden ? <><Eye className="h-3.5 w-3.5" /> Unhide</> : <><EyeOff className="h-3.5 w-3.5" /> Hide</>}
+                          {isHidden ? <><Eye className="h-3.5 w-3.5" /> {tr("tournaments.page.unhide")}</> : <><EyeOff className="h-3.5 w-3.5" /> {tr("tournaments.page.hide")}</>}
                         </Button>
                       </div>
                     </div>

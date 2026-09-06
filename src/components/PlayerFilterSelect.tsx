@@ -29,10 +29,10 @@ export function PlayerFilterSelect({ players, value, onValueChange, onViewDetail
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger aria-label={t("a11y.filters.player")} className={className ?? "w-[170px]"}>
           {showIcon && <User className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />}
-          <SelectValue placeholder="All Players" />
+          <SelectValue placeholder={t("players.allPlayers")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All Players</SelectItem>
+          <SelectItem value={ALL}>{t("players.allPlayers")}</SelectItem>
           {players.map((p) => (
             <SelectItem key={p.id} value={p.id}>{p.firstName} {p.lastName}</SelectItem>
           ))}
@@ -43,7 +43,7 @@ export function PlayerFilterSelect({ players, value, onValueChange, onViewDetail
           size="icon"
           variant="ghost"
           className="h-8 w-8 shrink-0"
-          title={`View ${selectedPlayer.firstName}'s profile`}
+          title={t("players.viewProfile", { name: selectedPlayer.firstName })}
           onClick={() => onViewDetail(selectedPlayer)}
         >
           <Eye className="h-3.5 w-3.5 text-primary" />

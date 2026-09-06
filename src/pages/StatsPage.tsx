@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
-import { useT } from "@/lib/i18n";
+import { interleave, slot, useT } from "@/lib/i18n";
 import {
   ExpandableMatchRow,
   HeadlineCard,
@@ -45,7 +45,7 @@ import {
 const DEFAULT_WINDOW: StatsWindowId = "last10";
 
 export default function StatsPage() {
-  const { t } = useT();
+  const { t, formatNumber, locale } = useT();
   const [windowId, setWindowId] = useState<StatsWindowId>(DEFAULT_WINDOW);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
   const { user } = useAuth();
@@ -54,7 +54,11 @@ export default function StatsPage() {
 
   // Windows are derived from the real list, so a window larger than the number
   // of logged matches is never offered.
-  const windowOptions = useMemo(() => buildWindowOptions(matches), [matches]);
+  const windowOptions = useMemo(() => {
+    // The option labels ("Last 10", "Season 2026") are translated.
+    void locale;
+    return buildWindowOptions(matches);
+  }, [matches, locale]);
   // The default window may not be on offer yet (too few matches) — fall back to
   // the widest one so the control never highlights an option that isn't there.
   const activeWindow = windowOptions.find((o) => o.id === windowId) ?? windowOptions[windowOptions.length - 1];
@@ -83,19 +87,22 @@ export default function StatsPage() {
   const header = (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Statistics</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("stats.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          {stats.matchesPlayed > 0
-            ? `Computed from the ${matchCountLabel(stats.matchesPlayed)} you logged` +
-              (stats.firstMatchDate && stats.lastMatchDate
-                ? ` (${formatMatchDate(stats.firstMatchDate)} – ${formatMatchDate(stats.lastMatchDate)}).`
-                : ".")
-            : "Your season performance overview."}
+          {stats.matchesPlayed === 0
+            ? t("stats.overview")
+            : stats.firstMatchDate && stats.lastMatchDate
+              ? t("stats.computedFromRange", {
+                  sample: matchCountLabel(stats.matchesPlayed),
+                  from: formatMatchDate(stats.firstMatchDate),
+                  to: formatMatchDate(stats.lastMatchDate),
+                })
+              : `${t("stats.computedFrom", { sample: matchCountLabel(stats.matchesPlayed) })}.`}
         </p>
       </div>
       <Button asChild variant="outline" className="gap-2 self-start">
         <Link to="/matches">
-          <Plus className="h-4 w-4" /> Log match
+          <Plus className="h-4 w-4" /> {t("matches.logMatch")}
         </Link>
       </Button>
     </div>
@@ -121,7 +128,7 @@ export default function StatsPage() {
     );
   }
 
-  const windowLabel = activeWindow?.label ?? "All";
+  const windowLabel = activeWindow?.label ?? t("stats.window.all");
   // The window's true sample is whatever the server actually aggregated.
   const formSample = stats.recentForm.sampleSize;
 
@@ -138,52 +145,61 @@ export default function StatsPage() {
           hint={
             statsFetching ? (
               <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" /> Updating…
+                <Loader2 className="h-3 w-3 animate-spin" /> {t("stats.updating")}
               </span>
             ) : null
           }
         />
         <p className="text-xs text-muted-foreground">
-          The window applies to <span className="font-medium text-foreground">recent form</span> and the{" "}
-          <span className="font-medium text-foreground">trend</span> chart. Overall win rate and the pooled serve,
-          return and rally figures always cover all {matchCountLabel(stats.matchesPlayed)}.
+          {interleave(
+            t("stats.windowNote", {
+              form: slot(0),
+              trend: slot(1),
+              sample: matchCountLabel(stats.matchesPlayed),
+            }),
+            [
+              <span key="form" className="font-medium text-foreground">{t("stats.windowNoteForm")}</span>,
+              <span key="trend" className="font-medium text-foreground">{t("stats.windowNoteTrend")}</span>,
+            ],
+          )}
         </p>
       </div>
 
       {/* ── Headline ── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <HeadlineCard
-          label="Matches played"
-          value={String(stats.matchesPlayed)}
+          label={t("stats.headline.matchesPlayed")}
+          value={formatNumber(stats.matchesPlayed)}
           caption={
             stats.resultsRecorded === stats.matchesPlayed
-              ? "all with a recorded result"
-              : `${stats.resultsRecorded} with a recorded result`
+              ? t("stats.headline.allWithResult")
+              : t("stats.headline.someWithResult", { count: stats.resultsRecorded })
           }
         />
         <HeadlineCard
-          label="Win rate (all matches)"
+          label={t("stats.headline.winRate")}
           value={formatPct(stats.winRatePct)}
           caption={
             stats.resultsRecorded > 0
-              ? `from ${matchCountLabel(stats.resultsRecorded)} with a result`
-              : "no win/loss recorded yet"
+              ? t("stats.headline.fromWithResult", { sample: matchCountLabel(stats.resultsRecorded) })
+              : t("stats.headline.noResults")
           }
         />
         <HeadlineCard
-          label="Win – loss (all matches)"
+          label={t("stats.headline.winLoss")}
           value={formatWinLoss(stats.wins, stats.losses)}
-          caption={stats.resultsRecorded > 0 ? "wins – losses" : "no win/loss recorded yet"}
+          caption={stats.resultsRecorded > 0 ? t("stats.headline.winsLosses") : t("stats.headline.noResults")}
         />
         <HeadlineCard
-          label={`Form · ${windowLabel}`}
+          label={t("stats.headline.form", { window: windowLabel })}
           value={formatPct(stats.recentForm.winRatePct)}
           caption={
             stats.recentForm.wins !== null
-              ? `${formatWinLoss(stats.recentForm.wins, stats.recentForm.losses)} in the last ${matchCountLabel(
-                  formSample,
-                )}`
-              : `no results recorded in these ${matchCountLabel(formSample)}`
+              ? t("stats.headline.formCaption", {
+                  record: formatWinLoss(stats.recentForm.wins, stats.recentForm.losses),
+                  sample: matchCountLabel(formSample),
+                })
+              : t("stats.headline.formNoResults", { sample: matchCountLabel(formSample) })
           }
         />
       </div>
@@ -198,8 +214,8 @@ export default function StatsPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Surfaces ── */}
         <DashboardCard
-          title="By surface"
-          description="Win rate per court type — only surfaces you have played · all matches"
+          title={t("stats.cards.bySurface")}
+          description={t("stats.cards.bySurfaceDescription")}
           icon={<Target className="h-4 w-4" />}
         >
           <SurfaceSplitList splits={stats.surfaces} />
@@ -207,8 +223,8 @@ export default function StatsPage() {
 
         {/* ── Recent form ── */}
         <DashboardCard
-          title="Recent form"
-          description={`Newest first · ${windowLabel} (${matchCountLabel(formSample)})`}
+          title={t("stats.cards.recentForm")}
+          description={t("stats.cards.recentFormDescription", { window: windowLabel, sample: matchCountLabel(formSample) })}
           icon={<Activity className="h-4 w-4" />}
         >
           <RecentFormStrip form={stats.recentForm} />
@@ -216,82 +232,82 @@ export default function StatsPage() {
 
         {/* ── Serve ── */}
         <DashboardCard
-          title="Serve"
-          description="Pooled from the serve counts you entered · all matches"
+          title={t("stats.cards.serve")}
+          description={t("stats.cards.serveDescription")}
           icon={<Swords className="h-4 w-4" />}
         >
           <div>
             <MetricTile
-              label="1st serve in"
+              label={t("stats.metric.firstServeIn")}
               metric={stats.serve.firstServePct}
               kind="pct"
-              requires="first-serve attempts and serves in"
+              requires={t("stats.metric.firstServeInRequires")}
             />
             <MetricTile
-              label="1st serve points won"
+              label={t("stats.metric.firstServePointsWon")}
               metric={stats.serve.firstServeWonPct}
               kind="pct"
-              requires="first serves in and points won behind them"
+              requires={t("stats.metric.firstServePointsWonRequires")}
             />
             <MetricTile
-              label="2nd serve points won"
+              label={t("stats.metric.secondServePointsWon")}
               metric={stats.serve.secondServeWonPct}
               kind="pct"
-              requires="second serves played and points won"
+              requires={t("stats.metric.secondServePointsWonRequires")}
             />
-            <MetricTile label="Aces" metric={stats.serve.aces} kind="count" requires="aces" />
+            <MetricTile label={t("stats.metric.aces")} metric={stats.serve.aces} kind="count" requires={t("stats.metric.acesRequires")} />
             <MetricTile
-              label="Double faults"
+              label={t("stats.metric.doubleFaults")}
               metric={stats.serve.doubleFaults}
               kind="count"
-              requires="double faults"
+              requires={t("stats.metric.doubleFaultsRequires")}
             />
             <MetricTile
-              label="Break points saved"
+              label={t("stats.metric.breakPointsSaved")}
               metric={stats.breakPoints.savePct}
               kind="pct"
-              requires="break points faced and saved"
+              requires={t("stats.metric.breakPointsSavedRequires")}
             />
           </div>
         </DashboardCard>
 
         {/* ── Return & rally ── */}
         <DashboardCard
-          title="Return & rally"
-          description="Pooled from the return and rally counts you entered · all matches"
+          title={t("stats.cards.returnRally")}
+          description={t("stats.cards.returnRallyDescription")}
           icon={<BarChart3 className="h-4 w-4" />}
         >
           <div>
             <MetricTile
-              label="Return points won"
+              label={t("stats.metric.returnPointsWon")}
               metric={stats.returnGame.returnPointsWonPct}
               kind="pct"
-              requires="return points played and won"
+              requires={t("stats.metric.returnPointsWonRequires")}
             />
             <MetricTile
-              label="Break points converted"
+              label={t("stats.metric.breakPointsConverted")}
               metric={stats.breakPoints.conversionPct}
               kind="pct"
-              requires="break points created and converted"
+              requires={t("stats.metric.breakPointsConvertedRequires")}
             />
-            <MetricTile label="Winners" metric={stats.rally.winners} kind="count" requires="winners" />
+            <MetricTile label={t("stats.metric.winners")} metric={stats.rally.winners} kind="count" requires={t("stats.metric.winnersRequires")} />
             <MetricTile
-              label="Unforced errors"
+              label={t("stats.metric.unforcedErrors")}
               metric={stats.rally.unforcedErrors}
               kind="count"
-              requires="unforced errors"
+              requires={t("stats.metric.unforcedErrorsRequires")}
             />
             <MetricTile
-              label="Winners : unforced errors"
+              label={t("stats.metric.winnerToUnforced")}
               metric={stats.rally.winnerToUnforcedRatio}
               kind="ratio"
-              requires="winners and unforced errors"
+              requires={t("stats.metric.winnerToUnforcedRequires")}
             />
             <MetricTile
-              label="Net points won"
+              label={t("stats.metric.netPointsWon")}
               metric={stats.rally.netPointsWonPct}
               kind="pct"
-              requires="net approaches and net points won"
+              requires={t("stats.metric.netPointsWonRequires")}
             />
           </div>
         </DashboardCard>
@@ -302,17 +318,17 @@ export default function StatsPage() {
 
       {/* ── Recent matches — drill down to the match behind the numbers ── */}
       <DashboardCard
-        title="Recent matches"
-        description="Open a match to see the percentages computed from its own counts"
+        title={t("stats.cards.recentMatches")}
+        description={t("stats.cards.recentMatchesDescription")}
         icon={<ClipboardList className="h-4 w-4" />}
         action={
           <Button asChild variant="ghost" size="sm">
-            <Link to="/matches">View all</Link>
+            <Link to="/matches">{t("stats.cards.viewAll")}</Link>
           </Button>
         }
       >
         {matches.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">No matches to show.</p>
+          <p className="py-4 text-sm text-muted-foreground">{t("stats.cards.noMatches")}</p>
         ) : (
           <div>
             {matches.slice(0, 5).map((match) => (
@@ -328,9 +344,9 @@ export default function StatsPage() {
       </DashboardCard>
 
       <p className="text-xs text-muted-foreground">
-        Percentages are computed on read from the raw counts entered for each match. A metric shows{" "}
-        <span className="font-medium text-foreground">{NO_VALUE}</span> when the counts behind it were never entered —
-        it is never shown as zero, and the trend line breaks rather than bridging a match with no counts.
+        {interleave(t("stats.footnote", { novalue: slot(0) }), [
+          <span key="novalue" className="font-medium text-foreground">{NO_VALUE}</span>,
+        ])}
       </p>
     </div>
   );

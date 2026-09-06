@@ -5,6 +5,7 @@ import { MatchDetailPanel } from "@/components/stats/MatchDetailPanel";
 import { formatMatchDate, formatScore, matchFormatLabel, surfaceLabel } from "@/lib/stats/format";
 import { cn } from "@/lib/utils";
 import type { MatchView } from "@/types";
+import { useT } from "@/lib/i18n";
 
 export interface ExpandableMatchRowProps {
   match: MatchView;
@@ -13,6 +14,7 @@ export interface ExpandableMatchRowProps {
 }
 
 export function ExpandableMatchRow({ match, isOpen, onToggle }: ExpandableMatchRowProps) {
+  const { t } = useT();
   return (
     <div className="border-b border-border last:border-b-0">
       <button
@@ -27,7 +29,7 @@ export function ExpandableMatchRow({ match, isOpen, onToggle }: ExpandableMatchR
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-foreground">
-              {match.opponentName ?? "Opponent not recorded"}
+              {match.opponentName ?? t("matches.opponentNotRecorded")}
             </p>
             <p className="text-xs text-muted-foreground">
               {formatMatchDate(match.date)} · {surfaceLabel(match.surface)} · {matchFormatLabel(match.format)}
@@ -46,7 +48,7 @@ export function ExpandableMatchRow({ match, isOpen, onToggle }: ExpandableMatchR
                   : "bg-muted text-muted-foreground",
             )}
           >
-            {match.result === "win" ? "Win" : match.result === "loss" ? "Loss" : "Not recorded"}
+            {match.result === "win" ? t("matches.result.win") : match.result === "loss" ? t("matches.result.loss") : t("matches.result.notRecorded")}
           </span>
         </div>
       </button>

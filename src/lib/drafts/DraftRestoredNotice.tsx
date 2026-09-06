@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { History, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 
 export interface DraftRestoredNoticeProps {
   /** ISO timestamp of the restored draft — the notice renders only when set. */
@@ -22,11 +23,12 @@ export function DraftRestoredNotice({
   discardLabel = "Discard draft",
   children,
 }: DraftRestoredNoticeProps) {
+  const { t, formatDate } = useT();
   if (!savedAt) return null;
   const when = new Date(savedAt);
   const label = Number.isNaN(when.getTime())
-    ? "earlier"
-    : when.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    ? t("drafts.earlier")
+    : formatDate(when, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
   return (
     <div

@@ -2,6 +2,7 @@
 // no bar and no percentage — there is nothing to be a percentage of.
 import { cn } from "@/lib/utils";
 import { progressLabel, type PlanProgress } from "@/pages/trainingPlans/planProgress";
+import { useT } from "@/lib/i18n";
 
 export function PlanProgressBar({
   progress,
@@ -10,11 +11,12 @@ export function PlanProgressBar({
   progress: PlanProgress;
   className?: string;
 }) {
+  const { t } = useT();
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center justify-between gap-3 text-xs">
         <span className="font-medium text-foreground">{progressLabel(progress)}</span>
-        {progress.skipped > 0 && <span className="text-muted-foreground">{progress.skipped} skipped</span>}
+        {progress.skipped > 0 && <span className="text-muted-foreground">{t("plans.skippedCount", { count: progress.skipped })}</span>}
       </div>
       {progress.total > 0 && (
         <div className="flex items-center gap-3">
@@ -29,7 +31,7 @@ export function PlanProgressBar({
             )}
           </div>
           <span className="w-10 text-right text-xs font-semibold tabular-nums text-foreground">
-            {progress.pct}%
+            {t("plans.pct", { pct: progress.pct })}
           </span>
         </div>
       )}

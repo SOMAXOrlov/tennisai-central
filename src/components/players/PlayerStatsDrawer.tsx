@@ -4,6 +4,10 @@ import { BarChart3, Dumbbell, Star, Target, Clock, TrendingUp, ChevronRight } fr
 import { useTrainings, usePlayerTournaments } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
 import type { ConnectedPlayer } from "@/types";
+import { useT } from "@/lib/i18n";
+
+/** Intl options for the review dates in this drawer. */
+const FULL_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 import { PlayerMatchIssues } from "@/components/matches/PlayerMatchIssues";
 
 interface PlayerStatsDrawerProps {
@@ -13,6 +17,7 @@ interface PlayerStatsDrawerProps {
 }
 
 export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDrawerProps) {
+  const { t, formatDate, formatNumber } = useT();
   const { data: trainings = [] } = useTrainings();
   const { data: playerTournaments = [] } = usePlayerTournaments();
   const playerId = player?.id ?? "";
@@ -60,7 +65,7 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
       <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-primary" /> Player Stats
+            <BarChart3 className="h-4 w-4 text-primary" /> {t("playerDetail.stats.title")}
           </SheetTitle>
         </SheetHeader>
 
@@ -82,24 +87,24 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
           {/* Overview Stats */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">Trainings</span></div>
-              <p className="mt-1 text-2xl font-bold text-foreground">{pastTrainings.length}</p>
-              <p className="text-[11px] text-muted-foreground">{upcomingTrainings.length} upcoming</p>
+              <div className="flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">{t("playerDetail.stats.trainings")}</span></div>
+              <p className="mt-1 text-2xl font-bold text-foreground">{formatNumber(pastTrainings.length)}</p>
+              <p className="text-[11px] text-muted-foreground">{t("playerDetail.stats.upcomingCount", { count: upcomingTrainings.length })}</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">Hours</span></div>
-              <p className="mt-1 text-2xl font-bold text-foreground">{totalHours.toFixed(1)}</p>
-              <p className="text-[11px] text-muted-foreground">total training</p>
+              <div className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">{t("playerDetail.stats.hours")}</span></div>
+              <p className="mt-1 text-2xl font-bold text-foreground">{formatNumber(Number(totalHours.toFixed(1)))}</p>
+              <p className="text-[11px] text-muted-foreground">{t("playerDetail.stats.totalTraining")}</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-muted-foreground"><Star className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">Avg Rating</span></div>
-              <p className="mt-1 text-2xl font-bold text-foreground">{avgRating > 0 ? avgRating.toFixed(1) : "—"}</p>
-              <p className="text-[11px] text-muted-foreground">{reviewedTrainings.length} reviewed</p>
+              <div className="flex items-center gap-2 text-muted-foreground"><Star className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">{t("playerDetail.stats.avgRating")}</span></div>
+              <p className="mt-1 text-2xl font-bold text-foreground">{avgRating > 0 ? formatNumber(Number(avgRating.toFixed(1))) : "—"}</p>
+              <p className="text-[11px] text-muted-foreground">{t("playerDetail.stats.reviewedCount", { count: reviewedTrainings.length })}</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-muted-foreground"><Target className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">Tournaments</span></div>
-              <p className="mt-1 text-2xl font-bold text-foreground">{playerTourns.length}</p>
-              <p className="text-[11px] text-muted-foreground">registered</p>
+              <div className="flex items-center gap-2 text-muted-foreground"><Target className="h-4 w-4" /><span className="text-[10px] uppercase tracking-wider">{t("playerDetail.stats.tournaments")}</span></div>
+              <p className="mt-1 text-2xl font-bold text-foreground">{formatNumber(playerTourns.length)}</p>
+              <p className="text-[11px] text-muted-foreground">{t("playerDetail.stats.registered")}</p>
             </div>
           </div>
 
@@ -107,12 +112,12 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
           {trainingsByType.length > 0 && (
             <div className="space-y-2">
               <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <TrendingUp className="h-3 w-3" /> Training Breakdown
+                <TrendingUp className="h-3 w-3" /> {t("playerDetail.stats.breakdown")}
               </h4>
               <div className="space-y-1.5">
                 {trainingsByType.map(([type, count]) => (
                   <div key={type} className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 px-3 py-2">
-                    <span className="text-sm font-medium capitalize text-foreground">{type.replace("_", " ")}</span>
+                    <span className="text-sm font-medium text-foreground">{t(`training.type.${type}`)}</span>
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">{count}</span>
                   </div>
                 ))}
@@ -124,24 +129,24 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
           {recentReviews.length > 0 && (
             <div className="space-y-2">
               <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <ChevronRight className="h-3 w-3" /> Recent Training Reviews
+                <ChevronRight className="h-3 w-3" /> {t("playerDetail.stats.recentReviews")}
               </h4>
               <div className="space-y-2">
-                {recentReviews.map((t) => (
-                  <div key={t.id} className="rounded-lg border border-border bg-secondary/30 px-3 py-2.5">
+                {recentReviews.map((session) => (
+                  <div key={session.id} className="rounded-lg border border-border bg-secondary/30 px-3 py-2.5">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-foreground">{t.title}</p>
+                      <p className="text-sm font-medium text-foreground">{session.title}</p>
                       <div className="flex items-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className={`h-3 w-3 ${s <= (t.review?.rating ?? 0) ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
+                          <Star key={s} className={`h-3 w-3 ${s <= (session.review?.rating ?? 0) ? "fill-primary text-primary" : "text-muted-foreground/20"}`} />
                         ))}
                       </div>
                     </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{format(parseISO(t.review!.reviewedAt), "MMM d, yyyy")}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{formatDate(parseISO(session.review!.reviewedAt), FULL_DATE)}</p>
                     <div className="mt-1.5 space-y-1">
-                      <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">Worked on:</span> {t.review!.workedOn}</p>
-                      {t.review!.nextSteps && (
-                        <p className="text-xs text-primary"><span className="font-medium">Next:</span> {t.review!.nextSteps}</p>
+                      <p className="text-xs text-foreground"><span className="font-medium text-muted-foreground">{t("playerDetail.stats.workedOn")}</span> {session.review!.workedOn}</p>
+                      {session.review!.nextSteps && (
+                        <p className="text-xs text-primary"><span className="font-medium">{t("playerDetail.stats.next")}</span> {session.review!.nextSteps}</p>
                       )}
                     </div>
                   </div>
@@ -151,7 +156,7 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
           )}
 
           {pastTrainings.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-8">No training history yet for this player.</p>
+            <p className="text-center text-sm text-muted-foreground py-8">{t("playerDetail.stats.noHistory")}</p>
           )}
         </div>
       </SheetContent>

@@ -6,66 +6,81 @@
 import type { ReactNode } from "react";
 import { CircleDot, Zap, Footprints, Circle, Grip } from "lucide-react";
 import type { EquipmentCategory } from "@/types";
+import { t } from "@/lib/i18n";
 
 // ─── Category config ───
 
+/**
+ * The shape of each category: its icon and the condition ladder it offers.
+ *
+ * `value` is what is STORED on the item and must never change — the copy for
+ * it lives in the locale bundles under `equipment.condition.<category>.<value>`
+ * and is resolved at render time by `conditionLabel` below.
+ */
 export const CATEGORY_CONFIG: Record<EquipmentCategory, {
-  label: string; plural: string; icon: ReactNode;
-  conditions: { value: string; label: string; level: "excellent" | "good" | "fair" | "poor" }[];
+  icon: ReactNode;
+  conditions: { value: string; level: "excellent" | "good" | "fair" | "poor" }[];
 }> = {
   racket: {
-    label: "Racket", plural: "Rackets",
     icon: <CircleDot className="h-4 w-4" />,
     conditions: [
-      { value: "New", label: "New — Fresh out of wrapper", level: "excellent" },
-      { value: "Excellent", label: "Excellent — Minimal wear, no paint chips", level: "excellent" },
-      { value: "Good", label: "Good — Minor cosmetic wear, plays great", level: "good" },
-      { value: "Fair", label: "Fair — Visible wear, hairline cracks possible", level: "fair" },
-      { value: "Poor", label: "Poor — Cracked frame, dead feel", level: "poor" },
+      { value: "New", level: "excellent" },
+      { value: "Excellent", level: "excellent" },
+      { value: "Good", level: "good" },
+      { value: "Fair", level: "fair" },
+      { value: "Poor", level: "poor" },
     ],
   },
   string: {
-    label: "Strings", plural: "Strings",
     icon: <Zap className="h-4 w-4" />,
     conditions: [
-      { value: "Fresh", label: "Fresh — Just strung, full tension", level: "excellent" },
-      { value: "Good", label: "Good — Holding tension well", level: "good" },
-      { value: "Losing Tension", label: "Losing Tension — Noticeable drop", level: "fair" },
-      { value: "Fraying", label: "Fraying — Visible notching, near breaking", level: "poor" },
-      { value: "Broken", label: "Broken — Needs immediate restring", level: "poor" },
+      { value: "Fresh", level: "excellent" },
+      { value: "Good", level: "good" },
+      { value: "Losing Tension", level: "fair" },
+      { value: "Fraying", level: "poor" },
+      { value: "Broken", level: "poor" },
     ],
   },
   shoes: {
-    label: "Shoes", plural: "Shoes",
     icon: <Footprints className="h-4 w-4" />,
     conditions: [
-      { value: "New", label: "New — Unworn", level: "excellent" },
-      { value: "Good", label: "Good — Solid tread, comfortable", level: "good" },
-      { value: "Worn Tread", label: "Worn Tread — Reduced grip on court", level: "fair" },
-      { value: "Worn Out", label: "Worn Out — No tread left, sole separation", level: "poor" },
+      { value: "New", level: "excellent" },
+      { value: "Good", level: "good" },
+      { value: "Worn Tread", level: "fair" },
+      { value: "Worn Out", level: "poor" },
     ],
   },
   balls: {
-    label: "Balls", plural: "Balls",
     icon: <Circle className="h-4 w-4" />,
     conditions: [
-      { value: "New", label: "New — Pressurized, full bounce", level: "excellent" },
-      { value: "Practice", label: "Practice — Slightly used, still good bounce", level: "good" },
-      { value: "Flat", label: "Flat — Low bounce, training only", level: "fair" },
-      { value: "Dead", label: "Dead — No bounce, replace immediately", level: "poor" },
+      { value: "New", level: "excellent" },
+      { value: "Practice", level: "good" },
+      { value: "Flat", level: "fair" },
+      { value: "Dead", level: "poor" },
     ],
   },
   accessories: {
-    label: "Accessories", plural: "Accessories",
     icon: <Grip className="h-4 w-4" />,
     conditions: [
-      { value: "New", label: "New", level: "excellent" },
-      { value: "Good", label: "Good — Functional", level: "good" },
-      { value: "Worn", label: "Worn — Needs replacing soon", level: "fair" },
-      { value: "Replace", label: "Replace — Past useful life", level: "poor" },
+      { value: "New", level: "excellent" },
+      { value: "Good", level: "good" },
+      { value: "Worn", level: "fair" },
+      { value: "Replace", level: "poor" },
     ],
   },
 };
+
+/** The category's name, e.g. "Racket" / "Raqueta". */
+export const categoryLabel = (category: EquipmentCategory): string =>
+  t(`equipment.category.${category}.label`);
+
+/** The category's plural name, for section headings. */
+export const categoryPlural = (category: EquipmentCategory): string =>
+  t(`equipment.category.${category}.plural`);
+
+/** The stored condition value, spelled out for a reader. */
+export const conditionLabel = (category: EquipmentCategory, value: string): string =>
+  t(`equipment.condition.${category}.${value}`);
 
 export const CATEGORY_ORDER: EquipmentCategory[] = ["racket", "string", "shoes", "balls", "accessories"];
 

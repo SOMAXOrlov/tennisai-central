@@ -22,11 +22,14 @@ import { usePlayerTournaments, useAddPlayerTournament } from "@/hooks/api/querie
 import { describeClash, findClashes, timeLeft } from "@/lib/tournamentPlanning";
 import type { Tournament, TournamentStatus } from "@/types";
 import { format, parseISO } from "date-fns";
+import { useT } from "@/lib/i18n";
 
-const STATUS_OPTIONS: { value: TournamentStatus; label: string; hint: string }[] = [
-  { value: "registered", label: "Registered", hint: "Entry is in" },
-  { value: "planned", label: "Planned", hint: "Intending to enter" },
-  { value: "maybe", label: "Maybe", hint: "Still deciding" },
+// Keys only — the label comes from the shared status vocabulary and the hint
+// from this dialog's own copy, both looked up at render time.
+const STATUS_OPTIONS: { value: TournamentStatus; hint: string }[] = [
+  { value: "registered", hint: "tournaments.addDialog.registeredHint" },
+  { value: "planned", hint: "tournaments.addDialog.plannedHint" },
+  { value: "maybe", hint: "tournaments.addDialog.maybeHint" },
 ];
 
 export function AddToCalendarDialog({
@@ -39,6 +42,8 @@ export function AddToCalendarDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const { user } = useAuth();
+  const { t, getDateFnsLocale } = useT();
+  const dfl = { locale: getDateFnsLocale() };
   const { connectedPlayers } = useConnections();
   const { data: entries = [] } = usePlayerTournaments();
   const addEntry = useAddPlayerTournament();
@@ -111,7 +116,7 @@ export function AddToCalendarDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarPlus className="h-4 w-4 text-primary" /> Add to the calendar
+            <CalendarPlus className="h-4 w-4 text-primary" /> {t("tournaments.addDialog.title")}
           </DialogTitle>
           <DialogDescription>
             {tournament.name} · {tournament.city}, {tournament.country}
@@ -122,8 +127,8 @@ export function AddToCalendarDialog({
           <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm">
             <div className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground">
-                {format(parseISO(tournament.startDate), "d MMM")} –{" "}
-                {format(parseISO(tournament.endDate), "d MMM yyyy")}
+                {format(parseISO(tournament.startDate), "d MMM", dfl)} –{" "}
+                {format(parseISO(tournament.endDate), "d MMM yyyy", dfl)}
               </span>
               <span
                 className={
@@ -139,7 +144,7 @@ export function AddToCalendarDialog({
             </div>
             {tournament.surface !== "Unknown" && (
               <p className="mt-1 text-xs text-muted-foreground">
-                {tournament.surface} · {tournament.indoorOutdoor}
+                {tournament.surface} · {t(`tournaments.page.${tournament.indoorOutdoor}`)}
                 {tournament.category ? ` · ${tournament.category}` : ""}
               </p>
             )}
@@ -147,15 +152,13 @@ export function AddToCalendarDialog({
 
           {isCoach && (
             <div className="space-y-1.5">
-              <Label>Player</Label>
+              <Label>{t("tournaments.addDialog.player")}</Label>
               {connectedPlayers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Connect a player first — there is nobody to enter yet.
-                </p>
+                <p className="text-sm text-muted-foreground">{t("tournaments.addDialog.connectFirst")}</p>
               ) : (
                 <Select value={playerId} onValueChange={(v) => { setPlayerId(v); setAcknowledged(false); }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a player…" />
+                    <SelectValue placeholder={t("tournaments.addDialog.choosePlayer")} />
                   </SelectTrigger>
                   <SelectContent>
                     {connectedPlayers.map((p) => (
@@ -170,7 +173,7 @@ export function AddToCalendarDialog({
           )}
 
           <div className="space-y-1.5">
-            <Label>Status</Label>
+            <Label>{t("tournaments.addDialog.status")}</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as TournamentStatus)}>
               <SelectTrigger>
                 <SelectValue />
@@ -178,7 +181,8 @@ export function AddToCalendarDialog({
               <SelectContent>
                 {STATUS_OPTIONS.map((s) => (
                   <SelectItem key={s.value} value={s.value}>
-                    {s.label} — <span className="text-muted-foreground">{s.hint}</span>
+                    {t("tournaments.addDialog.statusOption", { label: t(`common.status.${s.value}`) })}
+                    <span className="text-muted-foreground">{t(s.hint)}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -188,7 +192,7 @@ export function AddToCalendarDialog({
           {alreadyEntered && (
             <p className="flex items-start gap-2 rounded-lg border border-border bg-secondary/30 p-3 text-sm text-muted-foreground">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-              Already on this calendar — saving again just updates the status.
+              {t("tournaments.addDialog.alreadyEntered")}
             </p>
           )}
 
@@ -202,15 +206,15 @@ export function AddToCalendarDialog({
                 {clashes.map((c) => (
                   <li key={c.entry.id}>
                     {c.entry.tournament.name} ·{" "}
-                    {format(parseISO(c.entry.tournament.startDate), "d MMM")} –{" "}
-                    {format(parseISO(c.entry.tournament.endDate), "d MMM")}
-                    {c.direct ? "" : " (back to back)"}
+                    {format(parseISO(c.entry.tournament.startDate), "d MMM", dfl)} –{" "}
+                    {format(parseISO(c.entry.tournament.endDate), "d MMM", dfl)}
+                    {c.direct ? "" : t("tournaments.addDialog.backToBackSuffix")}
                   </li>
                 ))}
               </ul>
               {acknowledged && (
                 <p className="mt-2 pl-6 text-xs text-muted-foreground">
-                  Adding anyway — both will show on the calendar.
+                  {t("tournaments.addDialog.acknowledged")}
                 </p>
               )}
             </div>
@@ -219,7 +223,7 @@ export function AddToCalendarDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={submit}
@@ -227,10 +231,10 @@ export function AddToCalendarDialog({
             variant={needsAcknowledgement ? "destructive" : "default"}
           >
             {addEntry.isPending
-              ? "Adding…"
+              ? t("tournaments.addDialog.adding")
               : needsAcknowledgement
-                ? "Add anyway"
-                : "Add to calendar"}
+                ? t("tournaments.addDialog.addAnyway")
+                : t("tournaments.addDialog.add")}
           </Button>
         </DialogFooter>
       </DialogContent>

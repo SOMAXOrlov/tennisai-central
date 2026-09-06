@@ -17,7 +17,7 @@ import { ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { useT } from "@/lib/i18n";
 import type { ConnectedPlayer, EquipmentCategory, EquipmentItem } from "@/types";
-import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, getConditionLevel } from "./categories";
+import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryPlural, conditionLabel, getConditionLevel } from "./categories";
 
 interface PlayerEquipmentDrawerProps {
   player: ConnectedPlayer | null;
@@ -44,11 +44,9 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            {player.firstName} {player.lastName} — Equipment
+            {t("equipment.drawerTitle", { name: `${player.firstName} ${player.lastName}` })}
           </SheetTitle>
-          <SheetDescription>
-            Read-only. Only {player.firstName} can add or change items.
-          </SheetDescription>
+          <SheetDescription>{t("equipment.drawerHint", { name: player.firstName })}</SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
@@ -63,7 +61,7 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
             />
           ) : items.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              {player.firstName} hasn't added any equipment yet.
+              {t("equipment.drawerEmpty", { name: player.firstName })}
             </p>
           ) : (
             CATEGORY_ORDER.map((cat) => {
@@ -74,7 +72,7 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
                 <section key={cat} className="border border-border bg-card">
                   <header className="flex items-center gap-3 border-b border-border px-4 py-2.5">
                     <div className="flex h-7 w-7 items-center justify-center bg-primary/10 text-primary">{cfg.icon}</div>
-                    <span className="text-sm font-semibold text-foreground">{cfg.plural}</span>
+                    <span className="text-sm font-semibold text-foreground">{categoryPlural(cat)}</span>
                     <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">{catItems.length}</Badge>
                   </header>
                   <ul className="divide-y divide-border">
@@ -86,7 +84,7 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
                             <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
                             {item.condition && (
                               <span className={`inline-flex border px-2 py-0 text-[10px] font-medium ${CONDITION_STYLES[level]}`}>
-                                {item.condition}
+                                {conditionLabel(item.category, item.condition)}
                               </span>
                             )}
                           </div>

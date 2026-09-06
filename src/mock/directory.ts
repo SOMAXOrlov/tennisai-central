@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { UserRole } from "@/types";
+import { t } from "@/lib/i18n";
 
 export interface DirectoryEntry {
   id: string;
@@ -72,18 +73,15 @@ export const mockDirectoryService = {
   ): { valid: boolean; reason?: string } {
     const allowed = ALLOWED_CONNECTIONS[fromRole];
     if (!allowed || allowed.length === 0) {
-      return { valid: false, reason: "Your role cannot send connection requests." };
+      return { valid: false, reason: t("connections.validation.cannotSend") };
     }
     if (!allowed.includes(toRole)) {
-      const labels: Record<UserRole, string> = {
-        player: "Players",
-        coach: "Coaches",
-        observer: "Parents",
-        admin: "Admins",
-      };
       return {
         valid: false,
-        reason: `As a ${fromRole}, you can only connect with: ${allowed.map((r) => labels[r]).join(", ")}.`,
+        reason: t("connections.validation.onlyWith", {
+          role: t(`common.role.${fromRole}`).toLowerCase(),
+          allowed: allowed.map((r) => t(`connections.validation.plural.${r}`)).join(", "),
+        }),
       };
     }
     return { valid: true };

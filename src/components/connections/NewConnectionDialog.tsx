@@ -25,15 +25,9 @@ import {
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { SendResult } from "@/store/ConnectionStore";
+import { interleave, slot, t, useT } from "@/lib/i18n";
 
 // ─── Role labels ───
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  player: "Player",
-  coach: "Coach",
-  observer: "Parent",
-  admin: "Admin",
-};
 
 const ROLE_STYLE: Record<string, string> = {
   player: "bg-muted text-foreground dark:text-foreground",
@@ -51,16 +45,8 @@ const ROLE_ID_PREFIX: Record<UserRole, string> = {
 // ─── Allowed connection info per role ───
 
 function getHelpText(role: UserRole): string {
-  switch (role) {
-    case "coach":
-      return "Enter a Player ID (e.g. TAI-P-001) to request a connection.";
-    case "player":
-      return "Enter a Coach ID (e.g. TAI-C-001) or Parent ID (e.g. TAI-F-001) to connect.";
-    case "observer":
-      return "Enter a Player ID (e.g. TAI-P-001) to follow their progress.";
-    default:
-      return "Enter a public ID to connect.";
-  }
+  const known = role === "coach" || role === "player" || role === "observer";
+  return t(`connections.dialog.help.${known ? role : "admin"}`);
 }
 
 function getIdPlaceholder(role: UserRole): string {
@@ -90,6 +76,7 @@ export function NewConnectionDialog({
   onRequestSent,
 }: NewConnectionDialogProps) {
   const { user } = useAuth();
+  const { t } = useT();
   const myRole = user?.role ?? "player";
 
   const [publicId, setPublicId] = useState("");
@@ -129,13 +116,13 @@ export function NewConnectionDialog({
     try {
       const entry = await mockDirectoryService.lookupByPublicId(publicId);
       if (!entry) {
-        setError("No user found with that ID. Please double-check and try again.");
+        setError(t("connections.dialog.notFound"));
         return;
       }
 
       // Self-check
       if (entry.id === user?.id) {
-        setError("You cannot send a connection request to yourself.");
+        setError(t("connections.dialog.self"));
         return;
       }
 
@@ -168,7 +155,7 @@ export function NewConnectionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-primary" />
-            New Connection Request
+            {t("connections.dialog.title")}
           </DialogTitle>
           <DialogDescription>{getHelpText(myRole)}</DialogDescription>
         </DialogHeader>
@@ -180,16 +167,16 @@ export function NewConnectionDialog({
               <CheckCircle2 className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="font-semibold text-foreground">Request Sent!</p>
+              <p className="font-semibold text-foreground">{t("connections.dialog.sentTitle")}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Your connection request to{" "}
-                <span className="font-medium text-foreground">
-                  {lookupResult?.firstName} {lookupResult?.lastName}
-                </span>{" "}
-                has been sent. They'll be notified and can approve or decline.
+                {interleave(t("connections.dialog.sentBody", { name: slot(0) }), [
+                  <span key="name" className="font-medium text-foreground">
+                    {lookupResult?.firstName} {lookupResult?.lastName}
+                  </span>,
+                ])}
               </p>
             </div>
-            <Button onClick={() => handleClose(false)}>Done</Button>
+            <Button onClick={() => handleClose(false)}>{t("connections.dialog.done")}</Button>
           </div>
         ) : (
           /* ─── Lookup form ─── */
@@ -202,7 +189,7 @@ export function NewConnectionDialog({
           >
             {/* ID Input */}
             <div className="space-y-2">
-              <Label htmlFor="publicId">Public ID</Label>
+              <Label htmlFor="publicId">{t("connections.dialog.publicId")}</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -229,18 +216,18 @@ export function NewConnectionDialog({
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Lookup"
+                    t("connections.dialog.lookup")
                   )}
                 </Button>
               </div>
               {suggestedPrefix && publicId === suggestedPrefix && (
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CornerDownLeft className="h-3 w-3" />
-                  Type the rest of the ID, then press
-                  <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-foreground">
-                    Enter
-                  </kbd>
-                  to search.
+                  {interleave(t("connections.dialog.typeRest", { key: slot(0) }), [
+                    <kbd key="enter" className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-foreground">
+                      {t("connections.dialog.enterKey")}
+                    </kbd>,
+                  ])}
                 </p>
               )}
             </div>
@@ -262,7 +249,7 @@ export function NewConnectionDialog({
                 <div className="flex items-start gap-2 text-destructive">
                   <Ban className="mt-0.5 h-4 w-4 shrink-0" />
                   <div className="space-y-1">
-                    <p className="font-semibold">Connection not allowed</p>
+                    <p className="font-semibold">{t("connections.dialog.notAllowed")}</p>
                     <p className="text-destructive/90">{roleMismatch.reason}</p>
                   </div>
                 </div>
@@ -285,7 +272,7 @@ export function NewConnectionDialog({
                       ROLE_STYLE[roleMismatch.entry.role] ?? "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {ROLE_LABEL[roleMismatch.entry.role]}
+                    {t(`common.role.${roleMismatch.entry.role}`)}
                   </span>
                 </div>
 
@@ -295,7 +282,7 @@ export function NewConnectionDialog({
                     if (allowed.length === 0) {
                       return (
                         <p className="text-muted-foreground">
-                          Your role does not support sending connection requests.
+                          {t("connections.dialog.roleCannotSend")}
                         </p>
                       );
                     }
@@ -318,7 +305,7 @@ export function NewConnectionDialog({
                     return (
                       <div className="space-y-2">
                         <p className="font-medium">
-                          Try searching for a role you can connect with:
+                          {t("connections.dialog.trySearching")}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {allowed.map((r, i) => (
@@ -331,7 +318,7 @@ export function NewConnectionDialog({
                               className="h-7 gap-1.5 text-xs"
                             >
                               <Sparkles className="h-3 w-3" />
-                              Search a {ROLE_LABEL[r]}
+                              {t(`connections.dialog.searchRole.${r}`)}
                             </Button>
                           ))}
                         </div>
@@ -360,7 +347,7 @@ export function NewConnectionDialog({
                           ROLE_STYLE[lookupResult.role] ?? "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {ROLE_LABEL[lookupResult.role]}
+                        {t(`common.role.${lookupResult.role}`)}
                       </span>
                     </div>
                     <p className="mt-0.5 font-mono text-xs text-muted-foreground">
@@ -373,23 +360,23 @@ export function NewConnectionDialog({
 
             {/* Allowed connections hint */}
             <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-              <span className="font-semibold">Allowed connections: </span>
+              <span className="font-semibold">{t("connections.dialog.allowedConnections")}</span>
               {mockDirectoryService
                 .getAllowedTargetRoles(myRole)
-                .map((r) => ROLE_LABEL[r])
-                .join(", ") || "None"}
+                .map((r) => t(`common.role.${r}`))
+                .join(", ") || t("connections.dialog.none")}
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => handleClose(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleSendRequest}
                 disabled={!lookupResult}
                 className="gap-1.5"
               >
-                Send Request
+                {t("connections.dialog.send")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </DialogFooter>

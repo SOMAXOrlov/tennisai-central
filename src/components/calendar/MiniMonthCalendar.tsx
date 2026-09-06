@@ -7,6 +7,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { eventBaseColor } from "@/lib/calendar/colors";
 import type { CalendarEvent } from "@/types";
+import { useT } from "@/lib/i18n";
+
+/** Intl options for the clock times in the upcoming list. */
+const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
 
 /** Max events listed inside a day's hover popup before it collapses to "+N more". */
 const POPUP_EVENT_LIMIT = 5;
@@ -33,6 +37,8 @@ interface MiniMonthCalendarProps {
  * clickable, which is what serves touch devices (hover doesn't exist there).
  */
 export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthChange }: MiniMonthCalendarProps) {
+  const { t, formatDate, getDateFnsLocale } = useT();
+  const dfl = { locale: getDateFnsLocale() };
   const [miniMonth, setMiniMonth] = useState(currentDate);
 
   // Day key → that day's events, so the dot count and the popup share one source.
@@ -82,15 +88,15 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
         <div className="mb-1.5 flex items-center justify-between">
           <button
             onClick={() => setMiniMonth((p) => subMonths(p, 1))}
-            aria-label="Previous month"
+            aria-label={t("calendar.mini.previousMonth")}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
           </button>
-          <span className="text-xs font-semibold text-foreground">{format(miniMonth, "MMMM yyyy")}</span>
+          <span className="text-xs font-semibold text-foreground">{format(miniMonth, "MMMM yyyy", dfl)}</span>
           <button
             onClick={() => setMiniMonth((p) => addMonths(p, 1))}
-            aria-label="Next month"
+            aria-label={t("calendar.mini.nextMonth")}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ChevronRight className="h-3.5 w-3.5" />
@@ -119,7 +125,9 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                 // popup), i.e. for in-month days — otherwise a screen reader
                 // would promise events on a leading/trailing day that offers no
                 // way to see them.
-                aria-label={`${format(day, "EEEE d MMMM")}${hasEvents ? ` — ${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}` : ""}`}
+                aria-label={hasEvents
+                  ? t("calendar.mini.dayWithEvents", { day: format(day, "EEEE d MMMM", dfl), events: t("calendar.eventCount", { count: dayEvents.length }) })
+                  : format(day, "EEEE d MMMM", dfl)}
                 className={`relative flex h-7 w-full items-center justify-center rounded text-[11px] font-medium transition-colors
                   ${!inMonth ? "text-muted-foreground/25" : "text-foreground"}
                   ${isSelected ? "bg-primary font-semibold text-primary-foreground" : "hover:bg-accent"}
@@ -148,7 +156,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                       edge, so a top/bottom popup would clip off-screen. */}
                   <HoverCardContent side="right" align="start" sideOffset={10} className="w-64 p-0">
                     <div className="border-b border-border px-3 py-2">
-                      <p className="text-xs font-semibold text-foreground">{format(day, "EEEE, d MMMM")}</p>
+                      <p className="text-xs font-semibold text-foreground">{format(day, "EEEE, d MMMM", dfl)}</p>
                       <p className="text-[10px] text-muted-foreground">
                         {dayEvents.length} {dayEvents.length === 1 ? "event" : "events"} scheduled
                       </p>
@@ -166,7 +174,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-[11px] font-medium leading-tight text-foreground">{e.title}</span>
                               <span className="block text-[10px] capitalize text-muted-foreground">
-                                {multiDay ? "All day" : format(start, "h:mm a")} · {e.type}
+                                {multiDay ? t("calendar.mini.allDay") : format(start, "p", dfl)} · {t(`calendar.type.${e.type}`)}
                                 {e.location ? ` · ${e.location}` : ""}
                               </span>
                             </span>
@@ -176,7 +184,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                     </ul>
                     {dayEvents.length > POPUP_EVENT_LIMIT && (
                       <p className="border-t border-border px-3 py-1.5 text-[10px] font-medium text-muted-foreground">
-                        +{dayEvents.length - POPUP_EVENT_LIMIT} more — click the day to see all
+                        {t("calendar.mini.moreOnDay", { count: dayEvents.length - POPUP_EVENT_LIMIT })}
                       </p>
                     )}
                   </HoverCardContent>
@@ -190,14 +198,14 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
           onClick={goToToday}
           className="mt-1.5 w-full rounded-md py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
         >
-          Today
+          {t("calendar.today")}
         </button>
       </div>
 
       {/* ── Upcoming ── */}
       {upcoming.length > 0 && (
         <div className="border-t border-border pt-2.5">
-          <h3 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Upcoming</h3>
+          <h3 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("calendar.mini.upcoming")}</h3>
           <div className="space-y-0.5">
             {upcoming.map((event) => {
               const start = parseISO(event.startDate);
@@ -213,7 +221,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[11px] font-medium leading-tight text-foreground">{event.title}</span>
-                    <span className="block text-[10px] text-muted-foreground">{format(start, "EEE d MMM · h:mm a")}</span>
+                    <span className="block text-[10px] text-muted-foreground">{format(start, "EEE d MMM", dfl)} · {formatDate(start, TIME_ONLY)}</span>
                   </span>
                 </button>
               );

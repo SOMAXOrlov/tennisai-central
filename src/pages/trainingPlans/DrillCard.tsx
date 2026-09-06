@@ -13,10 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
-  DRILL_STATUS_LABEL,
   drillCategoryLabel,
+  drillStatusLabel,
   intensityLabel,
 } from "@/pages/trainingPlans/planProgress";
+import { useT } from "@/lib/i18n";
 import type { DrillCompletionStatus, TrainingDrill } from "@/types";
 
 function Meta({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
@@ -38,6 +39,7 @@ export interface DrillCardProps {
 }
 
 export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: DrillCardProps) {
+  const { t } = useT();
   const done = drill.completionStatus === "done";
   const skipped = drill.completionStatus === "skipped";
   const intensity = intensityLabel(drill.intensity);
@@ -51,7 +53,7 @@ export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: Drill
           checked={done}
           disabled={!canEdit || busy}
           onCheckedChange={(checked) => onStatusChange(checked === true ? "done" : "pending")}
-          aria-label={`Mark "${drill.objective}" as done`}
+          aria-label={t("plans.drill.markDone", { objective: drill.objective })}
           className="mt-1 rounded-none"
         />
 
@@ -80,14 +82,14 @@ export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: Drill
                   done ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
                 )}
               >
-                {DRILL_STATUS_LABEL[drill.completionStatus]}
+                {drillStatusLabel(drill.completionStatus)}
               </span>
             )}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {typeof drill.durationMin === "number" && (
-              <Meta icon={<Clock className="h-3 w-3" />}>{drill.durationMin} min</Meta>
+              <Meta icon={<Clock className="h-3 w-3" />}>{t("plans.drill.minutes", { count: drill.durationMin })}</Meta>
             )}
             {drill.reps && <Meta icon={<Repeat className="h-3 w-3" />}>{drill.reps}</Meta>}
             {drill.equipment && <Meta icon={<Dumbbell className="h-3 w-3" />}>{drill.equipment}</Meta>}
@@ -99,7 +101,7 @@ export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: Drill
 
           {/* What good looks like */}
           <p className="border-l-2 border-primary/40 pl-3 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Success: </span>
+            <span className="font-medium text-foreground">{t("plans.drill.success")}</span>
             {drill.successCriteria}
           </p>
 
@@ -107,7 +109,7 @@ export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: Drill
             <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
               <Lightbulb className="mt-0.5 h-3 w-3 shrink-0" />
               <span>
-                <span className="font-medium text-foreground">Why: </span>
+                <span className="font-medium text-foreground">{t("plans.drill.why")}</span>
                 {drill.relatedInsight}
               </span>
             </p>
@@ -117,7 +119,7 @@ export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: Drill
             <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
               <StickyNote className="mt-0.5 h-3 w-3 shrink-0" />
               <span>
-                <span className="font-medium text-foreground">Coach note: </span>
+                <span className="font-medium text-foreground">{t("plans.drill.coachNote")}</span>
                 {drill.coachNotes}
               </span>
             </p>
@@ -132,7 +134,7 @@ export function DrillCard({ drill, index, canEdit, busy, onStatusChange }: Drill
               onClick={() => onStatusChange(skipped ? "pending" : "skipped")}
               className="h-7 px-2 text-xs text-muted-foreground"
             >
-              {skipped ? "Un-skip" : "Skip this drill"}
+              {skipped ? t("plans.drill.unskip") : t("plans.drill.skip")}
             </Button>
           )}
         </div>

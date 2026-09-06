@@ -25,7 +25,8 @@ import {
   type CountKey,
   type RallyBucketKey,
 } from "@/components/matches/MatchStatsFields";
-import { MATCH_FORMAT_LABEL, MATCH_FORMAT_OPTIONS } from "@/lib/stats/format";
+import { MATCH_FORMAT_OPTIONS, matchFormatLabel } from "@/lib/stats/format";
+import { useT } from "@/lib/i18n";
 import { MAX_SETS, parseSetRows, type SetRowsError } from "@/components/matches/setScores";
 import type {
   IndoorOutdoor,
@@ -42,12 +43,12 @@ const NO_OPPONENT = "__none__";
 const NEW_OPPONENT = "__new__";
 const NO_RESULT = "__unrecorded__";
 
-/** Set-score problems → this form's copy. The rules themselves live in setScores.ts. */
-const SET_ERROR_COPY: Record<SetRowsError, string> = {
-  incomplete: "Every set needs both games won — remove any set you did not play.",
-  range: "Games won must be between 0 and 30.",
-  tiebreak: "Write a tiebreak as two numbers, e.g. 7-5.",
-  none: "Add at least one set score.",
+/** Set-score problems → this form's copy keys. The rules live in setScores.ts. */
+const SET_ERROR_KEY: Record<SetRowsError, string> = {
+  incomplete: "matches.form.errors.setIncomplete",
+  range: "matches.form.errors.setRange",
+  tiebreak: "matches.form.errors.setTiebreak",
+  none: "matches.form.errors.setNone",
 };
 
 /** What the form hands back — the page maps it to the API payload. */
@@ -104,13 +105,13 @@ interface MatchFormDraft {
 
 /** Count pairs that must stay coherent — same rules the API enforces. */
 const COUNT_PAIRS: ReadonlyArray<readonly [CountKey, CountKey, string]> = [
-  ["firstServesIn", "firstServeAttempts", "Cannot exceed 1st serve attempts"],
-  ["firstServePointsWon", "firstServesIn", "Cannot exceed 1st serves in"],
-  ["secondServePointsWon", "secondServePlayed", "Cannot exceed 2nd serves played"],
-  ["returnPointsWon", "returnPointsPlayed", "Cannot exceed return points played"],
-  ["breakPointsConverted", "breakPointsCreated", "Cannot exceed break points created"],
-  ["breakPointsSaved", "breakPointsFaced", "Cannot exceed break points faced"],
-  ["netPointsWon", "netApproaches", "Cannot exceed net approaches"],
+  ["firstServesIn", "firstServeAttempts", "matches.form.errors.maxFirstServeAttempts"],
+  ["firstServePointsWon", "firstServesIn", "matches.form.errors.maxFirstServesIn"],
+  ["secondServePointsWon", "secondServePlayed", "matches.form.errors.maxSecondServePlayed"],
+  ["returnPointsWon", "returnPointsPlayed", "matches.form.errors.maxReturnPointsPlayed"],
+  ["breakPointsConverted", "breakPointsCreated", "matches.form.errors.maxBreakPointsCreated"],
+  ["breakPointsSaved", "breakPointsFaced", "matches.form.errors.maxBreakPointsFaced"],
+  ["netPointsWon", "netApproaches", "matches.form.errors.maxNetApproaches"],
 ];
 
 function emptyCounts(): Record<CountKey, string> {
@@ -190,6 +191,7 @@ function initialDraft(initial?: MatchView): MatchFormDraft {
 }
 
 export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCancel }: MatchFormProps) {
+  const { t } = useT();
   const pristine = useMemo(() => initialDraft(initial), [initial]);
 
   const [opponentChoice, setOpponentChoice] = useState<string>(pristine.opponentChoice);
@@ -276,16 +278,16 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
 
     const nextErrors: typeof errors = {};
 
-    if (!date || Number.isNaN(Date.parse(date))) nextErrors.date = "Enter the date the match was played.";
+    if (!date || Number.isNaN(Date.parse(date))) nextErrors.date = t("matches.form.errors.date");
 
     if (opponentChoice === NEW_OPPONENT && (!newFirstName.trim() || !newLastName.trim())) {
-      nextErrors.opponent = "Enter the new opponent's first and last name.";
+      nextErrors.opponent = t("matches.form.errors.opponent");
     }
 
     // Same rules as the phone quick-entry sheet — one parser, two forms.
     const parsedSets = parseSetRows(sets);
     const scoreSets: MatchSetScore[] = parsedSets.ok ? parsedSets.sets : [];
-    if (parsedSets.ok === false) nextErrors.sets = SET_ERROR_COPY[parsedSets.error];
+    if (parsedSets.ok === false) nextErrors.sets = t(SET_ERROR_KEY[parsedSets.error]);
 
     const parsedCounts = ALL_COUNT_KEYS.reduce(
       (acc, key) => {
@@ -299,7 +301,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
     for (const [subKey, totalKey, message] of COUNT_PAIRS) {
       const sub = parsedCounts[subKey];
       const total = parsedCounts[totalKey];
-      if (sub !== null && total !== null && sub > total) countErrors[subKey] = message;
+      if (sub !== null && total !== null && sub > total) countErrors[subKey] = t(message);
     }
     if (Object.keys(countErrors).length > 0) {
       nextErrors.counts = countErrors;
@@ -344,35 +346,33 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <DraftRestoredNotice savedAt={draft.restoredAt} onDiscard={discardDraft} onDismiss={draft.acknowledge}>
-        {mode === "edit"
-          ? "Restored the unsaved edits you had in progress."
-          : "Restored the match you started logging earlier."}
+        {mode === "edit" ? t("matches.form.draftEdit") : t("matches.form.draftNew")}
       </DraftRestoredNotice>
 
       {/* ── Who and when ── */}
       <div className="space-y-4 border border-border bg-card p-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="match-opponent">Opponent</Label>
+            <Label htmlFor="match-opponent">{t("matches.form.opponent")}</Label>
             <Select value={opponentChoice} onValueChange={setOpponentChoice}>
               <SelectTrigger id="match-opponent">
-                <SelectValue placeholder="Select an opponent" />
+                <SelectValue placeholder={t("matches.form.opponentPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_OPPONENT}>Not recorded</SelectItem>
+                <SelectItem value={NO_OPPONENT}>{t("matches.form.opponentNotRecorded")}</SelectItem>
                 {opponentOptions.map((o) => (
                   <SelectItem key={o.id} value={o.id}>
                     {o.firstName} {o.lastName}
                   </SelectItem>
                 ))}
-                <SelectItem value={NEW_OPPONENT}>+ New opponent…</SelectItem>
+                <SelectItem value={NEW_OPPONENT}>{t("matches.form.newOpponent")}</SelectItem>
               </SelectContent>
             </Select>
             {errors.opponent && <p className="text-xs text-destructive">{errors.opponent}</p>}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="match-date">Date played</Label>
+            <Label htmlFor="match-date">{t("matches.form.datePlayed")}</Label>
             <div className="relative">
               <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -390,47 +390,47 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
         {opponentChoice === NEW_OPPONENT && (
           <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="opponent-first">New opponent — first name</Label>
+              <Label htmlFor="opponent-first">{t("matches.form.newFirstName")}</Label>
               <Input
                 id="opponent-first"
                 value={newFirstName}
                 onChange={(e) => setNewFirstName(e.target.value)}
-                placeholder="e.g. Marta"
+                placeholder={t("matches.form.newFirstNamePlaceholder")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="opponent-last">New opponent — last name</Label>
+              <Label htmlFor="opponent-last">{t("matches.form.newLastName")}</Label>
               <Input
                 id="opponent-last"
                 value={newLastName}
                 onChange={(e) => setNewLastName(e.target.value)}
-                placeholder="e.g. Kovács"
+                placeholder={t("matches.form.newLastNamePlaceholder")}
               />
             </div>
             <p className="text-xs text-muted-foreground sm:col-span-2">
               <UserPlus className="mr-1 inline h-3 w-3" />
-              Saved to your opponent list so you can reuse it for the next match.
+              {t("matches.form.newOpponentHint")}
             </p>
           </div>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="match-competition">Competition (optional)</Label>
+            <Label htmlFor="match-competition">{t("matches.form.competition")}</Label>
             <Input
               id="match-competition"
               value={competition}
               onChange={(e) => setCompetition(e.target.value)}
-              placeholder="e.g. ITF J60 Sevilla — R16"
+              placeholder={t("matches.form.competitionPlaceholder")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="match-conditions">Conditions (optional)</Label>
+            <Label htmlFor="match-conditions">{t("matches.form.conditions")}</Label>
             <Input
               id="match-conditions"
               value={conditions}
               onChange={(e) => setConditions(e.target.value)}
-              placeholder="e.g. windy, 31°C"
+              placeholder={t("matches.form.conditionsPlaceholder")}
             />
           </div>
         </div>
@@ -439,24 +439,24 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
       {/* ── Court ── */}
       <div className="space-y-4 border border-border bg-card p-4">
         <div className="space-y-2">
-          <Label>Surface</Label>
+          <Label>{t("matches.form.surface")}</Label>
           <SurfacePicker value={surface} onChange={setSurface} />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="match-environment">Indoor / outdoor</Label>
+            <Label htmlFor="match-environment">{t("matches.form.environment")}</Label>
             <Select value={indoorOutdoor} onValueChange={(v) => setIndoorOutdoor(v as IndoorOutdoor)}>
               <SelectTrigger id="match-environment">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="outdoor">Outdoor</SelectItem>
-                <SelectItem value="indoor">Indoor</SelectItem>
+                <SelectItem value="outdoor">{t("matches.setting.outdoor")}</SelectItem>
+                <SelectItem value="indoor">{t("matches.setting.indoor")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="match-format">Format</Label>
+            <Label htmlFor="match-format">{t("matches.form.format")}</Label>
             <Select value={format} onValueChange={(v) => setFormat(v as MatchFormat)}>
               <SelectTrigger id="match-format">
                 <SelectValue />
@@ -464,22 +464,22 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
               <SelectContent>
                 {MATCH_FORMAT_OPTIONS.map((f) => (
                   <SelectItem key={f} value={f}>
-                    {MATCH_FORMAT_LABEL[f]}
+                    {matchFormatLabel(f)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="match-result">Result</Label>
+            <Label htmlFor="match-result">{t("matches.form.result")}</Label>
             <Select value={result} onValueChange={setResult}>
               <SelectTrigger id="match-result">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_RESULT}>Not recorded</SelectItem>
-                <SelectItem value="win">Win</SelectItem>
-                <SelectItem value="loss">Loss</SelectItem>
+                <SelectItem value={NO_RESULT}>{t("matches.form.resultNotRecorded")}</SelectItem>
+                <SelectItem value="win">{t("matches.result.win")}</SelectItem>
+                <SelectItem value="loss">{t("matches.result.loss")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -490,8 +490,8 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
       <div className="space-y-3 border border-border bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <Label>Set scores</Label>
-            <p className="text-xs text-muted-foreground">Games won by you, then your opponent.</p>
+            <Label>{t("matches.form.setScores")}</Label>
+            <p className="text-xs text-muted-foreground">{t("matches.form.setScoresHint")}</p>
           </div>
           <Button
             type="button"
@@ -501,7 +501,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
             onClick={addSet}
             disabled={sets.length >= MAX_SETS}
           >
-            <Plus className="h-3.5 w-3.5" /> Add set
+            <Plus className="h-3.5 w-3.5" /> {t("matches.form.addSet")}
           </Button>
         </div>
 
@@ -509,11 +509,11 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
           {sets.map((row, index) => (
             <div key={index} className="flex flex-wrap items-end gap-2">
               <span className="w-12 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Set {index + 1}
+                {t("matches.form.setNumber", { number: index + 1 })}
               </span>
               <div className="space-y-1">
                 <Label htmlFor={`set-${index}-player`} className="text-xs text-muted-foreground">
-                  You
+                  {t("matches.form.you")}
                 </Label>
                 <Input
                   id={`set-${index}-player`}
@@ -528,7 +528,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
               </div>
               <div className="space-y-1">
                 <Label htmlFor={`set-${index}-opponent`} className="text-xs text-muted-foreground">
-                  Opponent
+                  {t("matches.form.opponentGames")}
                 </Label>
                 <Input
                   id={`set-${index}-opponent`}
@@ -543,7 +543,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
               </div>
               <div className="space-y-1">
                 <Label htmlFor={`set-${index}-tiebreak`} className="text-xs text-muted-foreground">
-                  Tiebreak (optional)
+                  {t("matches.form.tiebreak")}
                 </Label>
                 <Input
                   id={`set-${index}-tiebreak`}
@@ -560,7 +560,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
                 className="h-9 w-9 text-destructive hover:text-destructive"
                 onClick={() => removeSet(index)}
                 disabled={sets.length <= 1}
-                aria-label={`Remove set ${index + 1}`}
+                aria-label={t("matches.form.removeSetAria", { number: index + 1 })}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -584,7 +584,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" className="gap-1.5" disabled={submitting}>
           <Check className="h-4 w-4" />
-          {submitting ? "Saving…" : mode === "edit" ? "Save changes" : "Log match"}
+          {submitting ? t("matches.form.saving") : mode === "edit" ? t("matches.form.saveChanges") : t("matches.form.logMatch")}
         </Button>
         <Button
           type="button"
@@ -593,7 +593,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
           onClick={() => { draft.clear(); onCancel(); }}
           disabled={submitting}
         >
-          <X className="h-4 w-4" /> Cancel
+          <X className="h-4 w-4" /> {t("common.cancel")}
         </Button>
       </div>
     </form>

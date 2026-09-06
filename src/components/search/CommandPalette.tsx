@@ -16,6 +16,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useAuth } from "@/auth/AuthContext";
+import { useT } from "@/lib/i18n";
 import { useConnections } from "@/store/ConnectionStore";
 import { useTournaments } from "@/hooks/api/queries";
 import type { UserRole } from "@/types";
@@ -83,13 +84,16 @@ interface PaletteResultsProps {
  * pays for the tournaments request.
  */
 function PaletteResults({ role, query, onSelect }: PaletteResultsProps) {
+  const { t, locale } = useT();
   const { connectedPlayers } = useConnections();
   const { data: tournaments = [], isLoading: tournamentsLoading } = useTournaments();
 
-  const groups = useMemo(
-    () => buildSearchResults({ role, query, players: connectedPlayers, tournaments }),
-    [role, query, connectedPlayers, tournaments],
-  );
+  const groups = useMemo(() => {
+    // The group headings and result subtitles are translated inside
+    // buildSearchResults, so the list has to be rebuilt when the language is.
+    void locale;
+    return buildSearchResults({ role, query, players: connectedPlayers, tournaments });
+  }, [role, query, connectedPlayers, tournaments, locale]);
 
   const total = countResults(groups);
   // Honest states: while the tournament list is still in flight we say so
@@ -127,14 +131,14 @@ function PaletteResults({ role, query, onSelect }: PaletteResultsProps) {
           aria-live="polite"
         >
           <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-          Searching tournaments…
+          {t("search.searching")}
         </div>
       )}
 
       {/* Only when there is genuinely nothing to show and nothing still coming. */}
       {total === 0 && !stillLoading && (
         <CommandEmpty className="px-4 py-6 text-sm text-muted-foreground">
-          {isSearching ? `No matches for “${query.trim()}”.` : "Nothing to show."}
+          {isSearching ? t("search.noMatches", { query: query.trim() }) : t("search.nothing")}
         </CommandEmpty>
       )}
     </>
@@ -142,6 +146,7 @@ function PaletteResults({ role, query, onSelect }: PaletteResultsProps) {
 }
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+  const { t } = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -170,10 +175,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       <DialogContent className="top-[8%] max-h-[min(80dvh,32rem)] translate-y-0 gap-0 overflow-hidden p-0 shadow-lg sm:top-[50%] sm:translate-y-[-50%]">
         {/* Radix requires both for the dialog to announce itself; the input's
             placeholder is the visible label. */}
-        <DialogTitle className="sr-only">Search TennisAI</DialogTitle>
-        <DialogDescription className="sr-only">
-          Search pages, players and tournaments. Use the arrow keys to choose a result and Enter to open it.
-        </DialogDescription>
+        <DialogTitle className="sr-only">{t("search.dialogTitle")}</DialogTitle>
+        <DialogDescription className="sr-only">{t("search.dialogDescription")}</DialogDescription>
 
         {/* shouldFilter={false}: cmdk's built-in filter would re-rank on top of
             searchIndex's ordering and re-filter data it can't see the keywords
@@ -186,9 +189,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <CommandInput
             value={query}
             onValueChange={setQuery}
-            placeholder="Search pages, players, tournaments…"
+            placeholder={t("search.inputPlaceholder")}
             className="pr-10"
-            aria-label="Search TennisAI"
+            aria-label={t("search.dialogTitle")}
           />
           <CommandList className="max-h-[min(60dvh,24rem)] overscroll-contain pb-[env(safe-area-inset-bottom)]">
             <PaletteResults role={role} query={query} onSelect={handleSelect} />

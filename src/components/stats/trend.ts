@@ -15,7 +15,8 @@
 //     trend that would mislead (see MIN_TREND_POINTS).
 // ============================================================
 
-import { formatMatchDate } from "@/lib/stats/format";
+import { SHORT_MATCH_DATE, formatMatchDate } from "@/lib/stats/format";
+import { t } from "@/lib/i18n";
 import type { MatchResult, MatchView } from "@/types";
 
 /** Fewer usable points than this and a "trend" is noise, not a trend. */
@@ -37,42 +38,32 @@ export interface TrendMetricMeta {
   requires: string;
 }
 
-export const TREND_METRICS: TrendMetricMeta[] = [
-  {
-    id: "firstServePct",
-    label: "1st serve in",
-    definition: "First serves in, as a share of first-serve attempts, for that single match.",
-    requires: "first-serve attempts and first serves in",
-  },
-  {
-    id: "firstServeWonPct",
-    label: "1st serve points won",
-    definition: "Points won behind a first serve that landed in, for that single match.",
-    requires: "first serves in and first-serve points won",
-  },
-  {
-    id: "secondServeWonPct",
-    label: "2nd serve points won",
-    definition: "Points won on second serve, for that single match.",
-    requires: "second serves played and second-serve points won",
-  },
-  {
-    id: "returnPointsWonPct",
-    label: "Return points won",
-    definition: "Return points won, for that single match.",
-    requires: "return points played and return points won",
-  },
-  {
-    id: "runningWinRatePct",
-    label: "Win rate (running)",
-    definition:
-      "Win rate across every match with a recorded result up to and including that match — it only moves when a result was recorded.",
-    requires: "a recorded win or loss",
-  },
+/** Metric order. The copy for each lives under `stats.trend.metric.<id>`. */
+export const TREND_METRIC_IDS: TrendMetricId[] = [
+  "firstServePct",
+  "firstServeWonPct",
+  "secondServeWonPct",
+  "returnPointsWonPct",
+  "runningWinRatePct",
 ];
 
+/**
+ * Resolved at call time, not at module load: the label, definition and
+ * "requires" phrase all follow the active language.
+ */
 export function trendMetricMeta(id: TrendMetricId): TrendMetricMeta {
-  return TREND_METRICS.find((m) => m.id === id) ?? TREND_METRICS[0];
+  const resolved = TREND_METRIC_IDS.includes(id) ? id : TREND_METRIC_IDS[0];
+  return {
+    id: resolved,
+    label: t(`stats.trend.metric.${resolved}.label`),
+    definition: t(`stats.trend.metric.${resolved}.definition`),
+    requires: t(`stats.trend.metric.${resolved}.requires`),
+  };
+}
+
+/** Every metric, resolved in the active language — for the picker. */
+export function trendMetrics(): TrendMetricMeta[] {
+  return TREND_METRIC_IDS.map(trendMetricMeta);
 }
 
 export interface TrendPoint {
@@ -148,7 +139,7 @@ export function buildTrendSeries(
     return {
       x: String(index),
       matchId: match.id,
-      label: formatMatchDate(match.date, "d MMM"),
+      label: formatMatchDate(match.date, SHORT_MATCH_DATE),
       dateIso: match.date ?? null,
       opponentName: match.opponentName ?? null,
       result,

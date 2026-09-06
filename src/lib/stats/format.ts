@@ -7,7 +7,7 @@
 // once shipped here; these helpers exist so it cannot come back.)
 // ============================================================
 
-import { format as formatDateFns } from "date-fns";
+import { formatDate, formatDecimal, formatNumber, formatPercent, t } from "@/lib/i18n";
 import type {
   AggregateMatchStats,
   MatchFormat,
@@ -30,11 +30,20 @@ export function toCalendarDate(iso: string | null | undefined): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+/** The default shape of a match date: "3 Mar 2026" / "3 mar 2026". */
+const MATCH_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
+
 /** "3 Mar 2026" — or "—" when the date is missing/unparseable. */
-export function formatMatchDate(iso: string | null | undefined, pattern = "d MMM yyyy"): string {
+export function formatMatchDate(
+  iso: string | null | undefined,
+  options: Intl.DateTimeFormatOptions = MATCH_DATE,
+): string {
   const date = toCalendarDate(iso);
-  return date ? formatDateFns(date, pattern) : NO_VALUE;
+  return date ? formatDate(date, options) : NO_VALUE;
 }
+
+/** "3 Mar" — the compact axis/chip form. */
+export const SHORT_MATCH_DATE: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
 
 /** True when a metric actually has entered data behind it. */
 export function hasValue(metric: StatMetric | undefined | null): boolean {
@@ -58,32 +67,32 @@ function metricValue(metric: StatMetric | number | null | undefined): number | n
 export function formatPct(metric: StatMetric | number | null | undefined): string {
   const value = metricValue(metric);
   if (value === null) return NO_VALUE;
-  return `${value}%`;
+  return formatPercent(value);
 }
 
 /** "128" — or "—" when no match recorded the count. */
 export function formatCount(metric: StatMetric | number | null | undefined): string {
   const value = metricValue(metric);
   if (value === null) return NO_VALUE;
-  return String(value);
+  return formatNumber(value);
 }
 
 /** "1.20" — or "—". Ratios keep two decimals so 1.2 and 1.25 line up. */
 export function formatRatio(metric: StatMetric | number | null | undefined): string {
   const value = metricValue(metric);
   if (value === null) return NO_VALUE;
-  return value.toFixed(2);
+  return formatDecimal(value, 2);
 }
 
 /** "4 matches" / "1 match" — pluralised match count for captions. */
 export function matchCountLabel(count: number): string {
-  return `${count} match${count === 1 ? "" : "es"}`;
+  return t("matches.countLabel", { count });
 }
 
 /** "from 4 matches" — the honest sample behind a pooled metric. */
 export function formatSample(metric: StatMetric | undefined | null): string {
-  if (!metric || metric.value === null || metric.sample <= 0) return "no data entered";
-  return `from ${matchCountLabel(metric.sample)}`;
+  if (!metric || metric.value === null || metric.sample <= 0) return t("matches.sampleNone");
+  return t("matches.sampleFrom", { sample: matchCountLabel(metric.sample) });
 }
 
 /** "12–4" (en dash) — or "—" when no result has been recorded. */
@@ -100,24 +109,12 @@ export function formatScore(sets: MatchSetScore[] | undefined): string {
     .join(", ");
 }
 
-export const SURFACE_LABEL: Record<string, string> = {
-  clay: "Clay",
-  hard: "Hard",
-  grass: "Grass",
-  indoor: "Indoor",
-};
+/** The surfaces we have copy for; anything else falls through untranslated. */
+const KNOWN_SURFACES = new Set(["clay", "hard", "grass", "indoor"]);
 
 export function surfaceLabel(surface: string): string {
-  return SURFACE_LABEL[surface] ?? surface;
+  return KNOWN_SURFACES.has(surface) ? t(`matches.surface.${surface}`) : surface;
 }
-
-export const MATCH_FORMAT_LABEL: Record<MatchFormat, string> = {
-  best_of_3: "Best of 3",
-  best_of_5: "Best of 5",
-  pro_set: "Pro set",
-  single_set: "Single set",
-  fast4: "Fast4",
-};
 
 export const MATCH_FORMAT_OPTIONS: MatchFormat[] = [
   "best_of_3",
@@ -128,7 +125,9 @@ export const MATCH_FORMAT_OPTIONS: MatchFormat[] = [
 ];
 
 export function matchFormatLabel(format: string): string {
-  return MATCH_FORMAT_LABEL[format as MatchFormat] ?? format;
+  return MATCH_FORMAT_OPTIONS.includes(format as MatchFormat)
+    ? t(`matches.format.${format}`)
+    : format;
 }
 
 const noData = (): StatMetric => ({ value: null, sample: 0 });

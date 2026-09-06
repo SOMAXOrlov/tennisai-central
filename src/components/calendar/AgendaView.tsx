@@ -31,6 +31,7 @@ import {
 import { CalendarDays, ChevronRight, MapPin } from "lucide-react";
 import { eventBaseColor, entityColor, withAlpha } from "@/lib/calendar/colors";
 import type { CalendarEvent } from "@/types";
+import { getDateFnsLocale, useT } from "@/lib/i18n";
 
 /**
  * Events listed under a day before the rest collapse into "+N more", which
@@ -74,10 +75,11 @@ function eventsOnDay(events: CalendarEvent[], day: Date) {
 function whenLabel(e: CalendarEvent): string {
   const start = parseISO(e.startDate);
   const end = parseISO(e.endDate);
+  const dfl = { locale: getDateFnsLocale() };
   if (differenceInCalendarDays(end, start) >= 1) {
-    return `${format(start, "d MMM")} – ${format(end, "d MMM")}`;
+    return `${format(start, "d MMM", dfl)} – ${format(end, "d MMM", dfl)}`;
   }
-  return format(start, "HH:mm");
+  return format(start, "HH:mm", dfl);
 }
 
 export interface AgendaViewProps {
@@ -108,6 +110,8 @@ export function AgendaView({
   showPlayerLabel,
   registeredIntlIds,
 }: AgendaViewProps) {
+  const { t, getDateFnsLocale: dateFnsLocale } = useT();
+  const dfl = { locale: dateFnsLocale() };
   const today = new Date();
 
   const groups = useMemo(() => {
@@ -133,10 +137,12 @@ export function AgendaView({
       <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-6 py-16 text-center shadow-sm">
         <CalendarDays className="mb-2 h-8 w-8 text-muted-foreground opacity-40" />
         <p className="text-sm font-medium text-foreground">
-          Nothing in {range === "month" ? format(currentDate, "MMMM yyyy") : "this week"}
+          {t("calendar.agenda.nothingIn", {
+            period: range === "month" ? format(currentDate, "MMMM yyyy", dfl) : t("calendar.agenda.thisWeek"),
+          })}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Use the arrows to look at another {range}, or open Filters to add a tournament calendar.
+          {t(`calendar.agenda.useArrows.${range}`)}
         </p>
       </div>
     );
@@ -165,14 +171,14 @@ export function AgendaView({
                     isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"
                   }`}
                 >
-                  {format(day, "d")}
+                  {format(day, "d", dfl)}
                 </span>
                 <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
-                  {format(day, "EEEE")}
-                  <span className="ml-1.5 text-xs font-normal text-muted-foreground">{format(day, "MMM")}</span>
+                  {format(day, "EEEE", dfl)}
+                  <span className="ml-1.5 text-xs font-normal text-muted-foreground">{format(day, "MMM", dfl)}</span>
                 </span>
                 <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                  {dayEvents.length} {dayEvents.length === 1 ? "event" : "events"}
+                  {t("calendar.eventCount", { count: dayEvents.length })}
                 </span>
               </button>
 
@@ -198,7 +204,7 @@ export function AgendaView({
                             </span>
                             {registeredIntlIds?.has(e.id) && (
                               <span className="shrink-0 rounded-full border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                Entered
+                                {t("calendar.day.entered")}
                               </span>
                             )}
                           </span>
@@ -226,7 +232,7 @@ export function AgendaView({
                   onClick={() => onOpenDay(day, dayEvents)}
                   className="flex min-h-[44px] w-full items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-primary transition-colors active:bg-accent/30"
                 >
-                  Show all {dayEvents.length} on {format(day, "d MMM")}
+                  {t("calendar.agenda.showAll", { count: dayEvents.length, date: format(day, "d MMM", dfl) })}
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               )}

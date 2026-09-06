@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -15,6 +16,7 @@ const MIN_PASSWORD_LENGTH = 8;
  * The token is only ever passed straight to the API — never displayed or stored.
  */
 export default function ResetPasswordPage() {
+  const { t } = useT();
   const [params] = useSearchParams();
   const token = params.get("token") ?? "";
   const [password, setPassword] = useState("");
@@ -31,17 +33,17 @@ export default function ResetPasswordPage() {
     setError("");
     setServerRejected(false);
     if (password.length < MIN_PASSWORD_LENGTH) {
-      return setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      return setError(t("auth.reset.passwordLength", { count: MIN_PASSWORD_LENGTH }));
     }
-    if (password !== confirm) return setError("Passwords do not match");
+    if (password !== confirm) return setError(t("auth.reset.passwordMismatch"));
     setLoading(true);
     try {
       const res = await authApi.resetPassword(token, password);
-      setMessage(res.message || "Your password has been updated.");
+      setMessage(res.message || t("auth.reset.successDefault"));
       setSuccess(true);
     } catch (err: any) {
       setServerRejected(true);
-      setError(err?.message || "We couldn't reset your password. Please request a new link.");
+      setError(err?.message || t("auth.reset.failed"));
     } finally {
       setLoading(false);
     }
@@ -55,20 +57,18 @@ export default function ResetPasswordPage() {
           <AlertCircle className="h-6 w-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold text-foreground">Reset link problem</h2>
-          <p className="text-sm text-muted-foreground">
-            This page needs a valid reset link. Request a new one and open it straight from your email.
-          </p>
+          <h2 className="text-xl font-semibold text-foreground">{t("auth.reset.noTokenTitle")}</h2>
+          <p className="text-sm text-muted-foreground">{t("auth.reset.noTokenBody")}</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Button asChild>
-            <Link to="/forgot-password">Request a new link</Link>
+            <Link to="/forgot-password">{t("auth.reset.requestNew")}</Link>
           </Button>
           <Link
             to="/login"
             className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            Back to login
+            {t("auth.backToLogin")}
           </Link>
         </div>
       </div>
@@ -82,11 +82,11 @@ export default function ResetPasswordPage() {
           <CheckCircle2 className="h-6 w-6 text-primary" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold text-foreground">Password updated</h2>
-          <p className="text-sm text-muted-foreground">{message} Sign in with your new password.</p>
+          <h2 className="text-xl font-semibold text-foreground">{t("auth.reset.successTitle")}</h2>
+          <p className="text-sm text-muted-foreground">{message} {t("auth.reset.successHint")}</p>
         </div>
         <Button asChild>
-          <Link to="/login">Sign in</Link>
+          <Link to="/login">{t("auth.signIn")}</Link>
         </Button>
       </div>
     );
@@ -95,21 +95,21 @@ export default function ResetPasswordPage() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2 text-center">
-        <h2 className="text-xl font-semibold text-foreground">Set a new password</h2>
-        <p className="text-sm text-muted-foreground">Choose a password you haven't used before.</p>
+        <h2 className="text-xl font-semibold text-foreground">{t("auth.reset.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("auth.reset.subtitle")}</p>
       </div>
       {error && (
         <div role="alert" className="space-y-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
           <p>{error}</p>
           {serverRejected && (
             <Link to="/forgot-password" className="inline-block font-medium underline underline-offset-4">
-              Request a new reset link
+              {t("auth.reset.requestNewLink")}
             </Link>
           )}
         </div>
       )}
       <div className="space-y-1">
-        <Label htmlFor="password">New password</Label>
+        <Label htmlFor="password">{t("auth.reset.newPassword")}</Label>
         <Input
           id="password"
           type="password"
@@ -120,10 +120,10 @@ export default function ResetPasswordPage() {
           autoComplete="new-password"
           placeholder="••••••••"
         />
-        <p className="text-xs text-muted-foreground">At least {MIN_PASSWORD_LENGTH} characters.</p>
+        <p className="text-xs text-muted-foreground">{t("auth.reset.lengthHint", { count: MIN_PASSWORD_LENGTH })}</p>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="confirm">Confirm new password</Label>
+        <Label htmlFor="confirm">{t("auth.reset.confirmPassword")}</Label>
         <Input
           id="confirm"
           type="password"
@@ -139,15 +139,15 @@ export default function ResetPasswordPage() {
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Updating password…
+            {t("auth.reset.submitting")}
           </>
         ) : (
-          "Update password"
+          t("auth.reset.submit")
         )}
       </Button>
       <p className="text-center text-sm">
         <Link to="/login" className="text-muted-foreground hover:text-foreground">
-          Back to login
+          {t("auth.backToLogin")}
         </Link>
       </p>
     </form>

@@ -266,7 +266,6 @@
     "title": "Quick actions",
     "description": "Two taps, courtside.",
     "back": "Back",
-    "cancel": "Cancel",
     "menu": {
       "logTraining": {
         "title": "Log a training",
@@ -480,6 +479,133 @@
       "notEntered": "You are not entered for this one.",
       "player": "Player",
       "seeWhereItIs": "See where it is"
+    },
+    "page": {
+      "title": "Tournaments",
+      "subtitle": {
+        "coach": "View tournaments and your connected players' participation.",
+        "observer": "Read-only view of connected player tournaments.",
+        "player": "Browse upcoming tournaments and manage your entries."
+      },
+      "loading": "Loading tournaments…",
+      "loadError": "Failed to load tournaments",
+      "tabs": {
+        "mySchedule": "My Schedule",
+        "playerView": "Player View",
+        "addTournaments": "Add Tournaments",
+        "browseAll": "Browse All",
+        "map": "Map"
+      },
+      "filters": {
+        "surface": "Surface",
+        "allSurfaces": "All Surfaces",
+        "category": "Category",
+        "allCategories": "All Categories",
+        "country": "Country",
+        "allCountries": "All Countries",
+        "status": "All Statuses",
+        "reset": "Reset",
+        "refreshing": "Refreshing…",
+        "refresh": "Refresh tournaments",
+        "searchChip": "Search: “{query}”",
+        "teamChip": "Team",
+        "playerChip": "Player"
+      },
+      "table": {
+        "empty": "No player tournaments",
+        "emptyFiltered": "No results match your filters.",
+        "emptyNone": "No tournament entries yet.",
+        "tournament": "Tournament",
+        "player": "Player",
+        "location": "Location",
+        "date": "Date",
+        "surface": "Surface",
+        "status": "Status",
+        "removeTitle": "Remove from schedule",
+        "removeAria": "Remove {name} from your schedule"
+      },
+      "following": "Following",
+      "pick": {
+        "title": "Which tours do you follow?",
+        "body": "Pick one to start browsing. The feeds carry thousands of events worldwide, so nothing is shown until you choose. Your choice is saved and used on the calendar too."
+      },
+      "noneFound": "No tournaments found",
+      "noneMatch": "No tournaments match your filters.",
+      "conditionsAria": "Playing conditions for {name}",
+      "hideTitle": "Hide from suggestions",
+      "hideAria": "Hide {name} from suggestions",
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "altitudeM": "{m} m",
+      "away": "{distance} away",
+      "yourPlayers": "Your Players",
+      "inScheduleRemove": "In schedule — remove",
+      "addToSchedule": "Add to schedule",
+      "inSchedule": "In schedule",
+      "remove": "Remove",
+      "add": "Add",
+      "unhide": "Unhide",
+      "hide": "Hide",
+      "showingOf": "Showing {shown} of {total}",
+      "showMore": "Show more"
+    },
+    "map": {
+      "locating": "Locating…",
+      "useLocation": "Use my location",
+      "pickCity": "Or pick a city…",
+      "yourLocation": "Your location",
+      "denied": "Location access denied — pick a city instead.",
+      "unsupported": "Geolocation isn't available in this browser — pick a city instead.",
+      "within": "Within {radius}",
+      "anyDistance": "any distance",
+      "radiusKm": "{km} km",
+      "sortNearest": "Sort by nearest",
+      "hiddenToggle": "Hidden ({count}) — {action}",
+      "privacy": "Your location stays on your device.",
+      "setLocation": "Set your location to see distances from you.",
+      "loading": "Loading map…"
+    },
+    "removeDialog": {
+      "title": "Remove from your schedule?",
+      "body": "{name} will be taken off your schedule, along with the status you set for it. You can add it again from the Browse tab.",
+      "keep": "Keep it",
+      "removing": "Removing…",
+      "remove": "Remove"
+    },
+    "planning": {
+      "finished": "Finished",
+      "onNow": "On now",
+      "entriesCloseToday": "Entries close today",
+      "entriesCloseIn": "Entries close in {count, plural, one {# day} other {# days}}",
+      "startsIn": "Starts in {count, plural, one {# day} other {# days}}",
+      "entriesClosedStartsIn": "Entries closed · starts in {count, plural, one {# day} other {# days}}",
+      "clashSentence": "{who} {kind} {list} over the same dates.",
+      "clashWhoUnnamed": "This player is",
+      "clashWhoNamed": "{name} is",
+      "clashDirect": "already entered for",
+      "clashBackToBack": "back to back with",
+      "clashList": "{head} and {last}"
+    },
+    "addDialog": {
+      "title": "Add to the calendar",
+      "player": "Player",
+      "connectFirst": "Connect a player first — there is nobody to enter yet.",
+      "choosePlayer": "Choose a player…",
+      "status": "Status",
+      "statusOption": "{label} — ",
+      "registeredHint": "Entry is in",
+      "plannedHint": "Intending to enter",
+      "maybeHint": "Still deciding",
+      "alreadyEntered": "Already on this calendar — saving again just updates the status.",
+      "backToBackSuffix": " (back to back)",
+      "acknowledged": "Adding anyway — both will show on the calendar.",
+      "adding": "Adding…",
+      "addAnyway": "Add anyway",
+      "add": "Add to calendar"
+    },
+    "mapPopup": {
+      "yourLocation": "Your location",
+      "hide": "Hide"
     }
   },
   "ai": {
@@ -836,7 +962,6 @@
       "trainingPlans": "Training plans",
       "trainingRequests": "Training requests",
       "connections": "Connections",
-      "aiInsights": "AI Insights",
       "notifications": "Notifications",
       "adminUsers": "Users",
       "adminRelationships": "Relationships",
@@ -861,13 +986,11 @@
       "language": "Language"
     },
     "common": {
-      "loadError": "Failed to load dashboard data",
       "manage": "Manage",
       "viewAll": "View all",
       "fullCalendar": "Full calendar",
       "explore": "Explore",
       "details": "Details",
-      "open": "Open",
       "upcomingEvents": "Upcoming Events",
       "unreadNotifications": "Unread Notifications",
       "noUpcomingEvents": "No upcoming events yet.",
@@ -889,7 +1012,6 @@
         "title": "Welcome back, {name}",
         "subtitle": "Here's your tennis overview for today."
       },
-      "loading": "Loading your dashboard…",
       "stats": {
         "tournaments": "Tournaments",
         "registeredTrend": "{count} registered"
@@ -906,13 +1028,6 @@
         "title": "Equipment",
         "itemsTracked": "{count, plural, one {# item tracked} other {# items tracked}}",
         "empty": "No equipment tracked yet."
-      },
-      "matchConditions": {
-        "title": "Match Conditions",
-        "description": "Surface, ball and weather, per tournament",
-        "cardTitle": "Check how a tournament will play",
-        "cardBody": "Open any tournament to see its surface, official ball, expected temperature and humidity, and what that does to the ball.",
-        "browse": "Browse tournaments"
       }
     },
     "coach": {
@@ -920,7 +1035,6 @@
         "title": "Welcome back, Coach {lastName}",
         "subtitle": "Manage your players, teams, and training schedule."
       },
-      "loading": "Loading your dashboard…",
       "createTeam": "Create Team",
       "newTraining": "New Training",
       "stats": {
@@ -945,7 +1059,6 @@
       "teamsCard": {
         "title": "My Teams",
         "description": "{count, plural, one {# team} other {# teams}}",
-        "playersCount": "{count, plural, one {# player} other {# players}}",
         "createNew": "Create New Team"
       },
       "needsReview": {
@@ -978,7 +1091,6 @@
         "title": "Welcome, {name}",
         "subtitle": "Viewing connected player's progress."
       },
-      "loading": "Loading dashboard…",
       "stats": {
         "connectedPlayers": "Connected Players",
         "pendingRequests": "Pending Requests"
@@ -1057,6 +1169,26 @@
         "columnParticipants": "Participants",
         "columnStatus": "Status",
         "columnActions": "Actions"
+      },
+      "sampleAlerts": {
+        "latencyTitle": "High API Latency",
+        "latencyMessage": "Average response time exceeded 2s in the last hour.",
+        "emailTitle": "Failed Email Delivery",
+        "emailMessage": "12 verification emails bounced in the last 24 hours.",
+        "maintenanceTitle": "Scheduled Maintenance",
+        "maintenanceMessage": "Database maintenance planned for March 12, 02:00–04:00 UTC.",
+        "signupsTitle": "Unusual Signup Spike",
+        "signupsMessage": "50% increase in registrations detected from a single IP range."
+      },
+      "userStatus": {
+        "active": "Active",
+        "pending": "Pending",
+        "suspended": "Suspended"
+      },
+      "tournamentStatus": {
+        "upcoming": "Upcoming",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
       }
     }
   },
@@ -1122,6 +1254,1549 @@
     "checkNow": "Check now",
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
+  },
+  "drafts": {
+    "earlier": "earlier"
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your personal information.",
+    "information": "Profile Information",
+    "publicId": "Your Public ID",
+    "publicIdHint": "Share this ID so others can connect with you.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "saving": "Saving…",
+    "save": "Save Changes",
+    "questionnaire": "Profile questionnaire",
+    "questionnaireDescription": "Your onboarding answers",
+    "editAnswers": "Edit answers",
+    "notCompleted": "You haven't completed your profile questionnaire yet.",
+    "completeSetup": "Complete setup",
+    "calendars": "Tournament calendars",
+    "calendarsHint": "Which tours appear on your calendar. Nothing is on to begin with — the feeds carry thousands of events worldwide, and a calendar showing all of them is one nobody can read. Pick the ones your players actually enter.",
+    "federation": {
+      "ITF": "World Tennis Tour — juniors and the professional entry level",
+      "UTR": "UTR-rated events, usually local and frequent",
+      "ATP": "Men's professional tour",
+      "WTA": "Women's professional tour",
+      "USTA": "United States national events"
+    },
+    "ownSessionsAria": "Show my own sessions",
+    "ownSessions": "My own sessions",
+    "ownSessionsHint": "Trainings, matches and anything you or your coach put on the calendar."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadCount": "{count, plural, one {# unread notification} other {# unread notifications}}",
+    "allCaughtUp": "You're all caught up.",
+    "markAllRead": "Mark all read",
+    "hideSettings": "Hide settings",
+    "settings": "Notification settings",
+    "tabAll": "All",
+    "tabUnread": "Unread",
+    "tabUnreadCount": "Unread ({count})",
+    "settingsTitle": "Notification Settings",
+    "settingsSubtitle": "Manage which notifications you receive.",
+    "preferences": "Preferences",
+    "setting": {
+      "trainingReminders": {
+        "label": "Training Reminders",
+        "description": "Get notified about upcoming training sessions"
+      },
+      "tournamentReminders": {
+        "label": "Tournament Reminders",
+        "description": "Get notified about upcoming tournaments"
+      },
+      "requestApprovals": {
+        "label": "Connection Requests",
+        "description": "Get notified when someone sends you a request"
+      },
+      "financeUpdates": {
+        "label": "Finance Updates",
+        "description": "Get notified about finance-related changes"
+      },
+      "aiInsightUpdates": {
+        "label": "AI Insights",
+        "description": "Get notified when new AI insights are available"
+      },
+      "systemNotifications": {
+        "label": "System Notifications",
+        "description": "Important system updates and announcements"
+      }
+    },
+    "prefs": {
+      "title": "Notification preferences",
+      "description": "Choose how you want to hear about activity, and what's worth a notification.",
+      "channels": "Channels",
+      "email": "Email",
+      "emailHint": "Send an email for notifications you've opted into",
+      "push": "Push",
+      "pushHint": "Send a push notification to your registered devices",
+      "pushNotConfigured": "Push isn't configured on this server yet",
+      "thisDevice": "This device",
+      "deviceEnabled": "Push is enabled on this device.",
+      "deviceUnsupported": "This browser doesn't support push notifications, or enabling it failed.",
+      "deviceDenied": "Notification permission was denied in the browser.",
+      "deviceIdle": "Register this browser to receive push notifications.",
+      "enabling": "Enabling…",
+      "enabled": "Enabled",
+      "enable": "Enable push on this device",
+      "categories": "What you're notified about",
+      "saving": "Saving…",
+      "autoSave": "Changes save automatically.",
+      "category": {
+        "trainingReminders": {
+          "label": "Training reminders",
+          "description": "Upcoming sessions and schedule changes"
+        },
+        "tournamentReminders": {
+          "label": "Tournament reminders",
+          "description": "Entries, deadlines and upcoming events"
+        },
+        "requestApprovals": {
+          "label": "Request approvals",
+          "description": "Training requests, approvals and reschedules"
+        },
+        "financeUpdates": {
+          "label": "Finance updates",
+          "description": "New expenses and finance entries"
+        },
+        "aiInsightUpdates": {
+          "label": "AI insight updates",
+          "description": "New scouting reports, game plans and analysis"
+        },
+        "systemNotifications": {
+          "label": "System notifications",
+          "description": "Account and general app notifications"
+        }
+      }
+    }
+  },
+  "search": {
+    "trigger": "Search — pages, players and tournaments",
+    "placeholder": "Search…",
+    "dialogTitle": "Search TennisAI",
+    "dialogDescription": "Search pages, players and tournaments. Use the arrow keys to choose a result and Enter to open it.",
+    "inputPlaceholder": "Search pages, players, tournaments…",
+    "searching": "Searching tournaments…",
+    "noMatches": "No matches for “{query}”.",
+    "nothing": "Nothing to show."
+  },
+  "onboarding": {
+    "intro": "Answer a few quick questions — pick an option or write your own. You can change these later.",
+    "progress": "Question {step} of {total}",
+    "addOwn": "Add your own…",
+    "add": "Add",
+    "skip": "Skip for now",
+    "back": "Back",
+    "saving": "Saving…",
+    "finish": "Finish",
+    "next": "Next"
+  },
+  "statsCard": {
+    "title": "Statistics",
+    "description": "Season performance overview",
+    "fullStats": "Full stats",
+    "empty": "No match data yet. Your stats will appear here once matches are recorded.",
+    "logMatch": "Log match",
+    "winRate": "Win rate",
+    "fromWithResult": "from {count, plural, one {# match} other {# matches}} with a result",
+    "noResults": "no win/loss recorded yet",
+    "winLoss": "Win – loss",
+    "logged": "{count, plural, one {# match} other {# matches}} logged",
+    "recentForm": "Recent form · last {count}",
+    "noWinRate": "None of these matches has a recorded win or loss.",
+    "formSummary": "{record} · {rate} win rate",
+    "fullBreakdown": "Full breakdown"
+  },
+  "connections": {
+    "title": "Connections & Requests",
+    "adminTitle": "Relationship Management",
+    "subtitle": {
+      "player": "Approve or reject connection requests from coaches and fans.",
+      "coach": "Send requests to players and manage your active connections.",
+      "observer": "Request access to follow a player's progress.",
+      "admin": "View all platform relationship records."
+    },
+    "newRequest": "New Request",
+    "searchPlaceholder": "Search by name…",
+    "sentOn": "Sent {date}",
+    "receivedOn": "Received {date}",
+    "approve": "Approve",
+    "approveDisabled": "Only the recipient can approve while pending.",
+    "reject": "Reject",
+    "rejectDisabled": "Only the recipient can reject while pending.",
+    "awaiting": "Awaiting response",
+    "revoke": "Revoke",
+    "revokeDisabled": "Only an active participant can revoke this connection.",
+    "stat": {
+      "incoming": "Incoming",
+      "sent": "Sent",
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "card": {
+      "incoming": "Incoming Requests",
+      "sent": "Sent Requests",
+      "active": "Active Relationships",
+      "revoked": "Revoked & Rejected"
+    },
+    "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+    "activeCount": "{count, plural, one {# active connection} other {# active connections}}",
+    "relationshipCount": "{count, plural, one {# relationship} other {# relationships}}",
+    "dialog": {
+      "title": "New Connection Request",
+      "help": {
+        "coach": "Enter a Player ID (e.g. TAI-P-001) to request a connection.",
+        "player": "Enter a Coach ID (e.g. TAI-C-001) or Parent ID (e.g. TAI-F-001) to connect.",
+        "observer": "Enter a Player ID (e.g. TAI-P-001) to follow their progress.",
+        "admin": "Enter a public ID to connect."
+      },
+      "sentTitle": "Request Sent!",
+      "sentBody": "Your connection request to {name} has been sent. They'll be notified and can approve or decline.",
+      "done": "Done",
+      "publicId": "Public ID",
+      "lookup": "Lookup",
+      "typeRest": "Type the rest of the ID, then press {key} to search.",
+      "enterKey": "Enter",
+      "notAllowed": "Connection not allowed",
+      "roleCannotSend": "Your role does not support sending connection requests.",
+      "trySearching": "Try searching for a role you can connect with:",
+      "allowedConnections": "Allowed connections: ",
+      "none": "None",
+      "send": "Send Request",
+      "notFound": "No user found with that ID. Please double-check and try again.",
+      "self": "You cannot send a connection request to yourself.",
+      "searchRole": {
+        "player": "Search a player",
+        "coach": "Search a coach",
+        "observer": "Search a parent"
+      }
+    },
+    "validation": {
+      "cannotSend": "Your role cannot send connection requests.",
+      "onlyWith": "As a {role}, you can only connect with: {allowed}.",
+      "plural": {
+        "player": "Players",
+        "coach": "Coaches",
+        "observer": "Parents",
+        "admin": "Admins"
+      }
+    },
+    "incomingCard": {
+      "title": "Incoming requests",
+      "allConnections": "All connections",
+      "connections": "Connections",
+      "waiting": "{count, plural, one {# request} other {# requests}} waiting for your decision",
+      "moreOn": "+{count} more on the {link} page."
+    },
+    "errors": {
+      "signedOut": "You must be signed in.",
+      "self": "You cannot connect with yourself.",
+      "already": "You're already connected with this user.",
+      "pending": "A pending request already exists between you.",
+      "requestNotFound": "Request not found.",
+      "notRecipient": "Only the recipient can act on this request.",
+      "alreadyResolved": "This request is already {status}.",
+      "badTransition": "Invalid status transition.",
+      "relationshipNotFound": "Relationship not found.",
+      "notActive": "Only active relationships can be revoked.",
+      "notYours": "You are not part of this relationship."
+    }
+  },
+  "admin": {
+    "title": "Admin Management",
+    "subtitle": "User management, tournaments, and system alerts."
+  },
+  "equipment": {
+    "title": "Equipment",
+    "subtitle": "Manage your rackets, strings, shoes, and more.",
+    "addItem": "Add Item",
+    "recommendations": "Equipment Upgrade Recommendations",
+    "needsAttention": "Needs attention",
+    "drawerTitle": "{name} — Equipment",
+    "drawerHint": "Read-only. Only {name} can add or change items.",
+    "drawerEmpty": "{name} hasn't added any equipment yet.",
+    "add": {
+      "title": "Add Equipment",
+      "description": "Track a new piece of tennis equipment.",
+      "name": "Name *",
+      "namePlaceholder": "e.g. Wilson Pro Staff 97",
+      "category": "Category",
+      "brand": "Brand",
+      "brandPlaceholder": "Wilson, Babolat…",
+      "condition": "Condition",
+      "conditionPlaceholder": "Select condition…",
+      "model": "Model",
+      "notes": "Notes",
+      "notesPlaceholder": "e.g. Tension: 52 lbs",
+      "adding": "Adding…",
+      "submit": "Add Equipment"
+    },
+    "category": {
+      "racket": {
+        "label": "Racket",
+        "plural": "Rackets"
+      },
+      "string": {
+        "label": "Strings",
+        "plural": "Strings"
+      },
+      "shoes": {
+        "label": "Shoes",
+        "plural": "Shoes"
+      },
+      "balls": {
+        "label": "Balls",
+        "plural": "Balls"
+      },
+      "accessories": {
+        "label": "Accessories",
+        "plural": "Accessories"
+      }
+    },
+    "condition": {
+      "racket": {
+        "New": "New — Fresh out of wrapper",
+        "Excellent": "Excellent — Minimal wear, no paint chips",
+        "Good": "Good — Minor cosmetic wear, plays great",
+        "Fair": "Fair — Visible wear, hairline cracks possible",
+        "Poor": "Poor — Cracked frame, dead feel"
+      },
+      "string": {
+        "Fresh": "Fresh — Just strung, full tension",
+        "Good": "Good — Holding tension well",
+        "Losing Tension": "Losing Tension — Noticeable drop",
+        "Fraying": "Fraying — Visible notching, near breaking",
+        "Broken": "Broken — Needs immediate restring"
+      },
+      "shoes": {
+        "New": "New — Unworn",
+        "Good": "Good — Solid tread, comfortable",
+        "Worn Tread": "Worn Tread — Reduced grip on court",
+        "Worn Out": "Worn Out — No tread left, sole separation"
+      },
+      "balls": {
+        "New": "New — Pressurized, full bounce",
+        "Practice": "Practice — Slightly used, still good bounce",
+        "Flat": "Flat — Low bounce, training only",
+        "Dead": "Dead — No bounce, replace immediately"
+      },
+      "accessories": {
+        "New": "New",
+        "Good": "Good — Functional",
+        "Worn": "Worn — Needs replacing soon",
+        "Replace": "Replace — Past useful life"
+      }
+    },
+    "upgrade": {
+      "racket": {
+        "tip1": "Consider upgrading to a newer frame — modern rackets offer better dampening and power transfer",
+        "tip2": "A cracked or dead-feeling frame affects shot control. Look at the Wilson Clash or Babolat Pure Aero for replacements",
+        "tip3": "Schedule a demo day at your local pro shop to test newer models before buying"
+      },
+      "string": {
+        "tip1": "Fraying strings lose tension unpredictably — restring before your next match",
+        "tip2": "Consider switching to a more durable polyester like Luxilon ALU Power or Solinco Hyper-G",
+        "tip3": "If you break strings frequently, try a hybrid setup (poly mains, synthetic gut crosses)"
+      },
+      "shoes": {
+        "tip1": "Worn treads significantly increase slip risk on hard courts — prioritize replacing shoes",
+        "tip2": "Look into shoes with reinforced toe caps if you drag your feet on serves",
+        "tip3": "Consider the ASICS Gel-Resolution or adidas Barricade for maximum court durability"
+      },
+      "balls": {
+        "tip1": "Dead balls alter bounce patterns and can develop bad timing habits — use fresh balls for match practice",
+        "tip2": "Keep a rotation: new balls for match play, used for warm-up, dead for ball machine drills"
+      },
+      "accessories": {
+        "tip1": "Worn overgrips reduce racket control — replace every 3-5 sessions",
+        "tip2": "Check dampeners, wristbands, and bags for wear that could affect your game or comfort"
+      }
+    },
+    "add2": "Add"
+  },
+  "finance": {
+    "title": "Finance",
+    "subtitle": "Track training, travel, tournament, and equipment costs.",
+    "addExpense": "Add Expense",
+    "total": "Total",
+    "transactions": "Transactions",
+    "entryCount": "{count, plural, one {# entry} other {# entries}}",
+    "entryMeta": "{category} · {date}",
+    "category": {
+      "training": "Training",
+      "travel": "Travel",
+      "tournament": "Tournament",
+      "equipment": "Equipment"
+    },
+    "add": {
+      "title": "Add Expense",
+      "description": "Track a new tennis-related expense.",
+      "descriptionLabel": "Description *",
+      "descriptionPlaceholder": "e.g. Weekly coaching",
+      "amount": "Amount *",
+      "amountPlaceholder": "0.00",
+      "category": "Category",
+      "date": "Date",
+      "adding": "Adding…",
+      "submit": "Add Expense"
+    }
+  },
+  "playerDetail": {
+    "title": "Player Detail",
+    "connectedSince": "Connected since {date}",
+    "createTraining": "Create Training",
+    "calendar": "Calendar",
+    "tournaments": "Tournaments",
+    "teams": "Teams",
+    "noTeams": "Not assigned to any team",
+    "teamPlayers": "{count, plural, one {# player} other {# players}}",
+    "upcomingTrainings": "Upcoming Trainings",
+    "noTrainings": "No upcoming trainings",
+    "noTournaments": "No upcoming tournaments",
+    "equipment": "Equipment",
+    "noEquipment": "No equipment tracked",
+    "moreEquipment": "+{count} more",
+    "financeSummary": "Finance Summary",
+    "financeTraining": "Training",
+    "financeTravel": "Travel",
+    "financeTournament": "Tournament",
+    "financeEquipment": "Equipment",
+    "financeTotal": "Total: {amount}",
+    "fullCalendar": "Full Calendar",
+    "allTrainings": "All Trainings",
+    "stats": {
+      "title": "Player Stats",
+      "trainings": "Trainings",
+      "upcomingCount": "{count} upcoming",
+      "hours": "Hours",
+      "totalTraining": "total training",
+      "avgRating": "Avg Rating",
+      "reviewedCount": "{count} reviewed",
+      "tournaments": "Tournaments",
+      "registered": "registered",
+      "breakdown": "Training Breakdown",
+      "recentReviews": "Recent Training Reviews",
+      "workedOn": "Worked on:",
+      "next": "Next:",
+      "noHistory": "No training history yet for this player."
+    }
+  },
+  "teams": {
+    "title": "Teams",
+    "subtitle": "Create teams and organize your connected players into groups.",
+    "create": "Create Team",
+    "createNew": "Create New Team",
+    "statTeams": "Teams",
+    "statConnected": "Connected Players",
+    "statInTeams": "Players in Teams",
+    "playerCount": "{count, plural, one {# player} other {# players}}",
+    "createdOn": "Created {date}",
+    "metaLine": "{players} · {created}",
+    "noPlayersYet": "No players yet",
+    "morePlayers": "+{count} more",
+    "manage": "Manage Team",
+    "roster": "Team Roster",
+    "rosterEmpty": "No players in this team yet.",
+    "remove": "Remove",
+    "addPlayers": "Add Connected Players",
+    "addPlayersHint": "Only players with accepted connections",
+    "searchPlaceholder": "Search connected players…",
+    "noConnected": "No connected players yet.",
+    "noMatch": "No matching players found.",
+    "allInTeam": "All connected players are already in this team.",
+    "add": "Add",
+    "nameLabel": "Team Name",
+    "namePlaceholder": "e.g. Junior Elite Squad",
+    "saving": "Saving…",
+    "save": "Save",
+    "createTitle": "Create Team",
+    "createDescription": "Give your new team a name.",
+    "renameTitle": "Rename Team",
+    "renameDescription": "Enter a new name for this team.",
+    "deleteTitle": "Delete Team",
+    "deleteBody": "Are you sure you want to delete {name}? This won't affect the player connections.",
+    "deleting": "Deleting…",
+    "deleteConfirm": "Delete Team",
+    "noTeam": "No team",
+    "chipsAria": "Teams"
+  },
+  "players": {
+    "title": "My Players",
+    "subtitle": "Players with active connections to you.",
+    "connect": "Connect Player",
+    "searchPlaceholder": "Search players…",
+    "connectedSince": "Connected since {date}",
+    "allPlayers": "All Players",
+    "allTeams": "All Teams",
+    "teamOption": "{name} ({count})",
+    "viewProfile": "View {name}'s profile",
+    "actionsFor": "Actions for {name}",
+    "actions": "Actions",
+    "openMenuFor": "Open menu for {name}",
+    "menu": {
+      "schedule": "Schedule",
+      "calendar": "Calendar",
+      "stats": "Stats",
+      "equipment": "Equipment",
+      "manageTeam": "Manage team"
+    }
+  },
+  "plans": {
+    "title": "Training plans",
+    "subtitleCoach": "Sessions you saved from the Session Builder, plus anything assigned to you.",
+    "subtitlePlayer": "Sessions your coach saved for you. Tick each drill off as you complete it.",
+    "sessionBuilder": "Session Builder",
+    "allPlans": "All plans",
+    "assignedToYou": "Assigned to you",
+    "youCreated": "You created",
+    "forBy": "For {player} · by {creator}",
+    "weekOf": "Week of {date}",
+    "savedOn": "Saved {date}",
+    "drillCount": "{count, plural, one {# drill} other {# drills}}",
+    "minutesPlanned": "{minutes} min planned",
+    "minutesPlannedPartial": "{minutes}+ min planned (some drills have no duration)",
+    "drills": "Drills",
+    "drillsDescription": "Tick a drill off once it is done, or skip it — the status is saved on the plan",
+    "noDrills": "This plan has no drills.",
+    "noDrillsInPlan": "No drills in this plan",
+    "progress": "{done} of {total, plural, one {# drill} other {# drills}} done",
+    "skippedCount": "{count} skipped",
+    "pct": "{pct}%",
+    "you": "You",
+    "nameUnavailable": "Name unavailable",
+    "category": {
+      "technical": "Technical",
+      "tactical": "Tactical",
+      "physical": "Physical",
+      "mental": "Mental"
+    },
+    "status": {
+      "pending": "To do",
+      "done": "Done",
+      "skipped": "Skipped"
+    },
+    "drill": {
+      "markDone": "Mark “{objective}” as done",
+      "minutes": "{count} min",
+      "success": "Success: ",
+      "why": "Why: ",
+      "coachNote": "Coach note: ",
+      "unskip": "Un-skip",
+      "skip": "Skip this drill"
+    },
+    "filter": {
+      "all": "All ({count})",
+      "assigned": "Assigned to me ({count})",
+      "created": "Created by me ({count})",
+      "empty": "No plans in this filter."
+    }
+  },
+  "session": {
+    "title": "Session Builder",
+    "subtitle": "Set your preferences and generate a structured, best-practice tennis session — with exactly what to do and how to do it.",
+    "startFresh": "Start fresh",
+    "restored": "Restored your last preferences{extra}.",
+    "restoredExtra": " and generated session",
+    "prefsTitle": "Coach preferences",
+    "prefsDescription": "Tune the session, then generate",
+    "goal": "Session goal",
+    "focusAreas": "Focus areas",
+    "focusRange": "(1–3)",
+    "level": "Level",
+    "levelBeginner": "Beginner",
+    "levelIntermediate": "Intermediate",
+    "levelAdvanced": "Advanced",
+    "intensity": "Intensity",
+    "duration": "Duration",
+    "minutes": "{count} min",
+    "surface": "Surface / court",
+    "format": "Format",
+    "formatIndividual": "Individual",
+    "formatGroup": "Group",
+    "players": "Players",
+    "generate": "Generate session",
+    "noSession": "No session yet",
+    "noSessionHint": "Choose a goal and focus areas on the left, then hit {action} to build a full plan.",
+    "saveToPlan": "Save to plan",
+    "groupBadge": "{format} · {count}",
+    "what": "What:",
+    "how": "How:",
+    "success": "Success:",
+    "drillMeta": "{minutes} min · {category}",
+    "equipment": "Equipment checklist",
+    "noEquipment": "No special equipment needed.",
+    "principles": "Coaching principles",
+    "notes": "Notes",
+    "saveTitle": "Save session to a player's plan",
+    "saveDescription": "The full session — drills, coaching cues and success targets — is saved to the selected player's training plan.",
+    "player": "Player",
+    "selectPlayer": "Select a player",
+    "saving": "Saving…",
+    "save": "Save session",
+    "focus": {
+      "serve": "Serve",
+      "return": "Return",
+      "forehand": "Forehand",
+      "backhand": "Backhand",
+      "net": "Net / Volley",
+      "movement": "Movement & Footwork",
+      "fitness": "Fitness & Conditioning",
+      "tactics": "Tactics & Patterns",
+      "mental": "Mental & Competitive"
+    },
+    "goalOption": {
+      "technical": "Technical development",
+      "tactical": "Tactical development",
+      "physical": "Physical / conditioning",
+      "match_prep": "Match preparation",
+      "recovery": "Recovery / light session"
+    }
+  },
+  "requests": {
+    "title": "Training Requests",
+    "subtitle": {
+      "player": "Request training sessions from your coach.",
+      "coach": "Review and respond to player training requests.",
+      "observer": "View training request activity."
+    },
+    "request": "Request Training",
+    "needCoach": "You need to connect with a coach before you can request training sessions.",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rescheduled": "Rescheduled",
+      "declined": "Declined"
+    },
+    "pendingWithCount": "Pending ({count})",
+    "highPriority": "High Priority",
+    "cancelTitle": "Cancel request",
+    "cancelAria": "Cancel your {type} request for {date}",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Declined",
+      "reschedule_proposed": "New Time Proposed",
+      "cancelled": "Cancelled"
+    },
+    "form": {
+      "title": "Request Training",
+      "description": "Send a training request to {coach}",
+      "date": "Preferred Date *",
+      "startTime": "Start Time *",
+      "endTime": "End Time *",
+      "type": "Training Type",
+      "priority": "Priority",
+      "priorityNormal": "Normal",
+      "priorityHigh": "High",
+      "location": "Location",
+      "optional": "(optional)",
+      "locationPlaceholder": "Court A, Gym, etc.",
+      "notes": "Notes for Coach",
+      "notesPlaceholder": "What would you like to work on?",
+      "sending": "Sending…",
+      "send": "Send Request"
+    },
+    "detail": {
+      "title": "Training Request",
+      "playerNotes": "Player Notes",
+      "proposedTime": "Proposed New Time",
+      "coachResponse": "Coach Response",
+      "messageToPlayer": "Message to Player",
+      "messagePlaceholder": "Add a note…",
+      "approving": "Approving…",
+      "approve": "Approve",
+      "proposeNewTime": "Propose New Time",
+      "declining": "Declining…",
+      "decline": "Decline",
+      "date": "Date",
+      "start": "Start",
+      "end": "End",
+      "message": "Message",
+      "reschedulePlaceholder": "Explain the reschedule…",
+      "sending": "Sending…",
+      "sendProposal": "Send Proposal"
+    },
+    "cancelDialog": {
+      "title": "Cancel this request?",
+      "body": "Your request to {coach} for {date} ({time}) will be withdrawn. You would need to send a new one to ask again.",
+      "keep": "Keep request",
+      "cancelling": "Cancelling…",
+      "confirm": "Cancel request"
+    }
+  },
+  "stats": {
+    "title": "Statistics",
+    "computedFrom": "Computed from the {sample} you logged",
+    "computedFromRange": "Computed from the {sample} you logged ({from} – {to}).",
+    "overview": "Your season performance overview.",
+    "updating": "Updating…",
+    "windowNote": "The window applies to {form} and the {trend} chart. Overall win rate and the pooled serve, return and rally figures always cover all {sample}.",
+    "windowNoteForm": "recent form",
+    "windowNoteTrend": "trend",
+    "window": {
+      "label": "Window",
+      "last": "Last {count}",
+      "season": "Season {year}",
+      "clamped": "{label} (last {max})",
+      "lastMax": "Last {max}",
+      "all": "All"
+    },
+    "headline": {
+      "matchesPlayed": "Matches played",
+      "allWithResult": "all with a recorded result",
+      "someWithResult": "{count} with a recorded result",
+      "winRate": "Win rate (all matches)",
+      "fromWithResult": "from {sample} with a result",
+      "noResults": "no win/loss recorded yet",
+      "winLoss": "Win – loss (all matches)",
+      "winsLosses": "wins – losses",
+      "form": "Form · {window}",
+      "formCaption": "{record} in the last {sample}",
+      "formNoResults": "no results recorded in these {sample}"
+    },
+    "cards": {
+      "bySurface": "By surface",
+      "bySurfaceDescription": "Win rate per court type — only surfaces you have played · all matches",
+      "recentForm": "Recent form",
+      "recentFormDescription": "Newest first · {window} ({sample})",
+      "serve": "Serve",
+      "serveDescription": "Pooled from the serve counts you entered · all matches",
+      "returnRally": "Return & rally",
+      "returnRallyDescription": "Pooled from the return and rally counts you entered · all matches",
+      "recentMatches": "Recent matches",
+      "recentMatchesDescription": "Open a match to see the percentages computed from its own counts",
+      "viewAll": "View all",
+      "noMatches": "No matches to show.",
+      "trend": "Trend",
+      "trendDescription": "One point per logged match · {window}"
+    },
+    "metric": {
+      "firstServeIn": "1st serve in",
+      "firstServeInRequires": "first-serve attempts and serves in",
+      "firstServePointsWon": "1st serve points won",
+      "firstServePointsWonRequires": "first serves in and points won behind them",
+      "secondServePointsWon": "2nd serve points won",
+      "secondServePointsWonRequires": "second serves played and points won",
+      "aces": "Aces",
+      "acesRequires": "aces",
+      "doubleFaults": "Double faults",
+      "doubleFaultsRequires": "double faults",
+      "breakPointsSaved": "Break points saved",
+      "breakPointsSavedRequires": "break points faced and saved",
+      "returnPointsWon": "Return points won",
+      "returnPointsWonRequires": "return points played and won",
+      "breakPointsConverted": "Break points converted",
+      "breakPointsConvertedRequires": "break points created and converted",
+      "winners": "Winners",
+      "winnersRequires": "winners",
+      "unforcedErrors": "Unforced errors",
+      "unforcedErrorsRequires": "unforced errors",
+      "winnerToUnforced": "Winners : unforced errors",
+      "winnerToUnforcedRequires": "winners and unforced errors",
+      "netPointsWon": "Net points won",
+      "netPointsWonRequires": "net approaches and net points won",
+      "countPrompt": "Count {requires} when logging a match to see this."
+    },
+    "surfaces": {
+      "noResult": "no result recorded",
+      "none": "No surfaces recorded yet."
+    },
+    "form": {
+      "resultNotRecorded": "Result not recorded",
+      "win": "W",
+      "loss": "L",
+      "nothingLogged": "Nothing logged in this window.",
+      "noWinRate": "None of these matches has a recorded win or loss, so there is no win rate for this window.",
+      "summary": "{record} · {rate} win rate over this window."
+    },
+    "trend": {
+      "notEnough": "Not enough data yet to show a trend",
+      "noneUsable": "None of the {sample} in this window has {requires} recorded.",
+      "someUsable": "Only {usable} of the {sample} in this window {has} {requires} recorded — a trend needs at least {min} points.",
+      "hasSingular": "has",
+      "hasPlural": "have",
+      "twoPoints": "Two points are a pair of numbers, not a trend, so nothing is plotted here.",
+      "plottedFrom": "Plotted from {usableOfSample} in this window.",
+      "usableOfSample": "{usable} of the {sample}",
+      "missingSuffix": " {count, plural, one {# match has} other {# matches have}} no {requires} recorded, so the line breaks there — the gap is never filled in.",
+      "completeSuffix": " Every match in the window has these counts.",
+      "resultNotRecorded": " · result not recorded",
+      "resultSuffix": " · {result}",
+      "notEntered": "These counts were not entered.",
+      "metricValue": "{label}: ",
+      "percentTick": "{value}%",
+      "metric": {
+        "firstServePct": {
+          "label": "1st serve in",
+          "definition": "First serves in, as a share of first-serve attempts, for that single match.",
+          "requires": "first-serve attempts and first serves in"
+        },
+        "firstServeWonPct": {
+          "label": "1st serve points won",
+          "definition": "Points won behind a first serve that landed in, for that single match.",
+          "requires": "first serves in and first-serve points won"
+        },
+        "secondServeWonPct": {
+          "label": "2nd serve points won",
+          "definition": "Points won on second serve, for that single match.",
+          "requires": "second serves played and second-serve points won"
+        },
+        "returnPointsWonPct": {
+          "label": "Return points won",
+          "definition": "Return points won, for that single match.",
+          "requires": "return points played and return points won"
+        },
+        "runningWinRatePct": {
+          "label": "Win rate (running)",
+          "definition": "Win rate across every match with a recorded result up to and including that match — it only moves when a result was recorded.",
+          "requires": "a recorded win or loss"
+        }
+      }
+    },
+    "footnote": "Percentages are computed on read from the raw counts entered for each match. A metric shows {novalue} when the counts behind it were never entered — it is never shown as zero, and the trend line breaks rather than bridging a match with no counts."
+  },
+  "matches": {
+    "title": "Matches",
+    "loggedCount": "{count, plural, one {# match} other {# matches}} logged — your statistics are computed from these.",
+    "empty": "Log a match to start building your statistics.",
+    "logMatch": "Log match",
+    "editTitle": "Edit match",
+    "createTitle": "Log a match",
+    "formIntro": "Record what happened on court. Detailed counts are optional — leave anything you did not count blank.",
+    "delete": {
+      "title": "Delete match",
+      "body": "This permanently removes the match and everything counted in it. Your statistics will be recomputed without it.",
+      "confirm": "Delete match",
+      "deleting": "Deleting…"
+    },
+    "result": {
+      "win": "Win",
+      "loss": "Loss",
+      "notRecorded": "Not recorded",
+      "badgeNotRecorded": "Result not recorded"
+    },
+    "surface": {
+      "clay": "Clay",
+      "hard": "Hard",
+      "grass": "Grass",
+      "indoor": "Indoor"
+    },
+    "setting": {
+      "indoor": "Indoor",
+      "outdoor": "Outdoor"
+    },
+    "format": {
+      "best_of_3": "Best of 3",
+      "best_of_5": "Best of 5",
+      "pro_set": "Pro set",
+      "single_set": "Single set",
+      "fast4": "Fast4"
+    },
+    "opponentNotRecorded": "Opponent not recorded",
+    "editAria": "Edit match",
+    "deleteAria": "Delete match",
+    "countLabel": "{count, plural, one {# match} other {# matches}}",
+    "sampleNone": "no data entered",
+    "sampleFrom": "from {sample}",
+    "form": {
+      "draftEdit": "Restored the unsaved edits you had in progress.",
+      "draftNew": "Restored the match you started logging earlier.",
+      "opponent": "Opponent",
+      "opponentPlaceholder": "Select an opponent",
+      "opponentNotRecorded": "Not recorded",
+      "newOpponent": "+ New opponent…",
+      "datePlayed": "Date played",
+      "newFirstName": "New opponent — first name",
+      "newFirstNamePlaceholder": "e.g. Marta",
+      "newLastName": "New opponent — last name",
+      "newLastNamePlaceholder": "e.g. Kovács",
+      "newOpponentHint": "Saved to your opponent list so you can reuse it for the next match.",
+      "competition": "Competition (optional)",
+      "competitionPlaceholder": "e.g. ITF J60 Sevilla — R16",
+      "conditions": "Conditions (optional)",
+      "conditionsPlaceholder": "e.g. windy, 31°C",
+      "surface": "Surface",
+      "environment": "Indoor / outdoor",
+      "format": "Format",
+      "result": "Result",
+      "resultNotRecorded": "Not recorded",
+      "setScores": "Set scores",
+      "setScoresHint": "Games won by you, then your opponent.",
+      "addSet": "Add set",
+      "setNumber": "Set {number}",
+      "you": "You",
+      "opponentGames": "Opponent",
+      "tiebreak": "Tiebreak (optional)",
+      "removeSetAria": "Remove set {number}",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "logMatch": "Log match",
+      "errors": {
+        "date": "Enter the date the match was played.",
+        "opponent": "Enter the new opponent's first and last name.",
+        "setIncomplete": "Every set needs both games won — remove any set you did not play.",
+        "setRange": "Games won must be between 0 and 30.",
+        "setTiebreak": "Write a tiebreak as two numbers, e.g. 7-5.",
+        "setNone": "Add at least one set score.",
+        "maxFirstServeAttempts": "Cannot exceed 1st serve attempts",
+        "maxFirstServesIn": "Cannot exceed 1st serves in",
+        "maxSecondServePlayed": "Cannot exceed 2nd serves played",
+        "maxReturnPointsPlayed": "Cannot exceed return points played",
+        "maxBreakPointsCreated": "Cannot exceed break points created",
+        "maxBreakPointsFaced": "Cannot exceed break points faced",
+        "maxNetApproaches": "Cannot exceed net approaches"
+      }
+    },
+    "stats": {
+      "title": "Detailed stats (optional)",
+      "hintEmpty": "Add only what you counted. Anything left blank is never treated as zero.",
+      "hintFilled": "{count, plural, one {# count} other {# counts}} entered — blanks stay blank, never zero",
+      "groupServe": "Serve",
+      "groupReturn": "Return & break points",
+      "groupRally": "Rally & net",
+      "rallyLengths": "Rally lengths",
+      "field": {
+        "firstServeAttempts": "1st serve attempts",
+        "firstServesIn": "1st serves in",
+        "firstServePointsWon": "1st serve points won",
+        "secondServePlayed": "2nd serves played",
+        "secondServePointsWon": "2nd serve points won",
+        "aces": "Aces",
+        "doubleFaults": "Double faults",
+        "returnPointsPlayed": "Return points played",
+        "returnPointsWon": "Return points won",
+        "breakPointsCreated": "Break points created",
+        "breakPointsConverted": "Break points converted",
+        "breakPointsFaced": "Break points faced",
+        "breakPointsSaved": "Break points saved",
+        "winners": "Winners",
+        "forcedErrors": "Forced errors",
+        "unforcedErrors": "Unforced errors",
+        "netApproaches": "Net approaches",
+        "netPointsWon": "Net points won"
+      },
+      "bucket": {
+        "1-4": "Rallies 1–4 shots",
+        "5-8": "Rallies 5–8 shots",
+        "9+": "Rallies 9+ shots"
+      }
+    },
+    "detail": {
+      "firstServeIn": "1st serve in",
+      "firstServePointsWon": "1st serve points won",
+      "secondServePointsWon": "2nd serve points won",
+      "returnPointsWon": "Return points won",
+      "breakPointsConverted": "Break points converted",
+      "breakPointsSaved": "Break points saved",
+      "netPointsWon": "Net points won",
+      "aces": "Aces",
+      "doubleFaults": "Double faults",
+      "winners": "Winners",
+      "errors": "Errors (forced + unforced)",
+      "winnerToUnforced": "Winners : unforced errors",
+      "hintNotCounted": "not counted",
+      "hintNoneCreated": "none created or not counted",
+      "hintNoneFaced": "none faced or not counted",
+      "hintBothErrors": "needs both error counts",
+      "conditions": "Conditions:",
+      "notesBySet": "Notes by set",
+      "setLabel": "Set {set}:",
+      "computedNote": "Percentages are computed from the counts entered for this match — nothing is estimated."
+    }
+  },
+  "training": {
+    "title": "Trainings",
+    "subtitle": {
+      "coach": "Create and manage training sessions for your connected players.",
+      "player": "View your assigned training sessions."
+    },
+    "create": "Create Training",
+    "searchPlaceholder": "Search trainings…",
+    "allTypes": "All Types",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "all": "All"
+    },
+    "type": {
+      "individual": "Individual Training",
+      "team": "Team Training",
+      "match_practice": "Match Practice",
+      "fitness": "Fitness",
+      "recovery": "Recovery",
+      "tactical": "Tactical Session"
+    },
+    "intensity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "form": {
+      "editTitle": "Edit Training",
+      "createTitle": "Create Training",
+      "editDescription": "Update training details.",
+      "createDescription": "Schedule a new training session for your connected players.",
+      "title": "Title *",
+      "titlePlaceholder": "e.g. Morning Drills",
+      "type": "Training Type",
+      "intensity": "Intensity",
+      "start": "Start *",
+      "end": "End *",
+      "location": "Location",
+      "locationPlaceholder": "Court A, Gym, etc.",
+      "goal": "Training Goal",
+      "goalPlaceholder": "e.g. Improve backhand consistency",
+      "team": "Assign to Team",
+      "teamPlaceholder": "No team — pick players manually",
+      "noTeam": "No team",
+      "teamOption": "{name} ({count, plural, one {# player} other {# players}})",
+      "players": "Assign Players",
+      "noPlayers": "No connected players.",
+      "notes": "Notes",
+      "notesPlaceholder": "Visible to players",
+      "coachNotes": "Coach Notes",
+      "coachNotesPrivate": "(private)",
+      "coachNotesPlaceholder": "Only visible to you",
+      "save": "Save Changes",
+      "saving": "Saving…",
+      "discardWhatNew": "new training",
+      "discardWhatChanges": "changes",
+      "saveError": "Could not save the training. Your input is still here — try again."
+    },
+    "detail": {
+      "title": "Training Detail",
+      "noPlayersAssigned": "No players assigned",
+      "notes": "Notes",
+      "coachNotes": "Coach Notes (private)",
+      "review": "Session Review",
+      "workedOn": "Worked on:",
+      "nextSteps": "Next steps:",
+      "playerFeedback": "Player feedback:",
+      "reviewedAt": "Reviewed {date}",
+      "feedbackTitle": "Player Feedback",
+      "energy": "Energy: {level}/5",
+      "submittedAt": "Submitted {date}",
+      "summary": "Session Summary",
+      "tryAgain": "Try again",
+      "reanalyze": "Re-analyze",
+      "analyze": "Analyze",
+      "generatingAria": "Generating analysis",
+      "generating": "Generating summary…",
+      "analysisFailed": "Analysis failed",
+      "retry": "Retry",
+      "lastSummary": "Showing the last successful summary below.",
+      "generatedAt": "Generated {date}",
+      "generatePrompt": "Generate a structured performance summary of this session.",
+      "editReview": "Edit Review",
+      "reviewSession": "Review Session",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "editFeedback": "Edit Feedback",
+      "leaveFeedback": "Leave Feedback",
+      "analyzeUnreachable": "Unable to reach the analysis service. Check your connection and try again."
+    },
+    "list": {
+      "unreviewed": "Unreviewed",
+      "noRegister": "No register",
+      "giveFeedback": "Give feedback",
+      "noPlayers": "No players",
+      "reviewSession": "Review session",
+      "leaveFeedback": "Leave feedback",
+      "editAria": "Edit {title}",
+      "deleteAria": "Delete {title}"
+    },
+    "delete": {
+      "title": "Delete Training",
+      "body": "Are you sure you want to delete {title}? This action cannot be undone.",
+      "confirm": "Delete",
+      "deleting": "Deleting…"
+    },
+    "discard": {
+      "title": "Discard your {what}?",
+      "body": "You have unsaved input. Closing now will discard what you have written — this cannot be undone.",
+      "keep": "Keep editing",
+      "confirm": "Discard",
+      "changes": "changes",
+      "review": "review"
+    },
+    "attendance": {
+      "heading": "Attendance",
+      "notTaken": "Register not taken",
+      "noPlayers": "No players are assigned to this session yet.",
+      "coachHint": "Nobody has been marked yet. Tap a state for each player — it saves as you go.",
+      "playerHint": "Your coach has not taken the register for this session yet.",
+      "saving": "Saving…",
+      "notMarked": "Not marked",
+      "you": "You",
+      "groupAria": "Attendance for {name}",
+      "status": {
+        "present": "Present",
+        "absent": "Absent",
+        "late": "Late",
+        "excused": "Excused"
+      }
+    },
+    "feedback": {
+      "editTitle": "Edit Feedback",
+      "newTitle": "How was the session?",
+      "description": "Quick feedback for “{title}” — helps your coach improve future sessions.",
+      "feelingLabel": "How did it feel? *",
+      "energyLabel": "Energy Level",
+      "exhausted": "Exhausted",
+      "fullEnergy": "Full energy",
+      "tagsLabel": "Quick tags",
+      "tagsHint": "(select all that apply)",
+      "noteLabel": "Anything else?",
+      "noteHint": "(optional, max 200 chars)",
+      "notePlaceholder": "Quick note for your coach…",
+      "update": "Update Feedback",
+      "submit": "Submit Feedback",
+      "saving": "Saving…",
+      "feeling": {
+        "awful": "Awful",
+        "bad": "Bad",
+        "okay": "Okay",
+        "good": "Good",
+        "great": "Great"
+      },
+      "tag": {
+        "Too easy": "Too easy",
+        "Too hard": "Too hard",
+        "Good pace": "Good pace",
+        "Learned a lot": "Learned a lot",
+        "Need more practice": "Need more practice",
+        "Fun session": "Fun session",
+        "Felt tired": "Felt tired",
+        "Great coaching": "Great coaching",
+        "Too long": "Too long",
+        "Too short": "Too short",
+        "Want more of this": "Want more of this",
+        "Felt confused": "Felt confused"
+      }
+    },
+    "reviewDialog": {
+      "editTitle": "Edit Review",
+      "newTitle": "Review Training Session",
+      "description": "Rate “{title}” and note what was covered and what to focus on next.",
+      "rating": "Rating *",
+      "ratingAria": "Rate {star} out of 5",
+      "ratingValue": "{rating}/5",
+      "workedOn": "What was worked on *",
+      "workedOnPlaceholder": "e.g. Lateral footwork drills, split-step timing, recovery steps",
+      "nextSteps": "What to do next",
+      "nextStepsPlaceholder": "e.g. Increase drill speed, add weighted vest, focus on backhand",
+      "playerFeedback": "Player feedback",
+      "playerFeedbackOptional": "(optional)",
+      "playerFeedbackPlaceholder": "Any feedback from the player about the session",
+      "update": "Update Review",
+      "save": "Save Review",
+      "saving": "Saving…",
+      "saveFailed": "Could not save the review. Your text is still here — try again."
+    },
+    "advice": {
+      "heading": "Advice from past sessions",
+      "notConfigured": "Not enabled on this server — an administrator needs to configure an AI provider.",
+      "explainer": "Reads your completed sessions with the selected players, your reviews, and their feedback, then suggests what to train next.",
+      "working": "Reading past sessions…",
+      "suggest": "Suggest from history",
+      "pickTarget": "Pick a player or a team first.",
+      "failed": "Could not generate advice.",
+      "basedOn": "Based on {sessions, plural, one {# completed session} other {# completed sessions}} · {reviewed} reviewed · {withFeedback} with player feedback",
+      "thin": "That is a small sample — treat this as a starting point, not a plan.",
+      "sessionMeta": "{type} · {intensity} · {minutes} min",
+      "use": "Use this",
+      "attribution": "Generated by {provider} · {model}. A suggestion — your judgement decides."
+    }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": {
+      "player": "Your unified schedule — trainings, matches, tournaments & more.",
+      "coach": "Manage your schedule and connected player events.",
+      "observer": "Read-only view of the connected player's schedule.",
+      "admin": "Platform-wide calendar overview."
+    },
+    "eventCount": "{count, plural, one {# event} other {# events}}",
+    "eventsSuffix": "events",
+    "addEvent": "Add Event",
+    "exportDescription": "Export the {count, plural, one {# event} other {# events}} shown for {period} as a calendar file (.ics)",
+    "today": "Today",
+    "filters": "Filters",
+    "previousView": "Previous {view}",
+    "nextView": "Next {view}",
+    "playersLegend": "Players:",
+    "hideMini": "Hide the mini calendar",
+    "showMini": "Show the mini calendar",
+    "refreshTournaments": "Refresh tournaments",
+    "noEvents": "No events scheduled",
+    "registered": "Registered",
+    "weekOf": "Week of {start} – {end}",
+    "view": {
+      "month": "month",
+      "week": "week",
+      "day": "day",
+      "agenda": "Agenda"
+    },
+    "type": {
+      "training": "Training",
+      "tournament": "Tournament",
+      "match": "Match",
+      "travel": "Travel",
+      "recovery": "Recovery"
+    },
+    "state": {
+      "requested": "Requested",
+      "tentative": "Tentative",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "biweekly": "Every 2 weeks",
+      "monthly": "Monthly"
+    },
+    "detail": {
+      "recurring": "Recurring",
+      "repeats": "Repeats {frequency}",
+      "repeatsInSeries": "as part of a series",
+      "repeatsCount": " · {count, plural, one {# time} other {# times}}",
+      "repeatsUntil": " · until {date}",
+      "coachNotes": "Coach Notes",
+      "register": "Register for Tournament",
+      "registering": "Registering…",
+      "alreadyRegistered": "You're registered for this tournament",
+      "managedOnTrainings": "This session is managed on the {link} page, where it can be edited, reviewed and cancelled.",
+      "trainingsLink": "Trainings",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…"
+    },
+    "deleteSeries": {
+      "title": "Delete Recurring Event",
+      "body": "This is a recurring event. What would you like to delete?",
+      "single": "This event only",
+      "all": "All events in series"
+    },
+    "form": {
+      "editTitle": "Edit Event",
+      "newTitle": "New Event",
+      "title": "Title",
+      "titlePlaceholder": "Event title",
+      "type": "Type",
+      "status": "Status",
+      "assign": "Assign to Player",
+      "assignPlaceholder": "Optional — coach schedule",
+      "mySchedule": "My Schedule",
+      "start": "Start",
+      "end": "End",
+      "location": "Location",
+      "description": "Description",
+      "optional": "Optional",
+      "recurrence": "Recurrence",
+      "frequency": "Frequency",
+      "noRepeat": "None (single event)",
+      "ends": "Ends",
+      "never": "Never",
+      "afterCount": "After N occurrences",
+      "onDate": "On a specific date",
+      "occurrences": "Number of occurrences",
+      "endDate": "End date",
+      "coachNotes": "Coach Notes",
+      "coachNotesPrivate": "(private)",
+      "coachNotesPlaceholder": "Not visible to observers",
+      "save": "Save Changes",
+      "add": "Add Event",
+      "saving": "Saving…"
+    },
+    "reassign": {
+      "title": "Reassign Event",
+      "body": "Are you sure you want to reassign {event} to {target}?",
+      "confirm": "Reassign",
+      "dropHint": "Drop on a name to reassign:",
+      "mySchedule": "My schedule",
+      "thisEvent": "this event",
+      "yourSchedule": "your schedule"
+    },
+    "scope": {
+      "label": "Scope",
+      "allPlayers": "All players",
+      "mySchedule": "My schedule",
+      "playersGroup": "Players",
+      "allTeams": "All teams"
+    },
+    "types": {
+      "label": "Types"
+    },
+    "legend": {
+      "eventTypes": "Event types",
+      "tournamentCalendars": "Tournament calendars",
+      "saved": "Saved to your account.",
+      "none": "Showing only your own sessions. Pick a calendar to add tournaments.",
+      "status": "Status",
+      "confirmed": "Confirmed",
+      "confirmedHint": "solid",
+      "tentative": "Tentative / Requested",
+      "tentativeHint": "dashed outline",
+      "completed": "Completed",
+      "completedHint": "dimmed",
+      "cancelled": "Cancelled",
+      "cancelledHint": "dashed & struck through",
+      "footnote": "Tournaments are coloured by federation; the left bar & dot show the player/team.",
+      "trigger": "Colour legend"
+    },
+    "sheet": {
+      "description": "What the calendar shows.",
+      "all": "All",
+      "none": "None",
+      "refresh": "Refresh",
+      "countries": "Countries",
+      "clear": "Clear",
+      "everywhere": "Everywhere. Pick countries to narrow.",
+      "showFewer": "Show fewer",
+      "showAllCountries": "Show all {count} countries",
+      "whoseEvents": "Whose events",
+      "team": "Team",
+      "playerColours": "Player colours",
+      "done": "Done"
+    },
+    "menus": {
+      "searchCountries": "Search countries…",
+      "noCountryMatch": "Nowhere matches “{query}”.",
+      "showEverywhere": "Show everywhere",
+      "location": "Location"
+    },
+    "mini": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "allDay": "All day",
+      "moreOnDay": "+{count} more — click the day to see all",
+      "upcoming": "Upcoming",
+      "dayWithEvents": "{day} — {events}"
+    },
+    "day": {
+      "fallbackTitle": "Day",
+      "yoursSuffix": "{count} yours",
+      "nothing": "Nothing on this day.",
+      "entered": "Entered"
+    },
+    "agenda": {
+      "nothingIn": "Nothing in {period}",
+      "thisWeek": "this week",
+      "showAll": "Show all {count} on {date}",
+      "useArrows": {
+        "month": "Use the arrows to look at another month, or open Filters to add a tournament calendar.",
+        "week": "Use the arrows to look at another week, or open Filters to add a tournament calendar."
+      }
+    },
+    "exportView": {
+      "month": "Export this month",
+      "week": "Export this week",
+      "day": "Export this day"
+    }
+  },
+  "auth": {
+    "backHome": "Back to home",
+    "backToLogin": "Back to login",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "signIn": "Sign in",
+    "goToLogin": "Go to login",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "submitting": "Signing in…",
+      "forgot": "Forgot your password?",
+      "createAccount": "Create account",
+      "failed": "Login failed",
+      "resend": "Send it again",
+      "guardian": {
+        "title": "Almost there",
+        "hint": "Ask them to check their inbox — including junk mail — for an email from TennisAI."
+      }
+    },
+    "signUp": {
+      "title": "Create your account",
+      "subtitle": "Choose your role to get started",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "dateOfBirth": "Date of birth",
+      "dateOfBirthInvalid": "That date doesn't look right — please check it.",
+      "dateOfBirthHint": "Under {age}? That's fine — we'll just ask a parent or guardian to approve your account.",
+      "confirmPassword": "Confirm password",
+      "ruleLength": "At least {count} characters",
+      "ruleMatch": "Both passwords match",
+      "terms": "I accept the {terms} and {privacy}",
+      "termsLink": "Terms of Service",
+      "privacyLink": "Privacy Policy",
+      "haveAccount": "Already have an account?",
+      "roles": {
+        "player": {
+          "label": "Player",
+          "description": "Track your game, stats, and tournaments"
+        },
+        "coach": {
+          "label": "Coach",
+          "description": "Manage players, teams, and training"
+        },
+        "observer": {
+          "label": "Observer",
+          "description": "Follow a player's progress (read-only)"
+        }
+      },
+      "guardian": {
+        "title": "A grown-up needs to say yes",
+        "body": "Because you're under {age}, we'll email your parent or guardian a link to approve your account. You can sign in as soon as they do.",
+        "name": "Parent or guardian's name",
+        "email": "Parent or guardian's email",
+        "emailHint": "This has to be different from your own email."
+      },
+      "done": {
+        "waiting": "Waiting for your parent or guardian",
+        "checkEmail": "Check your email",
+        "default": "Account created! Check your email to verify.",
+        "resend": "Didn't get the email? Resend it"
+      },
+      "errors": {
+        "role": "Please select a role",
+        "dateOfBirthMissing": "Please enter your date of birth",
+        "dateOfBirthInvalid": "Please enter a real date of birth",
+        "passwordLength": "Password must be at least {count} characters",
+        "passwordMismatch": "Passwords do not match",
+        "guardianMissing": "Please give a parent or guardian's name and email address",
+        "guardianSameEmail": "A parent or guardian's email has to be different from your own",
+        "terms": "You must accept the terms",
+        "failed": "Sign up failed"
+      }
+    },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we'll send you a link to set a new one.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "emptyEmail": "Enter the email address you signed up with",
+      "failed": "We couldn't send the reset link. Please try again in a moment.",
+      "sentTitle": "Check your email",
+      "unavailableTitle": "Reset isn't available yet",
+      "sentBody": "If {email} is registered, a reset link is on its way. The link works once and expires in an hour.",
+      "tryAgain": "Used a different email? Try again",
+      "remembered": "Remembered it?"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a password you haven't used before.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "lengthHint": "At least {count} characters.",
+      "submit": "Update password",
+      "submitting": "Updating password…",
+      "passwordLength": "Password must be at least {count} characters",
+      "passwordMismatch": "Passwords do not match",
+      "failed": "We couldn't reset your password. Please request a new link.",
+      "successDefault": "Your password has been updated.",
+      "successTitle": "Password updated",
+      "successHint": "Sign in with your new password.",
+      "noTokenTitle": "Reset link problem",
+      "noTokenBody": "This page needs a valid reset link. Request a new one and open it straight from your email.",
+      "requestNew": "Request a new link",
+      "requestNewLink": "Request a new reset link"
+    },
+    "verify": {
+      "verifying": "Verifying your email…",
+      "successTitle": "Email verified",
+      "successDefault": "Email verified! You can now sign in.",
+      "errorTitle": "Verification link problem",
+      "errorDefault": "This verification link is invalid or has expired.",
+      "promptTitle": "Verify your email",
+      "promptBody": "We've sent a verification link to your email. Click it to activate your account.",
+      "resendLabel": "Resend the verification link",
+      "resend": "Resend link",
+      "resendDefault": "If an unverified account exists for that email, a new link is on its way.",
+      "resendFailed": "Could not send the verification email."
+    },
+    "consent": {
+      "approvedTitle": "Approved",
+      "approvedNamed": "{name} can now sign in to TennisAI{role}.",
+      "approvedRole": " as a {role}",
+      "approvedUnnamed": "The account can now be used.",
+      "approvedDefault": "Thank you — the account is approved.",
+      "withdraw": "You can withdraw this at any time by contacting the coach or academy that runs this TennisAI account, and asking them to close it.",
+      "goToApp": "Go to TennisAI",
+      "errorTitle": "This link didn't work",
+      "errorDefault": "This approval link is invalid or has expired.",
+      "noToken": "This page needs the approval link from the email we sent you.",
+      "errorHelp": "Approval links stop working after 30 days, and each one can only be used once. If you have already approved this account, nothing more is needed. Otherwise ask your child's coach, or whoever set up TennisAI for them, to send a new approval link.",
+      "title": "Approve your child's account",
+      "subtitle": "Your child gave your address as their parent or guardian when they signed up for TennisAI. Their account is locked until you approve it.",
+      "agreeingTitle": "What you're agreeing to",
+      "point1": "A TennisAI account they use to plan training, log matches, and follow tournament calendars.",
+      "point2": "We store the details they entered — name, email, date of birth — and whatever they add themselves: training sessions, matches, and tournaments they're entering.",
+      "point3": "They can connect with a coach, who will then see the training and match data they share.",
+      "point4": "You can withdraw this later by asking their coach or academy to close the account, and you can ask us for a copy of their data or its deletion at any time.",
+      "privacyNote": "The {privacy} has the full detail.",
+      "privacyLink": "Privacy Policy",
+      "approve": "I'm their parent or guardian — approve this account",
+      "unexpected": "Weren't expecting this? Close this page. Without your approval the account stays locked and cannot be used."
+    }
+  },
+  "common": {
+    "role": {
+      "player": "Player",
+      "coach": "Coach",
+      "observer": "Parent",
+      "admin": "Admin"
+    },
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "revoked": "Revoked",
+      "planned": "Planned",
+      "registered": "Registered",
+      "maybe": "Maybe",
+      "withdrawn": "Withdrawn",
+      "played": "Played"
+    },
+    "readOnly": {
+      "badge": "Read-only",
+      "access": "read-only",
+      "banner": "You have {access} access. You can view but not edit any data."
+    },
+    "close": "Close",
+    "cancel": "Cancel",
+    "next": "Next",
+    "dismiss": "Dismiss",
+    "notFound": {
+      "title": "Oops! Page not found",
+      "action": "Return to Home"
+    },
+    "theme": {
+      "toggle": "Toggle theme"
+    },
+    "dev": {
+      "title": "Stale HMR module detected",
+      "body": "A component referenced in the cached module no longer exists in source. Try:",
+      "hardReload": "Hard reload",
+      "hardReloadShortcut": "Cmd/Ctrl + Shift + R",
+      "restart": "Restart dev server",
+      "clearCache": "Clear cache:"
+    },
+    "intensityBadge": {
+      "low": "Low intensity",
+      "medium": "Medium intensity",
+      "high": "High intensity"
+    }
   },
   "states": {
     "loading": "Loading…",

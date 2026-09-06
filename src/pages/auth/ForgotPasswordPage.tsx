@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
+import { interleave, slot, useT } from "@/lib/i18n";
 
 /**
  * Request a password-reset link.
@@ -14,6 +15,7 @@ import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
  * not leak the difference either.
  */
 export default function ForgotPasswordPage() {
+  const { t } = useT();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [sentTo, setSentTo] = useState("");
@@ -32,7 +34,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError("");
     const address = email.trim();
-    if (!address) return setError("Enter the email address you signed up with");
+    if (!address) return setError(t("auth.forgot.emptyEmail"));
     setLoading(true);
     try {
       const res = await authApi.forgotPassword(address);
@@ -43,7 +45,7 @@ export default function ForgotPasswordPage() {
     } catch (err: any) {
       // Only transport / rate-limit failures land here — a successful request is
       // always a generic 200, so nothing here reveals whether the account exists.
-      setError(err?.message || "We couldn't send the reset link. Please try again in a moment.");
+      setError(err?.message || t("auth.forgot.failed"));
     } finally {
       setLoading(false);
     }
@@ -58,20 +60,21 @@ export default function ForgotPasswordPage() {
         </div>
         <div className="space-y-1">
           <h2 className="text-xl font-semibold text-foreground">
-            {mailUnavailable ? "Reset isn't available yet" : "Check your email"}
+            {mailUnavailable ? t("auth.forgot.unavailableTitle") : t("auth.forgot.sentTitle")}
           </h2>
           {mailUnavailable ? (
             <p className="text-sm text-muted-foreground">{serverMessage}</p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              If <span className="font-medium text-foreground">{sentTo}</span> is registered, a reset link is on its
-              way. The link works once and expires in an hour.
+              {interleave(t("auth.forgot.sentBody", { email: slot(0) }), [
+                <span key="email" className="font-medium text-foreground">{sentTo}</span>,
+              ])}
             </p>
           )}
         </div>
         <div className="flex flex-col items-center gap-2">
           <Button asChild>
-            <Link to="/login">Back to login</Link>
+            <Link to="/login">{t("auth.backToLogin")}</Link>
           </Button>
           <button
             type="button"
@@ -81,7 +84,7 @@ export default function ForgotPasswordPage() {
             }}
             className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline coarse:min-h-11"
           >
-            Used a different email? Try again
+            {t("auth.forgot.tryAgain")}
           </button>
         </div>
       </div>
@@ -95,18 +98,16 @@ export default function ForgotPasswordPage() {
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground coarse:min-h-11"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to login
+        {t("auth.backToLogin")}
       </Link>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2 text-center">
-          <h2 className="text-xl font-semibold text-foreground">Forgot your password?</h2>
-          <p className="text-sm text-muted-foreground">
-            Enter your email and we'll send you a link to set a new one.
-          </p>
+          <h2 className="text-xl font-semibold text-foreground">{t("auth.forgot.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("auth.forgot.subtitle")}</p>
         </div>
         {error && <div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
         <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
@@ -114,23 +115,23 @@ export default function ForgotPasswordPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder={t("auth.emailPlaceholder")}
           />
         </div>
         <Button type="submit" className="w-full" disabled={loading || !email.trim()}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending…
+              {t("auth.forgot.submitting")}
             </>
           ) : (
-            "Send reset link"
+            t("auth.forgot.submit")
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
-          Remembered it?{" "}
+          {t("auth.forgot.remembered")}{" "}
           <Link to="/login" className="text-primary hover:underline">
-            Sign in
+            {t("auth.signIn")}
           </Link>
         </p>
       </form>

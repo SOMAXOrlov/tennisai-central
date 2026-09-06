@@ -14,6 +14,7 @@
 // sheet is a second dismissable layer to fight with on touch, and a checkable
 // row is a bigger target than a menu item anyway.
 import { useState } from "react";
+import { useT } from "@/lib/i18n";
 import { Check, Filter, Globe, Loader2, MapPin, RefreshCw, Users } from "lucide-react";
 import {
   Sheet,
@@ -172,6 +173,7 @@ export function CalendarFiltersSheet({
   onRefreshTournaments,
   refreshing,
 }: CalendarFiltersSheetProps) {
+  const { t } = useT();
   const [allCountries, setAllCountries] = useState(false);
   const countries = allCountries ? countryOptions : countryOptions.slice(0, COUNTRY_PREVIEW);
   const showCountries = activeCircuits.size > 0 && countryOptions.length > 0;
@@ -184,24 +186,24 @@ export function CalendarFiltersSheet({
         <SheetHeader className="pb-2 text-left">
           <SheetTitle className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-primary" />
-            Filters
+            {t("calendar.filters")}
           </SheetTitle>
-          <SheetDescription>What the calendar shows.</SheetDescription>
+          <SheetDescription>{t("calendar.sheet.description")}</SheetDescription>
         </SheetHeader>
 
         {/* min-h-0 is what actually makes a flex column scroll — without it the
             country list grows the sheet instead of scrolling inside it. */}
         <div className="-mx-6 min-h-0 flex-1 divide-y divide-border overflow-y-auto px-6 pb-2">
           <Section
-            title="Event types"
+            title={t("calendar.legend.eventTypes")}
             icon={<Filter className="h-3.5 w-3.5" />}
             action={
               <div className="flex items-center gap-1">
                 <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={onAllTypes}>
-                  All
+                  {t("calendar.sheet.all")}
                 </Button>
                 <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={onNoTypes}>
-                  None
+                  {t("calendar.sheet.none")}
                 </Button>
               </div>
             }
@@ -219,7 +221,7 @@ export function CalendarFiltersSheet({
           </Section>
 
           <Section
-            title="Tournament calendars"
+            title={t("calendar.legend.tournamentCalendars")}
             icon={savingCircuits ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Globe className="h-3.5 w-3.5" />}
             action={
               onRefreshTournaments && activeCircuits.size > 0 ? (
@@ -231,7 +233,7 @@ export function CalendarFiltersSheet({
                   disabled={refreshing}
                 >
                   <RefreshCw className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`} />
-                  Refresh
+                  {t("calendar.sheet.refresh")}
                 </Button>
               ) : undefined
             }
@@ -247,26 +249,24 @@ export function CalendarFiltersSheet({
               />
             ))}
             <p className="px-2 pt-1.5 text-[11px] text-muted-foreground">
-              {activeCircuits.size > 0
-                ? "Saved to your account."
-                : "Showing only your own sessions. Pick a calendar to add tournaments."}
+              {activeCircuits.size > 0 ? t("calendar.legend.saved") : t("calendar.legend.none")}
             </p>
           </Section>
 
           {showCountries && (
             <Section
-              title="Countries"
+              title={t("calendar.sheet.countries")}
               icon={<MapPin className="h-3.5 w-3.5" />}
               action={
                 activeCountries.size > 0 ? (
                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={onClearCountries}>
-                    Clear
+                    {t("calendar.sheet.clear")}
                   </Button>
                 ) : undefined
               }
             >
               {activeCountries.size === 0 && (
-                <p className="px-2 pb-1 text-[11px] text-muted-foreground">Everywhere. Pick countries to narrow.</p>
+                <p className="px-2 pb-1 text-[11px] text-muted-foreground">{t("calendar.sheet.everywhere")}</p>
               )}
               {countries.map((c) => (
                 <Row
@@ -284,14 +284,14 @@ export function CalendarFiltersSheet({
                   className="mt-1 h-8 w-full text-xs"
                   onClick={() => setAllCountries((v) => !v)}
                 >
-                  {allCountries ? "Show fewer" : `Show all ${countryOptions.length} countries`}
+                  {allCountries ? t("calendar.sheet.showFewer") : t("calendar.sheet.showAllCountries", { count: countryOptions.length })}
                 </Button>
               )}
             </Section>
           )}
 
           {scopeOptions && scopeOptions.length > 0 && onScopeChange && (
-            <Section title="Whose events" icon={<Users className="h-3.5 w-3.5" />}>
+            <Section title={t("calendar.sheet.whoseEvents")} icon={<Users className="h-3.5 w-3.5" />}>
               {scopeOptions.map((s) => (
                 <Row
                   key={s.value}
@@ -306,7 +306,7 @@ export function CalendarFiltersSheet({
           )}
 
           {teamOptions && teamOptions.length > 1 && onTeamChange && (
-            <Section title="Team" icon={<Users className="h-3.5 w-3.5" />}>
+            <Section title={t("calendar.sheet.team")} icon={<Users className="h-3.5 w-3.5" />}>
               {teamOptions.map((t) => (
                 <Row
                   key={t.value}
@@ -320,7 +320,7 @@ export function CalendarFiltersSheet({
           )}
 
           {playerLegend && playerLegend.length > 0 && (
-            <Section title="Player colours">
+            <Section title={t("calendar.sheet.playerColours")}>
               <div className="flex flex-wrap gap-x-4 gap-y-2 px-2">
                 {playerLegend.map((p) => (
                   <span key={p.id} className="flex items-center gap-1.5 text-xs text-foreground">
@@ -335,7 +335,7 @@ export function CalendarFiltersSheet({
 
         <div className="border-t border-border pt-3">
           <Button className="w-full" onClick={() => onOpenChange(false)}>
-            Done
+            {t("calendar.sheet.done")}
           </Button>
         </div>
       </SheetContent>

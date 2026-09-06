@@ -9,7 +9,10 @@
 // ============================================================
 
 import { Link } from "react-router-dom";
-import { format } from "date-fns";
+import { interleave, slot, useT } from "@/lib/i18n";
+
+/** Intl options for the "received on" date. */
+const REQUEST_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 import { ArrowDownLeft, ArrowRight, Check, Inbox, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -38,6 +41,7 @@ function RequestRow({
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
 }) {
+  const { t, formatDate } = useT();
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -50,7 +54,7 @@ function RequestRow({
         </div>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <ArrowDownLeft className="h-3 w-3" />
-          Received {format(new Date(request.createdAt), "MMM d, yyyy")}
+          {t("connections.receivedOn", { date: formatDate(new Date(request.createdAt), REQUEST_DATE) })}
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -60,7 +64,7 @@ function RequestRow({
           className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
           onClick={() => onApprove(request.id)}
         >
-          <Check className="h-3.5 w-3.5" /> Approve
+          <Check className="h-3.5 w-3.5" /> {t("connections.approve")}
         </Button>
         <Button
           size="sm"
@@ -68,7 +72,7 @@ function RequestRow({
           className="h-8 gap-1.5"
           onClick={() => onReject(request.id)}
         >
-          <X className="h-3.5 w-3.5" /> Reject
+          <X className="h-3.5 w-3.5" /> {t("connections.reject")}
         </Button>
       </div>
     </div>
@@ -102,8 +106,8 @@ export function IncomingRequestsCard({ max = 4 }: { max?: number }) {
 
   return (
     <DashboardCard
-      title="Incoming requests"
-      description={`${incoming.length} request${incoming.length !== 1 ? "s" : ""} waiting for your decision`}
+      title={t("connections.incomingCard.title")}
+      description={t("connections.incomingCard.waiting", { count: incoming.length })}
       icon={<Inbox className="h-4 w-4" />}
       badge={
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
@@ -113,7 +117,7 @@ export function IncomingRequestsCard({ max = 4 }: { max?: number }) {
       action={
         <Button variant="ghost" size="sm" asChild>
           <Link to="/connections">
-            All connections <ArrowRight className="ml-1 h-3 w-3" />
+            {t("connections.incomingCard.allConnections")} <ArrowRight className="ml-1 h-3 w-3" />
           </Link>
         </Button>
       }
@@ -129,11 +133,11 @@ export function IncomingRequestsCard({ max = 4 }: { max?: number }) {
         ))}
         {incoming.length > max && (
           <p className="text-xs text-muted-foreground">
-            +{incoming.length - max} more on the{" "}
-            <Link to="/connections" className="font-medium text-primary hover:underline">
-              Connections
-            </Link>{" "}
-            page.
+            {interleave(t("connections.incomingCard.moreOn", { count: incoming.length - max, link: slot(0) }), [
+              <Link key="link" to="/connections" className="font-medium text-primary hover:underline">
+                {t("connections.incomingCard.connections")}
+              </Link>,
+            ])}
           </p>
         )}
       </div>

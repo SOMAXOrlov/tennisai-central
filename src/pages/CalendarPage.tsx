@@ -4,7 +4,16 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
-import { useT } from "@/lib/i18n";
+import { formatDate as formatDateIntl, getDateFnsLocale, interleave, slot, t as translate, useT } from "@/lib/i18n";
+
+/**
+ * Clock time in the reader's own convention — 9:30 AM in English, 9:30 in
+ * Spanish. date-fns would need a different pattern per language to do that;
+ * Intl already knows.
+ */
+function formatTime(date: Date): string {
+  return formatDateIntl(date, { hour: "numeric", minute: "2-digit" });
+}
 import { ReadOnlyBanner, ReadOnlyBadge, EmptyState, ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
@@ -43,7 +52,7 @@ import {
   parseISO, isWithinInterval, isToday as isDateToday, isBefore, isAfter,
 } from "date-fns";
 import {
-  eventBaseColor, entityColor, EVENT_TYPE_COLOR, CIRCUIT_COLOR, STATE_VISUAL, STATE_LABEL, withAlpha,
+  eventBaseColor, entityColor, EVENT_TYPE_COLOR, CIRCUIT_COLOR, STATE_VISUAL, withAlpha,
 } from "@/lib/calendar/colors";
 // Every line of the .ics writer lives in @/lib/ics and none of it imports this
 // page — src/pages/__tests__/calendarProjection.test.ts imports CalendarPage
@@ -52,6 +61,13 @@ import { buildIcs, periodRange, eventsInRange, icsFileName, downloadTextFile } f
 
 /** Events shown in a month cell before collapsing to "+N more". */
 const MONTH_CELL_EVENT_LIMIT = 4;
+
+// Intl option sets, named once so every date on this page reads the same way
+// and follows the active locale instead of an English date-fns pattern.
+const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
+const DATE_TIME: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" };
+const WEEKDAY_DATE: Intl.DateTimeFormatOptions = { weekday: "long", month: "short", day: "numeric" };
+const FULL_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 
 /**
  * Events the calendar shows but does not own, identified by an id prefix a
@@ -83,21 +99,27 @@ export function withRecurrenceException(rule: RecurrenceRule, dateKey: string): 
   return { ...rule, exceptions: Array.from(new Set([...(rule.exceptions ?? []), dateKey])) };
 }
 
-const EVENT_CONFIG: Record<CalendarEventType, { label: string; icon: React.ReactNode; dot: string; bg: string }> = {
-  training: { label: "Training", icon: <Dumbbell className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
-  tournament: { label: "Tournament", icon: <Trophy className="h-3.5 w-3.5" />, dot: "bg-primary", bg: "bg-primary/10 text-primary dark:text-primary border-primary/25" },
-  match: { label: "Match", icon: <Swords className="h-3.5 w-3.5" />, dot: "bg-primary", bg: "bg-primary/10 text-primary dark:text-primary border-primary/25" },
-  travel: { label: "Travel", icon: <Plane className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
-  recovery: { label: "Recovery", icon: <Heart className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
+// Icons and colours only. The label is looked up as `calendar.type.<key>` at
+// the point of render — a translated string baked into a module constant would
+// freeze to whichever locale happened to be active when this file first ran.
+const EVENT_CONFIG: Record<CalendarEventType, { icon: React.ReactNode; dot: string; bg: string }> = {
+  training: { icon: <Dumbbell className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
+  tournament: { icon: <Trophy className="h-3.5 w-3.5" />, dot: "bg-primary", bg: "bg-primary/10 text-primary dark:text-primary border-primary/25" },
+  match: { icon: <Swords className="h-3.5 w-3.5" />, dot: "bg-primary", bg: "bg-primary/10 text-primary dark:text-primary border-primary/25" },
+  travel: { icon: <Plane className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
+  recovery: { icon: <Heart className="h-3.5 w-3.5" />, dot: "bg-foreground", bg: "bg-muted text-foreground dark:text-foreground border-border" },
 };
+
+/** The translated name of an event type. */
+const eventTypeLabel = (type: CalendarEventType) => translate(`calendar.type.${type}`);
 const EVENT_TYPES: CalendarEventType[] = ["training", "tournament", "match", "travel", "recovery"];
 
-const STATE_CONFIG: Record<CalendarEventState, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-  requested: { label: "Requested", variant: "outline" },
-  tentative: { label: "Tentative", variant: "secondary" },
-  confirmed: { label: "Confirmed", variant: "default" },
-  cancelled: { label: "Cancelled", variant: "destructive" },
-  completed: { label: "Completed", variant: "secondary" },
+const STATE_CONFIG: Record<CalendarEventState, { variant: "default" | "secondary" | "outline" | "destructive" }> = {
+  requested: { variant: "outline" },
+  tentative: { variant: "secondary" },
+  confirmed: { variant: "default" },
+  cancelled: { variant: "destructive" },
+  completed: { variant: "secondary" },
 };
 
 function getEventsForDay(events: CalendarEvent[], day: Date) {
@@ -110,6 +132,7 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
 
 function EventChip({ event, onClick, showPlayer, compact, draggable, registered }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean; registered?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
+  void cfg;
   const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
   const isIntl = event.id.startsWith("intl-");
   // Colour grading: fill/text by event type (or federation for tagged
@@ -167,18 +190,20 @@ function EventChip({ event, onClick, showPlayer, compact, draggable, registered 
 }
 
 function StateBadge({ state }: { state?: CalendarEventState }) {
+  const { t } = useT();
   if (!state) return null;
   const cfg = STATE_CONFIG[state];
-  return <Badge variant={cfg.variant} className="text-[10px] px-1.5 py-0">{cfg.label}</Badge>;
+  return <Badge variant={cfg.variant} className="text-[10px] px-1.5 py-0">{t(`calendar.state.${state}`)}</Badge>;
 }
 
-const FREQ_LABELS: Record<RecurrenceFrequency, string> = { daily: "Daily", weekly: "Weekly", biweekly: "Every 2 weeks", monthly: "Monthly" };
+
 
 function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting, onRegister, registering, alreadyRegistered }: {
   event: CalendarEvent | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onDeleteSingle?: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
   onRegister?: () => void; registering?: boolean; alreadyRegistered?: boolean;
 }) {
+  const { t, formatDate } = useT();
   const [showRecurringChoice, setShowRecurringChoice] = useState(false);
   if (!event) return null;
   const cfg = EVENT_CONFIG[event.type];
@@ -193,10 +218,10 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
         <SheetContent className="sm:max-w-md">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: withAlpha(eventBaseColor(event.type, event.title), "1f"), borderColor: withAlpha(eventBaseColor(event.type, event.title), "59"), color: eventBaseColor(event.type, event.title) }}>{cfg.icon}{cfg.label}</span>
+              <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: withAlpha(eventBaseColor(event.type, event.title), "1f"), borderColor: withAlpha(eventBaseColor(event.type, event.title), "59"), color: eventBaseColor(event.type, event.title) }}>{cfg.icon}{t(`calendar.type.${event.type}`)}</span>
               <StateBadge state={event.state} />
-              {isRecurring && <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0"><Repeat className="h-3 w-3" />Recurring</Badge>}
-              {alreadyRegistered && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />Registered</span>}
+              {isRecurring && <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0"><Repeat className="h-3 w-3" />{t("calendar.detail.recurring")}</Badge>}
+              {alreadyRegistered && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />{t("calendar.registered")}</span>}
               {readOnly && <ReadOnlyBadge />}
             </SheetTitle>
           </SheetHeader>
@@ -205,12 +230,25 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 shrink-0" />
-                {multiDay ? <span>{format(start, "MMM d, h:mm a")} – {format(end, "MMM d, h:mm a")}</span> : <span>{format(start, "EEEE, MMM d")} · {format(start, "h:mm a")} – {format(end, "h:mm a")}</span>}
+                {multiDay
+                  ? <span>{formatDate(start, DATE_TIME)} – {formatDate(end, DATE_TIME)}</span>
+                  : <span>{formatDate(start, WEEKDAY_DATE)} · {formatDate(start, TIME_ONLY)} – {formatDate(end, TIME_ONLY)}</span>}
               </div>
               {isRecurring && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Repeat className="h-4 w-4 shrink-0" />
-                  <span>Repeats {event.recurrence ? FREQ_LABELS[event.recurrence.frequency] : "as part of a series"}{event.recurrence?.endType === "count" ? ` · ${event.recurrence.count} times` : event.recurrence?.endType === "until" ? ` · until ${format(parseISO(event.recurrence.until!), "MMM d, yyyy")}` : ""}</span>
+                  <span>
+                    {t("calendar.detail.repeats", {
+                      frequency: event.recurrence
+                        ? t(`calendar.frequency.${event.recurrence.frequency}`)
+                        : t("calendar.detail.repeatsInSeries"),
+                    })}
+                    {event.recurrence?.endType === "count"
+                      ? t("calendar.detail.repeatsCount", { count: event.recurrence.count ?? 0 })
+                      : event.recurrence?.endType === "until"
+                      ? t("calendar.detail.repeatsUntil", { date: formatDate(parseISO(event.recurrence.until!), FULL_DATE) })
+                      : ""}
+                  </span>
                 </div>
               )}
               {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
@@ -218,7 +256,7 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
               {event.description && <p className="text-muted-foreground">{event.description}</p>}
               {!hideCoachNotes && event.coachNotes && (
                 <div className="rounded-lg border border-border bg-muted p-3">
-                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground dark:text-foreground"><StickyNote className="h-3 w-3" />Coach Notes</div>
+                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground dark:text-foreground"><StickyNote className="h-3 w-3" />{t("calendar.detail.coachNotes")}</div>
                   <p className="text-sm text-foreground dark:text-foreground">{event.coachNotes}</p>
                 </div>
               )}
@@ -226,32 +264,32 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
             {onRegister && event.id.startsWith("intl-") && !alreadyRegistered && (
               <div className="border-t border-border pt-4">
                 <Button size="sm" onClick={onRegister} disabled={registering} className="gap-1.5 w-full">
-                  <Trophy className="h-3.5 w-3.5" /> {registering ? "Registering…" : "Register for Tournament"}
+                  <Trophy className="h-3.5 w-3.5" /> {registering ? t("calendar.detail.registering") : t("calendar.detail.register")}
                 </Button>
               </div>
             )}
             {alreadyRegistered && event.id.startsWith("intl-") && (
               <div className="border-t border-border pt-4">
                 <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-3 py-2 text-sm font-medium text-foreground dark:text-foreground">
-                  <CheckCircle2 className="h-4 w-4" /> You're registered for this tournament
+                  <CheckCircle2 className="h-4 w-4" /> {t("calendar.detail.alreadyRegistered")}
                 </div>
               </div>
             )}
             {event.id.startsWith("training-") && (
               <div className="border-t border-border pt-4">
                 <p className="text-sm text-muted-foreground">
-                  This session is managed on the{" "}
-                  <Link to="/trainings" className="font-medium text-foreground underline underline-offset-4">
-                    Trainings
-                  </Link>{" "}
-                  page, where it can be edited, reviewed and cancelled.
+                  {interleave(t("calendar.detail.managedOnTrainings", { link: slot(0) }), [
+                    <Link key="trainings" to="/trainings" className="font-medium text-foreground underline underline-offset-4">
+                      {t("calendar.detail.trainingsLink")}
+                    </Link>,
+                  ])}
                 </p>
               </div>
             )}
             {!readOnly && (
               <div className="flex gap-2 border-t border-border pt-4">
-                <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-                <Button size="sm" variant="outline" onClick={() => { if (isRecurring) { setShowRecurringChoice(true); } else { onDelete(); } }} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? "Deleting…" : "Delete"}</Button>
+                <Button size="sm" variant="outline" onClick={onEdit} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> {t("calendar.detail.edit")}</Button>
+                <Button size="sm" variant="outline" onClick={() => { if (isRecurring) { setShowRecurringChoice(true); } else { onDelete(); } }} disabled={deleting} className="gap-1.5 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /> {deleting ? t("calendar.detail.deleting") : t("calendar.detail.delete")}</Button>
               </div>
             )}
           </div>
@@ -261,12 +299,12 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
       {/* Recurring delete choice dialog */}
       <Dialog open={showRecurringChoice} onOpenChange={setShowRecurringChoice}>
         <DialogContent className="sm:max-w-sm">
-          <DialogHeader><DialogTitle>Delete Recurring Event</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">This is a recurring event. What would you like to delete?</p>
+          <DialogHeader><DialogTitle>{t("calendar.deleteSeries.title")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("calendar.deleteSeries.body")}</p>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <Button variant="outline" className="w-full" onClick={() => { setShowRecurringChoice(false); onDeleteSingle?.(); }}>This event only</Button>
-            <Button variant="destructive" className="w-full" onClick={() => { setShowRecurringChoice(false); onDelete(); }}>All events in series</Button>
-            <Button variant="ghost" className="w-full" onClick={() => setShowRecurringChoice(false)}>Cancel</Button>
+            <Button variant="outline" className="w-full" onClick={() => { setShowRecurringChoice(false); onDeleteSingle?.(); }}>{t("calendar.deleteSeries.single")}</Button>
+            <Button variant="destructive" className="w-full" onClick={() => { setShowRecurringChoice(false); onDelete(); }}>{t("calendar.deleteSeries.all")}</Button>
+            <Button variant="ghost" className="w-full" onClick={() => setShowRecurringChoice(false)}>{t("common.cancel")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -280,6 +318,7 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
   open: boolean; onOpenChange: (o: boolean) => void; initial?: CalendarEvent;
   onSave: (data: EventFormData) => void; playerOptions?: { id: string; name: string }[]; saving?: boolean;
 }) {
+  const { t } = useT();
   const toLocal = (iso: string) => format(parseISO(iso), "yyyy-MM-dd'T'HH:mm");
   const [form, setForm] = useState<EventFormData>(() =>
     initial ? {
@@ -297,84 +336,84 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader><DialogTitle>{initial ? "Edit Event" : "New Event"}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{initial ? t("calendar.form.editTitle") : t("calendar.form.newTitle")}</DialogTitle></DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5"><Label>Title</Label><Input value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Event title" /></div>
+          <div className="space-y-1.5"><Label>{t("calendar.form.title")}</Label><Input value={form.title} onChange={(e) => update("title", e.target.value)} placeholder={t("calendar.form.titlePlaceholder")} /></div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Type</Label>
+              <Label>{t("calendar.form.type")}</Label>
               <Select value={form.type} onValueChange={(v) => update("type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{EVENT_TYPES.map((t) => (<SelectItem key={t} value={t}><span className="flex items-center gap-2">{EVENT_CONFIG[t].icon}{EVENT_CONFIG[t].label}</span></SelectItem>))}</SelectContent>
+                <SelectContent>{EVENT_TYPES.map((type) => (<SelectItem key={type} value={type}><span className="flex items-center gap-2">{EVENT_CONFIG[type].icon}{t(`calendar.type.${type}`)}</span></SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Status</Label>
+              <Label>{t("calendar.form.status")}</Label>
               <Select value={form.state} onValueChange={(v) => update("state", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(STATE_CONFIG) as CalendarEventState[]).map((s) => (<SelectItem key={s} value={s}>{STATE_CONFIG[s].label}</SelectItem>))}
+                  {(Object.keys(STATE_CONFIG) as CalendarEventState[]).map((s) => (<SelectItem key={s} value={s}>{t(`calendar.state.${s}`)}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           {playerOptions && playerOptions.length > 0 && (
             <div className="space-y-1.5">
-              <Label>Assign to Player</Label>
+              <Label>{t("calendar.form.assign")}</Label>
               <Select value={form.playerId || "__mine__"} onValueChange={(v) => update("playerId", v === "__mine__" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="Optional — coach schedule" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("calendar.form.assignPlaceholder")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__mine__">My Schedule</SelectItem>
+                  <SelectItem value="__mine__">{t("calendar.form.mySchedule")}</SelectItem>
                   {playerOptions.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label>Start</Label><Input type="datetime-local" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>End</Label><Input type="datetime-local" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} /></div>
+            <div className="space-y-1.5"><Label>{t("calendar.form.start")}</Label><Input type="datetime-local" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} /></div>
+            <div className="space-y-1.5"><Label>{t("calendar.form.end")}</Label><Input type="datetime-local" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} /></div>
           </div>
-          <div className="space-y-1.5"><Label>Location</Label><Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Optional" /></div>
-          <div className="space-y-1.5"><Label>Description</Label><Input value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Optional" /></div>
+          <div className="space-y-1.5"><Label>{t("calendar.form.location")}</Label><Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder={t("calendar.form.optional")} /></div>
+          <div className="space-y-1.5"><Label>{t("calendar.form.description")}</Label><Input value={form.description} onChange={(e) => update("description", e.target.value)} placeholder={t("calendar.form.optional")} /></div>
 
           {/* Recurrence section */}
           <div className="space-y-3 rounded-lg border border-border p-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground"><Repeat className="h-4 w-4" /> Recurrence</div>
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground"><Repeat className="h-4 w-4" /> {t("calendar.form.recurrence")}</div>
             <div className="space-y-1.5">
-              <Label>Frequency</Label>
+              <Label>{t("calendar.form.frequency")}</Label>
               <Select value={form.recurrenceFrequency} onValueChange={(v) => update("recurrenceFrequency", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None (single event)</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="none">{t("calendar.form.noRepeat")}</SelectItem>
+                  <SelectItem value="daily">{t("calendar.frequency.daily")}</SelectItem>
+                  <SelectItem value="weekly">{t("calendar.frequency.weekly")}</SelectItem>
+                  <SelectItem value="biweekly">{t("calendar.frequency.biweekly")}</SelectItem>
+                  <SelectItem value="monthly">{t("calendar.frequency.monthly")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {form.recurrenceFrequency !== "none" && (
               <>
                 <div className="space-y-1.5">
-                  <Label>Ends</Label>
+                  <Label>{t("calendar.form.ends")}</Label>
                   <Select value={form.recurrenceEndType} onValueChange={(v) => update("recurrenceEndType", v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="never">Never</SelectItem>
-                      <SelectItem value="count">After N occurrences</SelectItem>
-                      <SelectItem value="until">On a specific date</SelectItem>
+                      <SelectItem value="never">{t("calendar.form.never")}</SelectItem>
+                      <SelectItem value="count">{t("calendar.form.afterCount")}</SelectItem>
+                      <SelectItem value="until">{t("calendar.form.onDate")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 {form.recurrenceEndType === "count" && (
                   <div className="space-y-1.5">
-                    <Label>Number of occurrences</Label>
+                    <Label>{t("calendar.form.occurrences")}</Label>
                     <Input type="number" min="2" max="100" value={form.recurrenceCount} onChange={(e) => update("recurrenceCount", e.target.value)} />
                   </div>
                 )}
                 {form.recurrenceEndType === "until" && (
                   <div className="space-y-1.5">
-                    <Label>End date</Label>
+                    <Label>{t("calendar.form.endDate")}</Label>
                     <Input type="date" value={form.recurrenceUntil} onChange={(e) => update("recurrenceUntil", e.target.value)} />
                   </div>
                 )}
@@ -382,11 +421,11 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
             )}
           </div>
 
-          {playerOptions && <div className="space-y-1.5"><Label>Coach Notes <span className="text-muted-foreground">(private)</span></Label><Input value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder="Not visible to observers" /></div>}
+          {playerOptions && <div className="space-y-1.5"><Label>{t("calendar.form.coachNotes")} <span className="text-muted-foreground">{t("calendar.form.coachNotesPrivate")}</span></Label><Input value={form.coachNotes} onChange={(e) => update("coachNotes", e.target.value)} placeholder={t("calendar.form.coachNotesPlaceholder")} /></div>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!valid || saving} onClick={() => { onSave(form); onOpenChange(false); }}>{saving ? "Saving…" : initial ? "Save Changes" : "Add Event"}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
+          <Button disabled={!valid || saving} onClick={() => { onSave(form); onOpenChange(false); }}>{saving ? t("calendar.form.saving") : initial ? t("calendar.form.save") : t("calendar.form.add")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -499,7 +538,7 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
               className={`min-h-[320px] border-r border-border p-2 ${idx === 6 ? "border-r-0" : ""} bg-card ${onDayClick ? "cursor-pointer hover:bg-accent/10" : ""} ${isToday ? "bg-primary/5 dark:bg-primary/10" : ""} ${isDragOver ? "ring-2 ring-inset ring-primary/50 bg-primary/10" : ""}`}
             >
               <div className="mb-3 text-center">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE")}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE", { locale: getDateFnsLocale() })}</div>
                 <div className={`mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"}`}>{format(day, "d")}</div>
               </div>
               <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} draggable={canDrag} registered={registeredIntlIds?.has(e.id)} />))}</div>
@@ -525,8 +564,8 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
         <div className="flex items-center gap-3">
           <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-foreground"}`}>{format(currentDate, "d")}</div>
           <div>
-            <div className="text-lg font-semibold text-foreground">{format(currentDate, "EEEE")}</div>
-            <div className="text-sm text-muted-foreground">{format(currentDate, "MMMM yyyy")} · {dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}</div>
+            <div className="text-lg font-semibold text-foreground">{format(currentDate, "EEEE", { locale: getDateFnsLocale() })}</div>
+            <div className="text-sm text-muted-foreground">{format(currentDate, "MMMM yyyy", { locale: getDateFnsLocale() })} · {translate("calendar.eventCount", { count: dayEvents.length })}</div>
           </div>
         </div>
       </div>
@@ -534,7 +573,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
         {dayEvents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <CalendarIcon className="mb-2 h-8 w-8 opacity-40" />
-            <p className="text-sm font-medium">No events scheduled</p>
+            <p className="text-sm font-medium">{translate("calendar.noEvents")}</p>
           </div>
         )}
         {dayEvents.map((event) => {
@@ -544,16 +583,15 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
           return (
             <button key={event.id} onClick={() => onSelectEvent(event)} className="flex w-full items-start gap-4 px-6 py-4 text-left transition-colors hover:bg-accent/10">
               <div className="flex shrink-0 flex-col items-center pt-0.5">
-                <span className="text-sm font-semibold text-foreground">{format(start, "h:mm")}</span>
-                <span className="text-[10px] text-muted-foreground">{format(start, "a")}</span>
+                <span className="text-sm font-semibold text-foreground">{formatTime(start)}</span>
                 <div className="mt-1.5 h-8 w-0.5 rounded-full" style={{ backgroundColor: showPlayerLabel && event.playerId ? entityColor(event.playerId) : eventBaseColor(event.type, event.title) }} />
-                <span className="mt-1.5 text-[10px] text-muted-foreground">{format(end, "h:mm a")}</span>
+                <span className="mt-1.5 text-[10px] text-muted-foreground">{formatTime(end)}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: withAlpha(eventBaseColor(event.type, event.title), "1f"), borderColor: withAlpha(eventBaseColor(event.type, event.title), "59"), color: eventBaseColor(event.type, event.title) }}>{cfg.icon}{cfg.label}</span>
+                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: withAlpha(eventBaseColor(event.type, event.title), "1f"), borderColor: withAlpha(eventBaseColor(event.type, event.title), "59"), color: eventBaseColor(event.type, event.title) }}>{cfg.icon}{eventTypeLabel(event.type)}</span>
                    <StateBadge state={event.state} />
-                   {registeredIntlIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />Registered</span>}
+                   {registeredIntlIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />{translate("calendar.registered")}</span>}
                 </div>
                 <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
                 {showPlayerLabel && event.playerName && event.playerId && (
@@ -611,7 +649,7 @@ function circuitOf(t: Tournament): TournamentCircuit | undefined {
 }
 
 export default function CalendarPage() {
-  const { t } = useT();
+  const { t, formatNumber } = useT();
   const { user } = useAuth();
   const { connectedPlayers } = useConnections();
   const queryClient = useQueryClient();
@@ -857,9 +895,11 @@ export default function CalendarPage() {
       : null
     : null;
   const reassignEventName = reassignPending
-    ? events?.find((e) => e.id === reassignPending.eventId)?.title ?? "this event"
+    ? events?.find((e) => e.id === reassignPending.eventId)?.title ?? t("calendar.reassign.thisEvent")
     : "";
-  const reassignTargetName = reassignTarget ? `${reassignTarget.firstName} ${reassignTarget.lastName}` : "your schedule";
+  const reassignTargetName = reassignTarget
+    ? `${reassignTarget.firstName} ${reassignTarget.lastName}`
+    : t("calendar.reassign.yourSchedule");
 
   const handleReassignToPlayer = useCallback((eventId: string, newPlayerId: string | null) => {
     setReassignPending({ eventId, newPlayerId });
@@ -963,21 +1003,25 @@ export default function CalendarPage() {
     setPlayerDetailOpen(true);
   };
 
+  const dfl = { locale: getDateFnsLocale() };
   const heading = view === "month"
-    ? format(currentDate, "MMMM yyyy")
+    ? format(currentDate, "MMMM yyyy", dfl)
     : view === "week"
-    ? `Week of ${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d")} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "MMM d, yyyy")}`
-    : format(currentDate, "EEEE, MMMM d, yyyy");
+    ? t("calendar.weekOf", {
+        start: format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", dfl),
+        end: format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", dfl),
+      })
+    : format(currentDate, "EEEE, d MMMM yyyy", dfl);
 
   // Month and week become the agenda list on a phone; day already is a list.
   const renderView: RenderView = isCompact && view !== "day" ? "agenda" : view;
 
   /** The same date, short enough for a 375px toolbar. Phone branch only. */
   const compactHeading = view === "month"
-    ? format(currentDate, "MMMM yyyy")
+    ? format(currentDate, "MMMM yyyy", dfl)
     : view === "week"
-    ? `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM")} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM")}`
-    : format(currentDate, "EEE d MMM yyyy");
+    ? `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", dfl)} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", dfl)}`
+    : format(currentDate, "EEE d MMM yyyy", dfl);
 
   /** Filters differing from their default, for the count on the Filters button. */
   const activeFilterCount =
@@ -1024,7 +1068,7 @@ export default function CalendarPage() {
   const exportEvents = useMemo(() => eventsInRange(scopedEvents, exportRange), [scopedEvents, exportRange]);
   // The button below sm is icon-only, so the scope has to live somewhere a
   // screen reader and a hover both reach.
-  const exportDescription = `Export the ${exportEvents.length} event${exportEvents.length === 1 ? "" : "s"} shown for ${heading} as a calendar file (.ics)`;
+  const exportDescription = t("calendar.exportDescription", { count: exportEvents.length, period: heading });
 
   const handleExportIcs = () => {
     if (exportEvents.length === 0) return;
@@ -1054,17 +1098,17 @@ export default function CalendarPage() {
       <div className="flex flex-row items-center justify-between gap-4 sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Calendar</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("calendar.title")}</h1>
             {isObserver && <ReadOnlyBadge />}
           </div>
           <p className="hidden text-sm text-muted-foreground sm:block">
-            {isPlayer ? "Your unified schedule — trainings, matches, tournaments & more." : isCoach ? "Manage your schedule and connected player events." : isObserver ? "Read-only view of the connected player's schedule." : "Platform-wide calendar overview."}
+            {isPlayer ? t("calendar.subtitle.player") : isCoach ? t("calendar.subtitle.coach") : isObserver ? t("calendar.subtitle.observer") : t("calendar.subtitle.admin")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {/* Summary chips */}
           <div className="hidden items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-xs font-medium text-muted-foreground md:flex">
-            <span className="font-semibold text-foreground">{scopedEvents.length}</span> events
+            <span className="font-semibold text-foreground">{formatNumber(scopedEvents.length)}</span> {t("calendar.eventsSuffix")}
           </div>
           {/* Export. The label names the scope rather than saying "Export",
               because the one thing that must not happen is a coach believing
@@ -1083,9 +1127,9 @@ export default function CalendarPage() {
             className="gap-1.5 coarse:min-w-11"
           >
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Export this {view}</span>
+            <span className="hidden sm:inline">{t(`calendar.exportView.${view}`)}</span>
           </Button>
-          {canEdit && <Button size="sm" onClick={handleAdd} className="gap-1.5 shadow-sm"><Plus className="h-4 w-4" />Add Event</Button>}
+          {canEdit && <Button size="sm" onClick={handleAdd} className="gap-1.5 shadow-sm"><Plus className="h-4 w-4" />{t("calendar.addEvent")}</Button>}
         </div>
       </div>
 
@@ -1111,8 +1155,8 @@ export default function CalendarPage() {
                   list would just overflow it on the one device this branch is
                   for. */}
               <TabsList>
-                <TabsTrigger value="agenda" className="gap-1.5 px-3 text-xs"><List className="h-3.5 w-3.5" />Agenda</TabsTrigger>
-                <TabsTrigger value="day" className="gap-1.5 px-3 text-xs"><CalendarIcon className="h-3.5 w-3.5" />Day</TabsTrigger>
+                <TabsTrigger value="agenda" className="gap-1.5 px-3 text-xs"><List className="h-3.5 w-3.5" />{t("calendar.view.agenda")}</TabsTrigger>
+                <TabsTrigger value="day" className="gap-1.5 px-3 text-xs"><CalendarIcon className="h-3.5 w-3.5" />{t("calendar.view.day")}</TabsTrigger>
               </TabsList>
             </Tabs>
             <Button
@@ -1122,7 +1166,7 @@ export default function CalendarPage() {
               onClick={() => setFiltersOpen(true)}
             >
               <Filter className="h-3.5 w-3.5" />
-              Filters
+              {t("calendar.filters")}
               {activeFilterCount > 0 && (
                 <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
                   {activeFilterCount}
@@ -1131,13 +1175,13 @@ export default function CalendarPage() {
             </Button>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="shrink-0" aria-label={`Previous ${view}`} onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" size="icon" className="shrink-0" aria-label={t("calendar.previousView", { view: t(`calendar.view.${view}`) })} onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
             {/* The full heading ("Friday, September 4, 2026") truncates in the
                 ~180px left between the two arrows and Today, so the phone gets
                 a shorter one rather than an ellipsis. */}
             <span className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-foreground">{compactHeading}</span>
-            <Button variant="outline" size="icon" className="shrink-0" aria-label={`Next ${view}`} onClick={() => navigate(1)}><ChevronRight className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="sm" className="shrink-0 text-xs text-muted-foreground" onClick={() => setCurrentDate(new Date())}>Today</Button>
+            <Button variant="outline" size="icon" className="shrink-0" aria-label={t("calendar.nextView", { view: t(`calendar.view.${view}`) })} onClick={() => navigate(1)}><ChevronRight className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="sm" className="shrink-0 text-xs text-muted-foreground" onClick={() => setCurrentDate(new Date())}>{t("calendar.today")}</Button>
           </div>
         </div>
       ) : (
@@ -1153,16 +1197,16 @@ export default function CalendarPage() {
           <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
             <TabsList className="h-8">
               {(["month", "week", "day"] as ViewMode[]).map((v) => (
-                <TabsTrigger key={v} value={v} className="h-6 gap-1.5 px-2.5 text-xs capitalize">{VIEW_ICONS[v]}{v}</TabsTrigger>
+                <TabsTrigger key={v} value={v} className="h-6 gap-1.5 px-2.5 text-xs capitalize">{VIEW_ICONS[v]}{t(`calendar.view.${v}`)}</TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-8 w-8" aria-label={`Previous ${view}`} onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" aria-label={t("calendar.previousView", { view: t(`calendar.view.${view}`) })} onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
             <span className="min-w-[150px] text-center text-sm font-semibold text-foreground">{heading}</span>
-            <Button variant="outline" size="icon" className="h-8 w-8" aria-label={`Next ${view}`} onClick={() => navigate(1)}><ChevronRight className="h-4 w-4" /></Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" aria-label={t("calendar.nextView", { view: t(`calendar.view.${view}`) })} onClick={() => navigate(1)}><ChevronRight className="h-4 w-4" /></Button>
           </div>
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => setCurrentDate(new Date())}>Today</Button>
+          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => setCurrentDate(new Date())}>{t("calendar.today")}</Button>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
@@ -1182,9 +1226,9 @@ export default function CalendarPage() {
           )}
 
           <MultiFilterMenu
-            label="Types"
+            label={t("calendar.types.label")}
             icon={<Filter className="h-3.5 w-3.5" />}
-            options={EVENT_TYPES.map((t) => ({ value: t, label: EVENT_CONFIG[t].label, color: EVENT_TYPE_COLOR[t] }))}
+            options={EVENT_TYPES.map((type) => ({ value: type, label: t(`calendar.type.${type}`), color: EVENT_TYPE_COLOR[type] }))}
             selected={activeFilters as Set<string>}
             onToggle={(v) => toggleFilter(v as CalendarEventType)}
             onSelectAll={() => setActiveFilters(new Set(EVENT_TYPES))}
@@ -1194,15 +1238,15 @@ export default function CalendarPage() {
           {isCoach && connectedPlayers.length > 0 && (
             <>
               <SingleFilterMenu
-                label="Scope"
+                label={t("calendar.scope.label")}
                 icon={<Users className="h-3.5 w-3.5" />}
                 value={playerScope}
                 defaultValue="all"
                 onChange={setPlayerScope}
-                groups={visiblePlayers.length > 0 ? { [visiblePlayers[0].id]: "Players" } : undefined}
+                groups={visiblePlayers.length > 0 ? { [visiblePlayers[0].id]: t("calendar.scope.playersGroup") } : undefined}
                 options={[
-                  { value: "all", label: "All players", icon: <Users className="h-3.5 w-3.5" /> },
-                  { value: "mine", label: "My schedule", icon: <User className="h-3.5 w-3.5" /> },
+                  { value: "all", label: t("calendar.scope.allPlayers"), icon: <Users className="h-3.5 w-3.5" /> },
+                  { value: "mine", label: t("calendar.scope.mySchedule"), icon: <User className="h-3.5 w-3.5" /> },
                   ...visiblePlayers.map((p) => ({
                     value: p.id,
                     label: `${p.firstName} ${p.lastName}`,
@@ -1220,8 +1264,8 @@ export default function CalendarPage() {
               size="icon"
               onClick={handleRefreshTournaments}
               disabled={isRefetchingTournaments}
-              title="Refresh tournaments"
-              aria-label="Refresh tournaments"
+              title={t("calendar.refreshTournaments")}
+              aria-label={t("calendar.refreshTournaments")}
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isRefetchingTournaments ? "animate-spin" : ""}`} />
@@ -1237,7 +1281,7 @@ export default function CalendarPage() {
       {isDraggingEvent && isCoach && visiblePlayers.length > 0 && (
         <ReassignDropStrip
           targets={[
-            { id: null, label: "My schedule" },
+            { id: null, label: t("calendar.reassign.mySchedule") },
             ...visiblePlayers.map((p) => ({ id: p.id, label: `${p.firstName} ${p.lastName}`, color: entityColor(p.id) })),
           ]}
           onAssign={handleReassignToPlayer}
@@ -1248,7 +1292,7 @@ export default function CalendarPage() {
           names. It moves into the Filters sheet there; unchanged on desktop. */}
       {showPlayerLabels && !isCompact && connectedPlayers.length > 0 && (
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-[11px] font-medium text-muted-foreground">Players:</span>
+          <span className="text-[11px] font-medium text-muted-foreground">{t("calendar.playersLegend")}</span>
           {connectedPlayers.map((p) => (
             <span key={p.id} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entityColor(p.id) }} />
@@ -1280,8 +1324,8 @@ export default function CalendarPage() {
               <button
                 onClick={() => setMiniOpen(false)}
                 className="absolute -right-3 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
-                title="Hide the mini calendar"
-                aria-label="Hide the mini calendar"
+                title={t("calendar.hideMini")}
+                aria-label={t("calendar.hideMini")}
               >
                 <PanelLeftClose className="h-3.5 w-3.5" />
               </button>
@@ -1292,7 +1336,7 @@ export default function CalendarPage() {
                 onMonthChange={setCurrentDate}
               />
               <CalendarLegendPanel
-                typeItems={EVENT_TYPES.map((t) => ({ label: EVENT_CONFIG[t].label, color: EVENT_TYPE_COLOR[t], count: eventCounts[t] ?? 0 }))}
+                typeItems={EVENT_TYPES.map((type) => ({ label: t(`calendar.type.${type}`), color: EVENT_TYPE_COLOR[type], count: eventCounts[type] ?? 0 }))}
                 circuitItems={ALL_CIRCUITS.map((f) => ({
                   label: f,
                   color: CIRCUIT_COLOR[f],
@@ -1307,8 +1351,8 @@ export default function CalendarPage() {
             <button
               onClick={() => setMiniOpen(true)}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
-              title="Show the mini calendar"
-              aria-label="Show the mini calendar"
+              title={t("calendar.showMini")}
+              aria-label={t("calendar.showMini")}
             >
               <PanelLeftOpen className="h-4 w-4" />
             </button>
@@ -1367,7 +1411,7 @@ export default function CalendarPage() {
         <CalendarFiltersSheet
           open={filtersOpen}
           onOpenChange={setFiltersOpen}
-          typeOptions={EVENT_TYPES.map((t) => ({ value: t, label: EVENT_CONFIG[t].label, color: EVENT_TYPE_COLOR[t], count: eventCounts[t] ?? 0 }))}
+          typeOptions={EVENT_TYPES.map((type) => ({ value: type, label: t(`calendar.type.${type}`), color: EVENT_TYPE_COLOR[type], count: eventCounts[type] ?? 0 }))}
           activeTypes={activeFilters as Set<string>}
           onToggleType={(v) => toggleFilter(v as CalendarEventType)}
           onAllTypes={() => setActiveFilters(new Set(EVENT_TYPES))}
@@ -1381,15 +1425,15 @@ export default function CalendarPage() {
           onToggleCountry={toggleCountry}
           onClearCountries={() => setActiveCountries(new Set())}
           scopeOptions={isCoach && connectedPlayers.length > 0 ? [
-            { value: "all", label: "All players" },
-            { value: "mine", label: "My schedule" },
+            { value: "all", label: t("calendar.scope.allPlayers") },
+            { value: "mine", label: t("calendar.scope.mySchedule") },
             ...visiblePlayers.map((p) => ({ value: p.id, label: `${p.firstName} ${p.lastName}`, color: entityColor(p.id) })),
           ] : undefined}
           scopeValue={playerScope}
           onScopeChange={isCoach ? setPlayerScope : undefined}
           teamOptions={isCoach && teams.length > 0 ? [
-            { value: "__all__", label: "All teams" },
-            ...teams.map((t) => ({ value: t.id, label: t.name })),
+            { value: "__all__", label: t("calendar.scope.allTeams") },
+            ...teams.map((team) => ({ value: team.id, label: team.name })),
           ] : undefined}
           teamValue={teamScope}
           onTeamChange={isCoach ? (v) => { setTeamScope(v); setPlayerScope("all"); } : undefined}
@@ -1422,14 +1466,17 @@ export default function CalendarPage() {
       <AlertDialog open={!!reassignPending} onOpenChange={(open) => { if (!open) setReassignPending(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reassign Event</AlertDialogTitle>
+            <AlertDialogTitle>{t("calendar.reassign.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to reassign <span className="font-semibold">"{reassignEventName}"</span> to <span className="font-semibold">{reassignTargetName}</span>?
+              {interleave(t("calendar.reassign.body", { event: slot(0), target: slot(1) }), [
+                <span key="event" className="font-semibold">“{reassignEventName}”</span>,
+                <span key="target" className="font-semibold">{reassignTargetName}</span>,
+              ])}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmReassign}>Reassign</AlertDialogAction>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReassign}>{t("calendar.reassign.confirm")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

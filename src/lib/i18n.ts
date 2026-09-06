@@ -7,6 +7,8 @@
 // ============================================================
 
 import { createContext, createElement, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { enUS, es as esDateFns } from "date-fns/locale";
+import type { Locale as DateFnsLocale } from "date-fns";
 import en from "@/locales/en.json";
 import es from "@/locales/es.json";
 
@@ -155,6 +157,19 @@ export function formatNumber(value: Primitive): string {
   return new Intl.NumberFormat(currentLocale).format(n);
 }
 
+/**
+ * A number at a fixed number of decimals — "1.20" in `en`, "1,20" in `es`.
+ * `toFixed` always writes a dot, which is wrong in most of the world.
+ */
+export function formatDecimal(value: number, digits: number): string {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return String(value);
+  return new Intl.NumberFormat(currentLocale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(n);
+}
+
 /** Format a count for compact UI badges (e.g. 99+ when over threshold). */
 export function formatBadgeCount(count: number, max = 99): string {
   if (count > max) return `${formatNumber(max)}+`;
@@ -168,10 +183,143 @@ export function t(key: string, vars: Vars = {}): string {
   return interpolate(withPlurals, vars);
 }
 
+/**
+ * A LIST of copy items stored as a JSON array, e.g. the equipment upgrade tips.
+ * Returns the strings in order for the active locale, falling back to English,
+ * and an empty list when the key is missing — a caller mapping over it then
+ * renders nothing rather than a key path.
+ */
+export function tList(key: string): string[] {
+  const read = (bundle: MessageBundle | undefined): string[] | undefined => {
+    if (!bundle) return undefined;
+    const segments = key.split(".");
+    let node: MessageNode | undefined = bundle as MessageNode;
+    for (const segment of segments) {
+      if (node === undefined || typeof node === "string") return undefined;
+      node = (node as { [k: string]: MessageNode })[segment];
+    }
+    if (!node || typeof node === "string") return undefined;
+    const values = Object.values(node);
+    return values.every((v): v is string => typeof v === "string") ? values : undefined;
+  };
+  return read(messages[currentLocale]) ?? read(messages[DEFAULT_LOCALE]) ?? [];
+}
+
+// ------------------------------------------------------------------
+// Sentences with React nodes inside them
+// ------------------------------------------------------------------
+
+/**
+ * A marker for "a React node goes here", to be passed as an interpolation
+ * variable. It uses NUL, which no copy will ever contain, and carries the
+ * node's index so a translation may put the slots in a different order than
+ * English does.
+ *
+ *     {interleave(t("auth.signUp.terms", { terms: slot(0), privacy: slot(1) }), [
+ *       <Link key="terms" to="/terms">{t("auth.signUp.termsLink")}</Link>,
+ *       <Link key="privacy" to="/privacy">{t("auth.signUp.privacyLink")}</Link>,
+ *     ])}
+ *
+ * This exists so a sentence with a link or a bold phrase in it stays ONE
+ * translatable string. Splitting it into "before"/"after" fragments would hard-
+ * code English word order into the markup.
+ */
+export function slot(index: number): string {
+  return `\u0000${index}\u0000`;
+}
+
+/** Put the React nodes back into a translated sentence produced with `slot()`. */
+export function interleave(text: string, nodes: ReactNode[]): ReactNode[] {
+  // `split` with a capturing group alternates literal text and captured index.
+  return text.split(/\u0000(\d+)\u0000/).map((part, i) => (i % 2 === 1 ? nodes[Number(part)] : part));
+}
+
 /** Locale-aware date formatting — thin wrapper so migrated screens don't reach for `Intl` ad hoc. */
 export function formatDate(value: Date | string, options?: Intl.DateTimeFormatOptions): string {
   const date = typeof value === "string" ? new Date(value) : value;
   return new Intl.DateTimeFormat(currentLocale, options).format(date);
+}
+
+/**
+ * The `date-fns` locale object for the active locale, for the call sites that
+ * legitimately keep a `date-fns` pattern string (`"d MMM"`, `"EEEE"`, …).
+ * `format(date, pattern, { locale: getDateFnsLocale() })` then renders month
+ * and weekday names in the active language instead of always English.
+ * Everything else should use `formatDate` and let `Intl` pick the pattern.
+ */
+export function getDateFnsLocale(): DateFnsLocale {
+  return currentLocale === "es" ? esDateFns : enUS;
+}
+
+/** Milliseconds per unit, largest first — `formatRelativeTime` picks the first that fits. */
+const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+  ["year", 365 * 24 * 60 * 60 * 1000],
+  ["month", 30 * 24 * 60 * 60 * 1000],
+  ["week", 7 * 24 * 60 * 60 * 1000],
+  ["day", 24 * 60 * 60 * 1000],
+  ["hour", 60 * 60 * 1000],
+  ["minute", 60 * 1000],
+];
+
+/**
+ * "3 days ago" / "hace 3 días" — locale-aware relative time via
+ * `Intl.RelativeTimeFormat`. The unit is picked automatically (the largest one
+ * the gap fills); anything under a minute renders as "now"/"ahora".
+ */
+export function formatRelativeTime(
+  value: Date | string | number,
+  options?: { now?: Date | number; numeric?: Intl.RelativeTimeFormatNumeric },
+): string {
+  const date = value instanceof Date ? value : new Date(value);
+  const time = date.getTime();
+  if (!Number.isFinite(time)) return String(value);
+  const nowOption = options?.now;
+  const nowMs = nowOption instanceof Date ? nowOption.getTime() : nowOption ?? Date.now();
+  const diff = time - nowMs;
+  const rtf = new Intl.RelativeTimeFormat(currentLocale, { numeric: options?.numeric ?? "auto" });
+  for (const [unit, ms] of RELATIVE_UNITS) {
+    if (Math.abs(diff) >= ms) return rtf.format(Math.round(diff / ms), unit);
+  }
+  return rtf.format(0, "second");
+}
+
+/**
+ * "63.6%" in `en`, "63,6 %" in `es`. The app stores percentages as 0–100
+ * numbers and `Intl`'s percent style expects a fraction, so the division lives
+ * here — one place, so no call site has to remember it.
+ */
+export function formatPercent(value: number, options?: { maximumFractionDigits?: number }): string {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return String(value);
+  return new Intl.NumberFormat(currentLocale, {
+    style: "percent",
+    maximumFractionDigits: options?.maximumFractionDigits ?? 1,
+  }).format(n / 100);
+}
+
+/**
+ * "$1,250" / "1250 US$" — the amount in the active locale's number
+ * conventions, in the currency the entry was recorded in. Never converted: a
+ * euro expense stays euros for a Spanish reader and for an English one.
+ */
+export function formatCurrency(
+  amount: number,
+  currency: string,
+  options?: { maximumFractionDigits?: number },
+): string {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return String(amount);
+  const code = (currency || "USD").toUpperCase();
+  try {
+    return new Intl.NumberFormat(currentLocale, {
+      style: "currency",
+      currency: code,
+      maximumFractionDigits: options?.maximumFractionDigits ?? 0,
+    }).format(n);
+  } catch {
+    // An unknown or malformed currency code must not blank out the amount.
+    return `${formatNumber(n)} ${code}`;
+  }
 }
 
 // ------------------------------------------------------------------
@@ -226,10 +374,25 @@ export function useLocale(): LocaleContextValue {
  */
 export function useT() {
   const { locale, setLocale } = useLocale();
-  // `t`/`formatNumber`/`formatBadgeCount`/`formatDate` read the shared
-  // module-level `currentLocale`, which `LocaleProvider` keeps in sync with
-  // `locale` — referencing it here ties this hook's identity to context
-  // updates so consuming components re-render with the new strings.
+  // `t` and the `format*` helpers read the shared module-level `currentLocale`,
+  // which `LocaleProvider` keeps in sync with `locale` — referencing it here
+  // ties this hook's identity to context updates so consuming components
+  // re-render with the new strings. Components must take the formatters from
+  // here rather than importing them directly, or a language switch leaves
+  // their dates and numbers on the previous locale until something else
+  // re-renders them.
   void locale;
-  return { t, formatNumber, formatBadgeCount, formatDate, locale, setLocale };
+  return {
+    t,
+    formatNumber,
+    formatDecimal,
+    formatBadgeCount,
+    formatDate,
+    formatRelativeTime,
+    formatPercent,
+    formatCurrency,
+    getDateFnsLocale,
+    locale,
+    setLocale,
+  };
 }
