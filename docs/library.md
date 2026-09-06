@@ -168,6 +168,19 @@ a plan a player already worked through.
 
 ## Assembler
 
-_(To be written by the session-assembler work on this branch — how a
-`SessionTemplate` plus constraints plus `CoachPreference` becomes a
-`GeneratedSession`, and how a coach's edits feed back.)_
+[`docs/sessions.md`](./sessions.md) is the companion document: how a
+`SessionTemplate` plus constraints plus `CoachPreference` rows become a
+`GeneratedSession`, which drill fields are hard filters and which only move a
+score, the reason codes a proposal explains itself with, and how a coach's edits
+are recorded as a diff for later preference learning.
+
+Two things a drill author should know, because the assembler reads them
+literally:
+
+- `ageBands` and `players` / `courts` are **hard filters**. A drill written for
+  `[adult]` will never be shown to a group with one under-12 in it, however well
+  its skills match.
+- a `physical` drill tagged `lower_body_strength` or `plyometric_landing` is
+  "strength work": for any group that may contain an under-14 it is placed only
+  if it needs no external load **and** carries
+  `requiresQualifiedSupervision: true`.
