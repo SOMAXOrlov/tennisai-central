@@ -111,7 +111,7 @@ time onto whichever block has the most headroom.
 Within a block, every candidate is scored (below), then sorted by
 
 1. score, descending;
-2. a **seeded shuffle** of the candidate ids (mulberry32 over a FNV-ish hash of
+2. a **seeded shuffle** of the candidate ids (mulberry32 over an FNV-1a hash of
    the seed string);
 3. drill id.
 
