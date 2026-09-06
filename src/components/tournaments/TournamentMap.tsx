@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { haversineKm, formatDistanceKm, type LatLng } from "@/lib/geo/distance";
 import { clusterForZoom, withinBounds, padBounds, type Bounds } from "@/lib/geo/cluster";
 import type { Tournament } from "@/types";
+import { useT } from "@/lib/i18n";
 
 // Leaflet's bundled marker images are gone with the DOM pins — the only
 // remaining icons are the two divIcons below, which carry their own markup.
@@ -154,6 +155,7 @@ function hasCoords(t: Tournament): t is PlottableTournament {
 }
 
 export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide, canAdd = true, className }: TournamentMapProps) {
+  const { t } = useT();
   const plotted = useMemo(() => tournaments.filter(hasCoords), [tournaments]);
 
   const [view, setView] = useState<{ zoom: number; bounds: Bounds | null }>({ zoom: 3, bounds: null });
@@ -226,7 +228,7 @@ export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide
           <>
             <Marker position={[userCoords.lat, userCoords.lng]} icon={userLocationIcon}>
               <Popup>
-                <div className="text-sm font-medium text-foreground">Your location</div>
+                <div className="text-sm font-medium text-foreground">{t("tournaments.mapPopup.yourLocation")}</div>
               </Popup>
             </Marker>
             {radiusKm != null && radiusKm > 0 && (
@@ -307,7 +309,7 @@ export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide
                     className="h-7 flex-1 gap-1 px-2 text-xs"
                     onClick={() => onAdd(selectedDetail.t)}
                   >
-                    <Plus className="h-3 w-3" /> Add
+                    <Plus className="h-3 w-3" /> {t("tournaments.page.add")}
                   </Button>
                 )}
                 <Button
@@ -316,7 +318,7 @@ export function TournamentMap({ tournaments, userCoords, radiusKm, onAdd, onHide
                   className={canAdd ? "h-7 flex-1 gap-1 px-2 text-xs text-muted-foreground" : "h-7 w-full gap-1 px-2 text-xs text-muted-foreground"}
                   onClick={() => onHide(selectedDetail.t.id)}
                 >
-                  <EyeOff className="h-3 w-3" /> Hide
+                  <EyeOff className="h-3 w-3" /> {t("tournaments.mapPopup.hide")}
                 </Button>
               </div>
             </div>

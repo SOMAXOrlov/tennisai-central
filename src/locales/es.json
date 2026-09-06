@@ -480,6 +480,133 @@
       "notEntered": "No estás inscrito en este.",
       "player": "Jugador",
       "seeWhereItIs": "Ver dónde está"
+    },
+    "page": {
+      "title": "Torneos",
+      "subtitle": {
+        "coach": "Consulta los torneos y la participación de tus jugadores conectados.",
+        "observer": "Vista de solo lectura de los torneos del jugador conectado.",
+        "player": "Explora los próximos torneos y gestiona tus inscripciones."
+      },
+      "loading": "Cargando los torneos…",
+      "loadError": "No se han podido cargar los torneos",
+      "tabs": {
+        "mySchedule": "Mi calendario",
+        "playerView": "Vista de jugador",
+        "addTournaments": "Añadir torneos",
+        "browseAll": "Ver todos",
+        "map": "Mapa"
+      },
+      "filters": {
+        "surface": "Superficie",
+        "allSurfaces": "Todas las superficies",
+        "category": "Categoría",
+        "allCategories": "Todas las categorías",
+        "country": "País",
+        "allCountries": "Todos los países",
+        "status": "Todos los estados",
+        "reset": "Quitar filtros",
+        "refreshing": "Actualizando…",
+        "refresh": "Actualizar los torneos",
+        "searchChip": "Búsqueda: “{query}”",
+        "teamChip": "Equipo",
+        "playerChip": "Jugador"
+      },
+      "table": {
+        "empty": "Sin torneos de jugadores",
+        "emptyFiltered": "Ningún resultado coincide con tus filtros.",
+        "emptyNone": "Todavía no hay inscripciones en torneos.",
+        "tournament": "Torneo",
+        "player": "Jugador",
+        "location": "Lugar",
+        "date": "Fecha",
+        "surface": "Superficie",
+        "status": "Estado",
+        "removeTitle": "Quitar del calendario",
+        "removeAria": "Quitar {name} de tu calendario"
+      },
+      "following": "Sigues",
+      "pick": {
+        "title": "¿Qué circuitos sigues?",
+        "body": "Elige uno para empezar a explorar. Los feeds recogen miles de eventos de todo el mundo, así que no se muestra nada hasta que elijas. Tu elección se guarda y también se usa en el calendario."
+      },
+      "noneFound": "No se han encontrado torneos",
+      "noneMatch": "Ningún torneo coincide con tus filtros.",
+      "conditionsAria": "Condiciones de juego de {name}",
+      "hideTitle": "Ocultar de las sugerencias",
+      "hideAria": "Ocultar {name} de las sugerencias",
+      "indoor": "Pista cubierta",
+      "outdoor": "Aire libre",
+      "altitudeM": "{m} m",
+      "away": "a {distance}",
+      "yourPlayers": "Tus jugadores",
+      "inScheduleRemove": "En tu calendario: quitar",
+      "addToSchedule": "Añadir al calendario",
+      "inSchedule": "En tu calendario",
+      "remove": "Quitar",
+      "add": "Añadir",
+      "unhide": "Mostrar",
+      "hide": "Ocultar",
+      "showingOf": "Mostrando {shown} de {total}",
+      "showMore": "Ver más"
+    },
+    "map": {
+      "locating": "Localizando…",
+      "useLocation": "Usar mi ubicación",
+      "pickCity": "O elige una ciudad…",
+      "yourLocation": "Tu ubicación",
+      "denied": "Has denegado el acceso a la ubicación; elige una ciudad.",
+      "unsupported": "Este navegador no permite geolocalización; elige una ciudad.",
+      "within": "A menos de {radius}",
+      "anyDistance": "cualquier distancia",
+      "radiusKm": "{km} km",
+      "sortNearest": "Ordenar por cercanía",
+      "hiddenToggle": "Ocultos ({count}) — {action}",
+      "privacy": "Tu ubicación no sale de tu dispositivo.",
+      "setLocation": "Indica tu ubicación para ver las distancias.",
+      "loading": "Cargando el mapa…"
+    },
+    "removeDialog": {
+      "title": "¿Quitarlo de tu calendario?",
+      "body": "{name} se quitará de tu calendario, junto con el estado que le hayas puesto. Puedes volver a añadirlo desde la pestaña Ver todos.",
+      "keep": "Dejarlo",
+      "removing": "Quitando…",
+      "remove": "Quitar"
+    },
+    "planning": {
+      "finished": "Finalizado",
+      "onNow": "En juego",
+      "entriesCloseToday": "Las inscripciones cierran hoy",
+      "entriesCloseIn": "Las inscripciones cierran en {count, plural, one {# día} other {# días}}",
+      "startsIn": "Empieza en {count, plural, one {# día} other {# días}}",
+      "entriesClosedStartsIn": "Inscripciones cerradas · empieza en {count, plural, one {# día} other {# días}}",
+      "clashSentence": "{who} {kind} {list} en las mismas fechas.",
+      "clashWhoUnnamed": "Este jugador",
+      "clashWhoNamed": "{name}",
+      "clashDirect": "ya está inscrito en",
+      "clashBackToBack": "juega seguido con",
+      "clashList": "{head} y {last}"
+    },
+    "addDialog": {
+      "title": "Añadir al calendario",
+      "player": "Jugador",
+      "connectFirst": "Conecta antes con un jugador: todavía no hay a quién inscribir.",
+      "choosePlayer": "Elige un jugador…",
+      "status": "Estado",
+      "statusOption": "{label} — ",
+      "registeredHint": "Inscripción hecha",
+      "plannedHint": "Con intención de inscribirse",
+      "maybeHint": "Aún por decidir",
+      "alreadyEntered": "Ya está en este calendario: si vuelves a guardar solo se actualiza el estado.",
+      "backToBackSuffix": " (uno detrás de otro)",
+      "acknowledged": "Se añadirá igualmente: los dos aparecerán en el calendario.",
+      "adding": "Añadiendo…",
+      "addAnyway": "Añadir de todos modos",
+      "add": "Añadir al calendario"
+    },
+    "mapPopup": {
+      "yourLocation": "Tu ubicación",
+      "hide": "Ocultar"
     }
   },
   "ai": {

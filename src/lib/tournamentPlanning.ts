@@ -6,6 +6,7 @@
 // drift into telling a coach different things on different screens.
 
 import type { PlayerTournament, Tournament } from "@/types";
+import { t } from "@/lib/i18n";
 
 const DAY_MS = 86_400_000;
 
@@ -24,9 +25,7 @@ export interface TimeLeft {
   tone: "urgent" | "soon" | "normal" | "past";
 }
 
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? "" : "s"}`;
-}
+
 
 /**
  * The one number worth showing about a tournament, right now.
@@ -40,15 +39,15 @@ function plural(n: number, word: string): string {
  * Feeds do not all publish an entry deadline; without one this counts to the
  * start, which is honest rather than inventing a deadline.
  */
-export function timeLeft(t: Pick<Tournament, "startDate" | "endDate"> & { entryDeadline?: string },
+export function timeLeft(tournament: Pick<Tournament, "startDate" | "endDate"> & { entryDeadline?: string },
   now: Date = new Date()): TimeLeft {
   const at = now.getTime();
-  const start = new Date(t.startDate).getTime();
-  const end = new Date(t.endDate).getTime();
-  const deadline = t.entryDeadline ? new Date(t.entryDeadline).getTime() : null;
+  const start = new Date(tournament.startDate).getTime();
+  const end = new Date(tournament.endDate).getTime();
+  const deadline = tournament.entryDeadline ? new Date(tournament.entryDeadline).getTime() : null;
 
-  if (end < at) return { kind: "finished", days: 0, label: "Finished", tone: "past" };
-  if (start <= at) return { kind: "running", days: 0, label: "On now", tone: "normal" };
+  if (end < at) return { kind: "finished", days: 0, label: t("tournaments.planning.finished"), tone: "past" };
+  if (start <= at) return { kind: "running", days: 0, label: t("tournaments.planning.onNow"), tone: "normal" };
 
   if (deadline !== null && deadline > at) {
     // Round up: with 30 hours to go a coach should read "2 days", not "1".
@@ -56,7 +55,7 @@ export function timeLeft(t: Pick<Tournament, "startDate" | "endDate"> & { entryD
     return {
       kind: "entry",
       days,
-      label: days <= 1 ? "Entries close today" : `Entries close in ${plural(days, "day")}`,
+      label: days <= 1 ? t("tournaments.planning.entriesCloseToday") : t("tournaments.planning.entriesCloseIn", { count: days }),
       tone: days <= 3 ? "urgent" : days <= 10 ? "soon" : "normal",
     };
   }
@@ -66,7 +65,9 @@ export function timeLeft(t: Pick<Tournament, "startDate" | "endDate"> & { entryD
   return {
     kind: "start",
     days,
-    label: `${closed ? "Entries closed · s" : "S"}tarts in ${plural(days, "day")}`,
+    label: closed
+      ? t("tournaments.planning.entriesClosedStartsIn", { count: days })
+      : t("tournaments.planning.startsIn", { count: days }),
     tone: days <= 7 ? "soon" : "normal",
   };
 }
@@ -136,14 +137,21 @@ export function findClashes(
 /** One sentence naming the conflict, for the confirmation dialog. */
 export function describeClash(clashes: Clash[], playerName?: string): string {
   if (clashes.length === 0) return "";
-  const who = playerName ? `${playerName} is` : "This player is";
+  const who = playerName
+    ? t("tournaments.planning.clashWhoNamed", { name: playerName })
+    : t("tournaments.planning.clashWhoUnnamed");
   const names = clashes.map((c) => c.entry.tournament.name);
   const list =
     names.length === 1
       ? names[0]
-      : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-  const kind = clashes.every((c) => !c.direct) ? "back to back with" : "already entered for";
-  return `${who} ${kind} ${list} over the same dates.`;
+      : t("tournaments.planning.clashList", {
+          head: names.slice(0, -1).join(", "),
+          last: names[names.length - 1],
+        });
+  const kind = clashes.every((c) => !c.direct)
+    ? t("tournaments.planning.clashBackToBack")
+    : t("tournaments.planning.clashDirect");
+  return t("tournaments.planning.clashSentence", { who, kind, list });
 }
 
 // ── What is next ────────────────────────────────────────────────────────────

@@ -2,6 +2,8 @@
 // Pure geo-distance helpers for the tournaments map — no dependencies.
 // ============================================================
 
+import { formatNumber } from "@/lib/i18n";
+
 export interface LatLng {
   lat: number;
   lng: number;
@@ -27,8 +29,10 @@ export function haversineKm(a: LatLng, b: LatLng): number {
   return EARTH_RADIUS_KM * c;
 }
 
-/** Formats a km distance for display, e.g. "12 km", "1,240 km". */
+/**
+ * Formats a km distance for display, e.g. "12 km", "1,240 km" — grouped the
+ * way the active locale groups numbers, not always the English way.
+ */
 export function formatDistanceKm(km: number): string {
-  const rounded = Math.round(km);
-  return `${rounded.toLocaleString("en-US")} km`;
+  return `${formatNumber(Math.round(km))} km`;
 }

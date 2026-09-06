@@ -480,6 +480,133 @@
       "notEntered": "You are not entered for this one.",
       "player": "Player",
       "seeWhereItIs": "See where it is"
+    },
+    "page": {
+      "title": "Tournaments",
+      "subtitle": {
+        "coach": "View tournaments and your connected players' participation.",
+        "observer": "Read-only view of connected player tournaments.",
+        "player": "Browse upcoming tournaments and manage your entries."
+      },
+      "loading": "Loading tournaments…",
+      "loadError": "Failed to load tournaments",
+      "tabs": {
+        "mySchedule": "My Schedule",
+        "playerView": "Player View",
+        "addTournaments": "Add Tournaments",
+        "browseAll": "Browse All",
+        "map": "Map"
+      },
+      "filters": {
+        "surface": "Surface",
+        "allSurfaces": "All Surfaces",
+        "category": "Category",
+        "allCategories": "All Categories",
+        "country": "Country",
+        "allCountries": "All Countries",
+        "status": "All Statuses",
+        "reset": "Reset",
+        "refreshing": "Refreshing…",
+        "refresh": "Refresh tournaments",
+        "searchChip": "Search: “{query}”",
+        "teamChip": "Team",
+        "playerChip": "Player"
+      },
+      "table": {
+        "empty": "No player tournaments",
+        "emptyFiltered": "No results match your filters.",
+        "emptyNone": "No tournament entries yet.",
+        "tournament": "Tournament",
+        "player": "Player",
+        "location": "Location",
+        "date": "Date",
+        "surface": "Surface",
+        "status": "Status",
+        "removeTitle": "Remove from schedule",
+        "removeAria": "Remove {name} from your schedule"
+      },
+      "following": "Following",
+      "pick": {
+        "title": "Which tours do you follow?",
+        "body": "Pick one to start browsing. The feeds carry thousands of events worldwide, so nothing is shown until you choose. Your choice is saved and used on the calendar too."
+      },
+      "noneFound": "No tournaments found",
+      "noneMatch": "No tournaments match your filters.",
+      "conditionsAria": "Playing conditions for {name}",
+      "hideTitle": "Hide from suggestions",
+      "hideAria": "Hide {name} from suggestions",
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "altitudeM": "{m} m",
+      "away": "{distance} away",
+      "yourPlayers": "Your Players",
+      "inScheduleRemove": "In schedule — remove",
+      "addToSchedule": "Add to schedule",
+      "inSchedule": "In schedule",
+      "remove": "Remove",
+      "add": "Add",
+      "unhide": "Unhide",
+      "hide": "Hide",
+      "showingOf": "Showing {shown} of {total}",
+      "showMore": "Show more"
+    },
+    "map": {
+      "locating": "Locating…",
+      "useLocation": "Use my location",
+      "pickCity": "Or pick a city…",
+      "yourLocation": "Your location",
+      "denied": "Location access denied — pick a city instead.",
+      "unsupported": "Geolocation isn't available in this browser — pick a city instead.",
+      "within": "Within {radius}",
+      "anyDistance": "any distance",
+      "radiusKm": "{km} km",
+      "sortNearest": "Sort by nearest",
+      "hiddenToggle": "Hidden ({count}) — {action}",
+      "privacy": "Your location stays on your device.",
+      "setLocation": "Set your location to see distances from you.",
+      "loading": "Loading map…"
+    },
+    "removeDialog": {
+      "title": "Remove from your schedule?",
+      "body": "{name} will be taken off your schedule, along with the status you set for it. You can add it again from the Browse tab.",
+      "keep": "Keep it",
+      "removing": "Removing…",
+      "remove": "Remove"
+    },
+    "planning": {
+      "finished": "Finished",
+      "onNow": "On now",
+      "entriesCloseToday": "Entries close today",
+      "entriesCloseIn": "Entries close in {count, plural, one {# day} other {# days}}",
+      "startsIn": "Starts in {count, plural, one {# day} other {# days}}",
+      "entriesClosedStartsIn": "Entries closed · starts in {count, plural, one {# day} other {# days}}",
+      "clashSentence": "{who} {kind} {list} over the same dates.",
+      "clashWhoUnnamed": "This player is",
+      "clashWhoNamed": "{name} is",
+      "clashDirect": "already entered for",
+      "clashBackToBack": "back to back with",
+      "clashList": "{head} and {last}"
+    },
+    "addDialog": {
+      "title": "Add to the calendar",
+      "player": "Player",
+      "connectFirst": "Connect a player first — there is nobody to enter yet.",
+      "choosePlayer": "Choose a player…",
+      "status": "Status",
+      "statusOption": "{label} — ",
+      "registeredHint": "Entry is in",
+      "plannedHint": "Intending to enter",
+      "maybeHint": "Still deciding",
+      "alreadyEntered": "Already on this calendar — saving again just updates the status.",
+      "backToBackSuffix": " (back to back)",
+      "acknowledged": "Adding anyway — both will show on the calendar.",
+      "adding": "Adding…",
+      "addAnyway": "Add anyway",
+      "add": "Add to calendar"
+    },
+    "mapPopup": {
+      "yourLocation": "Your location",
+      "hide": "Hide"
     }
   },
   "ai": {
