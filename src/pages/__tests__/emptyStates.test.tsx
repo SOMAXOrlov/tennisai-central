@@ -57,6 +57,9 @@ vi.mock("@/hooks/api/queries", async () => {
     useFinanceEntries: () => emptyQuery,
     useFinanceSummary: () => ({ data: undefined, isLoading: false, error: null }),
     useCreateFinanceEntry: () => inertMutation,
+    // PlayersPage now shows each player's teams as chips; without this the real
+    // useTeams runs and the page needs a QueryClientProvider this suite does not mount.
+    useTeams: () => emptyQuery,
     useTrainingRequests: () => emptyQuery,
     useCreateTrainingRequest: () => inertMutation,
     useApproveTrainingRequest: () => inertMutation,
