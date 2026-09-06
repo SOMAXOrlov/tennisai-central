@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   frontend:
-    name: Frontend (type-check · test · build)
+    name: Frontend (lint · type-check · test · build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +28,11 @@ jobs:
       - name: Install
         run: npm install --no-audit --no-fund --legacy-peer-deps
 
+      # First, because it is the fastest gate and catches the cheapest mistakes.
+      # `--max-warnings 0` is in the script, so a warning fails the job.
+      - name: Lint
+        run: npm run lint
+
       - name: Type-check
         run: npx tsc -p tsconfig.app.json --noEmit
 
@@ -38,7 +43,7 @@ jobs:
         run: npm run build
 
   backend:
-    name: Backend (prisma · type-check · test)
+    name: Backend (prisma · lint · type-check · test)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -68,6 +73,12 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
+
+      # After `prisma generate` so the generated client is on disk. The config
+      # is not type-aware, so this is belt-and-braces rather than a hard
+      # requirement. `--max-warnings 0` is in the script, so a warning fails.
+      - name: Lint
+        run: npm run lint
 
       - name: Type-check
         run: npx tsc --noEmit
