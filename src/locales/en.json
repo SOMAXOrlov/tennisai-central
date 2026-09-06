@@ -567,6 +567,258 @@
       "noMatches": "No matches logged for this player yet."
     }
   },
+  "landing": {
+    "hero": {
+      "title": "Run the season like a system.",
+      "subtitle": "Tennis AI keeps the season between coach and player in one place — trainings scheduled, sessions planned, tournaments chosen, kit logged. Built for coaches, players and the parents who drive.",
+      "ctaPrimary": "Get started",
+      "ctaSecondary": "See how it works"
+    },
+    "capabilities": {
+      "calendar": {
+        "title": "One season calendar",
+        "desc": "Trainings, matches and tournament entries on a single colour-coded calendar — the same view for coach, player and parent."
+      },
+      "sessions": {
+        "title": "Session Builder",
+        "desc": "Set the focus and get a structured, best-practice training session to start from — the coach adjusts, never starts from zero."
+      },
+      "kit": {
+        "title": "Kit log",
+        "desc": "Each player keeps their own list of rackets, strings and shoes — brand, model, condition and when it was bought."
+      },
+      "tournaments": {
+        "title": "Tournaments",
+        "desc": "Browse tournaments by surface, level and location, and keep entries on the shared calendar."
+      }
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "step1": {
+        "n": "01",
+        "lead": "Connect the roster.",
+        "desc": "Coaches, players and parents join one workspace and connect their accounts."
+      },
+      "step2": {
+        "n": "02",
+        "lead": "Let it build.",
+        "desc": "Set the focus for a session and the builder assembles a structured plan for the coach to fine-tune."
+      },
+      "step3": {
+        "n": "03",
+        "lead": "Play the right events.",
+        "desc": "Tournament entries and training sessions sit on one shared calendar, so the season is visible to everyone at once."
+      }
+    },
+    "differentiators": {
+      "eyebrow": "Three things we did differently",
+      "intro": "Screenshots below are of the running app with demo data — no mock-ups.",
+      "feeds": {
+        "title": "Every tournament says where it came from",
+        "desc": "Every row imported from a federation feed carries a chip naming that feed and the date it last confirmed the event — UTR events across the trial data, ITF Juniors where a deployment enables it. A feed that quietly stops updating shows on the card instead of hiding.",
+        "alt": "The tournaments list filtered to Spain: three event cards, each with a chip reading “via UTR · checked 7 minutes ago”, above a line explaining that each chip names the feed that listed the event."
+      },
+      "prep": {
+        "title": "Conditions before the draw",
+        "desc": "Surface, altitude, indoor or outdoor and the expected weather sit next to the event, each labelled with how it was obtained — a five-year average is never dressed up as a forecast. Written match preparation is an optional extra that only runs when whoever hosts the server configures an AI provider; with none configured the app says so instead of guessing.",
+        "alt": "The conditions panel on a tournament page: surface, altitude and expected weather with a label on each figure saying how it was obtained, and a match preparation section reporting that no AI provider is configured."
+      },
+      "guardian": {
+        "title": "A junior's account waits for the guardian",
+        "desc": "Sign-up asks for a date of birth. Under the deployment's age of digital consent — 16 by default, configurable because GDPR Article 8 leaves the age to each member state — the account is created but stays inert until a parent or guardian approves it from an e-mail.",
+        "alt": "The sign-up form for a junior: a date of birth under the age threshold reveals a guardian e-mail field and a note that the account stays inactive until the guardian approves it."
+      }
+    },
+    "roles": {
+      "eyebrow": "Who it's for",
+      "player": {
+        "title": "Player",
+        "desc": "See your week, log a match with set scores and what went wrong in it, and keep every racket, string and pair of shoes in one list."
+      },
+      "coach": {
+        "title": "Coach",
+        "desc": "Build a session from a focus, review it afterwards with what was worked on and what comes next, and filter the calendar down to one player or one team."
+      },
+      "parent": {
+        "title": "Parent",
+        "desc": "Follow your child's schedule, results and training costs from a connected observer account — and approve a junior's account from the e-mail we send you."
+      },
+      "admin": {
+        "title": "Academy admin",
+        "desc": "The thinnest role so far, and we say so in the app: the academy overview screens are a preview with sample figures. Squads, teams and calendars run through the coach accounts today."
+      }
+    },
+    "access": {
+      "eyebrow": "Access",
+      "title": "Currently a free early trial.",
+      "desc": "Tennis AI is being trialled with a small group of coaches, players and parents. There's no paid plan yet — sign up and we'll get you connected.",
+      "cta": "Get started"
+    },
+    "demo": {
+      "eyebrow": "Book a demo",
+      "title": "Rather be walked through it?",
+      "desc": "Write to us and we'll show you the app on a call. There's no form behind this button and no automated sequence — it opens your mail app with the subject filled in.",
+      "cta": "E-mail us about a demo",
+      "subject": "Tennis AI — demo request",
+      "addressLabel": "Address:",
+      "addressPending": "This trial build ships without a demo address configured, so the button below is a placeholder until it is filled in."
+    },
+    "closing": {
+      "title": "Step on court with the season already handled.",
+      "cta": "Get started",
+      "signIn": "Already on Tennis AI? Sign in"
+    },
+    "footer": {
+      "copyright": "© {year} Tennis AI",
+      "how": "How it works",
+      "access": "Access",
+      "signIn": "Sign in",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "status": "Status"
+    }
+  },
+  "legal": {
+    "draft": {
+      "label": "Draft",
+      "body": "Written by the team in plain language, not by a lawyer. It has not been reviewed by counsel, it is not a final or binding document, and the marked fields below are placeholders that have to be filled in before launch."
+    },
+    "token": {
+      "srLabel": "Placeholder, not yet filled in"
+    },
+    "effectiveDate": "Effective date",
+    "backHome": "Back to home",
+    "privacy": {
+      "title": "Privacy Policy",
+      "linkLabel": "Privacy Policy",
+      "controller": {
+        "heading": "Who is responsible",
+        "note": "None of the four fields below has been decided yet. Until they are, there is no identified controller and no working address for a data request.",
+        "controllerLabel": "Controller",
+        "addressLabel": "Registered address",
+        "contactLabel": "Contact",
+        "dpoLabel": "Data-protection contact"
+      },
+      "scope": {
+        "heading": "Who this covers",
+        "body": "Tennis AI is used by players, coaches, parents (as connected observer accounts) and academy admins. Some players are minors; where that is the case a parent or guardian normally holds the connected observer account, and a junior's own account is not usable until a guardian has approved it."
+      },
+      "collect": {
+        "heading": "What we collect",
+        "item1": "Account details: name, e-mail address, role, date of birth (used to decide whether guardian consent is required) and a password, stored hashed.",
+        "item2": "Profile answers given during onboarding — playing level, goals, coaching focus and similar.",
+        "item3": "Activity you or your coach enter: training sessions and their reviews, matches with set scores and what went wrong in them, tournament entries, equipment and string setups, and calendar events.",
+        "item4": "Finance entries you choose to log: training, travel, tournament and equipment costs.",
+        "item5": "Connections between accounts — player to coach, player to parent, academy memberships — and the notifications that go with them.",
+        "item6": "Guardian consent records for players under the age of digital consent: the guardian's e-mail address, a hashed one-time token, and when consent was given.",
+        "item7": "Operational technical data: authentication tokens, server request and error logs.",
+        "note": "Onboarding deliberately asks for no health or medical information."
+      },
+      "purpose": {
+        "heading": "Why we collect it",
+        "body": "To run the features you use directly: scheduling, the session builder, training reviews, match logging, tournaments, equipment, finance tracking and the connections between coaches, players and parents. We do not sell personal data and we do not use it for third-party advertising.",
+        "legalBasisNote": "The legal basis for each of those purposes has not been settled yet — see “Still open” at the end of this page."
+      },
+      "device": {
+        "heading": "What stays on your device",
+        "intro": "Tennis AI sets no advertising or analytics cookies. It does keep a handful of values in your browser's local storage:",
+        "item1": "your sign-in token, so a refresh does not log you out;",
+        "item2": "your light/dark theme choice and your language choice;",
+        "item3": "an approximate location, only if you ask the tournaments map to show distances. That location is stored on your device only and is never sent to our server — the distances are calculated in your browser;",
+        "item4": "small interface preferences, such as whether you have dismissed a notice.",
+        "note": "Clearing your browser's site data removes all of these and signs you out."
+      },
+      "processors": {
+        "heading": "Who else the data touches",
+        "intro": "What the code shows today, and nothing more:",
+        "item1": "Hosting: the app, the API and the PostgreSQL database all run on one rented server. Neither the hosting company nor the country that server sits in is stated here yet — both have to be before launch.",
+        "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external SMTP provider configured by whoever runs the server. The trial's provider has not been named here yet.",
+        "item3": "Web push: if you turn on push notifications, your browser's push service (for example Google's or Mozilla's) relays them. Push is off unless the operator configures keys for it.",
+        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear.",
+        "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament’s coordinates. No account or personal data is sent with that request."
+      },
+      "minors": {
+        "heading": "Minors and guardian consent",
+        "body": "Sign-up asks for a date of birth. At or above the age of digital consent this deployment is configured with — 16 unless the operator changes it — nothing extra happens. Below it, the account is created but stays inert: we send a one-time link to the guardian's e-mail address, and until the guardian approves, the account cannot be used. GDPR Article 8 leaves the exact age to each member state (13 to 16), which is why it is a setting rather than a fixed number.",
+        "note": "Which national age applies to which user, and how a guardian's authority is verified beyond holding the e-mail address, are open questions for counsel."
+      },
+      "ai": {
+        "heading": "Optional AI processing",
+        "body": "Match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first."
+      },
+      "retention": {
+        "heading": "How long we keep it",
+        "body": "Today: account and activity data is kept for as long as the account exists. No automatic deletion schedule has been implemented, and no retention period has been agreed. That is a gap, not a policy — it is listed below."
+      },
+      "rights": {
+        "heading": "Your rights",
+        "body": "Depending on where you live you may have the right to access, correct, export or delete your personal data, and to object to or restrict certain processing. For a connected minor's data, a parent or guardian can exercise those rights on the player's behalf. There is no self-service export or erasure button in the app yet; a request today is handled by hand by the team.",
+        "contact": "Requests go to the data-protection contact above, once that address exists."
+      },
+      "open": {
+        "heading": "Still open",
+        "intro": "Kept visible rather than papered over. Each of these needs a decision, most of them from a lawyer:",
+        "item1": "the identity, legal form and registered address of the controller;",
+        "item2": "the legal basis for each processing purpose, and where consent is the basis, how it is captured and withdrawn;",
+        "item3": "retention periods per data category, and what happens to a coach's records when a player leaves;",
+        "item4": "how a guardian's authority is verified, per national age of consent;",
+        "item5": "the named processor list and a data-processing agreement with each;",
+        "item6": "the process and deadlines for handling an access, export or erasure request."
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "linkLabel": "Terms of Service",
+      "party": {
+        "heading": "Who you are contracting with",
+        "note": "Not decided yet. Until these fields are filled in, there is no identified counterparty to this agreement.",
+        "providerLabel": "Provider",
+        "addressLabel": "Registered address",
+        "contactLabel": "Contact"
+      },
+      "trial": {
+        "heading": "The trial",
+        "body": "Tennis AI is currently an early trial for a small group of coaches, players and parents. There is no paid plan. Features change often, and the trial may be paused or ended at any time while we build the product."
+      },
+      "accounts": {
+        "heading": "Accounts",
+        "body": "You need an account to use Tennis AI. You are responsible for keeping your sign-in details secure and for the accuracy of what you enter. Sign-up may ask you to verify your e-mail address before the account can be used."
+      },
+      "minors": {
+        "heading": "Players under the age of digital consent",
+        "body": "A player whose date of birth puts them under the age this deployment is configured with — 16 unless the operator changes it — gets an account that stays inert until a parent or guardian approves it from a one-time link sent to the guardian's e-mail address. The guardian is expected to oversee that account."
+      },
+      "use": {
+        "heading": "Acceptable use",
+        "item1": "Only enter data about yourself, or about a player you coach or are the parent or guardian of.",
+        "item2": "Do not use the app to harass, impersonate or misrepresent yourself or anyone else.",
+        "item3": "Do not attempt to reach accounts or data that are not yours."
+      },
+      "data": {
+        "heading": "Your data",
+        "before": "See our",
+        "after": "for what is collected and why. You can ask us to export or delete your data using the contact details there."
+      },
+      "warranty": {
+        "heading": "No warranty, limited liability",
+        "body": "This is early-stage trial software provided “as is”, without warranties of any kind. Session plans are produced by a deterministic rule-based builder; match-preparation text, where an operator has enabled an AI provider, is generated by that provider and can be wrong. Neither is a substitute for professional coaching, and nothing in the app is medical advice. To the extent the law allows, we are not liable for damages arising from your use of the trial.",
+        "note": "The liability wording above has not been reviewed by a lawyer and its enforceability is untested."
+      },
+      "changes": {
+        "heading": "Changes",
+        "body": "We may update these terms as the product and the trial evolve. We will aim to tell trial participants directly about material changes."
+      },
+      "law": {
+        "heading": "Governing law and jurisdiction",
+        "note": "Not decided yet, and it is not a formality — it determines which national rules on minors' consent and consumer contracts apply.",
+        "lawLabel": "Governing law and courts"
+      },
+      "contact": {
+        "heading": "Contact",
+        "body": "Questions about this draft go to the contact address above, once it exists."
+      }
+    }
+  },
   "dashboard": {
     "nav": {
       "dashboard": "Dashboard",

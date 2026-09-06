@@ -1,91 +1,158 @@
-// Draft privacy policy — placeholder content pending counsel review.
-// Wired as a public route (/privacy) from App.tsx.
+// Draft privacy policy. Wired as a public route (/privacy) from App.tsx.
+//
+// Written against what the code actually does, not against a template: the
+// local-storage list is the keys the app really writes, the processor list is
+// only what env.ts can switch on, and the guardian-consent section describes
+// server/src/auth/guardianConsent.ts rather than a generic minors clause.
+//
+// Everything the team has NOT decided is either a `<LegalToken>` or an entry in
+// the "Still open" section at the foot of the page. That is the point: a draft
+// that hides its gaps is worse than no draft, because nobody can see what is
+// left to do. See src/lib/legal/companyDetails.ts.
 import { Link } from "react-router-dom";
-import { AlertTriangle } from "lucide-react";
+import { LegalDraftNotice } from "@/components/legal/LegalDraftNotice";
+import { LegalToken } from "@/components/legal/LegalToken";
+import { useT } from "@/lib/i18n";
+import {
+  COMPANY_ADDRESS,
+  COMPANY_CONTACT_EMAIL,
+  COMPANY_DPO_EMAIL,
+  COMPANY_NAME,
+  LEGAL_EFFECTIVE_DATE,
+} from "@/lib/legal/companyDetails";
+
+/** A heading + body block. The pages are almost entirely made of these. */
+function Section({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-lg font-bold text-foreground">{heading}</h2>
+      <div className="mt-2 space-y-2">{children}</div>
+    </section>
+  );
+}
+
+/** One label/value row of the identity block. Every value is a token today. */
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-1 gap-1 border-t border-border py-3 sm:grid-cols-[14rem_1fr] sm:gap-4">
+      <dt className="text-foreground">{label}</dt>
+      <dd>
+        <LegalToken value={value} />
+      </dd>
+    </div>
+  );
+}
 
 export default function PrivacyPolicyPage() {
+  const { t } = useT();
+
   return (
     <div className="bg-background">
       <div className="container max-w-3xl py-16 md:py-20">
-        <div className="flex items-start gap-3 border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>
-            <strong className="font-semibold">DRAFT — not legal advice, pending counsel review.</strong>{" "}
-            This page describes our current data practices in plain language. It has not been reviewed by a
-            lawyer and is not a final or binding legal document.
-          </p>
-        </div>
+        <LegalDraftNotice />
 
-        <h1 className="mt-10 text-3xl font-extrabold tracking-tight text-foreground">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Draft — last updated {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+        <h1 className="mt-10 text-3xl font-extrabold tracking-tight text-foreground">
+          {t("legal.privacy.title")}
+        </h1>
+        {/* A fixed constant, never `new Date()` — see companyDetails.ts. */}
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          {t("legal.effectiveDate")}
+          <LegalToken value={LEGAL_EFFECTIVE_DATE} />
+        </p>
 
         <div className="mt-10 space-y-10 text-sm leading-relaxed text-muted-foreground">
-          <section>
-            <h2 className="text-lg font-bold text-foreground">Who this covers</h2>
-            <p className="mt-2">
-              Tennis AI is used by players, coaches, parents/observers and academy admins. Some players are
-              minors; where that's the case, a parent or guardian typically holds the connected observer
-              account and a coach or academy admin manages the player's profile with consent.
-            </p>
-          </section>
+          <Section heading={t("legal.privacy.controller.heading")}>
+            <p>{t("legal.privacy.controller.note")}</p>
+            <dl className="mt-4">
+              <DetailRow label={t("legal.privacy.controller.controllerLabel")} value={COMPANY_NAME} />
+              <DetailRow label={t("legal.privacy.controller.addressLabel")} value={COMPANY_ADDRESS} />
+              <DetailRow label={t("legal.privacy.controller.contactLabel")} value={COMPANY_CONTACT_EMAIL} />
+              <DetailRow label={t("legal.privacy.controller.dpoLabel")} value={COMPANY_DPO_EMAIL} />
+            </dl>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-bold text-foreground">What we collect</h2>
-            <ul className="mt-2 list-disc space-y-1.5 pl-5">
-              <li>Account details: name, email, role, and password (stored hashed).</li>
-              <li>Profile answers you give during onboarding (playing level, goals, coaching focus, etc.).</li>
-              <li>Activity data you or your coach enter: training sessions, session reviews and feedback, tournament entries, equipment, and calendar events.</li>
-              <li>Finance entries you choose to log (training, travel, tournament and equipment costs).</li>
-              <li>Connection data between accounts (e.g. player ↔ coach, player ↔ parent) and related notifications.</li>
-              <li>Basic technical data needed to operate the app (session/auth tokens, error logs).</li>
+          <Section heading={t("legal.privacy.scope.heading")}>
+            <p>{t("legal.privacy.scope.body")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.collect.heading")}>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.collect.item1")}</li>
+              <li>{t("legal.privacy.collect.item2")}</li>
+              <li>{t("legal.privacy.collect.item3")}</li>
+              <li>{t("legal.privacy.collect.item4")}</li>
+              <li>{t("legal.privacy.collect.item5")}</li>
+              <li>{t("legal.privacy.collect.item6")}</li>
+              <li>{t("legal.privacy.collect.item7")}</li>
             </ul>
-            <p className="mt-2">
-              We intentionally do not collect health or medical information as part of onboarding.
-            </p>
-          </section>
+            <p>{t("legal.privacy.collect.note")}</p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-bold text-foreground">Why we collect it</h2>
-            <p className="mt-2">
-              To run the features you use directly: scheduling, the session builder, tournament tracking,
-              equipment tracking, finance tracking, and connections between coaches, players and parents. We
-              do not sell personal data or use it for third-party advertising.
-            </p>
-          </section>
+          <Section heading={t("legal.privacy.purpose.heading")}>
+            <p>{t("legal.privacy.purpose.body")}</p>
+            <p>{t("legal.privacy.purpose.legalBasisNote")}</p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-bold text-foreground">Retention</h2>
-            <p className="mt-2">
-              We keep account and activity data for as long as your account is active. If you close your
-              account, we plan to delete or anonymize personal data within a reasonable period, except where
-              we need to retain something for a legal or security reason. Exact retention periods are still
-              being finalized with counsel.
-            </p>
-          </section>
+          <Section heading={t("legal.privacy.device.heading")}>
+            <p>{t("legal.privacy.device.intro")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.device.item1")}</li>
+              <li>{t("legal.privacy.device.item2")}</li>
+              <li>{t("legal.privacy.device.item3")}</li>
+              <li>{t("legal.privacy.device.item4")}</li>
+            </ul>
+            <p>{t("legal.privacy.device.note")}</p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-bold text-foreground">Your rights</h2>
-            <p className="mt-2">
-              Depending on where you live, you may have rights to access, correct, export or delete your
-              personal data, and to object to or restrict certain processing. For a connected minor's data,
-              a parent or guardian can exercise these rights on the player's behalf. To make a request, use
-              the contact details below.
-            </p>
-          </section>
+          <Section heading={t("legal.privacy.processors.heading")}>
+            <p>{t("legal.privacy.processors.intro")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.processors.item1")}</li>
+              <li>{t("legal.privacy.processors.item2")}</li>
+              <li>{t("legal.privacy.processors.item3")}</li>
+              <li>{t("legal.privacy.processors.item4")}</li>
+              <li>{t("legal.privacy.processors.item5")}</li>
+            </ul>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-bold text-foreground">Contact</h2>
-            <p className="mt-2">
-              Questions about this draft or your data can be sent to the Tennis AI team at{" "}
-              <a href="mailto:privacy@tennisai.example" className="text-primary hover:underline">privacy@tennisai.example</a>{" "}
-              (placeholder address — to be confirmed).
-            </p>
-          </section>
+          <Section heading={t("legal.privacy.minors.heading")}>
+            <p>{t("legal.privacy.minors.body")}</p>
+            <p>{t("legal.privacy.minors.note")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.ai.heading")}>
+            <p>{t("legal.privacy.ai.body")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.retention.heading")}>
+            <p>{t("legal.privacy.retention.body")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.rights.heading")}>
+            <p>{t("legal.privacy.rights.body")}</p>
+            <p>{t("legal.privacy.rights.contact")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.open.heading")}>
+            <p>{t("legal.privacy.open.intro")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.open.item1")}</li>
+              <li>{t("legal.privacy.open.item2")}</li>
+              <li>{t("legal.privacy.open.item3")}</li>
+              <li>{t("legal.privacy.open.item4")}</li>
+              <li>{t("legal.privacy.open.item5")}</li>
+              <li>{t("legal.privacy.open.item6")}</li>
+            </ul>
+          </Section>
         </div>
 
         <div className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
-          <Link to="/" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Back to home</Link>
-          <Link to="/terms" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">Terms of Service</Link>
+          <Link to="/" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">
+            {t("legal.backHome")}
+          </Link>
+          <Link to="/terms" className="font-medium text-primary hover:underline coarse:inline-flex coarse:min-h-11 coarse:items-center">
+            {t("legal.terms.linkLabel")}
+          </Link>
         </div>
       </div>
     </div>
