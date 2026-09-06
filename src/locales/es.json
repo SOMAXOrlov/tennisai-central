@@ -567,6 +567,257 @@
       "noMatches": "Este jugador aún no tiene partidos registrados."
     }
   },
+  "landing": {
+    "hero": {
+      "title": "Lleva la temporada como un sistema.",
+      "subtitle": "Tennis AI reúne en un solo sitio la temporada entre entrenador y jugador: entrenamientos programados, sesiones planificadas, torneos elegidos y material registrado. Pensado para entrenadores, jugadores y los padres que conducen hasta el club.",
+      "ctaPrimary": "Empezar",
+      "ctaSecondary": "Mira cómo funciona"
+    },
+    "capabilities": {
+      "calendar": {
+        "title": "Un calendario para toda la temporada",
+        "desc": "Entrenamientos, partidos e inscripciones en torneos en un único calendario por colores: la misma vista para entrenador, jugador y padre o madre."
+      },
+      "sessions": {
+        "title": "Constructor de sesiones",
+        "desc": "Define el foco y recibe una sesión de entrenamiento estructurada de la que partir: el entrenador la ajusta, nunca empieza de cero."
+      },
+      "kit": {
+        "title": "Registro de material",
+        "desc": "Cada jugador mantiene su lista de raquetas, cordajes y zapatillas: marca, modelo, estado y fecha de compra."
+      },
+      "tournaments": {
+        "title": "Torneos",
+        "desc": "Busca torneos por superficie, nivel y ubicación, y mantén las inscripciones en el calendario compartido."
+      }
+    },
+    "how": {
+      "eyebrow": "Cómo funciona",
+      "step1": {
+        "n": "01",
+        "lead": "Conecta al grupo.",
+        "desc": "Entrenadores, jugadores y padres entran en un mismo espacio y conectan sus cuentas."
+      },
+      "step2": {
+        "n": "02",
+        "lead": "Deja que lo construya.",
+        "desc": "Define el foco de una sesión y el constructor arma un plan estructurado que el entrenador afina."
+      },
+      "step3": {
+        "n": "03",
+        "lead": "Juega los torneos adecuados.",
+        "desc": "Las inscripciones en torneos y las sesiones de entrenamiento viven en un mismo calendario, así que toda la temporada se ve de una vez."
+      }
+    },
+    "differentiators": {
+      "eyebrow": "Tres cosas que hicimos distinto",
+      "intro": "Las capturas de abajo son de la aplicación en marcha con datos de demostración: no son maquetas.",
+      "feeds": {
+        "title": "Cada torneo dice de dónde salió",
+        "desc": "Las filas importadas de UTR events y de ITF Juniors llevan una etiqueta de origen y la fecha en que esa fuente los confirmó por última vez. Si una fuente deja de actualizarse en silencio, se ve en la tarjeta en vez de quedar oculto.",
+        "alt": "El listado de torneos, con una etiqueta de origen en cada tarjeta —UTR events o ITF Juniors— y la fecha en que la fuente confirmó el evento por última vez."
+      },
+      "prep": {
+        "title": "Las condiciones antes que el cuadro",
+        "desc": "Superficie, altitud, pista cubierta o descubierta y el tiempo previsto aparecen junto al evento, y cada dato lleva escrito cómo se obtuvo: una media de cinco años nunca se disfraza de pronóstico. La preparación escrita del partido es un extra opcional que solo funciona si quien aloja el servidor configura un proveedor de IA; si no hay ninguno, la aplicación lo dice en lugar de inventar.",
+        "alt": "El panel de condiciones de un torneo: superficie, altitud y tiempo previsto, con una etiqueta en cada dato que indica cómo se obtuvo, y una sección de preparación del partido que informa de que no hay ningún proveedor de IA configurado."
+      },
+      "guardian": {
+        "title": "La cuenta de un menor espera a su tutor",
+        "desc": "El registro pide la fecha de nacimiento. Por debajo de la edad de consentimiento digital configurada en la instalación —16 años por defecto, ajustable porque el artículo 8 del RGPD deja la edad a cada Estado miembro— la cuenta se crea pero queda inactiva hasta que un padre, madre o tutor la aprueba desde un correo.",
+        "alt": "El formulario de registro de un menor: una fecha de nacimiento por debajo del umbral muestra un campo para el correo del tutor y un aviso de que la cuenta seguirá inactiva hasta que el tutor la apruebe."
+      }
+    },
+    "roles": {
+      "eyebrow": "Para quién es",
+      "player": {
+        "title": "Jugador",
+        "desc": "Consulta tu semana, registra un partido con los sets y lo que falló en él, y guarda cada raqueta, cordaje y par de zapatillas en una sola lista."
+      },
+      "coach": {
+        "title": "Entrenador",
+        "desc": "Construye una sesión a partir de un foco, revísala después con lo trabajado y lo siguiente, y filtra el calendario por un jugador o un equipo."
+      },
+      "parent": {
+        "title": "Padre o madre",
+        "desc": "Sigue el calendario, los resultados y los gastos de tu hijo o hija desde una cuenta de observador conectada, y aprueba la cuenta de un menor desde el correo que te enviamos."
+      },
+      "admin": {
+        "title": "Administrador de academia",
+        "desc": "El rol más incompleto por ahora, y así lo indicamos dentro de la aplicación: las pantallas de resumen de la academia son una vista previa con cifras de ejemplo. Hoy los grupos, los equipos y los calendarios se llevan desde las cuentas de entrenador."
+      }
+    },
+    "access": {
+      "eyebrow": "Acceso",
+      "title": "Por ahora, una prueba inicial gratuita.",
+      "desc": "Tennis AI se está probando con un grupo pequeño de entrenadores, jugadores y padres. Todavía no hay plan de pago: regístrate y te conectamos.",
+      "cta": "Empezar"
+    },
+    "demo": {
+      "eyebrow": "Pide una demo",
+      "title": "¿Prefieres que te lo enseñemos?",
+      "desc": "Escríbenos y te enseñamos la aplicación en una llamada. Detrás de este botón no hay ningún formulario ni ninguna secuencia automática: abre tu programa de correo con el asunto ya puesto.",
+      "cta": "Escríbenos para una demo",
+      "subject": "Tennis AI — solicitud de demo",
+      "addressLabel": "Dirección:",
+      "addressPending": "Esta versión de prueba no lleva configurada una dirección para demos, así que el botón de abajo es un marcador de posición hasta que se rellene."
+    },
+    "closing": {
+      "title": "Sal a la pista con la temporada ya resuelta.",
+      "cta": "Empezar",
+      "signIn": "¿Ya usas Tennis AI? Inicia sesión"
+    },
+    "footer": {
+      "copyright": "© {year} Tennis AI",
+      "how": "Cómo funciona",
+      "access": "Acceso",
+      "signIn": "Iniciar sesión",
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "status": "Estado"
+    }
+  },
+  "legal": {
+    "draft": {
+      "label": "Borrador",
+      "body": "Redactado por el equipo en lenguaje llano, no por un abogado. No ha sido revisado por asesoría jurídica, no es un documento definitivo ni vinculante, y los campos marcados que aparecen más abajo son marcadores de posición que habrá que rellenar antes del lanzamiento."
+    },
+    "token": {
+      "srLabel": "Marcador de posición, todavía sin rellenar"
+    },
+    "effectiveDate": "Fecha de entrada en vigor",
+    "backHome": "Volver al inicio",
+    "privacy": {
+      "title": "Política de privacidad",
+      "linkLabel": "Política de privacidad",
+      "controller": {
+        "heading": "Quién es responsable",
+        "note": "Ninguno de los cuatro campos siguientes está decidido todavía. Hasta que lo estén, no hay un responsable identificado ni una dirección operativa a la que dirigir una solicitud.",
+        "controllerLabel": "Responsable del tratamiento",
+        "addressLabel": "Domicilio social",
+        "contactLabel": "Contacto",
+        "dpoLabel": "Contacto de protección de datos"
+      },
+      "scope": {
+        "heading": "A quién se aplica",
+        "body": "Tennis AI la usan jugadores, entrenadores, padres y madres (mediante cuentas de observador conectadas) y administradores de academia. Algunos jugadores son menores; en ese caso el padre, la madre o el tutor suele tener la cuenta de observador conectada, y la cuenta propia del menor no puede usarse hasta que un tutor la haya aprobado."
+      },
+      "collect": {
+        "heading": "Qué recogemos",
+        "item1": "Datos de la cuenta: nombre, dirección de correo, rol, fecha de nacimiento (usada para decidir si hace falta el consentimiento de un tutor) y una contraseña, almacenada con hash.",
+        "item2": "Las respuestas de perfil que se dan durante la incorporación: nivel de juego, objetivos, foco de entrenamiento y similares.",
+        "item3": "La actividad que usted o su entrenador introducen: sesiones de entrenamiento y sus revisiones, partidos con los sets y lo que falló en ellos, inscripciones en torneos, material y montajes de cordaje, y eventos de calendario.",
+        "item4": "Las anotaciones de gastos que decida registrar: entrenamiento, viajes, torneos y material.",
+        "item5": "Las conexiones entre cuentas —jugador con entrenador, jugador con padre o madre, pertenencia a una academia— y las notificaciones asociadas.",
+        "item6": "Registros de consentimiento del tutor para jugadores por debajo de la edad de consentimiento digital: la dirección de correo del tutor, un token de un solo uso almacenado con hash y la fecha en que se dio el consentimiento.",
+        "item7": "Datos técnicos de funcionamiento: tokens de autenticación y registros de peticiones y errores del servidor.",
+        "note": "La incorporación no pide deliberadamente ningún dato de salud ni médico."
+      },
+      "purpose": {
+        "heading": "Para qué lo recogemos",
+        "body": "Para hacer funcionar lo que usted utiliza directamente: la programación, el constructor de sesiones, las revisiones de entrenamiento, el registro de partidos, los torneos, el material, el control de gastos y las conexiones entre entrenadores, jugadores y familias. No vendemos datos personales ni los usamos para publicidad de terceros.",
+        "legalBasisNote": "La base jurídica de cada una de esas finalidades todavía no está decidida: véase «Pendiente» al final de esta página."
+      },
+      "device": {
+        "heading": "Qué se queda en su dispositivo",
+        "intro": "Tennis AI no instala cookies publicitarias ni de analítica. Sí guarda unos pocos valores en el almacenamiento local de su navegador:",
+        "item1": "su token de sesión, para que al recargar no se cierre la sesión;",
+        "item2": "su elección de tema claro u oscuro y su elección de idioma;",
+        "item3": "una ubicación aproximada, solo si pide al mapa de torneos que muestre distancias. Esa ubicación se guarda únicamente en su dispositivo y nunca se envía a nuestro servidor: las distancias se calculan en su navegador;",
+        "item4": "pequeñas preferencias de interfaz, como si ya ha descartado un aviso.",
+        "note": "Borrar los datos del sitio en su navegador elimina todo lo anterior y cierra la sesión."
+      },
+      "processors": {
+        "heading": "Por dónde más pasan los datos",
+        "intro": "Lo que hoy muestra el código, y nada más:",
+        "item1": "Alojamiento: la aplicación, la API y la base de datos PostgreSQL se ejecutan en un único servidor alquilado. El servidor de esta prueba está en la UE. Aquí no se ha nombrado todavía a ningún proveedor de alojamiento.",
+        "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor SMTP externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
+        "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (por ejemplo el de Google o el de Mozilla) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
+        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería."
+      },
+      "minors": {
+        "heading": "Menores y consentimiento del tutor",
+        "body": "El registro pide la fecha de nacimiento. A partir de la edad de consentimiento digital configurada en esta instalación —16 años salvo que el administrador la cambie— no ocurre nada adicional. Por debajo de ella, la cuenta se crea pero queda inactiva: enviamos un enlace de un solo uso a la dirección de correo del tutor y, hasta que el tutor lo aprueba, la cuenta no puede usarse. El artículo 8 del RGPD deja la edad exacta a cada Estado miembro (entre 13 y 16 años), y por eso es un ajuste y no un número fijo.",
+        "note": "Qué edad nacional se aplica a cada usuario, y cómo se verifica la condición de tutor más allá de tener acceso al correo, son cuestiones abiertas para asesoría jurídica."
+      },
+      "ai": {
+        "heading": "Tratamiento opcional mediante IA",
+        "body": "El texto de preparación de un partido puede generarlo un proveedor de IA externo, pero solo cuando quien administra el servidor ha configurado uno. En esta prueba no hay ninguno configurado, así que nada sale del servidor con esa finalidad. Si una instalación lo activa, ese proveedor pasa a ser un encargado del tratamiento y debe nombrarse aquí antes."
+      },
+      "retention": {
+        "heading": "Cuánto tiempo lo conservamos",
+        "body": "Hoy: los datos de cuenta y de actividad se conservan mientras exista la cuenta. No se ha implementado ningún borrado automático ni se ha acordado ningún plazo de conservación. Eso es una carencia, no una política, y figura en la lista de abajo."
+      },
+      "rights": {
+        "heading": "Sus derechos",
+        "body": "Según dónde resida, puede tener derecho a acceder a sus datos personales, rectificarlos, exportarlos o suprimirlos, y a oponerse a determinados tratamientos o limitarlos. En el caso de los datos de un menor conectado, un padre, madre o tutor puede ejercer esos derechos en su nombre. La aplicación todavía no tiene un botón de exportación o supresión automática; hoy una solicitud la atiende el equipo a mano.",
+        "contact": "Las solicitudes se dirigen al contacto de protección de datos indicado arriba, en cuanto esa dirección exista."
+      },
+      "open": {
+        "heading": "Pendiente",
+        "intro": "Se deja a la vista en lugar de disimularlo. Cada punto necesita una decisión, y la mayoría de un abogado:",
+        "item1": "la identidad, la forma jurídica y el domicilio social del responsable del tratamiento;",
+        "item2": "la base jurídica de cada finalidad y, cuando sea el consentimiento, cómo se recoge y cómo se retira;",
+        "item3": "los plazos de conservación por categoría de datos y qué ocurre con los registros de un entrenador cuando un jugador se va;",
+        "item4": "cómo se verifica la condición de tutor según la edad de consentimiento de cada país;",
+        "item5": "la lista nominal de encargados del tratamiento y un contrato de encargo con cada uno;",
+        "item6": "el procedimiento y los plazos para atender una solicitud de acceso, exportación o supresión."
+      }
+    },
+    "terms": {
+      "title": "Términos del servicio",
+      "linkLabel": "Términos del servicio",
+      "party": {
+        "heading": "Con quién contrata",
+        "note": "Todavía sin decidir. Hasta que se rellenen estos campos, no hay una contraparte identificada en este acuerdo.",
+        "providerLabel": "Prestador",
+        "addressLabel": "Domicilio social",
+        "contactLabel": "Contacto"
+      },
+      "trial": {
+        "heading": "La prueba",
+        "body": "Tennis AI es por ahora una prueba inicial para un grupo pequeño de entrenadores, jugadores y familias. No hay plan de pago. Las funciones cambian a menudo y la prueba puede pausarse o terminarse en cualquier momento mientras construimos el producto."
+      },
+      "accounts": {
+        "heading": "Cuentas",
+        "body": "Necesita una cuenta para usar Tennis AI. Usted es responsable de mantener seguras sus credenciales y de la exactitud de lo que introduce. El registro puede pedirle que verifique su dirección de correo antes de poder usar la cuenta."
+      },
+      "minors": {
+        "heading": "Jugadores por debajo de la edad de consentimiento digital",
+        "body": "El jugador cuya fecha de nacimiento lo sitúe por debajo de la edad configurada en esta instalación —16 años salvo que el administrador la cambie— recibe una cuenta que permanece inactiva hasta que un padre, madre o tutor la aprueba desde un enlace de un solo uso enviado a su correo. Se espera que ese tutor supervise la cuenta."
+      },
+      "use": {
+        "heading": "Uso aceptable",
+        "item1": "Introduzca únicamente datos sobre usted o sobre un jugador al que entrene o del que sea padre, madre o tutor.",
+        "item2": "No use la aplicación para acosar, suplantar o tergiversar su identidad ni la de otras personas.",
+        "item3": "No intente acceder a cuentas o datos que no sean suyos."
+      },
+      "data": {
+        "heading": "Sus datos",
+        "before": "Consulte nuestra",
+        "after": "para saber qué se recoge y por qué. Puede pedirnos que exportemos o suprimamos sus datos usando los datos de contacto que allí figuran."
+      },
+      "warranty": {
+        "heading": "Sin garantía, responsabilidad limitada",
+        "body": "Este es software de prueba en fase inicial, facilitado «tal cual», sin garantías de ningún tipo. Los planes de sesión los produce un constructor determinista basado en reglas; el texto de preparación de partido, cuando un administrador ha activado un proveedor de IA, lo genera ese proveedor y puede ser erróneo. Ninguno de los dos sustituye a un entrenador profesional, y nada en la aplicación es consejo médico. En la medida en que la ley lo permita, no respondemos de los daños derivados del uso de la prueba.",
+        "note": "La redacción sobre responsabilidad que antecede no ha sido revisada por un abogado y su validez no está contrastada."
+      },
+      "changes": {
+        "heading": "Cambios",
+        "body": "Podemos actualizar estos términos a medida que evolucionen el producto y la prueba. Procuraremos comunicar los cambios importantes directamente a quienes participen en la prueba."
+      },
+      "law": {
+        "heading": "Ley aplicable y jurisdicción",
+        "note": "Todavía sin decidir, y no es un formalismo: determina qué normas nacionales sobre consentimiento de menores y contratos de consumo se aplican.",
+        "lawLabel": "Ley aplicable y tribunales"
+      },
+      "contact": {
+        "heading": "Contacto",
+        "body": "Las preguntas sobre este borrador se dirigen a la dirección de contacto indicada arriba, en cuanto exista."
+      }
+    }
+  },
   "dashboard": {
     "nav": {
       "dashboard": "Panel",
