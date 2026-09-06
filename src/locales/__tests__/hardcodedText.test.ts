@@ -27,12 +27,6 @@ const SCANNED_DIRS = ["src/pages", "src/components", "src/layouts"];
  * or dead code — "it has a lot of strings" is not a reason.
  */
 const ALLOWED_FILES = new Set<string>([
-  // Owned by the landing/legal workstream, which is translating them on its own
-  // branch. Delete these three lines once that work merges.
-  "src/pages/Index.tsx",
-  "src/pages/legal/PrivacyPolicyPage.tsx",
-  "src/pages/legal/TermsPage.tsx",
-
   // Vendored shadcn/ui primitives that nothing in the app renders. They are
   // kept verbatim so a future `npx shadcn add` diff stays readable; translating
   // dead code would only make that diff worse. Anything here that starts being
