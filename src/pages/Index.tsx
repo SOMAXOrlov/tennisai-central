@@ -311,7 +311,11 @@ const Index = () => {
         <div className="container max-w-6xl flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             <span aria-hidden className="h-2.5 w-2.5 bg-primary" />
-            {t("landing.footer.copyright", { year: new Date().getFullYear() })}
+            {/* Substituted by hand rather than through `t(key, { year })`:
+                the translator runs every interpolated value through
+                Intl.NumberFormat, which renders 2026 as "2,026". A year is
+                the one number that must never be group-separated. */}
+            {t("landing.footer.copyright").replace("{year}", String(new Date().getFullYear()))}
           </span>
           <nav className="flex flex-wrap items-center gap-6">
             <a href="#how-it-works" className="hover:text-foreground coarse:inline-flex coarse:min-h-11 coarse:min-w-11 coarse:items-center coarse:justify-center">{t("landing.footer.how")}</a>
