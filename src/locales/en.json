@@ -731,7 +731,7 @@
       "processors": {
         "heading": "Who else the data touches",
         "intro": "What the code shows today, and nothing more:",
-        "item1": "Hosting: the app, the API and the PostgreSQL database run on a single rented server. The current trial server is in the EU. No hosting provider has been named here yet.",
+        "item1": "Hosting: the app, the API and the PostgreSQL database all run on one rented server. Neither the hosting company nor the country that server sits in is stated here yet — both have to be before launch.",
         "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external SMTP provider configured by whoever runs the server. The trial's provider has not been named here yet.",
         "item3": "Web push: if you turn on push notifications, your browser's push service (for example Google's or Mozilla's) relays them. Push is off unless the operator configures keys for it.",
         "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear.",

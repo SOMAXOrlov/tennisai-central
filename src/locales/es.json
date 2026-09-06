@@ -731,7 +731,7 @@
       "processors": {
         "heading": "Por dónde más pasan los datos",
         "intro": "Lo que hoy muestra el código, y nada más:",
-        "item1": "Alojamiento: la aplicación, la API y la base de datos PostgreSQL se ejecutan en un único servidor alquilado. El servidor de esta prueba está en la UE. Aquí no se ha nombrado todavía a ningún proveedor de alojamiento.",
+        "item1": "Alojamiento: la aplicación, la API y la base de datos PostgreSQL se ejecutan en un único servidor alquilado. Aquí no se indica todavía ni la empresa de alojamiento ni el país en el que está ese servidor: ambas cosas deben constar antes del lanzamiento.",
         "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor SMTP externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
         "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (por ejemplo el de Google o el de Mozilla) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
         "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería.",
