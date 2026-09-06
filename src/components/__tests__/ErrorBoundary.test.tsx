@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { buildDiagnostics, STACK_LINES } from "@/lib/diagnostics";
+import { appVersion, buildDiagnostics, STACK_LINES } from "@/lib/diagnostics";
 
 const SECRET_TOKEN = "eyJhbGciOiJIUzI1NiJ9.super-secret-session-token";
 
@@ -76,9 +76,19 @@ describe("buildDiagnostics", () => {
     );
   });
 
-  it("falls back to a 'dev' version and the real user agent when none is injected", () => {
+  it("supplies a version and the real user agent when none is injected", () => {
+    // `appVersion()` reads the build-time `__APP_VERSION__` and falls back to
+    // "dev" when the bundler did not stamp one. WHICH of the two appears is a
+    // property of the config, not of this module — main's vitest.config.ts, for
+    // instance, defines it as "test". The contract worth asserting is the one
+    // the person pasting the block depends on: the line is always there and
+    // always says something.
+    const version = appVersion();
+    expect(version).toBeTruthy();
+    expect(version).not.toBe("undefined");
+
     const text = buildDiagnostics({ error: new Error("x"), route: "/" });
-    expect(text).toMatch(/^version: (dev|\d+\.\d+\.\d+)$/m);
+    expect(text).toContain(`version: ${version}`);
     expect(text).toContain(`browser: ${navigator.userAgent}`);
   });
 });
