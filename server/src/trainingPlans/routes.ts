@@ -4,6 +4,7 @@ import type { Prisma, TrainingPlan, TrainingDrill } from "@prisma/client";
 import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
 import { requireRole, assertAssignedPlayer } from "../authz";
+import { visibleDrillWhere } from "../library/visibility";
 
 export const trainingPlansRouter = Router();
 
@@ -157,12 +158,8 @@ export async function assertLibraryDrillsUsable(
   });
   const academyIds = memberships.map((m) => m.academyId);
 
-  const visible: Prisma.DrillWhereInput[] = [{ visibility: "global" }, { ownerCoachId: userId }];
-  if (academyIds.length > 0) visible.push({ visibility: "academy", academyId: { in: academyIds } });
-
-  const status: Prisma.DrillWhereInput["status"] = options.allowReviewed ? { in: ["approved", "reviewed"] } : "approved";
   const found = await prisma.drill.findMany({
-    where: { id: { in: ids }, status, OR: visible },
+    where: { id: { in: ids }, ...visibleDrillWhere(userId, academyIds, { allowReviewed: options.allowReviewed }) },
     select: { id: true },
   });
 

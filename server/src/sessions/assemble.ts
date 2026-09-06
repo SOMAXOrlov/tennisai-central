@@ -76,7 +76,7 @@ const MAX_SLOTS_PER_BLOCK = 3;
 export const TIME_TOLERANCE = 0.05;
 export const ALTERNATIVES_PER_SLOT = 2;
 
-const BLOCK_TITLES: Record<BlockKind, string> = {
+export const BLOCK_TITLES: Record<BlockKind, string> = {
   warmup: "Warm-up & activation",
   technical: "Technical block",
   tactical: "Tactical block",
@@ -84,7 +84,7 @@ const BLOCK_TITLES: Record<BlockKind, string> = {
   cooldown: "Cool-down & review",
 };
 
-const BLOCK_RATIONALE: Record<BlockKind, string> = {
+export const BLOCK_RATIONALE: Record<BlockKind, string> = {
   warmup: "Raise heart rate, groove timing and prepare the body before intensity rises.",
   technical: "Isolated, deliberate practice of the focus skill(s) with a clear feeding progression.",
   tactical: "Apply the technique inside patterns and situations that mirror real play.",
@@ -496,7 +496,7 @@ const GOAL_LABELS: Record<ClientSessionGoal, string> = {
   recovery: "Recovery / light session",
 };
 
-function renderClientDrill(d: LibraryDrill, slot: Slot): ClientSessionDrill {
+export function renderClientDrill(d: LibraryDrill, slot: Slot): ClientSessionDrill {
   const { reps, sets } = slot.appliedDefaults;
   return {
     name: d.titleEn,

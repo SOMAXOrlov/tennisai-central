@@ -65,6 +65,13 @@ const DELEGATES = [
   "generatedSession",
   "coachPreference",
   "drillReview",
+  // The session routes persist what the assembler proposes and, on save, write
+  // the player's training plan; the player-context loader reads the latest
+  // post-match report through its match.
+  "trainingPlan",
+  "trainingDrill",
+  "postMatchReport",
+  "match",
   "trainingParticipant",
   "tournament",
   "playerTournament",
