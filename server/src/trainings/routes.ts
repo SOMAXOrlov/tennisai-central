@@ -77,7 +77,16 @@ const createSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   trainingType: z.enum(TRAINING_TYPES),
-  teamId: z.string().optional(),
+  /**
+   * Empty string means "no team", because that is what a cleared <select>
+   * sends. It is normalised to `null` before it reaches Prisma — writing "" to
+   * a column that now has a foreign key would fail on a value that was only
+   * ever meant to say "none".
+   */
+  teamId: z
+    .string()
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v.trim() || null)),
   playerIds: z.array(z.string()).default([]),
   startDate: z.string().min(1),
   endDate: z.string().min(1),
@@ -336,7 +345,7 @@ trainingsRouter.post(
     for (const playerId of playerIds) {
       await assertCanActOnPlayer(req.userId!, playerId);
     }
-    await assertTeamUsable(req.userId!, data.teamId, playerIds);
+    await assertTeamUsable(req.userId!, data.teamId ?? undefined, playerIds);
     await assertBlocksUsable(req.userId!, data.blocks);
 
     const seedStart = new Date(data.startDate);
@@ -354,7 +363,7 @@ trainingsRouter.post(
       description: data.description,
       trainingType: data.trainingType,
       coachId: req.userId!,
-      teamId: data.teamId,
+      teamId: data.teamId ?? null,
       location: data.location,
       goal: data.goal,
       intensity: data.intensity,
@@ -546,7 +555,7 @@ trainingsRouter.patch(
     // row is what the emptiness rule has to be checked against.
     await assertTeamUsable(
       req.userId!,
-      data.teamId === undefined ? (anchor.teamId ?? undefined) : data.teamId,
+      data.teamId === undefined ? (anchor.teamId ?? undefined) : (data.teamId ?? undefined),
       playerIds ?? anchor.participants.map((p) => p.playerId),
     );
     await assertBlocksUsable(req.userId!, data.blocks);
@@ -597,11 +606,13 @@ trainingsRouter.patch(
                   ? (data.playerSessionFeedback as Prisma.InputJsonValue | undefined)
                   : undefined,
               analysis: target.id === anchor.id ? (data.analysis as Prisma.InputJsonValue | undefined) : undefined,
-              ...(playerIds
+              // The set difference. Note what is NOT here: a bare
+              // `deleteMany: {}`. And when the roster is unchanged the key is
+              // omitted altogether, so a rename touches no participant row at
+              // all — which is what keeps the register intact.
+              ...(playerIds && (removed.length || added.length)
                 ? {
                     participants: {
-                      // The set difference. Note what is NOT here: a bare
-                      // `deleteMany: {}`.
                       ...(removed.length ? { deleteMany: { playerId: { in: removed } } } : {}),
                       ...(added.length ? { create: added.map((playerId) => ({ playerId })) } : {}),
                     },
@@ -723,7 +734,7 @@ trainingsRouter.patch(
 
     const training = await prisma.training.findUnique({
       where: { id: req.params.id },
-      include: { participants: true },
+      include: fullInclude,
     });
     if (!training) throw new HttpError(404, "Training not found");
     if (training.coachId !== req.userId) throw new HttpError(403, "You do not own this training");
@@ -758,7 +769,7 @@ trainingsRouter.patch(
 
     const updated = await prisma.training.findUnique({
       where: { id: training.id },
-      include: { participants: true },
+      include: fullInclude,
     });
     return ok(res, present(updated ?? training, req.userId!), "Attendance saved");
   }),
@@ -797,7 +808,7 @@ trainingsRouter.patch(
 
     const training = await prisma.training.findUnique({
       where: { id: req.params.id },
-      include: { participants: true },
+      include: fullInclude,
     });
     if (!training) throw new HttpError(404, "Training not found");
     if (!training.participants.some((p) => p.playerId === req.userId)) {
@@ -814,7 +825,7 @@ trainingsRouter.patch(
           submittedAt: new Date().toISOString(),
         },
       },
-      include: { participants: true },
+      include: fullInclude,
     });
     return ok(res, present(updated, req.userId!), "Feedback saved");
   }),
