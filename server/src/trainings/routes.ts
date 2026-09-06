@@ -105,13 +105,16 @@ const createSchema = z.object({
 });
 
 /**
- * `recurrence` is create-only and is stripped here rather than merely ignored.
+ * `recurrence` is CREATE-ONLY. Omitting it from this schema means zod drops it
+ * from a PATCH body, so the rule is never written and never re-materialised.
  *
- * A PATCH carrying a repeat rule is asking for something this route cannot do —
- * re-materialising a series in place would have to decide what happens to the
- * registers already taken on the occurrences it replaced. Refusing loudly is
- * the honest answer; a coach who wants a different pattern cancels the series
- * and creates it again.
+ * Dropped silently, not refused: re-shaping a live series in place would have
+ * to decide what happens to the registers already taken on the occurrences it
+ * replaced, and there is no answer to that which is not a guess. A coach who
+ * wants a different pattern cancels the series and creates it again. The one
+ * thing this must never do is LOOK like it applied the new rule, which is why
+ * the field is absent from the schema rather than accepted and ignored in the
+ * handler.
  */
 const updateSchema = createSchema.omit({ recurrence: true }).partial().extend({
   status: z.enum(["scheduled", "cancelled"]).optional(),
@@ -375,9 +378,10 @@ trainingsRouter.post(
     // All of it or none of it. Half a series — Tuesday and Wednesday written,
     // the rest lost to an error on the fourth insert — is worse than a failed
     // request, because the coach has no way to see which weeks landed.
-    const created = await prisma.$transaction(async (tx) =>
-      Promise.all(
-        occurrences.map((occurrence, index) =>
+    const created = await prisma.$transaction(
+      async (tx) =>
+        Promise.all(
+          occurrences.map((occurrence, index) =>
           tx.training.create({
             data: {
               ...shared,
@@ -409,6 +413,14 @@ trainingsRouter.post(
           }),
         ),
       ),
+      {
+        // Prisma's default interactive-transaction timeout is 5 seconds. Sixty
+        // occurrences, each with its own participant and block rows, is
+        // comfortably inside that on a local machine and not obviously inside
+        // it on a small shared host — and a timeout here would abort a series
+        // the coach has already been told about.
+        timeout: 30_000,
+      },
     );
 
     const first = created[0];
@@ -469,6 +481,16 @@ trainingsRouter.post(
       throw new HttpError(400, "A session cannot end before it starts");
     }
 
+    // The roster is re-checked, not trusted because it was legal once.
+    // A player can revoke a connection between last week's session and the copy
+    // of it, and a duplicate is a NEW scheduling decision — it has to clear the
+    // same bar POST does, or this route becomes a way to keep scheduling
+    // someone who has withdrawn.
+    const sourcePlayerIds = dedupe(source.participants.map((p) => p.playerId));
+    for (const playerId of sourcePlayerIds) {
+      await assertCanActOnPlayer(req.userId!, playerId);
+    }
+
     const created = await prisma.training.create({
       data: {
         title: source.title,
@@ -487,7 +509,7 @@ trainingsRouter.post(
         participants: {
           // The roster carries over; the register does not. Attendance columns
           // are simply not written, so every player starts "not yet marked".
-          create: dedupe(source.participants.map((p) => p.playerId)).map((playerId) => ({ playerId })),
+          create: sourcePlayerIds.map((playerId) => ({ playerId })),
         },
         blocks: {
           create: [...source.blocks]

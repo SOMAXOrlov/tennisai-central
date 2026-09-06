@@ -391,7 +391,7 @@ describe("PATCH /api/trainings/:id — which occurrences a change reaches", () =
     expect(db.training.update).toHaveBeenCalledTimes(1);
   });
 
-  it("400s a recurrence sent to PATCH instead of silently ignoring it", async () => {
+  it("never writes a recurrence sent to PATCH — the field is create-only", async () => {
     asRole("coach");
     db.training.findUnique.mockResolvedValue(trainingRow());
 
@@ -400,8 +400,10 @@ describe("PATCH /api/trainings/:id — which occurrences a change reaches", () =
       .set("Authorization", bearer(COACH))
       .send({ recurrence: { freq: "weekly", byWeekday: [2], until: "2026-07-01" } });
 
-    // `recurrence` is not a key this schema knows, and zod's default strip
-    // would drop it — so the route must not appear to have applied it.
+    // `recurrence` is absent from the update schema, so zod drops it. The
+    // request succeeds — the coach may well have been changing something else
+    // in the same save — but the rule must NOT reach the row, or a series would
+    // silently claim a pattern nothing had materialised.
     expect(res.status).toBe(200);
     const data = firstCallArg<{ data: Record<string, unknown> }>(db.training.update).data;
     expect(data.recurrence).toBeUndefined();
@@ -518,6 +520,7 @@ describe("Cancelling keeps the record; deleting is only for a session nobody mar
 describe("POST /api/trainings/:id/duplicate — last week's session, again", () => {
   it("copies the blocks and the roster to the new date", async () => {
     asRole("coach");
+    connected();
     db.training.findUnique.mockResolvedValue(
       trainingRow({
         participants: [{ playerId: ALICE, attendance: "present" }, { playerId: BOB }],
@@ -545,6 +548,7 @@ describe("POST /api/trainings/:id/duplicate — last week's session, again", () 
     // All four are statements about a session that has already happened. A copy
     // of them on a session that has not is a fabricated record.
     asRole("coach");
+    connected();
     db.training.findUnique.mockResolvedValue(
       trainingRow({ participants: [{ playerId: ALICE, attendance: "present", attendanceNote: "10 min late" }] }),
     );
@@ -566,6 +570,7 @@ describe("POST /api/trainings/:id/duplicate — last week's session, again", () 
 
   it("keeps the original's length when no end date is given", async () => {
     asRole("coach");
+    connected();
     db.training.findUnique.mockResolvedValue(
       trainingRow({
         startDate: new Date("2026-06-01T09:00:00.000Z"),
@@ -585,6 +590,7 @@ describe("POST /api/trainings/:id/duplicate — last week's session, again", () 
 
   it("403s a coach duplicating someone else's session", async () => {
     asRole("coach");
+    connected();
     db.training.findUnique.mockResolvedValue(trainingRow({ coachId: OTHER_COACH }));
 
     const res = await request(app)
@@ -606,6 +612,26 @@ describe("POST /api/trainings/:id/duplicate — last week's session, again", () 
 
     expect(res.status).toBe(403);
     expect(db.training.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("RE-CHECKS the roster: a player who has since revoked is refused", async () => {
+    // The copy is a new scheduling decision. Trusting the old roster because it
+    // was legal last week would make this route a way to keep scheduling
+    // someone who has withdrawn.
+    asRole("coach");
+    db.training.findUnique.mockResolvedValue(trainingRow({ participants: [{ playerId: ALICE }] }));
+    // Every rung of assertCanActOnPlayer says no.
+    db.coachAssignment.findUnique.mockResolvedValue(null);
+    db.connectionRequest.findFirst.mockResolvedValue(null);
+    db.guardianship.findUnique.mockResolvedValue(null);
+
+    const res = await request(app)
+      .post(`/api/trainings/${TRAINING}/duplicate`)
+      .set("Authorization", bearer(COACH))
+      .send({ startDate: "2099-06-08T09:00:00.000Z" });
+
+    expect(res.status).toBe(403);
+    expect(db.training.create).not.toHaveBeenCalled();
   });
 });
 
