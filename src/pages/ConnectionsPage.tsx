@@ -69,7 +69,7 @@ export function RequestRow({
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           {isSent ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
-          <span>{isSent ? "Sent" : "Received"} {formatDate(req.createdAt)}</span>
+          <span>{isSent ? t("connections.sentOn", { date: formatDate(req.createdAt) }) : t("connections.receivedOn", { date: formatDate(req.createdAt) })}</span>
         </div>
       </div>
       <TooltipProvider delayDuration={150}>
@@ -86,12 +86,12 @@ export function RequestRow({
                       className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
                       onClick={() => canDecide && onApprove(req.id)}
                     >
-                      <Check className="h-3.5 w-3.5" /> Approve
+                      <Check className="h-3.5 w-3.5" /> {t("connections.approve")}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {!canDecide && (
-                  <TooltipContent>Only the recipient can approve while pending.</TooltipContent>
+                  <TooltipContent>{t("connections.approveDisabled")}</TooltipContent>
                 )}
               </Tooltip>
               <Tooltip>
@@ -104,18 +104,18 @@ export function RequestRow({
                       className="h-8 gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
                       onClick={() => canDecide && onReject(req.id)}
                     >
-                      <X className="h-3.5 w-3.5" /> Reject
+                      <X className="h-3.5 w-3.5" /> {t("connections.reject")}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {!canDecide && (
-                  <TooltipContent>Only the recipient can reject while pending.</TooltipContent>
+                  <TooltipContent>{t("connections.rejectDisabled")}</TooltipContent>
                 )}
               </Tooltip>
             </>
           ) : isPending && isSent ? (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" /> Awaiting response
+              <Clock className="h-3.5 w-3.5" /> {t("connections.awaiting")}
             </div>
           ) : isActive && onRevoke ? (
             <div className="flex items-center gap-2">
@@ -130,12 +130,12 @@ export function RequestRow({
                       className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => canRevoke && onRevoke(req.id)}
                     >
-                      <Unlink className="h-3.5 w-3.5" /> Revoke
+                      <Unlink className="h-3.5 w-3.5" /> {t("connections.revoke")}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {!canRevoke && (
-                  <TooltipContent>Only an active participant can revoke this connection.</TooltipContent>
+                  <TooltipContent>{t("connections.revokeDisabled")}</TooltipContent>
                 )}
               </Tooltip>
             </div>
@@ -191,14 +191,8 @@ export default function ConnectionsPage() {
 
   // Role-based: Player only sees incoming. Coach/Observer can send.
   const canSend = role === "coach" || role === "observer";
-  const pageTitle = role === "admin" ? "Relationship Management" : "Connections & Requests";
-  const pageDesc = role === "player"
-    ? "Approve or reject connection requests from coaches and fans."
-    : role === "coach"
-    ? "Send requests to players and manage your active connections."
-    : role === "observer"
-    ? "Request access to follow a player's progress."
-    : "View all platform relationship records.";
+  const pageTitle = role === "admin" ? t("connections.adminTitle") : t("connections.title");
+  const pageDesc = t(`connections.subtitle.${role === "player" || role === "coach" || role === "observer" ? role : "admin"}`);
 
   return (
     <div className="space-y-6">
@@ -209,7 +203,7 @@ export default function ConnectionsPage() {
         </div>
         {(canSend || role === "player") && (
           <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
-            <UserPlus className="h-4 w-4" /> New Request
+            <UserPlus className="h-4 w-4" /> {t("connections.newRequest")}
           </Button>
         )}
       </div>
@@ -219,18 +213,18 @@ export default function ConnectionsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "Incoming", value: incoming.length, icon: ArrowDownLeft },
-          { label: "Sent", value: sent.length, icon: ArrowUpRight },
-          { label: "Active", value: active.length, icon: LinkIcon },
-          { label: "Revoked", value: revoked.length, icon: Unlink },
+          { key: "incoming", value: incoming.length, icon: ArrowDownLeft },
+          { key: "sent", value: sent.length, icon: ArrowUpRight },
+          { key: "active", value: active.length, icon: LinkIcon },
+          { key: "revoked", value: revoked.length, icon: Unlink },
         ].map((s) => (
-          <div key={s.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+          <div key={s.key} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <s.icon className="h-4 w-4" />
             </div>
             <div>
               <div className="text-xl font-bold text-foreground">{s.value}</div>
-              <div className="text-xs text-muted-foreground">{s.label}</div>
+              <div className="text-xs text-muted-foreground">{t(`connections.stat.${s.key}`)}</div>
             </div>
           </div>
         ))}
@@ -239,14 +233,14 @@ export default function ConnectionsPage() {
       {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input aria-label={t("a11y.search.connections")} placeholder="Search by name…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Input aria-label={t("a11y.search.connections")} placeholder={t("connections.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="incoming" className="space-y-4">
         <TabsList>
           <TabsTrigger value="incoming" className="gap-1.5">
-            <ArrowDownLeft className="h-3.5 w-3.5" /> Incoming
+            <ArrowDownLeft className="h-3.5 w-3.5" /> {t("connections.stat.incoming")}
             {incoming.length > 0 && (
               <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                 {incoming.length}
@@ -254,18 +248,18 @@ export default function ConnectionsPage() {
             )}
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-1.5">
-            <ArrowUpRight className="h-3.5 w-3.5" /> Sent
+            <ArrowUpRight className="h-3.5 w-3.5" /> {t("connections.stat.sent")}
           </TabsTrigger>
           <TabsTrigger value="active" className="gap-1.5">
-            <LinkIcon className="h-3.5 w-3.5" /> Active
+            <LinkIcon className="h-3.5 w-3.5" /> {t("connections.stat.active")}
           </TabsTrigger>
           <TabsTrigger value="revoked" className="gap-1.5">
-            <Unlink className="h-3.5 w-3.5" /> Revoked
+            <Unlink className="h-3.5 w-3.5" /> {t("connections.stat.revoked")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="incoming">
-          <DashboardCard title="Incoming Requests" description={`${incoming.length} pending`}>
+          <DashboardCard title={t("connections.card.incoming")} description={t("connections.pendingCount", { count: incoming.length })}>
             {incoming.length === 0 ? (
               <EmptyState title={t("empty.connections.incoming.title")} description={search ? t("empty.connections.search.description") : t("empty.connections.incoming.description")} />
             ) : (
@@ -294,7 +288,7 @@ export default function ConnectionsPage() {
         </TabsContent>
 
         <TabsContent value="sent">
-          <DashboardCard title="Sent Requests" description={`${sent.length} pending`}>
+          <DashboardCard title={t("connections.card.sent")} description={t("connections.pendingCount", { count: sent.length })}>
             {sent.length === 0 ? (
               <EmptyState title={t("empty.connections.sent.title")} description={search ? t("empty.connections.search.description") : t("empty.connections.sent.description")} />
             ) : (
@@ -308,7 +302,7 @@ export default function ConnectionsPage() {
         </TabsContent>
 
         <TabsContent value="active">
-          <DashboardCard title="Active Relationships" description={`${active.length} active connection${active.length !== 1 ? "s" : ""}`}>
+          <DashboardCard title={t("connections.card.active")} description={t("connections.activeCount", { count: active.length })}>
             {active.length === 0 ? (
               // The first-run state of this page: nobody is linked yet. Every
               // role that can send a request gets the dialog as its next step;
@@ -353,7 +347,7 @@ export default function ConnectionsPage() {
         </TabsContent>
 
         <TabsContent value="revoked">
-          <DashboardCard title="Revoked & Rejected" description={`${revoked.length + rejected.length} relationship${revoked.length + rejected.length !== 1 ? "s" : ""}`}>
+          <DashboardCard title={t("connections.card.revoked")} description={t("connections.relationshipCount", { count: revoked.length + rejected.length })}>
             {revoked.length + rejected.length === 0 ? (
               <EmptyState title={t("empty.connections.revoked.title")} description={t("empty.connections.revoked.description")} />
             ) : (

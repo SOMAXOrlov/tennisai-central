@@ -1250,6 +1250,88 @@
     "checkingNow": "Comprobando…",
     "footer": "Aquí solo se muestra lo que la API informa sobre sí misma. No interviene ningún dato de cuentas."
   },
+  "connections": {
+    "title": "Conexiones y solicitudes",
+    "adminTitle": "Gestión de relaciones",
+    "subtitle": {
+      "player": "Acepta o rechaza las solicitudes de conexión de entrenadores y familiares.",
+      "coach": "Envía solicitudes a jugadores y gestiona tus conexiones activas.",
+      "observer": "Solicite acceso para seguir el progreso de un jugador.",
+      "admin": "Consulte todos los registros de relaciones de la plataforma."
+    },
+    "newRequest": "Nueva solicitud",
+    "searchPlaceholder": "Buscar por nombre…",
+    "sentOn": "Enviada el {date}",
+    "receivedOn": "Recibida el {date}",
+    "approve": "Aceptar",
+    "approveDisabled": "Solo quien recibe la solicitud puede aceptarla mientras está pendiente.",
+    "reject": "Rechazar",
+    "rejectDisabled": "Solo quien recibe la solicitud puede rechazarla mientras está pendiente.",
+    "awaiting": "Esperando respuesta",
+    "revoke": "Revocar",
+    "revokeDisabled": "Solo una de las partes activas puede revocar esta conexión.",
+    "stat": {
+      "incoming": "Recibidas",
+      "sent": "Enviadas",
+      "active": "Activas",
+      "revoked": "Revocadas"
+    },
+    "card": {
+      "incoming": "Solicitudes recibidas",
+      "sent": "Solicitudes enviadas",
+      "active": "Relaciones activas",
+      "revoked": "Revocadas y rechazadas"
+    },
+    "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
+    "activeCount": "{count, plural, one {# conexión activa} other {# conexiones activas}}",
+    "relationshipCount": "{count, plural, one {# relación} other {# relaciones}}",
+    "dialog": {
+      "title": "Nueva solicitud de conexión",
+      "help": {
+        "coach": "Introduce un ID de jugador (por ejemplo, TAI-P-001) para pedir la conexión.",
+        "player": "Introduce un ID de entrenador (TAI-C-001) o de familiar (TAI-F-001) para conectar.",
+        "observer": "Introduzca un ID de jugador (por ejemplo, TAI-P-001) para seguir su progreso.",
+        "admin": "Introduce un ID público para conectar."
+      },
+      "sentTitle": "¡Solicitud enviada!",
+      "sentBody": "Tu solicitud de conexión con {name} se ha enviado. Recibirá un aviso y podrá aceptarla o rechazarla.",
+      "done": "Listo",
+      "publicId": "ID público",
+      "lookup": "Buscar",
+      "typeRest": "Escribe el resto del ID y pulsa {key} para buscar.",
+      "enterKey": "Intro",
+      "notAllowed": "Conexión no permitida",
+      "roleCannotSend": "Tu perfil no permite enviar solicitudes de conexión.",
+      "trySearching": "Prueba a buscar un perfil con el que sí puedas conectar:",
+      "searchARole": "Buscar un {role}",
+      "allowedConnections": "Conexiones permitidas: ",
+      "none": "Ninguna",
+      "send": "Enviar la solicitud",
+      "notFound": "No hay ningún usuario con ese ID. Revísalo e inténtalo de nuevo.",
+      "self": "No puedes enviarte una solicitud de conexión a ti mismo."
+    },
+    "validation": {
+      "cannotSend": "Tu perfil no puede enviar solicitudes de conexión.",
+      "onlyWith": "Como {role}, solo puedes conectar con: {allowed}.",
+      "plural": {
+        "player": "Jugadores",
+        "coach": "Entrenadores",
+        "observer": "Madres/padres",
+        "admin": "Administradores"
+      }
+    },
+    "incomingCard": {
+      "title": "Solicitudes recibidas",
+      "allConnections": "Todas las conexiones",
+      "connections": "Conexiones",
+      "waiting": "{count, plural, one {# solicitud esperando} other {# solicitudes esperando}} tu decisión",
+      "moreOn": "+{count} más en la página {link}."
+    }
+  },
+  "admin": {
+    "title": "Administración",
+    "subtitle": "Gestión de usuarios, torneos y alertas del sistema."
+  },
   "equipment": {
     "title": "Material",
     "subtitle": "Gestiona tus raquetas, cordajes, zapatillas y demás.",

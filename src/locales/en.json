@@ -1250,6 +1250,88 @@
     "checkingNow": "Checking…",
     "footer": "Only what the API reports about itself is shown here. No account data is involved."
   },
+  "connections": {
+    "title": "Connections & Requests",
+    "adminTitle": "Relationship Management",
+    "subtitle": {
+      "player": "Approve or reject connection requests from coaches and fans.",
+      "coach": "Send requests to players and manage your active connections.",
+      "observer": "Request access to follow a player's progress.",
+      "admin": "View all platform relationship records."
+    },
+    "newRequest": "New Request",
+    "searchPlaceholder": "Search by name…",
+    "sentOn": "Sent {date}",
+    "receivedOn": "Received {date}",
+    "approve": "Approve",
+    "approveDisabled": "Only the recipient can approve while pending.",
+    "reject": "Reject",
+    "rejectDisabled": "Only the recipient can reject while pending.",
+    "awaiting": "Awaiting response",
+    "revoke": "Revoke",
+    "revokeDisabled": "Only an active participant can revoke this connection.",
+    "stat": {
+      "incoming": "Incoming",
+      "sent": "Sent",
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "card": {
+      "incoming": "Incoming Requests",
+      "sent": "Sent Requests",
+      "active": "Active Relationships",
+      "revoked": "Revoked & Rejected"
+    },
+    "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+    "activeCount": "{count, plural, one {# active connection} other {# active connections}}",
+    "relationshipCount": "{count, plural, one {# relationship} other {# relationships}}",
+    "dialog": {
+      "title": "New Connection Request",
+      "help": {
+        "coach": "Enter a Player ID (e.g. TAI-P-001) to request a connection.",
+        "player": "Enter a Coach ID (e.g. TAI-C-001) or Parent ID (e.g. TAI-F-001) to connect.",
+        "observer": "Enter a Player ID (e.g. TAI-P-001) to follow their progress.",
+        "admin": "Enter a public ID to connect."
+      },
+      "sentTitle": "Request Sent!",
+      "sentBody": "Your connection request to {name} has been sent. They'll be notified and can approve or decline.",
+      "done": "Done",
+      "publicId": "Public ID",
+      "lookup": "Lookup",
+      "typeRest": "Type the rest of the ID, then press {key} to search.",
+      "enterKey": "Enter",
+      "notAllowed": "Connection not allowed",
+      "roleCannotSend": "Your role does not support sending connection requests.",
+      "trySearching": "Try searching for a role you can connect with:",
+      "searchARole": "Search a {role}",
+      "allowedConnections": "Allowed connections: ",
+      "none": "None",
+      "send": "Send Request",
+      "notFound": "No user found with that ID. Please double-check and try again.",
+      "self": "You cannot send a connection request to yourself."
+    },
+    "validation": {
+      "cannotSend": "Your role cannot send connection requests.",
+      "onlyWith": "As a {role}, you can only connect with: {allowed}.",
+      "plural": {
+        "player": "Players",
+        "coach": "Coaches",
+        "observer": "Parents",
+        "admin": "Admins"
+      }
+    },
+    "incomingCard": {
+      "title": "Incoming requests",
+      "allConnections": "All connections",
+      "connections": "Connections",
+      "waiting": "{count, plural, one {# request} other {# requests}} waiting for your decision",
+      "moreOn": "+{count} more on the {link} page."
+    }
+  },
+  "admin": {
+    "title": "Admin Management",
+    "subtitle": "User management, tournaments, and system alerts."
+  },
   "equipment": {
     "title": "Equipment",
     "subtitle": "Manage your rackets, strings, shoes, and more.",

@@ -11,8 +11,8 @@ export default function AdminPage() {
   const { t } = useT();
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Admin Management</h1>
-      <p className="text-muted-foreground">User management, tournaments, and system alerts.</p>
+      <h1 className="text-2xl font-bold text-foreground">{t("admin.title")}</h1>
+      <p className="text-muted-foreground">{t("admin.subtitle")}</p>
       <EmptyState
         icon={<Shield className="h-6 w-6 text-muted-foreground" />}
         title={t("empty.admin.title")}
