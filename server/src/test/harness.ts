@@ -65,6 +65,13 @@ const DELEGATES = [
   "generatedSession",
   "coachPreference",
   "drillReview",
+  // The session routes persist what the assembler proposes and, on save, write
+  // the player's training plan; the player-context loader reads the latest
+  // post-match report through its match.
+  "trainingPlan",
+  "trainingDrill",
+  "postMatchReport",
+  "match",
   "trainingParticipant",
   "tournament",
   "playerTournament",
@@ -74,6 +81,10 @@ const DELEGATES = [
   "connectionRequest",
   "trainingRequest",
   "calendarEvent",
+  // Match issues (matches/issues.routes.ts) read the match for its player and
+  // then the issue rows; the summaries read matches WITH their issues.
+  "match",
+  "matchIssue",
   "notification",
   // The delivery funnel (notifications/deliver.ts) reads both of these right
   // after writing a notification. Without them every notification spec logged

@@ -22,6 +22,7 @@ import {
   assertGuardianOf,
   assertSameAcademy,
   assertCanActOnPlayer,
+  assertIsPlayerOrCoach,
   type Role,
 } from "./authz";
 
@@ -177,5 +178,53 @@ describe("assertCanActOnPlayer", () => {
     asMock(prisma.connectionRequest.findFirst).mockResolvedValue(null);
     asMock(prisma.guardianship.findUnique).mockResolvedValue(null);
     await expect(assertCanActOnPlayer("c1", "p1")).rejects.toMatchObject({ status: 403 });
+  });
+});
+
+// ── assertIsPlayerOrCoach — the narrow gate for what player and coach say to each other ──
+describe("assertIsPlayerOrCoach", () => {
+  it("allows the player themself with no DB lookups", async () => {
+    await expect(assertIsPlayerOrCoach("p1", "p1")).resolves.toBeUndefined();
+    expect(asMock(prisma.coachAssignment.findUnique)).not.toHaveBeenCalled();
+    expect(asMock(prisma.user.findUnique)).not.toHaveBeenCalled();
+  });
+
+  it("allows via an active coach assignment without even reading the role", async () => {
+    asMock(prisma.coachAssignment.findUnique).mockResolvedValue({ status: "active" });
+    await expect(assertIsPlayerOrCoach("c1", "p1")).resolves.toBeUndefined();
+    expect(asMock(prisma.user.findUnique)).not.toHaveBeenCalled();
+    expect(asMock(prisma.connectionRequest.findFirst)).not.toHaveBeenCalled();
+  });
+
+  it("allows a coach-role user linked by an active connection", async () => {
+    asMock(prisma.coachAssignment.findUnique).mockResolvedValue(null);
+    asMock(prisma.user.findUnique).mockResolvedValue({ role: "coach" });
+    asMock(prisma.connectionRequest.findFirst).mockResolvedValue({ id: "conn-1" });
+    await expect(assertIsPlayerOrCoach("c1", "p1")).resolves.toBeUndefined();
+  });
+
+  it("403s a consenting guardian even with an active connection — the role is what excludes them", async () => {
+    asMock(prisma.coachAssignment.findUnique).mockResolvedValue(null);
+    asMock(prisma.user.findUnique).mockResolvedValue({ role: "observer" });
+    asMock(prisma.connectionRequest.findFirst).mockResolvedValue({ id: "conn-2" });
+    asMock(prisma.guardianship.findUnique).mockResolvedValue({ parentalConsent: true });
+    await expect(assertIsPlayerOrCoach("g1", "p1")).rejects.toMatchObject({ status: 403 });
+    // The connection is never consulted for a non-coach, and guardianship never at all.
+    expect(asMock(prisma.connectionRequest.findFirst)).not.toHaveBeenCalled();
+    expect(asMock(prisma.guardianship.findUnique)).not.toHaveBeenCalled();
+  });
+
+  it("403s another player connected to this player", async () => {
+    asMock(prisma.coachAssignment.findUnique).mockResolvedValue(null);
+    asMock(prisma.user.findUnique).mockResolvedValue({ role: "player" });
+    asMock(prisma.connectionRequest.findFirst).mockResolvedValue({ id: "conn-3" });
+    await expect(assertIsPlayerOrCoach("p2", "p1")).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("403s a coach whose assignment ended and who has no connection", async () => {
+    asMock(prisma.coachAssignment.findUnique).mockResolvedValue({ status: "ended" });
+    asMock(prisma.user.findUnique).mockResolvedValue({ role: "coach" });
+    asMock(prisma.connectionRequest.findFirst).mockResolvedValue(null);
+    await expect(assertIsPlayerOrCoach("c1", "p1")).rejects.toMatchObject({ status: 403 });
   });
 });

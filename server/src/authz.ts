@@ -121,6 +121,47 @@ export async function assertCanActOnPlayer(actorId: string, targetPlayerId: stri
   throw new HttpError(403, "You are not authorized to act on behalf of this player");
 }
 
+/**
+ * Narrower than assertCanActOnPlayer: ONLY the player and their coach.
+ * Allowed when:
+ *   - the actor IS the player, OR
+ *   - an ACTIVE CoachAssignment(coachId=actor, playerId=target) exists, OR
+ *   - the actor's role is `coach` AND an ACTIVE connection links the two.
+ * A consenting guardian and a plain connection (observer, another player) are
+ * deliberately refused — the same two rungs readablePlayerIds uses for a
+ * coach, without the guardianship rung. Used for what a player and their
+ * coach say to each other about a match (match issues and their summaries).
+ * Throws 403 otherwise.
+ */
+export async function assertIsPlayerOrCoach(actorId: string, targetPlayerId: string): Promise<void> {
+  if (actorId === targetPlayerId) return;
+
+  const assignment = await prisma.coachAssignment.findUnique({
+    where: { coachId_playerId: { coachId: actorId, playerId: targetPlayerId } },
+    select: { status: true },
+  });
+  if (assignment?.status === "active") return;
+
+  // A connection only counts when the actor is a coach: a guardian or another
+  // player connected to this player is still not their coach.
+  const role = await getRole(actorId);
+  if (role === "coach") {
+    const connection = await prisma.connectionRequest.findFirst({
+      where: {
+        status: "active",
+        OR: [
+          { fromUserId: actorId, toUserId: targetPlayerId },
+          { fromUserId: targetPlayerId, toUserId: actorId },
+        ],
+      },
+      select: { id: true },
+    });
+    if (connection) return;
+  }
+
+  throw new HttpError(403, "Only the player and their coach can do this");
+}
+
 /** Two users must share at least one academy. Throws 403 otherwise. */
 export async function assertSameAcademy(userIdA: string, userIdB: string): Promise<void> {
   const [a, b] = await Promise.all([

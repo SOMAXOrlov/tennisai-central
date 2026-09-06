@@ -8,7 +8,15 @@
 // not lose their place; the page owning the menu owns that drawer and passes
 // the setter in. An item whose callback is not supplied is simply not shown —
 // a menu never offers something that would do nothing.
+//
+// The menu CONTENT is defined once per entity. What opens it is pluggable:
+// the default is the "Actions" button (or a "…" icon on dense rows); a page
+// may instead hand in its own `trigger` — typically the avatar and name,
+// wrapped in `IdentityTrigger` — so tapping the person opens the same menu.
+// The two triggers carry DIFFERENT accessible names ("Actions for …" vs
+// "Open menu for …") so a page that shows both stays unambiguous.
 // ============================================================
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, CalendarDays, ChevronDown, ListChecks, MoreHorizontal, Package, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { ConnectedPlayer, Team } from "@/types";
 import {
-  playerCalendarHref, playerScheduleHref, teamCalendarHref, teamManageHref, teamScheduleHref,
+  identityTriggerLabel, playerCalendarHref, playerScheduleHref, teamCalendarHref, teamManageHref, teamScheduleHref,
 } from "./entityLinks";
 
 interface TriggerProps {
@@ -58,7 +66,46 @@ function MenuTrigger({ label, compact, className }: TriggerProps) {
   );
 }
 
+export interface IdentityTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Display name of the player or team; becomes "Open menu for <name>". */
+  name: string;
+  children: ReactNode;
+}
+
+/**
+ * Wraps an avatar and/or name so tapping the PERSON opens their menu. It is a
+ * real button (keyboard reachable, visible focus ring) that looks like the
+ * content it wraps. Forwards ref and props because Radix' `asChild` trigger
+ * needs both to attach its behaviour. Meets the 44px target on touch screens.
+ */
+export const IdentityTrigger = forwardRef<HTMLButtonElement, IdentityTriggerProps>(
+  function IdentityTrigger({ name, children, className, ...props }, ref) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        aria-label={identityTriggerLabel(name)}
+        className={cn(
+          "flex min-w-0 items-center gap-3 rounded-md text-left outline-none transition-colors",
+          "hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "coarse:min-h-11",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  },
+);
+
 const ITEM = "gap-2 coarse:min-h-11";
+
+/** Either the page's own opener or the default Actions/"…" button — never both from one instance. */
+function Opener({ trigger, label, compact, className }: TriggerProps & { trigger?: ReactNode }) {
+  if (trigger) return <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>;
+  return <MenuTrigger label={label} compact={compact} className={className} />;
+}
 
 export interface PlayerActionsMenuProps {
   player: ConnectedPlayer;
@@ -68,15 +115,20 @@ export interface PlayerActionsMenuProps {
   onViewEquipment?: (player: ConnectedPlayer) => void;
   compact?: boolean;
   className?: string;
+  /**
+   * A custom opener (usually `<IdentityTrigger>` around the avatar/name).
+   * When given, this instance renders no Actions button of its own.
+   */
+  trigger?: ReactNode;
 }
 
-export function PlayerActionsMenu({ player, onViewStats, onViewEquipment, compact, className }: PlayerActionsMenuProps) {
+export function PlayerActionsMenu({ player, onViewStats, onViewEquipment, compact, className, trigger }: PlayerActionsMenuProps) {
   const navigate = useNavigate();
   const name = `${player.firstName} ${player.lastName}`;
 
   return (
     <DropdownMenu>
-      <MenuTrigger label={`Actions for ${name}`} compact={compact} className={className} />
+      <Opener trigger={trigger} label={`Actions for ${name}`} compact={compact} className={className} />
       <DropdownMenuContent align="end" className="w-[13rem]">
         <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">{name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -110,14 +162,16 @@ export interface TeamActionsMenuProps {
   onManage?: (team: Team) => void;
   compact?: boolean;
   className?: string;
+  /** A custom opener (see PlayerActionsMenu.trigger). */
+  trigger?: ReactNode;
 }
 
-export function TeamActionsMenu({ team, onManage, compact, className }: TeamActionsMenuProps) {
+export function TeamActionsMenu({ team, onManage, compact, className, trigger }: TeamActionsMenuProps) {
   const navigate = useNavigate();
 
   return (
     <DropdownMenu>
-      <MenuTrigger label={`Actions for ${team.name}`} compact={compact} className={className} />
+      <Opener trigger={trigger} label={`Actions for ${team.name}`} compact={compact} className={className} />
       <DropdownMenuContent align="end" className="w-[13rem]">
         <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">{team.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />

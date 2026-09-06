@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 
 interface DashboardCardProps {
-  title: string;
+  /** Usually text; a page may pass a node (e.g. a tappable avatar + name). */
+  title: React.ReactNode;
   description?: string;
   icon?: React.ReactNode;
   badge?: React.ReactNode;

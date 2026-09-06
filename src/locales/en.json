@@ -489,6 +489,84 @@
       "aria": "AI generations remaining this month"
     }
   },
+  "matchIssues": {
+    "title": "What went wrong",
+    "description": "Tap a tag, add a sentence if you like. You and your coach both see this.",
+    "tabs": {
+      "notes": "Notes",
+      "summary": "Summary"
+    },
+    "viewAria": "Notes or summary",
+    "pickTag": "What went wrong?",
+    "noteLabel": "One sentence (optional)",
+    "notePlaceholder": "One sentence, if you like…",
+    "drawerHint": "Change the tag if you need to, add a sentence, then save.",
+    "editTitle": "Edit note",
+    "save": "Save",
+    "cancel": "Cancel",
+    "retry": "Try again",
+    "loading": "Loading…",
+    "error": "Could not load this. Try again in a moment.",
+    "empty": "Nothing noted yet. Tap a tag above — two taps and it is saved.",
+    "you": "You",
+    "coachName": "Coach {name}",
+    "editAria": "Edit {tag} note",
+    "removeAria": "Remove {tag} note",
+    "tags": {
+      "serve": "Serve",
+      "return": "Return",
+      "forehand": "Forehand",
+      "backhand": "Backhand",
+      "net": "Net play",
+      "footwork": "Footwork",
+      "fitness": "Fitness",
+      "mental": "Mental",
+      "tactics": "Tactics",
+      "conditions": "Conditions"
+    },
+    "toast": {
+      "saved": "Noted: {tag}",
+      "updated": "Note updated",
+      "removed": "Note removed",
+      "saveFailed": "Could not save the note",
+      "removeFailed": "Could not remove the note"
+    },
+    "summary": {
+      "empty": "Nothing to sum up yet — tag what went wrong first.",
+      "byTagAria": "Notes per tag",
+      "count": "{count, plural, one {# note} other {# notes}}",
+      "byPlayer": "player",
+      "byCoach": "coach",
+      "both": "player and coach",
+      "workOnAgreed": "Work on: {tag} — you both flagged it.",
+      "workOnOne": "Work on: {tag} — mentioned most.",
+      "split": "{player} from the player · {coach} from the coach"
+    },
+    "recurring": {
+      "title": "What keeps coming back",
+      "description": "From the last {count, plural, one {# match} other {# matches}} with notes",
+      "recurringLabel": "Keeps coming back:",
+      "recurringNone": "nothing yet — no tag in 3 of the last 5 matches.",
+      "fadingLabel": "Gone quiet:",
+      "freshLabel": "New this time:",
+      "nextStep": "Next: work on {tag}",
+      "buildSession": "Build a session",
+      "confidence": {
+        "low": "Early days — fewer than 3 matches with notes, so no pattern yet.",
+        "medium": "Based on {count} matches with notes.",
+        "high": "Solid — based on {count} matches with notes."
+      },
+      "notedBy": "noted by {who}",
+      "whoPlayer": "the player",
+      "whoCoach": "the coach",
+      "whoBoth": "player and coach",
+      "empty": "No notes yet. After the next match, tap what went wrong and the pattern shows up here."
+    },
+    "coach": {
+      "recentMatches": "Recent matches",
+      "noMatches": "No matches logged for this player yet."
+    }
+  },
   "dashboard": {
     "nav": {
       "dashboard": "Dashboard",
