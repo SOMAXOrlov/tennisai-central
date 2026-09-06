@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
-import { useT } from "@/lib/i18n";
+import { interleave, slot, t as translate, useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,14 +28,19 @@ import {
 import { format, parseISO } from "date-fns";
 import type { TrainingRequest, TrainingType, TrainingRequestStatus } from "@/types";
 
-const TRAINING_TYPES: { value: TrainingType; label: string }[] = [
-  { value: "individual", label: "Individual Training" },
-  { value: "team", label: "Team Training" },
-  { value: "match_practice", label: "Match Practice" },
-  { value: "fitness", label: "Fitness" },
-  { value: "recovery", label: "Recovery" },
-  { value: "tactical", label: "Tactical Session" },
+// Keys only; the names come from the shared `training.type.*` vocabulary so a
+// request and the training it becomes are never worded differently.
+const TRAINING_TYPES: TrainingType[] = [
+  "individual",
+  "team",
+  "match_practice",
+  "fitness",
+  "recovery",
+  "tactical",
 ];
+
+const trainingTypeLabel = (type: string) =>
+  TRAINING_TYPES.includes(type as TrainingType) ? translate(`training.type.${type}`) : type;
 
 const STATUS_TABS: TrainingRequestStatus[] = ["pending", "approved", "rejected", "reschedule_proposed", "cancelled"];
 
@@ -47,14 +52,7 @@ function RequestStatusBadge({ status }: { status: TrainingRequestStatus }) {
     reschedule_proposed: "bg-muted text-foreground dark:text-foreground",
     cancelled: "bg-muted text-muted-foreground",
   };
-  const labels: Record<TrainingRequestStatus, string> = {
-    pending: "Pending",
-    approved: "Approved",
-    rejected: "Declined",
-    reschedule_proposed: "New Time Proposed",
-    cancelled: "Cancelled",
-  };
-  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${styles[status]}`}>{labels[status]}</span>;
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${styles[status]}`}>{translate(`requests.status.${status}`)}</span>;
 }
 
 // ─── Player Request Form ───
@@ -62,6 +60,7 @@ function PlayerRequestForm({ open, onOpenChange, coachId, coachName }: {
   open: boolean; onOpenChange: (o: boolean) => void; coachId: string; coachName: string;
 }) {
   const { user } = useAuth();
+  const { t } = useT();
   const createMut = useCreateTrainingRequest();
   const [form, setForm] = useState({
     preferredDate: "",
@@ -90,53 +89,53 @@ function PlayerRequestForm({ open, onOpenChange, coachId, coachName }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4 text-primary" /> Request Training</DialogTitle>
-          <DialogDescription>Send a training request to {coachName}</DialogDescription>
+          <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4 text-primary" /> {t("requests.form.title")}</DialogTitle>
+          <DialogDescription>{t("requests.form.description", { coach: coachName })}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label htmlFor="request-date">Preferred Date *</Label>
+            <Label htmlFor="request-date">{t("requests.form.date")}</Label>
             <Input id="request-date" aria-required="true" type="date" value={form.preferredDate} onChange={(e) => setForm((f) => ({ ...f, preferredDate: e.target.value }))} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="request-start">Start Time *</Label>
+              <Label htmlFor="request-start">{t("requests.form.startTime")}</Label>
               <Input id="request-start" aria-required="true" type="time" value={form.preferredStartTime} onChange={(e) => setForm((f) => ({ ...f, preferredStartTime: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="request-end">End Time *</Label>
+              <Label htmlFor="request-end">{t("requests.form.endTime")}</Label>
               <Input id="request-end" aria-required="true" type="time" value={form.preferredEndTime} onChange={(e) => setForm((f) => ({ ...f, preferredEndTime: e.target.value }))} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="request-type">Training Type</Label>
+              <Label htmlFor="request-type">{t("requests.form.type")}</Label>
               <Select value={form.trainingType} onValueChange={(v) => setForm((f) => ({ ...f, trainingType: v as TrainingType }))}>
                 <SelectTrigger id="request-type"><SelectValue /></SelectTrigger>
-                <SelectContent>{TRAINING_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
+                <SelectContent>{TRAINING_TYPES.map((type) => <SelectItem key={type} value={type}>{t(`training.type.${type}`)}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="request-priority">Priority</Label>
+              <Label htmlFor="request-priority">{t("requests.form.priority")}</Label>
               <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as "normal" | "high" }))}>
                 <SelectTrigger id="request-priority"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="normal">Normal</SelectItem><SelectItem value="high">High</SelectItem></SelectContent>
+                <SelectContent><SelectItem value="normal">{t("requests.form.priorityNormal")}</SelectItem><SelectItem value="high">{t("requests.form.priorityHigh")}</SelectItem></SelectContent>
               </Select>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="request-location">Location <span className="text-muted-foreground">(optional)</span></Label>
-            <Input id="request-location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="Court A, Gym, etc." />
+            <Label htmlFor="request-location">{t("requests.form.location")} <span className="text-muted-foreground">{t("requests.form.optional")}</span></Label>
+            <Input id="request-location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder={t("requests.form.locationPlaceholder")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="request-notes">Notes for Coach <span className="text-muted-foreground">(optional)</span></Label>
-            <Textarea id="request-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="What would you like to work on?" rows={3} />
+            <Label htmlFor="request-notes">{t("requests.form.notes")} <span className="text-muted-foreground">{t("requests.form.optional")}</span></Label>
+            <Textarea id="request-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder={t("requests.form.notesPlaceholder")} rows={3} />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
           <Button onClick={handleSubmit} disabled={!valid || createMut.isPending}>
-            {createMut.isPending ? "Sending…" : "Send Request"}
+            {createMut.isPending ? t("requests.form.sending") : t("requests.form.send")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -148,6 +147,7 @@ function PlayerRequestForm({ open, onOpenChange, coachId, coachName }: {
 function CoachRequestDrawer({ request, open, onOpenChange }: {
   request: TrainingRequest | null; open: boolean; onOpenChange: (o: boolean) => void;
 }) {
+  const { t } = useT();
   const approveMut = useApproveTrainingRequest();
   const rejectMut = useRejectTrainingRequest();
   const rescheduleMut = useRescheduleTrainingRequest();
@@ -158,7 +158,7 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
 
   if (!request) return null;
   const isPending = request.status === "pending";
-  const typeLabel = TRAINING_TYPES.find((t) => t.value === request.trainingType)?.label ?? request.trainingType;
+  const typeLabel = trainingTypeLabel(request.trainingType);
 
   const handleApprove = () => {
     approveMut.mutate({ id: request.id, coachMessage: message || undefined }, { onSuccess: () => onOpenChange(false) });
@@ -174,7 +174,7 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2"><Dumbbell className="h-4 w-4 text-primary" /> Training Request</SheetTitle>
+          <SheetTitle className="flex items-center gap-2"><Dumbbell className="h-4 w-4 text-primary" /> {t("requests.detail.title")}</SheetTitle>
         </SheetHeader>
         <div className="mt-4 space-y-5">
           <div className="flex items-center justify-between">
@@ -193,7 +193,7 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
           {request.priority === "high" && (
             <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-2">
               <AlertCircle className="h-4 w-4 text-primary dark:text-primary" />
-              <span className="text-sm font-medium text-primary dark:text-primary">High Priority</span>
+              <span className="text-sm font-medium text-primary dark:text-primary">{t("requests.highPriority")}</span>
             </div>
           )}
 
@@ -217,7 +217,7 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
           {request.notes && (
             <div className="rounded-lg border border-border bg-secondary/30 p-3">
               <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <MessageSquare className="h-3 w-3" /> Player Notes
+                <MessageSquare className="h-3 w-3" /> {t("requests.detail.playerNotes")}
               </div>
               <p className="text-sm text-foreground">{request.notes}</p>
             </div>
@@ -225,7 +225,7 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
 
           {request.status === "reschedule_proposed" && request.proposedDate && (
             <div className="rounded-lg border border-border bg-muted p-3">
-              <div className="mb-1 text-xs font-medium text-foreground dark:text-foreground">Proposed New Time</div>
+              <div className="mb-1 text-xs font-medium text-foreground dark:text-foreground">{t("requests.detail.proposedTime")}</div>
               <p className="text-sm text-foreground dark:text-foreground">
                 {request.proposedDate} · {request.proposedStartTime} – {request.proposedEndTime}
               </p>
@@ -234,7 +234,7 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
 
           {request.coachMessage && (
             <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <div className="mb-1 text-xs font-medium text-muted-foreground">Coach Response</div>
+              <div className="mb-1 text-xs font-medium text-muted-foreground">{t("requests.detail.coachResponse")}</div>
               <p className="text-sm text-foreground">{request.coachMessage}</p>
             </div>
           )}
@@ -242,18 +242,18 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
           {isPending && mode === "view" && (
             <>
               <div className="space-y-1.5">
-                <Label htmlFor="request-respond-message">Message to Player <span className="text-muted-foreground">(optional)</span></Label>
-                <Textarea id="request-respond-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Add a note…" rows={2} />
+                <Label htmlFor="request-respond-message">{t("requests.detail.messageToPlayer")} <span className="text-muted-foreground">{t("requests.form.optional")}</span></Label>
+                <Textarea id="request-respond-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t("requests.detail.messagePlaceholder")} rows={2} />
               </div>
               <div className="flex flex-wrap gap-2 border-t border-border pt-4">
                 <Button onClick={handleApprove} disabled={approveMut.isPending} className="gap-1.5">
-                  <Check className="h-3.5 w-3.5" /> {approveMut.isPending ? "Approving…" : "Approve"}
+                  <Check className="h-3.5 w-3.5" /> {approveMut.isPending ? t("requests.detail.approving") : t("requests.detail.approve")}
                 </Button>
                 <Button variant="outline" onClick={() => setMode("reschedule")} className="gap-1.5">
-                  <RefreshCw className="h-3.5 w-3.5" /> Propose New Time
+                  <RefreshCw className="h-3.5 w-3.5" /> {t("requests.detail.proposeNewTime")}
                 </Button>
                 <Button variant="outline" onClick={handleReject} disabled={rejectMut.isPending} className="gap-1.5 text-destructive hover:text-destructive">
-                  <X className="h-3.5 w-3.5" /> {rejectMut.isPending ? "Declining…" : "Decline"}
+                  <X className="h-3.5 w-3.5" /> {rejectMut.isPending ? t("requests.detail.declining") : t("requests.detail.decline")}
                 </Button>
               </div>
             </>
@@ -262,31 +262,31 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
           {isPending && mode === "reschedule" && (
             <>
               <div className="border-t border-border pt-4 space-y-4">
-                <p className="text-sm font-medium text-foreground">Propose New Time</p>
+                <p className="text-sm font-medium text-foreground">{t("requests.detail.proposeNewTime")}</p>
                 <div className="space-y-1.5">
-                  <Label htmlFor="request-reschedule-date">Date</Label>
+                  <Label htmlFor="request-reschedule-date">{t("requests.detail.date")}</Label>
                   <Input id="request-reschedule-date" type="date" value={rescheduleForm.proposedDate} onChange={(e) => setRescheduleForm((f) => ({ ...f, proposedDate: e.target.value }))} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="request-reschedule-start">Start</Label>
+                    <Label htmlFor="request-reschedule-start">{t("requests.detail.start")}</Label>
                     <Input id="request-reschedule-start" type="time" value={rescheduleForm.proposedStartTime} onChange={(e) => setRescheduleForm((f) => ({ ...f, proposedStartTime: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="request-reschedule-end">End</Label>
+                    <Label htmlFor="request-reschedule-end">{t("requests.detail.end")}</Label>
                     <Input id="request-reschedule-end" type="time" value={rescheduleForm.proposedEndTime} onChange={(e) => setRescheduleForm((f) => ({ ...f, proposedEndTime: e.target.value }))} />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="request-reschedule-message">Message</Label>
-                  <Textarea id="request-reschedule-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Explain the reschedule…" rows={2} />
+                  <Label htmlFor="request-reschedule-message">{t("requests.detail.message")}</Label>
+                  <Textarea id="request-reschedule-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t("requests.detail.reschedulePlaceholder")} rows={2} />
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
                 <Button onClick={handleReschedule} disabled={!rescheduleForm.proposedDate || rescheduleMut.isPending}>
-                  {rescheduleMut.isPending ? "Sending…" : "Send Proposal"}
+                  {rescheduleMut.isPending ? t("requests.detail.sending") : t("requests.detail.sendProposal")}
                 </Button>
-                <Button variant="outline" onClick={() => setMode("view")}>Cancel</Button>
+                <Button variant="outline" onClick={() => setMode("view")}>{t("common.cancel")}</Button>
               </div>
             </>
           )}
@@ -300,22 +300,27 @@ function CoachRequestDrawer({ request, open, onOpenChange }: {
 function CancelRequestDialog({ open, onOpenChange, request, onConfirm, loading }: {
   open: boolean; onOpenChange: (o: boolean) => void; request: TrainingRequest; onConfirm: () => void; loading?: boolean;
 }) {
+  const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Cancel this request?</DialogTitle>
+          <DialogTitle>{t("requests.cancelDialog.title")}</DialogTitle>
           <DialogDescription>
-            Your request to {request.coachName} for{" "}
-            <span className="font-semibold text-foreground">{request.preferredDate}</span>{" "}
-            ({request.preferredStartTime} – {request.preferredEndTime}) will be withdrawn. You would need to send a new
-            one to ask again.
+            {interleave(
+              t("requests.cancelDialog.body", {
+                coach: request.coachName,
+                date: slot(0),
+                time: `${request.preferredStartTime} – ${request.preferredEndTime}`,
+              }),
+              [<span key="date" className="font-semibold text-foreground">{request.preferredDate}</span>],
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Keep request</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("requests.cancelDialog.keep")}</Button>
           <Button variant="destructive" disabled={loading} onClick={() => { onConfirm(); onOpenChange(false); }}>
-            <X className="mr-1.5 h-4 w-4" /> {loading ? "Cancelling…" : "Cancel request"}
+            <X className="mr-1.5 h-4 w-4" /> {loading ? t("requests.cancelDialog.cancelling") : t("requests.cancelDialog.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -374,15 +379,15 @@ export default function TrainingRequestsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">Training Requests</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("requests.title")}</h1>
             {isObserver && <ReadOnlyBadge />}
             {pendingCount > 0 && <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{pendingCount}</span>}
           </div>
-          <p className="text-muted-foreground">{isPlayer ? "Request training sessions from your coach." : isCoach ? "Review and respond to player training requests." : "View training request activity."}</p>
+          <p className="text-muted-foreground">{isPlayer ? t("requests.subtitle.player") : isCoach ? t("requests.subtitle.coach") : t("requests.subtitle.observer")}</p>
         </div>
         {isPlayer && connectedCoach && (
           <Button className="gap-2 self-start" onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4" /> Request Training
+            <Plus className="h-4 w-4" /> {t("requests.request")}
           </Button>
         )}
       </div>
@@ -393,18 +398,18 @@ export default function TrainingRequestsPage() {
         <div className="rounded-lg border border-primary/25 bg-primary/10 p-4">
           <p className="text-sm text-primary dark:text-primary">
             <AlertCircle className="mr-1.5 inline h-4 w-4" />
-            You need to connect with a coach before you can request training sessions.
+            {t("requests.needCoach")}
           </p>
         </div>
       )}
 
       <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="pending">Pending {pendingCount > 0 && `(${pendingCount})`}</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
-          <TabsTrigger value="reschedule_proposed">Rescheduled</TabsTrigger>
-          <TabsTrigger value="rejected">Declined</TabsTrigger>
+          <TabsTrigger value="all">{t("requests.tabs.all")}</TabsTrigger>
+          <TabsTrigger value="pending">{pendingCount > 0 ? t("requests.pendingWithCount", { count: pendingCount }) : t("requests.tabs.pending")}</TabsTrigger>
+          <TabsTrigger value="approved">{t("requests.tabs.approved")}</TabsTrigger>
+          <TabsTrigger value="reschedule_proposed">{t("requests.tabs.rescheduled")}</TabsTrigger>
+          <TabsTrigger value="rejected">{t("requests.tabs.declined")}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -435,7 +440,7 @@ export default function TrainingRequestsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((req) => {
-            const typeLabel = TRAINING_TYPES.find((t) => t.value === req.trainingType)?.label ?? req.trainingType;
+            const typeLabel = trainingTypeLabel(req.trainingType);
             return (
               <button
                 key={req.id}
@@ -449,7 +454,7 @@ export default function TrainingRequestsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-foreground">{isCoach ? req.playerName : typeLabel}</h3>
                     <RequestStatusBadge status={req.status} />
-                    {req.priority === "high" && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary dark:text-primary">High Priority</span>}
+                    {req.priority === "high" && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary dark:text-primary">{t("requests.highPriority")}</span>}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {req.preferredDate}</span>
@@ -464,8 +469,8 @@ export default function TrainingRequestsPage() {
                     size="sm"
                     variant="ghost"
                     className="shrink-0 text-muted-foreground hover:text-destructive"
-                    title="Cancel request"
-                    aria-label={`Cancel your ${typeLabel} request for ${req.preferredDate}`}
+                    title={t("requests.cancelTitle")}
+                    aria-label={t("requests.cancelAria", { type: typeLabel, date: req.preferredDate })}
                     disabled={cancelMut.isPending}
                     onClick={(e) => { e.stopPropagation(); setCancelTarget(req); }}
                   >

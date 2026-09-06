@@ -15,7 +15,7 @@ import type {
   SessionGoal,
   SessionPreferences,
 } from "./types";
-import { FOCUS_LABELS, GOAL_LABELS, LEVEL_RANK } from "./types";
+import { LEVEL_RANK, focusLabel, goalLabel } from "./types";
 import { DRILL_LIBRARY } from "./drills";
 
 /** Share of total time per block, by session goal (rows sum to 1). */
@@ -241,7 +241,7 @@ export function generateSession(input: SessionPreferences): GeneratedSession {
     });
   }
 
-  const focusText = prefs.focusAreas.map((f) => FOCUS_LABELS[f]).join(", ");
+  const focusText = prefs.focusAreas.map(focusLabel).join(", ");
   const totalMinutes = blocks.reduce((s, b) => s + b.minutes, 0);
   const equipmentChecklist = [
     ...new Set(blocks.flatMap((b) => b.drills.flatMap((d) => d.equipment))),
@@ -262,7 +262,7 @@ export function generateSession(input: SessionPreferences): GeneratedSession {
   notes.push("Not medical advice: stop and reassess on any pain; adjust load for injury history.");
 
   return {
-    title: `${GOAL_LABELS[prefs.goal]} — ${focusText} (${prefs.level})`,
+    title: `${goalLabel(prefs.goal)} — ${focusText} (${prefs.level})`,
     summary: `A ${totalMinutes}-minute ${prefs.format} ${prefs.goal.replace("_", " ")} session on ${prefs.surface} for a ${prefs.level} player, focused on ${focusText}. Structured warm-up → technical → tactical → live-ball → cool-down.`,
     level: prefs.level,
     goal: prefs.goal,

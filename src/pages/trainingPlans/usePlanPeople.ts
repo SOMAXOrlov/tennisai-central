@@ -7,6 +7,8 @@
 // rather than inventing one.
 // ============================================================
 
+import { t } from "@/lib/i18n";
+
 import { useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
@@ -41,10 +43,10 @@ export function usePlanPeople(): PlanPeople {
   const userId = user?.id;
 
   const nameFor = (id: string): ResolvedPerson => {
-    if (userId && id === userId) return { label: "You", isYou: true, resolved: true };
+    if (userId && id === userId) return { label: t("plans.you"), isYou: true, resolved: true };
     const name = byId.get(id);
     if (name) return { label: name, isYou: false, resolved: true };
-    return { label: "Name unavailable", isYou: false, resolved: false };
+    return { label: t("plans.nameUnavailable"), isYou: false, resolved: false };
   };
 
   return { userId, nameFor };

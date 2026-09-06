@@ -72,13 +72,7 @@ const MIGRATION_BACKLOG = new Set<string>([
   "src/pages/NotificationsPage.tsx",
   "src/pages/PlayersPage.tsx",
   "src/pages/ProfilePage.tsx",
-  "src/pages/SessionBuilderPage.tsx",
   "src/pages/TeamsPage.tsx",
-  "src/pages/TrainingRequestsPage.tsx",
-  "src/pages/trainingPlans/DrillCard.tsx",
-  "src/pages/trainingPlans/PlanListItem.tsx",
-  "src/pages/trainingPlans/TrainingPlanDetail.tsx",
-  "src/pages/trainingPlans/TrainingPlansPage.tsx",
 ]);
 
 /** How many files were still unmigrated when the ratchet was installed. */

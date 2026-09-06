@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
-import { useT } from "@/lib/i18n";
+import { interleave, slot, useT } from "@/lib/i18n";
 import { formatMatchDate } from "@/lib/stats/format";
 import { useTrainingPlan, useUpdateDrillStatus } from "@/hooks/api/trainingPlans";
 import { DrillCard } from "@/pages/trainingPlans/DrillCard";
@@ -31,7 +31,7 @@ export function TrainingPlanDetail({ planId, people, onBack }: TrainingPlanDetai
 
   const back = (
     <Button variant="ghost" size="sm" className="gap-1.5 self-start" onClick={onBack}>
-      <ArrowLeft className="h-4 w-4" /> All plans
+      <ArrowLeft className="h-4 w-4" /> {t("plans.allPlans")}
     </Button>
   );
 
@@ -70,26 +70,27 @@ export function TrainingPlanDetail({ planId, people, onBack }: TrainingPlanDetai
         <div>
           <h1 className="text-2xl font-bold text-foreground">{plan.title}</h1>
           <p className="text-sm text-muted-foreground">
-            For <span className={player.resolved ? "text-foreground" : "italic"}>{player.label}</span>
-            {" · by "}
-            <span className={creator.resolved ? "text-foreground" : "italic"}>{creator.label}</span>
+            {interleave(t("plans.forBy", { player: slot(0), creator: slot(1) }), [
+              <span key="player" className={player.resolved ? "text-foreground" : "italic"}>{player.label}</span>,
+              <span key="creator" className={creator.resolved ? "text-foreground" : "italic"}>{creator.label}</span>,
+            ])}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <CalendarDays className="h-3 w-3" />
-            {plan.weekOf ? `Week of ${formatMatchDate(plan.weekOf)}` : `Saved ${formatMatchDate(plan.generatedAt)}`}
+            {plan.weekOf ? t("plans.weekOf", { date: formatMatchDate(plan.weekOf) }) : t("plans.savedOn", { date: formatMatchDate(plan.generatedAt) })}
           </span>
           <span className="flex items-center gap-1">
             <ListChecks className="h-3 w-3" />
-            {progress.total} drill{progress.total === 1 ? "" : "s"}
+            {t("plans.drillCount", { count: progress.total })}
           </span>
           {minutes !== null && (
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {/* Only claim a total when every drill carries a duration. */}
-              {hasCompleteDurations(drills) ? `${minutes} min planned` : `${minutes}+ min planned (some drills have no duration)`}
+              {hasCompleteDurations(drills) ? t("plans.minutesPlanned", { minutes }) : t("plans.minutesPlannedPartial", { minutes })}
             </span>
           )}
         </div>
@@ -98,13 +99,13 @@ export function TrainingPlanDetail({ planId, people, onBack }: TrainingPlanDetai
       </div>
 
       <DashboardCard
-        title="Drills"
-        description="Tick a drill off once it is done, or skip it — the status is saved on the plan"
+        title={t("plans.drills")}
+        description={t("plans.drillsDescription")}
         icon={<ListChecks className="h-4 w-4" />}
         noPadding
       >
         {drills.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">This plan has no drills.</p>
+          <p className="p-5 text-sm text-muted-foreground">{t("plans.noDrills")}</p>
         ) : (
           <div>
             {drills.map((drill, index) => (

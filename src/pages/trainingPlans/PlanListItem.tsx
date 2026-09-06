@@ -7,6 +7,7 @@ import { PlanProgressBar } from "@/pages/trainingPlans/PlanProgressBar";
 import { planProgress, planScope } from "@/pages/trainingPlans/planProgress";
 import type { PlanPeople } from "@/pages/trainingPlans/usePlanPeople";
 import type { TrainingPlan } from "@/types";
+import { interleave, slot, useT } from "@/lib/i18n";
 
 export interface PlanListItemProps {
   plan: TrainingPlan;
@@ -15,6 +16,7 @@ export interface PlanListItemProps {
 }
 
 export function PlanListItem({ plan, people, onOpen }: PlanListItemProps) {
+  const { t } = useT();
   const progress = planProgress(plan.drills);
   const scope = planScope(plan, people.userId);
   const player = people.nameFor(plan.playerId);
@@ -31,30 +33,31 @@ export function PlanListItem({ plan, people, onOpen }: PlanListItemProps) {
           <span className="font-semibold text-foreground">{plan.title}</span>
           {scope === "assigned" && (
             <span className="bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-              Assigned to you
+              {t("plans.assignedToYou")}
             </span>
           )}
           {scope === "created" && (
             <span className="bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-foreground">
-              You created
+              {t("plans.youCreated")}
             </span>
           )}
         </div>
 
         <p className="text-xs text-muted-foreground">
-          For <span className={cn(player.resolved ? "text-foreground" : "italic")}>{player.label}</span>
-          {" · by "}
-          <span className={cn(creator.resolved ? "text-foreground" : "italic")}>{creator.label}</span>
+          {interleave(t("plans.forBy", { player: slot(0), creator: slot(1) }), [
+            <span key="player" className={cn(player.resolved ? "text-foreground" : "italic")}>{player.label}</span>,
+            <span key="creator" className={cn(creator.resolved ? "text-foreground" : "italic")}>{creator.label}</span>,
+          ])}
         </p>
 
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <CalendarDays className="h-3 w-3" />
-            {plan.weekOf ? `Week of ${formatMatchDate(plan.weekOf)}` : `Saved ${formatMatchDate(plan.generatedAt)}`}
+            {plan.weekOf ? t("plans.weekOf", { date: formatMatchDate(plan.weekOf) }) : t("plans.savedOn", { date: formatMatchDate(plan.generatedAt) })}
           </span>
           <span className="flex items-center gap-1">
             <ListChecks className="h-3 w-3" />
-            {progress.total} drill{progress.total === 1 ? "" : "s"}
+            {t("plans.drillCount", { count: progress.total })}
           </span>
         </p>
 

@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n";
+
 // ============================================================
 // TennisAI — Session Generator: types
 // A deterministic, best-practice-driven tennis session builder.
@@ -92,25 +94,34 @@ export interface GeneratedSession {
   notes: string[]; // load-management / safety / individualisation notes
 }
 
-export const FOCUS_LABELS: Record<FocusArea, string> = {
-  serve: "Serve",
-  return: "Return",
-  forehand: "Forehand",
-  backhand: "Backhand",
-  net: "Net / Volley",
-  movement: "Movement & Footwork",
-  fitness: "Fitness & Conditioning",
-  tactics: "Tactics & Patterns",
-  mental: "Mental & Competitive",
-};
+/**
+ * The focus areas and session goals, in display order. Their names live in the
+ * locale bundles under `session.focus.*` and `session.goalOption.*` and are
+ * resolved at render time — a translated label in a module constant would
+ * freeze to whichever locale loaded first.
+ */
+export const FOCUS_AREAS: FocusArea[] = [
+  "serve",
+  "return",
+  "forehand",
+  "backhand",
+  "net",
+  "movement",
+  "fitness",
+  "tactics",
+  "mental",
+];
 
-export const GOAL_LABELS: Record<SessionGoal, string> = {
-  technical: "Technical development",
-  tactical: "Tactical development",
-  physical: "Physical / conditioning",
-  match_prep: "Match preparation",
-  recovery: "Recovery / light session",
-};
+export const SESSION_GOALS: SessionGoal[] = [
+  "technical",
+  "tactical",
+  "physical",
+  "match_prep",
+  "recovery",
+];
+
+export const focusLabel = (area: FocusArea): string => t(`session.focus.${area}`);
+export const goalLabel = (goal: SessionGoal): string => t(`session.goalOption.${goal}`);
 
 export const LEVEL_RANK: Record<PlayerLevel, number> = {
   beginner: 0,

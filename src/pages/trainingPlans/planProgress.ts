@@ -7,6 +7,7 @@
 // ============================================================
 
 import type { DrillCategory, DrillCompletionStatus, Intensity, TrainingDrill, TrainingPlan } from "@/types";
+import { t } from "@/lib/i18n";
 
 export interface PlanProgress {
   total: number;
@@ -31,38 +32,28 @@ export function planProgress(drills: TrainingDrill[] | undefined): PlanProgress 
   };
 }
 
-/** "5 of 12 drills done" — or an honest note when the plan has no drills. */
+/** "5 of 12 done" — or an honest note when the plan has no drills. */
 export function progressLabel(progress: PlanProgress): string {
-  if (progress.total === 0) return "No drills in this plan";
-  return `${progress.done} of ${progress.total} drill${progress.total === 1 ? "" : "s"} done`;
+  if (progress.total === 0) return t("plans.noDrillsInPlan");
+  return t("plans.progress", { done: progress.done, total: progress.total });
 }
 
-export const DRILL_CATEGORY_LABEL: Record<DrillCategory, string> = {
-  technical: "Technical",
-  tactical: "Tactical",
-  physical: "Physical",
-  mental: "Mental",
-};
+const DRILL_CATEGORIES: DrillCategory[] = ["technical", "tactical", "physical", "mental"];
+const INTENSITIES: Intensity[] = ["low", "medium", "high"];
 
-export const INTENSITY_LABEL: Record<Intensity, string> = {
-  low: "Low intensity",
-  medium: "Medium intensity",
-  high: "High intensity",
-};
-
-export const DRILL_STATUS_LABEL: Record<DrillCompletionStatus, string> = {
-  pending: "To do",
-  done: "Done",
-  skipped: "Skipped",
-};
+export function drillStatusLabel(status: DrillCompletionStatus): string {
+  return t(`plans.status.${status}`);
+}
 
 export function drillCategoryLabel(category: string): string {
-  return DRILL_CATEGORY_LABEL[category as DrillCategory] ?? category;
+  return DRILL_CATEGORIES.includes(category as DrillCategory)
+    ? t(`plans.category.${category}`)
+    : category;
 }
 
 export function intensityLabel(intensity: string | undefined): string | null {
   if (!intensity) return null;
-  return INTENSITY_LABEL[intensity as Intensity] ?? intensity;
+  return INTENSITIES.includes(intensity as Intensity) ? t(`plans.intensity.${intensity}`) : intensity;
 }
 
 /** Total planned minutes — null unless at least one drill carries a duration. */

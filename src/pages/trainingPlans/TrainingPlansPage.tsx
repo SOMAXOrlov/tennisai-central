@@ -66,17 +66,15 @@ export default function TrainingPlansPage() {
   const header = (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Training plans</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("plans.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          {isCoach
-            ? "Sessions you saved from the Session Builder, plus anything assigned to you."
-            : "Sessions your coach saved for you. Tick each drill off as you complete it."}
+          {isCoach ? t("plans.subtitleCoach") : t("plans.subtitlePlayer")}
         </p>
       </div>
       {isCoach && (
         <Button asChild variant="outline" className="gap-2 self-start">
           <Link to="/session-builder">
-            <Sparkles className="h-4 w-4" /> Session Builder
+            <Sparkles className="h-4 w-4" /> {t("plans.sessionBuilder")}
           </Link>
         </Button>
       )}
@@ -132,19 +130,19 @@ export default function TrainingPlansPage() {
               value="all"
               className="rounded-none px-3 py-1 text-xs data-[state=active]:bg-background data-[state=active]:shadow-none"
             >
-              All ({plans.length})
+              {t("plans.filter.all", { count: plans.length })}
             </TabsTrigger>
             <TabsTrigger
               value="assigned"
               className="rounded-none px-3 py-1 text-xs data-[state=active]:bg-background data-[state=active]:shadow-none"
             >
-              Assigned to me ({scoped.assigned.length})
+              {t("plans.filter.assigned", { count: scoped.assigned.length })}
             </TabsTrigger>
             <TabsTrigger
               value="created"
               className="rounded-none px-3 py-1 text-xs data-[state=active]:bg-background data-[state=active]:shadow-none"
             >
-              Created by me ({scoped.created.length})
+              {t("plans.filter.created", { count: scoped.created.length })}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -152,7 +150,7 @@ export default function TrainingPlansPage() {
 
       {visible.length === 0 ? (
         <p className="border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No plans in this filter.
+          {t("plans.filter.empty")}
         </p>
       ) : (
         <div className="border border-border bg-card">
