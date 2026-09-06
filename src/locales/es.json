@@ -615,8 +615,8 @@
       "intro": "Las capturas de abajo son de la aplicación en marcha con datos de demostración: no son maquetas.",
       "feeds": {
         "title": "Cada torneo dice de dónde salió",
-        "desc": "Las filas importadas de UTR events y de ITF Juniors llevan una etiqueta de origen y la fecha en que esa fuente los confirmó por última vez. Si una fuente deja de actualizarse en silencio, se ve en la tarjeta en vez de quedar oculto.",
-        "alt": "El listado de torneos, con una etiqueta de origen en cada tarjeta —UTR events o ITF Juniors— y la fecha en que la fuente confirmó el evento por última vez."
+        "desc": "Cada fila importada de una fuente federativa lleva una etiqueta con el nombre de esa fuente y la fecha en que confirmó el evento por última vez: UTR events en los datos de la prueba, e ITF Juniors donde una instalación lo active. Si una fuente deja de actualizarse en silencio, se ve en la tarjeta en vez de quedar oculto.",
+        "alt": "El listado de torneos filtrado por España: tres tarjetas de eventos, cada una con una etiqueta que dice «via UTR · checked 7 minutes ago», sobre una línea que explica que cada etiqueta nombra la fuente que listó el evento."
       },
       "prep": {
         "title": "Las condiciones antes que el cuadro",
@@ -734,7 +734,8 @@
         "item1": "Alojamiento: la aplicación, la API y la base de datos PostgreSQL se ejecutan en un único servidor alquilado. El servidor de esta prueba está en la UE. Aquí no se ha nombrado todavía a ningún proveedor de alojamiento.",
         "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor SMTP externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
         "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (por ejemplo el de Google o el de Mozilla) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
-        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería."
+        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería.",
+        "item5": "Meteorología y altitud: el servidor consulta la API pública Open-Meteo sobre las coordenadas de un torneo. Con esa petición no se envía ningún dato de cuenta ni personal."
       },
       "minors": {
         "heading": "Menores y consentimiento del tutor",

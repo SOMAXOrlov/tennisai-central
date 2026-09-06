@@ -16,6 +16,21 @@ const CAPABILITIES = ["calendar", "sessions", "kit", "tournaments"] as const;
 const STEPS = ["step1", "step2", "step3"] as const;
 const ROLES = ["player", "coach", "parent", "admin"] as const;
 
+/**
+ * The three differentiator blocks, each with a real screenshot.
+ *
+ * The images were taken with headless Playwright against a locally seeded
+ * instance of this app — not drawn, not mocked up — which is the only reason
+ * the section is allowed to make the claims it makes. `w`/`h` are the files'
+ * intrinsic pixel sizes (captured at devicePixelRatio 2), set so the browser
+ * reserves the right box before they load and the page does not jump.
+ */
+const DIFFERENTIATORS = [
+  { key: "feeds", src: "/landing/feeds-provenance.png", w: 2320, h: 696 },
+  { key: "prep", src: "/landing/conditions-prep.png", w: 1560, h: 1160 },
+  { key: "guardian", src: "/landing/guardian-consent.png", w: 1000, h: 1234 },
+] as const;
+
 // Small accent square — the recurring modernist marker.
 function Marker() {
   return <span aria-hidden className="mb-5 block h-2.5 w-2.5 bg-primary" />;
@@ -122,6 +137,54 @@ const Index = () => {
                   <span className="font-semibold text-foreground">{t(`landing.how.${key}.lead`)}</span>{" "}
                   {t(`landing.how.${key}.desc`)}
                 </p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── The three differentiators, with real screenshots ── */}
+      <section id="differentiators" className="border-b border-foreground/15 scroll-mt-20">
+        <div className="container max-w-6xl py-20 md:py-24">
+          <Reveal as="span" className="block">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              {t("landing.differentiators.eyebrow")}
+            </p>
+          </Reveal>
+          <Reveal delay={60} className="mt-4 max-w-2xl">
+            <p className="text-sm leading-relaxed text-muted-foreground">{t("landing.differentiators.intro")}</p>
+          </Reveal>
+
+          <div className="mt-12 space-y-12 md:mt-16 md:space-y-16">
+            {DIFFERENTIATORS.map(({ key, src, w, h }, i) => (
+              <Reveal
+                key={key}
+                delay={60}
+                className="grid grid-cols-1 items-start gap-8 border-t border-border pt-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-12"
+              >
+                {/* Text first in the DOM at every width, so the reading order
+                    matches the visual one on a phone; the alternating side is
+                    a `lg:order-*` swap, not a source-order trick. */}
+                <div className={i % 2 === 1 ? "lg:order-2" : undefined}>
+                  <span className="font-mono text-sm font-bold text-primary">{`0${i + 1}`}</span>
+                  <h3 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                    {t(`landing.differentiators.${key}.title`)}
+                  </h3>
+                  <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                    {t(`landing.differentiators.${key}.desc`)}
+                  </p>
+                </div>
+                <figure className={"m-0 " + (i % 2 === 1 ? "lg:order-1" : "")}>
+                  <img
+                    src={src}
+                    alt={t(`landing.differentiators.${key}.alt`)}
+                    width={w}
+                    height={h}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-auto w-full border border-border bg-card"
+                  />
+                </figure>
               </Reveal>
             ))}
           </div>

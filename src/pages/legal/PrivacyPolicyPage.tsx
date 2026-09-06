@@ -111,6 +111,7 @@ export default function PrivacyPolicyPage() {
               <li>{t("legal.privacy.processors.item2")}</li>
               <li>{t("legal.privacy.processors.item3")}</li>
               <li>{t("legal.privacy.processors.item4")}</li>
+              <li>{t("legal.privacy.processors.item5")}</li>
             </ul>
           </Section>
 

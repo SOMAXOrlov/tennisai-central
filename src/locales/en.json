@@ -615,8 +615,8 @@
       "intro": "Screenshots below are of the running app with demo data — no mock-ups.",
       "feeds": {
         "title": "Every tournament says where it came from",
-        "desc": "Rows imported from UTR events and ITF Juniors carry a source chip and the date that source last confirmed them. A feed that quietly stops updating shows on the card instead of hiding.",
-        "alt": "The tournaments list, each event card carrying a source chip such as UTR events or ITF Juniors and the date the feed last confirmed it."
+        "desc": "Every row imported from a federation feed carries a chip naming that feed and the date it last confirmed the event — UTR events across the trial data, ITF Juniors where a deployment enables it. A feed that quietly stops updating shows on the card instead of hiding.",
+        "alt": "The tournaments list filtered to Spain: three event cards, each with a chip reading “via UTR · checked 7 minutes ago”, above a line explaining that each chip names the feed that listed the event."
       },
       "prep": {
         "title": "Conditions before the draw",
@@ -734,7 +734,8 @@
         "item1": "Hosting: the app, the API and the PostgreSQL database run on a single rented server. The current trial server is in the EU. No hosting provider has been named here yet.",
         "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external SMTP provider configured by whoever runs the server. The trial's provider has not been named here yet.",
         "item3": "Web push: if you turn on push notifications, your browser's push service (for example Google's or Mozilla's) relays them. Push is off unless the operator configures keys for it.",
-        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear."
+        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear.",
+        "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament’s coordinates. No account or personal data is sent with that request."
       },
       "minors": {
         "heading": "Minors and guardian consent",
