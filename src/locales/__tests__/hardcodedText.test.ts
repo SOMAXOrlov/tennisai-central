@@ -51,10 +51,6 @@ const ALLOWED_FILES = new Set<string>([
  */
 const MIGRATION_BACKLOG = new Set<string>([
   "src/components/PlayerDetailDrawer.tsx",
-  "src/components/PlayerFilterSelect.tsx",
-  "src/components/TeamFilterSelect.tsx",
-  "src/components/coach/EntityActionsMenu.tsx",
-  "src/components/coach/PlayerTeamChips.tsx",
   "src/components/connections/NewConnectionDialog.tsx",
   "src/components/dashboard/IncomingRequestsCard.tsx",
   "src/components/dashboard/StatisticsSummaryCard.tsx",
@@ -70,9 +66,7 @@ const MIGRATION_BACKLOG = new Set<string>([
   "src/pages/FinancePage.tsx",
   "src/pages/NotificationSettingsPage.tsx",
   "src/pages/NotificationsPage.tsx",
-  "src/pages/PlayersPage.tsx",
   "src/pages/ProfilePage.tsx",
-  "src/pages/TeamsPage.tsx",
 ]);
 
 /** How many files were still unmigrated when the ratchet was installed. */

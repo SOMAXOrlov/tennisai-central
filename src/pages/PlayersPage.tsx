@@ -16,7 +16,7 @@ import { useTeams } from "@/hooks/api/queries";
 import type { ConnectedPlayer } from "@/types";
 
 export default function PlayersPage() {
-  const { t } = useT();
+  const { t, formatDate } = useT();
   const { connectedPlayers } = useConnections();
   // Team chips are derived from the teams the coach already has; no extra call per player.
   const { data: teams = [] } = useTeams();
@@ -52,17 +52,17 @@ export default function PlayersPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">My Players</h1>
-          <p className="text-sm text-muted-foreground">Players with active connections to you.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("players.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("players.subtitle")}</p>
         </div>
         <Button className="gap-2 self-start" asChild>
-          <Link to="/connections"><UserPlus className="h-4 w-4" /> Connect Player</Link>
+          <Link to="/connections"><UserPlus className="h-4 w-4" /> {t("players.connect")}</Link>
         </Button>
       </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input aria-label={t("a11y.search.players")} placeholder="Search players…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Input aria-label={t("a11y.search.players")} placeholder={t("players.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {filtered.length === 0 ? (
@@ -105,7 +105,7 @@ export default function PlayersPage() {
             >
               <div className="min-w-0 space-y-1.5">
                 <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
-                <p className="text-xs text-muted-foreground">Connected since {new Date(player.connectedSince).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground">{t("players.connectedSince", { date: formatDate(new Date(player.connectedSince)) })}</p>
                 <PlayerTeamChips teams={teams} playerId={player.id} />
               </div>
               {/*

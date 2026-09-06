@@ -12,6 +12,7 @@ import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Team } from "@/types";
 import { teamManageHref } from "./entityLinks";
+import { useT } from "@/lib/i18n";
 
 /** The teams that list this player, alphabetically so the chips never reorder between renders. */
 function teamsOfPlayer(teams: Team[], playerId: string): Team[] {
@@ -27,15 +28,16 @@ export interface PlayerTeamChipsProps {
 }
 
 export function PlayerTeamChips({ teams, playerId, className }: PlayerTeamChipsProps) {
+  const { t } = useT();
   const memberOf = teamsOfPlayer(teams, playerId);
 
   if (memberOf.length === 0) {
     // Quiet: a player without a team is a normal state, not a warning.
-    return <p className={cn("text-xs text-muted-foreground", className)}>No team</p>;
+    return <p className={cn("text-xs text-muted-foreground", className)}>{t("teams.noTeam")}</p>;
   }
 
   return (
-    <ul className={cn("flex flex-wrap gap-1.5", className)} aria-label="Teams">
+    <ul className={cn("flex flex-wrap gap-1.5", className)} aria-label={t("teams.chipsAria")}>
       {memberOf.map((team) => (
         <li key={team.id}>
           <Link

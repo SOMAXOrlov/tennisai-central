@@ -7,6 +7,8 @@
 // TeamsPage. Keeping the param names here means a rename touches one file.
 // ============================================================
 
+import { t } from "@/lib/i18n";
+
 export function playerScheduleHref(playerId: string): string {
   return `/trainings?player=${encodeURIComponent(playerId)}`;
 }
@@ -52,5 +54,5 @@ export function readEntityParams(params: URLSearchParams): { playerId: string | 
  * name would be indistinguishable to a screen reader (and to the tests).
  */
 export function identityTriggerLabel(name: string): string {
-  return `Open menu for ${name}`;
+  return t("players.openMenuFor", { name });
 }
