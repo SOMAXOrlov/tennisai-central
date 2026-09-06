@@ -1179,6 +1179,16 @@
         "maintenanceMessage": "Mantenimiento de la base de datos previsto para el 12 de marzo, 02:00–04:00 UTC.",
         "signupsTitle": "Pico de registros inusual",
         "signupsMessage": "Un 50 % más de registros desde un mismo rango de IP."
+      },
+      "userStatus": {
+        "active": "Activo",
+        "pending": "Pendiente",
+        "suspended": "Suspendido"
+      },
+      "tournamentStatus": {
+        "upcoming": "Próximo",
+        "completed": "Finalizado",
+        "cancelled": "Cancelado"
       }
     }
   },
@@ -1445,20 +1455,20 @@
         "admin": "Introduce un ID público para conectar."
       },
       "sentTitle": "¡Solicitud enviada!",
-      "sentBody": "Tu solicitud de conexión con {name} se ha enviado. Recibirá un aviso y podrá aceptarla o rechazarla.",
+      "sentBody": "La solicitud de conexión con {name} se ha enviado. Recibirá un aviso y podrá aceptarla o rechazarla.",
       "done": "Listo",
       "publicId": "ID público",
       "lookup": "Buscar",
-      "typeRest": "Escribe el resto del ID y pulsa {key} para buscar.",
+      "typeRest": "Escriba el resto del ID y pulse {key} para buscar.",
       "enterKey": "Intro",
       "notAllowed": "Conexión no permitida",
-      "roleCannotSend": "Tu perfil no permite enviar solicitudes de conexión.",
-      "trySearching": "Prueba a buscar un perfil con el que sí puedas conectar:",
+      "roleCannotSend": "Este perfil no permite enviar solicitudes de conexión.",
+      "trySearching": "Estos son los perfiles con los que sí se puede conectar:",
       "allowedConnections": "Conexiones permitidas: ",
       "none": "Ninguna",
       "send": "Enviar la solicitud",
-      "notFound": "No hay ningún usuario con ese ID. Revísalo e inténtalo de nuevo.",
-      "self": "No puedes enviarte una solicitud de conexión.",
+      "notFound": "No hay ningún usuario con ese ID. Conviene revisarlo y volver a intentarlo.",
+      "self": "No se puede enviar una solicitud de conexión a la propia cuenta.",
       "searchRole": {
         "player": "Buscar un jugador",
         "coach": "Buscar un entrenador",

@@ -1179,6 +1179,16 @@
         "maintenanceMessage": "Database maintenance planned for March 12, 02:00–04:00 UTC.",
         "signupsTitle": "Unusual Signup Spike",
         "signupsMessage": "50% increase in registrations detected from a single IP range."
+      },
+      "userStatus": {
+        "active": "Active",
+        "pending": "Pending",
+        "suspended": "Suspended"
+      },
+      "tournamentStatus": {
+        "upcoming": "Upcoming",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
       }
     }
   },
@@ -1489,7 +1499,7 @@
       "pending": "A pending request already exists between you.",
       "requestNotFound": "Request not found.",
       "notRecipient": "Only the recipient can act on this request.",
-      "alreadyResolved": "This request has already been {status}.",
+      "alreadyResolved": "This request is already {status}.",
       "badTransition": "Invalid status transition.",
       "relationshipNotFound": "Relationship not found.",
       "notActive": "Only active relationships can be revoked.",

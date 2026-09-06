@@ -298,8 +298,8 @@ export default function AdminDashboard() {
                     <RoleBadge role={u.role} />
                   </td>
                   <td className="px-5 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${userStatusStyles[u.status]}`}>
-                      {u.status}
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${userStatusStyles[u.status]}`}>
+                      {t(`dashboard.admin.userStatus.${u.status}`)}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">
@@ -344,15 +344,15 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {mockAdminTournaments.map((t) => (
-                <tr key={t.id} className="transition-colors hover:bg-secondary/20">
-                  <td className="px-5 py-3 font-medium text-foreground">{t.name}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{t.city}, {t.country}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{formatDate(t.startDate)}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{t.participants}</td>
+              {mockAdminTournaments.map((tournament) => (
+                <tr key={tournament.id} className="transition-colors hover:bg-secondary/20">
+                  <td className="px-5 py-3 font-medium text-foreground">{tournament.name}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{tournament.city}, {tournament.country}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{formatDate(tournament.startDate)}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{tournament.participants}</td>
                   <td className="px-5 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${tournamentStatusStyles[t.status]}`}>
-                      {t.status}
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${tournamentStatusStyles[tournament.status]}`}>
+                      {t(`dashboard.admin.tournamentStatus.${tournament.status}`)}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-right">
