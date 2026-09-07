@@ -831,7 +831,7 @@
       },
       "collect": {
         "heading": "What is held, why, and for how long",
-        "intro": "One row for each kind of information the product actually stores. It is written from the database schema and the code that writes to it: if something is not in this table, the product does not hold it.",
+        "intro": "One row for each kind of information the product actually stores. It is written from the database schema and from the routes that write to it: if something is not in this table, the product does not hold it.",
         "basisNote": "No lawful basis has been settled for any of these categories yet. Each entry in that column is the team's reading of which basis is likely to apply, not a decision — see “Still open” at the end of this page.",
         "tableLabel": "Information held, why it is held, its likely lawful basis, and how long it is kept",
         "columns": {
@@ -866,8 +866,14 @@
             "retention": "Until you remove or replace it, which deletes the file immediately. A nightly backup keeps a copy for up to fourteen days."
           },
           "activity": {
-            "category": "What you or your coach record: training sessions with their blocks and reviews, your own feedback on a session, matches with their set scores and the issues raised about them, tournament entries, calendar events and training requests.",
+            "category": "What you or your coach record: training sessions with their blocks and reviews, your own feedback on a session, matches with their set scores and the issues raised about them, tournament entries, the tournaments you have hidden from your own list, calendar events and training requests.",
             "why": "This is the product — the shared record a coach and a player keep together.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists. No automatic deletion is implemented."
+          },
+          "plans": {
+            "category": "Session plans: a saved training plan and its drills, stamped with which generator produced it and which version of it. For a session put together by the session builder, also the constraints it was given, the proposal it produced, the coach's edits to that proposal, and whether it was saved or discarded.",
+            "why": "So a plan can be reviewed, repeated and corrected, and so a coach can see what they changed about a proposal rather than only the result.",
             "basis": "Not settled. Likely the contract you asked for.",
             "retention": "For as long as the account exists. No automatic deletion is implemented."
           },
@@ -884,19 +890,19 @@
             "retention": "For as long as the account exists."
           },
           "connections": {
-            "category": "The links between accounts — player to coach, player to guardian, team and academy membership — the notifications sent about them, and your notification and calendar preferences.",
+            "category": "The links between accounts: the connection requests two people send and accept, team membership, the notifications sent about them, and your notification and calendar preferences. For a junior, the guardian-consent record sits on their own account.",
             "why": "To decide who may see what. Every read of another person's data is checked against these links on the server.",
             "basis": "Not settled. Likely the contract you asked for.",
             "retention": "For as long as the account exists."
           },
           "coachNotes": {
-            "category": "A coach's private notes about a player, kept in a table of their own so that a note cannot be read into a player's or a parent's view of the app.",
-            "why": "So a coach can keep working notes. Only the coach who wrote a note can read it.",
+            "category": "A coach's private notes about a player. The table exists, deliberately separate so that a note could never be read into a player's or a parent's view of the app — but nothing in the app writes to it, so no note has ever been recorded.",
+            "why": "Reserved so that a coach could keep working notes. If it is ever built, only the coach who wrote a note will be able to read it.",
             "basis": "Not settled. Whether such a note is disclosed when the player asks for their data is an open question.",
-            "retention": "For as long as the coach's account exists."
+            "retention": "Nothing is held today. Were it built: for as long as the coach's account exists."
           },
           "opponents": {
-            "category": "Opponent records: a name, playing tendencies and written observations entered by a coach or a player about somebody who usually has no account here, plus the scouting reports and game plans built on them.",
+            "category": "Opponent records: a name, playing tendencies and written observations entered by a coach or a player about somebody who usually has no account here. The schema also reserves tables for scouting reports and game plans built on those records, and nothing in the app writes to them.",
             "why": "To prepare for a match against a specific opponent.",
             "basis": "Not settled, and the hardest entry on this page: the person described has not been asked.",
             "retention": "For as long as the account that entered the record exists."
@@ -920,7 +926,8 @@
             "retention": "The web server keeps five rolled access-log files of ten megabytes each. The API's own log is not bounded by anything in this repository."
           }
         },
-        "note": "Sign-up and onboarding ask no health or medical question, and the app has no field for one. Two columns for injury restrictions and physical limitations do exist in the database and are read by the session and string builders, but nothing in the app writes to them. Free-text boxes — a session goal, a coach's review, a note on a match — are stored exactly as typed, so whatever a person chooses to write in one is held too."
+        "note": "Sign-up and onboarding ask no health or medical question, and the app has no field for one. Two columns for injury restrictions and physical limitations do exist in the database and are read by the session and string builders, but nothing in the app writes to them. Free-text boxes — a session goal, a coach's review, a note on a match — are stored exactly as typed, so whatever a person chooses to write in one is held too.",
+        "dormant": "Several tables in the database are reserved and empty. Nothing in the app writes to private coach notes, scouting reports, game plans, post-match reports, session templates, coach preferences, drill reviews or the plan tier, so the product holds none of that today. They are named here because they are in the schema, a backup would carry them, and one of them — a coach's private note about a player — is an open question at the foot of this page. Separately, the guardianship, coach-assignment and academy-membership tables are read by the authorisation checks but are filled only by the synthetic demo data; the links the app really creates are the connection requests between accounts and the guardian-consent record on a junior's own account."
       },
       "purpose": {
         "heading": "Why we collect it",
@@ -973,7 +980,7 @@
         "body": "Everything the product stores — the app, the API, the database and the uploaded photographs — sits on a single rented server. There is no second region and no second copy: one machine, one disk, and a nightly backup written to that same disk.",
         "provider": "The machine is rented from a German hosting company. That company operates data centres in more than one country, including outside the European Economic Area, and which one this server is in is not recorded anywhere in this project. Rather than guess at a country, this page says so and the question is on the still-open list.",
         "recipientsIntro": "Recipients outside the European Economic Area, each only when the feature concerned is switched on:",
-        "item1": "the AI provider, if the operator has configured one. The two the code can talk to are Anthropic and OpenAI, both United States companies, and the request goes to their US endpoints. Neither is configured on this trial.",
+        "item1": "the AI provider, if the operator has configured one. The two the code can talk to are Anthropic and OpenAI, both United States companies. Neither is configured on this trial.",
         "item2": "your browser's push service, if you turn push notifications on. Which company that is depends on the browser you use.",
         "item3": "Google, for the typefaces — on every visit, before you have done anything.",
         "item4": "the mail provider the operator configures, which may be outside the European Economic Area depending on which one they choose.",
@@ -981,7 +988,7 @@
       },
       "ai": {
         "heading": "Optional AI processing",
-        "body": "Match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first.",
+        "body": "Training advice and match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first.",
         "pseudonymous": "What would leave the server if a provider were configured is evidence, not identities: names and e-mail addresses are replaced with “Player 1”, “Player 2” and so on before the request is built, and swapped back for real names in the answer. Be aware of the limit of that, though — the free text itself is sent as written. A session goal, a coach's review of a session, a note on a match: if somebody typed a name into one of those boxes, that name goes with it. What comes back is checked against a strict shape before it is shown, and the record kept afterwards holds the provider, the model, a hash of the input and whether it worked — not the prompt and not the answer."
       },
       "automated": {
@@ -1012,7 +1019,7 @@
       "rights": {
         "heading": "Your rights, and how to use them",
         "body": "Depending on where you live you may have the right to ask for a copy of your personal data, to have it corrected, to have it deleted, to have it given to you in a portable form, and to object to or restrict some of what is done with it. Where the data is a connected minor's, a parent or guardian can exercise those rights on the player's behalf.",
-        "erasure": "Erasure is requested in writing. Send the request to the data-protection address at the top of this page and it will be answered within one month. There is no “delete my account” button in the app, and this page will not imply one: nothing in the product closes an account, so an erasure is carried out by hand — the database rows, and separately the photograph file, which nothing else would clean up.",
+        "erasure": "Erasure is requested in writing. Send the request to the data-protection address at the top of this page and it will be acted on within one month. There is no “delete my account” button in the app, and this page will not imply one: nothing in the product closes an account, so an erasure is carried out by hand — the database rows, and separately the photograph file, which nothing else would clean up.",
         "selfService": "What you can do yourself today is remove your profile photograph, from your own profile page. That deletes the file at once, subject only to the fourteen-night backup window described above. Everything else — a copy of your data, a correction you cannot make in the app, a full erasure — is a written request.",
         "contact": "Requests go to the data-protection contact at the top of this page, once that address exists. Until it does there is nowhere to send one, which is why the identity of the controller is the first item on the list below."
       },

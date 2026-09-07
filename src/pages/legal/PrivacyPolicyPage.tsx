@@ -60,6 +60,7 @@ const DATA_CATEGORIES = [
   "profile",
   "photo",
   "activity",
+  "plans",
   "equipment",
   "finance",
   "connections",
@@ -169,6 +170,11 @@ export default function PrivacyPolicyPage() {
             <p>{t("legal.privacy.collect.basisNote")}</p>
             <DataCategoryTable />
             <p>{t("legal.privacy.collect.note")}</p>
+            {/* The reserved-and-empty tables. Named because the intro promises
+                the table is exhaustive, and a schema sweep found several models
+                no route writes — including the private coach notes, which the
+                still-open list asks a question about. */}
+            <p>{t("legal.privacy.collect.dormant")}</p>
           </Section>
 
           <Section heading={t("legal.privacy.purpose.heading")}>

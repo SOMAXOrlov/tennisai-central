@@ -135,6 +135,7 @@ describe("privacy policy", () => {
       "profile",
       "photo",
       "activity",
+      "plans",
       "equipment",
       "finance",
       "connections",
@@ -150,6 +151,23 @@ describe("privacy policy", () => {
       expect(cells.length).toBe(4);
       for (const cell of cells) expect(cell.textContent?.trim()).not.toBe("");
     }
+  });
+
+  it("does not describe a reserved-and-empty table as data the product holds", () => {
+    renderPage(PrivacyPolicyPage);
+    // The table's intro claims to be exhaustive — "if something is not in this
+    // table, the product does not hold it" — which only holds if a schema sweep
+    // backs it. That sweep found models NO route writes: private coach notes,
+    // scouting reports and game plans have no code reference in server/ at all,
+    // and the guardianship / coach-assignment / academy tables are written only
+    // by the synthetic seed. The rows that mention them have to say so.
+    expect(en.legal.privacy.collect.intro).toMatch(/routes that write to it/i);
+    expect(en.legal.privacy.collect.rows.coachNotes.category).toMatch(/nothing in the app writes to it/i);
+    expect(en.legal.privacy.collect.rows.coachNotes.retention).toMatch(/nothing is held today/i);
+    expect(en.legal.privacy.collect.rows.opponents.category).toMatch(/nothing in the app writes to them/i);
+    expect(screen.getByText(en.legal.privacy.collect.dormant)).toBeInTheDocument();
+    expect(en.legal.privacy.collect.dormant).toMatch(/reserved and empty/i);
+    expect(es.legal.privacy.collect.dormant).toMatch(/reservadas y vac[íi]as/i);
   });
 
   it("answers retention per category, and claims no lawful basis anywhere", () => {
