@@ -19,6 +19,7 @@ import { Plus, Users, Pencil, Trash2, UserPlus, UserMinus, ArrowLeft, Search, Ch
 import type { Team, ConnectedPlayer } from "@/types";
 import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from "@/hooks/api/queries";
 import { IdentityTrigger, PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { TeamNextUp } from "@/components/coach/NextUpLines";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
 import { format } from "date-fns";
@@ -66,6 +67,8 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
         {team.players.length > 5 && <span className="text-xs text-muted-foreground">{t("teams.morePlayers", { count: team.players.length - 5 })}</span>}
         {team.players.length === 0 && <span className="text-xs text-muted-foreground">{t("teams.noPlayersYet")}</span>}
       </div>
+      {/* What the squad has coming up: whoever's tournament is soonest, and the squad's own next session. */}
+      <TeamNextUp team={team} />
       <Button variant="outline" className="w-full gap-1.5" onClick={onSelect}>{t("teams.manage")}<ArrowLeft className="h-3.5 w-3.5 rotate-180" /></Button>
     </div>
   );

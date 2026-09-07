@@ -12,6 +12,7 @@ import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
 import { IdentityTrigger, PlayerActionsMenu } from "@/components/coach/EntityActionsMenu";
 import { PlayerTeamChips } from "@/components/coach/PlayerTeamChips";
+import { PlayerNextUp } from "@/components/coach/NextUpLines";
 import { useTeams } from "@/hooks/api/queries";
 import type { ConnectedPlayer } from "@/types";
 
@@ -107,6 +108,8 @@ export default function PlayersPage() {
                 <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
                 <p className="text-xs text-muted-foreground">{t("players.connectedSince", { date: formatDate(new Date(player.connectedSince)) })}</p>
                 <PlayerTeamChips teams={teams} playerId={player.id} />
+                {/* What this player has coming up, so the whole roster reads at a glance. */}
+                <PlayerNextUp playerId={player.id} className="pt-1" />
               </div>
               {/*
                 Everything a coach can do with one player sits behind one menu.
