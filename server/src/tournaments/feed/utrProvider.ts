@@ -4,14 +4,21 @@
 // on 2 Sep 2026 from plain `curl`, with no cookies and no API key: it answers
 // 200 application/json and reports several thousand tennis events. That makes
 // UTR the one source here that can run inside the API process on its daily
-// schedule — the ITF, ATP and WTA calendars sit behind Akamai bot protection and
-// need a real browser, so they are collected in CI and posted in (see
-// scrapers/ and .github/workflows/tournament-calendar.yml).
+// schedule — the ITF junior calendar sits behind Akamai bot protection and needs
+// a real browser, so it is collected in CI and posted in (see scrapers/ and the
+// `itf-juniors` job in .github/workflows/tournament-calendar.yml, which is the
+// ONLY source in that workflow's matrix). There is no ATP or WTA collector and
+// no ITF World Tour one: the handful of ATP and WTA rows in the catalog are
+// hand-typed entries in the curated snapshot (src/tournaments/data/dataset.ts),
+// and nothing refreshes them.
 //
 // Being a private endpoint rather than a documented API, it can change without
 // warning. That is why every row is validated before it is accepted and a
 // malformed one is skipped rather than imported half-empty: a feed that quietly
 // starts returning rubbish is worse than one that visibly returns nothing.
+//
+// It is also why the event KIND is checked before anything else. Most of what
+// UTR calls an "event" is not a tournament at all — see `isTournamentEvent`.
 
 import type { FeedTournament, TournamentFeedProvider } from "./types";
 
@@ -34,6 +41,17 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 interface UtrEvent {
   id?: number;
   name?: string;
+  /**
+   * What KIND of event this is: a tournament, a coaching clinic, a paid hitting
+   * session, a casual match play, a school dual match, a flex league.
+   *
+   * Sampled as an object (`{ id, value, label, description }`) on every one of
+   * 100 live events on 7 Sep 2026, but it is typed here as either an object or a
+   * bare string, the way `surfaceType` already is: this is an undocumented
+   * endpoint, the two shapes have both been seen in this payload's other fields,
+   * and getting it wrong would throw rather than skip.
+   */
+  eventType?: { value?: string | null; label?: string | null } | string | null;
   surfaceType?: { name?: string } | string | null;
   /**
    * Where the surface actually lives. The top-level `surfaceType` has been null
@@ -59,6 +77,48 @@ interface UtrEvent {
     eventEndUtc?: string | null;
     registrationEndUtc?: string | null;
   } | null;
+}
+
+/**
+ * Event kinds this app calls a tournament.
+ *
+ * UTR's vocabulary, as the endpoint words it: `tournament`, `dual_match`,
+ * `match_play`, `paid_hit`, `clinic`, `group_play`, `flex_league`. Exactly one
+ * of those is a tournament. A 100-event live sample on 7 Sep 2026 was 41 dual
+ * matches, 27 tournaments, 11 match plays, 9 paid hits, 6 clinics, 4 free plays
+ * and 2 flex leagues — so importing every "event" as a tournament made a coach's
+ * calendar mostly other people's practice sessions, which is what the owner
+ * meant by the calendar looking unclear.
+ */
+const TOURNAMENT_EVENT_TYPES: ReadonlySet<string> = new Set(["tournament"]);
+
+/**
+ * The event kind as a comparable token: `"Dual Match"` and `"dual_match"` both
+ * become `dual_match`, so the object's `label` and its `value` land on the same
+ * word and either shape can be matched against one vocabulary.
+ */
+export function normaliseEventType(raw: unknown): string {
+  const source =
+    typeof raw === "string"
+      ? raw
+      : ((raw as { value?: string | null; label?: string | null } | null)?.value ??
+        (raw as { value?: string | null; label?: string | null } | null)?.label ??
+        "");
+  if (typeof source !== "string") return "";
+  return source.trim().toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+/**
+ * Is this event a tournament?
+ *
+ * A missing or unrecognised kind is NOT one. Skipping a real tournament costs a
+ * coach one event they can add by hand; importing a paid hitting session costs
+ * them their trust in the whole calendar — and a new kind appearing upstream is
+ * far likelier to be another social format than another draw. This is the same
+ * preference for skipping over guessing the rest of the provider already makes.
+ */
+export function isTournamentEvent(raw: unknown): boolean {
+  return TOURNAMENT_EVENT_TYPES.has(normaliseEventType(raw));
 }
 
 /** "1.0 - 16.0" → { min: 1, max: 16 }. Anything else → nothing. */
@@ -134,11 +194,18 @@ function asIso(raw: unknown): string | undefined {
 /**
  * One UTR event → one feed row, or null when the row cannot be trusted.
  *
- * Required: a name, both dates, and real coordinates. Without coordinates the
- * event cannot be placed on the map or distance-sorted, which is most of what a
- * coach uses the calendar for — so it is dropped rather than imported blind.
+ * Required: a tournament event kind, a name, both dates, and real coordinates.
+ * Without coordinates the event cannot be placed on the map or distance-sorted,
+ * which is most of what a coach uses the calendar for — so it is dropped rather
+ * than imported blind.
+ *
+ * The kind is re-checked here as well as in the fetch loop (which checks it
+ * first only so it can count the two kinds of skip separately). One function
+ * that turns a UTR event into a tournament row should not be able to return a
+ * clinic, whoever calls it.
  */
 export function toFeedTournament(e: UtrEvent): FeedTournament | null {
+  if (!isTournamentEvent(e.eventType)) return null;
   const name = e.name?.trim();
   const startDate = asIso(e.eventSchedule?.eventStartUtc);
   const endDate = asIso(e.eventSchedule?.eventEndUtc);
@@ -197,6 +264,16 @@ export function createUtrProvider(fetchImpl: FetchLike = fetch as unknown as Fet
       const rows: FeedTournament[] = [];
       const seen = new Set<number>();
 
+      // What the run threw away and why. Reported once at the end rather than
+      // per row: at three thousand events a line each is not a log, and the
+      // ratio is the number that matters — if "kept" collapses one night, the
+      // event kinds upstream have changed and this provider needs looking at.
+      let fetched = 0;
+      let repeated = 0;
+      let skippedByType = 0;
+      let skippedUnusable = 0;
+      const skippedKinds = new Map<string, number>();
+
       for (let page = 0; page < MAX_PAGES; page++) {
         const url = `${SEARCH_URL}?top=${PAGE_SIZE}&skip=${page * PAGE_SIZE}&sportTypes=tennis`;
         const res = await fetchImpl(url, {
@@ -220,18 +297,39 @@ export function createUtrProvider(fetchImpl: FetchLike = fetch as unknown as Fet
         for (const hit of hits) {
           const src = hit?.source;
           if (!src) continue;
+          fetched++;
           // The endpoint has been observed repeating ids across pages.
           if (typeof src.id === "number") {
-            if (seen.has(src.id)) continue;
+            if (seen.has(src.id)) {
+              repeated++;
+              continue;
+            }
             seen.add(src.id);
+          }
+          if (!isTournamentEvent(src.eventType)) {
+            skippedByType++;
+            const kind = normaliseEventType(src.eventType) || "(none)";
+            skippedKinds.set(kind, (skippedKinds.get(kind) ?? 0) + 1);
+            continue;
           }
           const row = toFeedTournament(src);
           if (row) rows.push(row);
+          else skippedUnusable++;
         }
 
         if (hits.length < PAGE_SIZE) break;
         await sleep(PAGE_DELAY_MS);
       }
+
+      const breakdown = [...skippedKinds.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([kind, count]) => `${kind} ${count}`)
+        .join(", ");
+      console.log(
+        `[feed] utr-events: fetched ${fetched} events, kept ${rows.length} as tournaments; ` +
+          `skipped ${skippedByType} by event kind (${breakdown || "none"}), ` +
+          `${skippedUnusable} unusable, ${repeated} repeated ids`,
+      );
 
       return rows;
     },
