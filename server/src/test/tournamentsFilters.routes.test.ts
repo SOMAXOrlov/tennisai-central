@@ -211,6 +211,25 @@ describe("GET /api/tournaments/facets", () => {
     expect(byValue.USTA).toMatchObject({ count: 1, collected: false, sources: ["static-snapshot"] });
   });
 
+  it("does not turn a coach's own entry into a chip labelled nothing", async () => {
+    // The moment the owner adds one event by hand, this groupBy starts
+    // returning a `federation: null` row — the entry is stored with no
+    // sanctioning body on purpose. Keyed as-is it would render an empty or
+    // "null" chip in the Following row. It is skipped instead.
+    db.tournament.groupBy.mockImplementation(async (args: { by: string[] }) =>
+      args.by.includes("federation")
+        ? [
+            { federation: "UTR", source: "utr-events", _count: { _all: 3215 } },
+            { federation: null, source: "coach-entered", _count: { _all: 1 } },
+          ]
+        : [],
+    );
+
+    const res = await request(app).get("/api/tournaments/facets").set("Authorization", bearer(COACH));
+
+    expect(res.body.data.federations.map((f: { value: string }) => f.value)).toEqual(["UTR"]);
+  });
+
   it("adds up a federation split across sources instead of listing it twice", async () => {
     db.tournament.groupBy.mockImplementation(async (args: { by: string[] }) =>
       args.by.includes("federation")
