@@ -108,6 +108,8 @@ pre-verified. Set `APP_URL` to the real frontend origin in production so the lin
 | GET | `/api/notifications` · PATCH `/:id/read` · `/read-all` | Bearer | Notifications (self)       |
 | GET/PATCH | `/api/notification-preferences` | Bearer | Per-user notification settings   |
 | GET/PATCH | `/api/me/profile`         | Bearer | View / update own profile            |
+| POST/DELETE | `/api/me/photo`         | Bearer | Set / remove own profile photo (multipart, 5 MB, re-encoded server-side) |
+| GET    | `/api/players/:id/photo`     | Bearer | The photo bytes, behind authorization (self, connected coach; a minor's only to their coach or a consented guardian) |
 | PATCH  | `/api/finance/:id`           | Bearer | Update a finance entry (self only)   |
 | GET    | `/api/catalogue`             | Bearer | Gear catalogue: filter, facet-select, sort, page (pageSize capped at 100) |
 | GET    | `/api/catalogue/facets`      | Bearer | Facet counts + numeric min/max for the current filter |
