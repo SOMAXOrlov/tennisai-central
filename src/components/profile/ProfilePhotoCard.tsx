@@ -147,6 +147,7 @@ export function ProfilePhotoCard() {
               firstName={user?.firstName}
               lastName={user?.lastName}
               version={user?.photoUpdatedAt ?? null}
+              hasPhoto={hasPhoto}
               className="h-20 w-20 shrink-0"
               fallbackClassName="text-xl"
             />

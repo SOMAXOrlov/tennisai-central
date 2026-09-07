@@ -277,6 +277,7 @@ export function DashboardLayout() {
                   firstName={user?.firstName}
                   lastName={user?.lastName}
                   version={user?.photoUpdatedAt ?? null}
+                  hasPhoto={Boolean(user?.photoId)}
                   className="h-8 w-8 shrink-0"
                   fallbackClassName="bg-primary text-xs text-primary-foreground"
                 />

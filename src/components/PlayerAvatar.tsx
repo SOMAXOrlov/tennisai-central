@@ -39,6 +39,51 @@ export function initialsFrom(firstName?: string | null, lastName?: string | null
 }
 
 /**
+ * One in-flight request per person, shared by every avatar showing them.
+ *
+ * Measured, not assumed: the profile page renders three avatars of the signed-in
+ * user (the sidebar, the profile card, the photo card) and each one was issuing
+ * its own GET for the same bytes — three requests, and three 404s in the
+ * console for anyone without a photo. The promise is cached, not the object URL:
+ * each component still mints and revokes its own URL, so there is no reference
+ * counting to get wrong.
+ *
+ * The key includes `version`, so replacing your own photo misses the cache and
+ * refetches. For somebody else's avatar there is no version to key on, so their
+ * photo is fetched once per page load — a photo they change mid-session appears
+ * on the next navigation. Same for a refusal that later becomes an allowance
+ * (a coach assignment created while the page is open).
+ */
+const photoRequests = new Map<string, Promise<Blob | null>>();
+
+/** Enough for any page's worth of avatars; keeps a long session bounded. */
+const PHOTO_REQUEST_CACHE_MAX = 50;
+
+function requestPhoto(userId: string, version?: string | number | null): Promise<Blob | null> {
+  const key = `${userId}|${version ?? ""}`;
+  const existing = photoRequests.get(key);
+  if (existing) return existing;
+
+  const pending = photosApi.fetchPhoto(userId).catch(() => {
+    // A failure must not be remembered forever: the next mount should retry.
+    photoRequests.delete(key);
+    return null;
+  });
+
+  if (photoRequests.size >= PHOTO_REQUEST_CACHE_MAX) {
+    const oldest = photoRequests.keys().next();
+    if (!oldest.done) photoRequests.delete(oldest.value);
+  }
+  photoRequests.set(key, pending);
+  return pending;
+}
+
+/** Test seam: forget every cached request between specs. */
+export function clearPhotoRequestCache(): void {
+  photoRequests.clear();
+}
+
+/**
  * The photo for one user as an object URL, or null when there is nothing to
  * show — no id, no photo, not permitted, a network failure, or a browser that
  * would not mint the URL.
@@ -47,12 +92,22 @@ export function initialsFrom(firstName?: string | null, lastName?: string | null
  * your own photo is visible immediately. The response carries a strong ETag
  * and `Cache-Control: private, must-revalidate`, so an unchanged photo costs a
  * 304 rather than the bytes.
+ *
+ * `hasPhoto: false` skips the request entirely. Only your own client knows this
+ * — `photoId` is on your own user row and on nobody else's — and it is worth
+ * using: it saves a request and a console 404 on every page you load without a
+ * photo. `undefined` means "not known", which is the honest state for everybody
+ * else, and then the only way to find out is to ask.
  */
-export function usePlayerPhoto(userId?: string | null, version?: string | number | null): string | null {
+export function usePlayerPhoto(
+  userId?: string | null,
+  version?: string | number | null,
+  hasPhoto?: boolean,
+): string | null {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || hasPhoto === false) {
       setUrl(null);
       return;
     }
@@ -60,8 +115,7 @@ export function usePlayerPhoto(userId?: string | null, version?: string | number
     let cancelled = false;
     let created: string | null = null;
 
-    void photosApi
-      .fetchPhoto(userId)
+    void requestPhoto(userId, version)
       .then((blob) => {
         if (cancelled || !blob || blob.size === 0) return;
         if (typeof URL.createObjectURL !== "function") return;
@@ -78,7 +132,7 @@ export function usePlayerPhoto(userId?: string | null, version?: string | number
       setUrl(null);
       if (created && typeof URL.revokeObjectURL === "function") URL.revokeObjectURL(created);
     };
-  }, [userId, version]);
+  }, [userId, version, hasPhoto]);
 
   return url;
 }
@@ -92,6 +146,12 @@ export interface PlayerAvatarProps {
   name?: string;
   /** Changing this re-fetches — pass `photoUpdatedAt` for your own avatar. */
   version?: string | number | null;
+  /**
+   * `false` skips the request. Pass `Boolean(user.photoId)` for YOUR OWN
+   * avatar, where the answer is already known; leave it undefined for anybody
+   * else, where it is not, and the endpoint decides.
+   */
+  hasPhoto?: boolean;
   /** Sizing and shape live with the caller; this only adds to them. */
   className?: string;
   /** Extra classes for the initials circle (callers tint it per surface). */
@@ -110,11 +170,12 @@ export function PlayerAvatar({
   lastName,
   name,
   version,
+  hasPhoto,
   className,
   fallbackClassName,
 }: PlayerAvatarProps) {
   const { t } = useT();
-  const photoUrl = usePlayerPhoto(userId, version);
+  const photoUrl = usePlayerPhoto(userId, version, hasPhoto);
   const [failed, setFailed] = useState(false);
 
   const displayName = name ?? [firstName, lastName].filter(Boolean).join(" ");
@@ -123,7 +184,15 @@ export function PlayerAvatar({
   useEffect(() => setFailed(false), [photoUrl]);
 
   return (
-    <Avatar className={cn("h-10 w-10", className)}>
+    // `key` is load-bearing, not decoration. Radix's Avatar tracks the image's
+    // loading status on its ROOT and shows the fallback only while that status
+    // is not "loaded" — and nothing resets it when the `AvatarImage` unmounts.
+    // So removing your photo left the root still believing an image was loaded,
+    // and the circle rendered EMPTY instead of falling back to initials. Found
+    // in a browser, after a real remove. Keying the root on whether there is a
+    // photo remounts it on that transition, which is the only thing that clears
+    // the status.
+    <Avatar key={photoUrl ? "photo" : "initials"} className={cn("h-10 w-10", className)}>
       {photoUrl && !failed && (
         <AvatarImage
           src={photoUrl}

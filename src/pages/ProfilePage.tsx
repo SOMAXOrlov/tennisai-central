@@ -75,6 +75,7 @@ export default function ProfilePage() {
               firstName={user?.firstName}
               lastName={user?.lastName}
               version={user?.photoUpdatedAt ?? null}
+              hasPhoto={Boolean(user?.photoId)}
               className="h-16 w-16"
               fallbackClassName="text-xl"
             />
