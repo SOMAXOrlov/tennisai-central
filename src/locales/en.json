@@ -1287,6 +1287,35 @@
     "ownSessions": "My own sessions",
     "ownSessionsHint": "Trainings, matches and anything you or your coach put on the calendar."
   },
+  "photo": {
+    "title": "Profile photo",
+    "description": "One picture of you, shown next to your name.",
+    "acceptedHint": "JPEG, PNG or WebP, up to {max} MB. It is cropped to a square and resized before it is saved.",
+    "chooseAria": "Choose a profile photo file",
+    "choose": "Choose photo",
+    "replace": "Replace photo",
+    "save": "Save photo",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "remove": "Remove photo",
+    "removing": "Removing…",
+    "chosen": "Ready to save: {name}",
+    "uploading": "Uploading your photo…",
+    "uploadingPercent": "Uploading… {percent}%",
+    "previewAlt": "The photo you just chose",
+    "avatarAlt": "Profile photo of {name}",
+    "privacyNote": "Location and camera data are removed from the photo when it is saved. It is only sent to people allowed to see it — and on a young player's account, only to their coach and to a parent who has given consent.",
+    "rejected": {
+      "type": "That file is not a JPEG, PNG or WebP image.",
+      "size": "That photo is over {max} MB. Please choose a smaller one."
+    },
+    "toast": {
+      "saved": "Photo saved",
+      "saveFailed": "Couldn't save your photo",
+      "removed": "Photo removed",
+      "removeFailed": "Couldn't remove your photo"
+    }
+  },
   "notifications": {
     "title": "Notifications",
     "unreadCount": "{count, plural, one {# unread notification} other {# unread notifications}}",

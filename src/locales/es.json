@@ -1287,6 +1287,35 @@
     "ownSessions": "Mis propias sesiones",
     "ownSessionsHint": "Entrenamientos, partidos y todo lo que tú o tu entrenador pongáis en el calendario."
   },
+  "photo": {
+    "title": "Foto de perfil",
+    "description": "Una foto tuya, que aparece junto a tu nombre.",
+    "acceptedHint": "JPEG, PNG o WebP, hasta {max} MB. Se recorta en cuadrado y se reduce antes de guardarla.",
+    "chooseAria": "Elegir un archivo de foto de perfil",
+    "choose": "Elegir foto",
+    "replace": "Cambiar la foto",
+    "save": "Guardar la foto",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "remove": "Quitar la foto",
+    "removing": "Quitando…",
+    "chosen": "Lista para guardar: {name}",
+    "uploading": "Subiendo tu foto…",
+    "uploadingPercent": "Subiendo… {percent}%",
+    "previewAlt": "La foto que acabas de elegir",
+    "avatarAlt": "Foto de perfil de {name}",
+    "privacyNote": "Al guardarla se eliminan de la foto los datos de ubicación y de la cámara. Solo se envía a quien puede verla y, en la cuenta de un menor, solo a su entrenador y a un padre o una madre que haya dado su consentimiento.",
+    "rejected": {
+      "type": "Ese archivo no es una imagen JPEG, PNG ni WebP.",
+      "size": "Esa foto pasa de {max} MB. Elige una más pequeña."
+    },
+    "toast": {
+      "saved": "Foto guardada",
+      "saveFailed": "No se ha podido guardar tu foto",
+      "removed": "Foto quitada",
+      "removeFailed": "No se ha podido quitar tu foto"
+    }
+  },
   "notifications": {
     "title": "Notificaciones",
     "unreadCount": "{count, plural, one {# notificación sin leer} other {# notificaciones sin leer}}",

@@ -16,6 +16,8 @@ import { toastSuccess } from "@/lib/feedback";
 import { onboardingApi } from "@/api/endpoints/onboarding";
 import { questionsForRole } from "@/lib/onboarding/questions";
 import { OnboardingDialog } from "@/components/onboarding/OnboardingDialog";
+import { ProfilePhotoCard } from "@/components/profile/ProfilePhotoCard";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 
 /** The tours a user can subscribe to, described in a coach's terms. */
 // The federation code doubles as its own label (they are codes, not words to
@@ -68,7 +70,14 @@ export default function ProfilePage() {
       <DashboardCard title={t("profile.information")} icon={<User className="h-4 w-4" />}>
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">{user?.firstName?.[0]}{user?.lastName?.[0]}</div>
+            <PlayerAvatar
+              userId={user?.id}
+              firstName={user?.firstName}
+              lastName={user?.lastName}
+              version={user?.photoUpdatedAt ?? null}
+              className="h-16 w-16"
+              fallbackClassName="text-xl"
+            />
             <div>
               <p className="text-lg font-semibold text-foreground">{user?.firstName} {user?.lastName}</p>
               <div className="flex items-center gap-2 mt-1"><RoleBadge role={user?.role ?? "player"} /><span className="text-sm text-muted-foreground">{user?.email}</span></div>
@@ -92,6 +101,8 @@ export default function ProfilePage() {
           <Button onClick={handleSave} disabled={updateMut.isPending}>{updateMut.isPending ? t("profile.saving") : t("profile.save")}</Button>
         </div>
       </DashboardCard>
+
+      <ProfilePhotoCard />
 
       <DashboardCard
         title={t("profile.questionnaire")}
