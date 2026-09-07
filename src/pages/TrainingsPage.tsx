@@ -906,7 +906,10 @@ export default function TrainingsPage() {
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Dumbbell className="h-5 w-5" /></div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  {/* Wraps: a cancelled occurrence of a series carries four
+                      badges beside its title, which does not fit on one line
+                      at 390px. */}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <h3 className={`font-semibold text-foreground${cancelled ? " line-through" : ""}`}>{session.title}</h3>
                     {cancelled && (
                       <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">{t("session.cancelled.badge")}</span>

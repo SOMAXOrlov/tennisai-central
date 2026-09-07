@@ -60,8 +60,11 @@ export function CancelTrainingDialog({
           <DialogTitle>{t("session.cancel.title")}</DialogTitle>
           <DialogDescription>
             {interleave(t("session.cancel.body", { title: slot(0) }), [
+              // No quotes here: each locale supplies its own around the slot
+              // (“ ” in English, « » in Spanish), and adding a second pair
+              // rendered the title as ““Tuesday squad block””.
               <span key="title" className="font-semibold text-foreground">
-                “{training.title}”
+                {training.title}
               </span>,
             ])}
           </DialogDescription>

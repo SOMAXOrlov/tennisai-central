@@ -21,7 +21,7 @@
 // before he writes something frank in it.
 // ============================================================================
 
-import { ChevronDown, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -130,8 +130,10 @@ export function SessionBlocksEditor({
               className="space-y-2 rounded-lg border border-border bg-secondary/20 p-3"
               data-testid="session-block"
             >
+              {/* No grip handle: nothing here is draggable, and an icon that
+                  looks like one invites a gesture that does nothing. The
+                  up/down buttons are the reorder, and they work with a thumb. */}
               <div className="flex items-start gap-2">
-                <GripVertical className="mt-2 h-4 w-4 shrink-0 text-muted-foreground/50" aria-hidden="true" />
                 <div className="min-w-0 flex-1 space-y-2">
                   <Input
                     aria-label={t("session.blocks.titleAria", { number: index + 1 })}
