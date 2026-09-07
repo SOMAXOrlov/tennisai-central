@@ -34,9 +34,14 @@ function SubHeading({ icon, children }: { icon: React.ReactNode; children: React
 
 export function PlayerMatchResults({ player }: { player: ConnectedPlayer }) {
   const { t, formatNumber } = useT();
-  // `isPlaceholderData` matters here: the hook keeps the previous window's
-  // numbers on screen while the next loads, and in a drawer the "previous"
-  // could be another player's. A figure must never appear under the wrong name.
+  // What actually stops one player's figures appearing under another's name is
+  // the `key={player.id}` on this component in PlayerStatsDrawer: a remount has
+  // no previous query for `useMatchStats`'s `keepPreviousData` to carry over,
+  // so the switch shows the loading line rather than stale numbers.
+  //
+  // `isPlaceholderData` is the belt to that braces. It costs one condition and
+  // it is what would hold if that key were ever dropped — which is exactly the
+  // kind of change whose consequence is invisible without it.
   const { data: stats, isLoading, isPlaceholderData, error } = useMatchStats(player.id, RECENT_FORM);
 
   return (

@@ -27,6 +27,7 @@ const { state } = vi.hoisted(() => ({
     entries: [] as PlayerTournament[],
     stats: undefined as AggregateMatchStats | undefined,
     statsLoading: false,
+    statsPlaceholder: false,
     statsError: null as unknown,
     lastStatsArgs: null as unknown[] | null,
   },
@@ -43,7 +44,7 @@ vi.mock("@/hooks/api/matches", () => ({
     return {
       data: state.stats,
       isLoading: state.statsLoading,
-      isPlaceholderData: false,
+      isPlaceholderData: state.statsPlaceholder,
       error: state.statsError,
     };
   },
@@ -142,6 +143,7 @@ afterEach(() => {
   state.entries = [];
   state.stats = undefined;
   state.statsLoading = false;
+  state.statsPlaceholder = false;
   state.statsError = null;
   state.lastStatsArgs = null;
 });
@@ -198,6 +200,18 @@ describe("PlayerStatsDrawer — match results", () => {
     mount();
     expect(screen.getByText("Loading…")).toBeInTheDocument();
     expect(screen.queryByText("Matches played")).toBeNull();
+  });
+
+  it("refuses to render carried-over numbers, which could be the last player's", () => {
+    // The drawer keys this section on the player, so a switch remounts it and
+    // there is nothing to carry. This is the belt to that braces: were the key
+    // ever dropped, placeholder data must still read as loading, not as fact.
+    state.stats = twoMatches();
+    state.statsPlaceholder = true;
+    mount();
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(screen.queryByText("1–1")).toBeNull();
+    expect(screen.queryByText("50%")).toBeNull();
   });
 });
 
