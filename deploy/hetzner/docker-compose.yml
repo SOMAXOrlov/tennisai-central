@@ -64,6 +64,17 @@ services:
       # image, and nowhere Caddy serves. Every read goes through the API, which
       # authorises the caller (server/src/photos/).
       UPLOADS_DIR: /data/uploads
+      # Where the coaching library finds its skills, patterns and drills.
+      #
+      # It has to be stated rather than inferred. This image is built from
+      # `server/`, so the repository's content/ directory is not inside it, and
+      # the code's own fallback — three levels above src/library — resolves to
+      # the repository root in a checkout but to `/` in the container. On
+      # 2026-09-07 that combination took the production API down: it threw
+      # ENOENT for /content/schema/skills.yaml at import and restart-looped,
+      # with every request behind it failing, while the site itself kept
+      # serving. Both this variable and the mount below are required.
+      CONTENT_DIR: /content
     volumes:
       # THE ONE STRUCTURAL CHANGE IN THIS BRANCH. Worth reading rather than
       # skimming, because profile photos are the first thing this product
@@ -77,6 +88,12 @@ services:
       #     no longer cover everything the product holds. backup.sh archives
       #     this directory alongside the dump, and RESTORE.md restores both.
       - uploads:/data/uploads
+      # The coaching content, read-only, from the checkout this stack is
+      # deployed from. `update.sh` resets that checkout to the same commit the
+      # image is built from, so the two cannot drift apart. Read-only because
+      # nothing in the API ever writes here — content changes arrive through a
+      # reviewed pull request, not at runtime.
+      - ../../content:/content:ro
     depends_on:
       db:
         condition: service_healthy
