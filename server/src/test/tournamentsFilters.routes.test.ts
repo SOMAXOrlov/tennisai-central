@@ -34,6 +34,7 @@ type Where = {
   surface?: { in: string[] };
   category?: { in: string[] };
   level?: { in: string[] };
+  AND?: { OR?: unknown[] }[];
 };
 
 type FindManyArgs = { where: Where; take: number; skip: number; orderBy: unknown };
@@ -65,13 +66,31 @@ describe("GET /api/tournaments — filtering on the server", () => {
       .get("/api/tournaments?country=United%20States&federation=UTR&surface=Clay&category=UTR%201-16&level=UTR")
       .set("Authorization", bearer(COACH));
 
-    expect(firstCallArg<FindManyArgs>(db.tournament.findMany).where).toMatchObject({
+    const where = firstCallArg<FindManyArgs>(db.tournament.findMany).where;
+    expect(where).toMatchObject({
       country: { in: ["United States"] },
-      federation: { in: ["UTR"] },
       surface: { in: ["Clay"] },
       category: { in: ["UTR 1-16"] },
       level: { in: ["UTR"] },
     });
+    // The tour goes in as an OR so a hand-entered row can ride along with it —
+    // see the spec below.
+    expect(where.AND?.[0]?.OR).toContainEqual({ federation: { in: ["UTR"] } });
+  });
+
+  it("keeps a coach's own entry in the list when a tour filter is on", async () => {
+    // A hand-entered event has no sanctioning body, so `federation IN (...)`
+    // alone would drop it. The coach who just typed it in would filter to his
+    // own tour and watch it vanish from the page while it sat on the player's
+    // schedule — indistinguishable from "it did not save".
+    await request(app).get("/api/tournaments?federation=UTR").set("Authorization", bearer(COACH));
+
+    const where = firstCallArg<FindManyArgs>(db.tournament.findMany).where;
+    expect(where.federation).toBeUndefined();
+    expect(where.AND?.[0]?.OR).toEqual([
+      { federation: { in: ["UTR"] } },
+      { source: "coach-entered" },
+    ]);
   });
 
   it("accepts a facet more than once, because a squad can span two countries", async () => {
@@ -79,10 +98,9 @@ describe("GET /api/tournaments — filtering on the server", () => {
       .get("/api/tournaments?country=Spain&country=France&federation=ITF&federation=UTR")
       .set("Authorization", bearer(COACH));
 
-    expect(firstCallArg<FindManyArgs>(db.tournament.findMany).where).toMatchObject({
-      country: { in: ["Spain", "France"] },
-      federation: { in: ["ITF", "UTR"] },
-    });
+    const where = firstCallArg<FindManyArgs>(db.tournament.findMany).where;
+    expect(where).toMatchObject({ country: { in: ["Spain", "France"] } });
+    expect(where.AND?.[0]?.OR).toContainEqual({ federation: { in: ["ITF", "UTR"] } });
   });
 
   it("pages, and orders by something that cannot repeat a row across pages", async () => {
@@ -372,8 +390,8 @@ describe("GET /api/tournaments — search", () => {
     // parameter rather than a browser pass.
     await request(app).get("/api/tournaments?q=lisbon").set("Authorization", bearer(COACH));
 
-    const where = firstCallArg<{ where: { OR?: unknown[] } }>(db.tournament.findMany).where;
-    expect(where.OR).toEqual([
+    const where = firstCallArg<FindManyArgs>(db.tournament.findMany).where;
+    expect(where.AND?.[0]?.OR).toEqual([
       { name: { contains: "lisbon", mode: "insensitive" } },
       { city: { contains: "lisbon", mode: "insensitive" } },
       { country: { contains: "lisbon", mode: "insensitive" } },
@@ -382,7 +400,7 @@ describe("GET /api/tournaments — search", () => {
 
   it("ignores an empty search box", async () => {
     await request(app).get("/api/tournaments?q=%20%20").set("Authorization", bearer(COACH));
-    expect(firstCallArg<{ where: { OR?: unknown[] } }>(db.tournament.findMany).where.OR).toBeUndefined();
+    expect(firstCallArg<FindManyArgs>(db.tournament.findMany).where.AND).toBeUndefined();
   });
 
   it("counts the search in `matching` but not in the option lists", async () => {
@@ -393,11 +411,11 @@ describe("GET /api/tournaments — search", () => {
     await request(app).get("/api/tournaments/facets?q=lisbon").set("Authorization", bearer(COACH));
 
     for (const call of db.tournament.groupBy.mock.calls) {
-      expect(call[0].where.OR).toBeUndefined();
+      expect(call[0].where.AND).toBeUndefined();
     }
     // The window total ignores it; the matching count applies it.
     const [windowCall, matchingCall] = db.tournament.count.mock.calls;
-    expect(windowCall[0].where.OR).toBeUndefined();
-    expect(matchingCall[0].where.OR).toBeDefined();
+    expect(windowCall[0].where.AND).toBeUndefined();
+    expect(matchingCall[0].where.AND).toBeDefined();
   });
 });

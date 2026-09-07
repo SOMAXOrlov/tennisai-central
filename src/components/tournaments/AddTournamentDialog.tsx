@@ -12,9 +12,11 @@
 //   • The country is a picked CODE, never typed text. The server stores the
 //     country name its feeds use, so a coach working in Spanish cannot file an
 //     event under "Estados Unidos" and split the country filter in two.
-//   • Indoor or outdoor is asked, not defaulted. The column cannot be null and
-//     the page shows it on every card; "outdoor" as a silent default would be a
-//     guess presented as a fact.
+//   • Surface and indoor/outdoor are asked, not defaulted — both start empty
+//     and the save button stays down until they are picked. The page prints
+//     both on every card, so a pre-selected "Hard" or "outdoor" would be a
+//     guess presented as a fact. A coach who has not been told either can say
+//     so: the surface list carries "Not published".
 //   • A level or a category is required. Without one the event cannot be told
 //     apart from the rest of the list.
 //
@@ -62,8 +64,8 @@ export function AddTournamentDialog({
   const [country, setCountry] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [surface, setSurface] = useState<string>("Hard");
-  const [indoorOutdoor, setIndoorOutdoor] = useState<"indoor" | "outdoor">("outdoor");
+  const [surface, setSurface] = useState("");
+  const [indoorOutdoor, setIndoorOutdoor] = useState<"indoor" | "outdoor" | "">("");
   const [level, setLevel] = useState("");
   const [entryDeadline, setEntryDeadline] = useState("");
   const [website, setWebsite] = useState("");
@@ -77,6 +79,8 @@ export function AddTournamentDialog({
     startDate !== "" &&
     endDate !== "" &&
     endDate >= startDate &&
+    surface !== "" &&
+    indoorOutdoor !== "" &&
     level.trim().length >= 1;
 
   const reset = () => {
@@ -85,8 +89,8 @@ export function AddTournamentDialog({
     setCountry("");
     setStartDate("");
     setEndDate("");
-    setSurface("Hard");
-    setIndoorOutdoor("outdoor");
+    setSurface("");
+    setIndoorOutdoor("");
     setLevel("");
     setEntryDeadline("");
     setWebsite("");
@@ -94,6 +98,11 @@ export function AddTournamentDialog({
   };
 
   const submit = () => {
+    // The button is already disabled until `complete`; this makes it structural
+    // rather than presentational, so no code path can send a guess. It is also
+    // what proves `indoorOutdoor` is answered — the compiler narrows the empty
+    // case away here, and rejects the mutate call without it.
+    if (!complete) return;
     create.mutate(
       {
         name: name.trim(),
@@ -169,7 +178,7 @@ export function AddTournamentDialog({
               <Label htmlFor="add-t-surface">{t("tournaments.add.surface")}</Label>
               <Select value={surface} onValueChange={setSurface}>
                 <SelectTrigger id="add-t-surface">
-                  <SelectValue />
+                  <SelectValue placeholder={t("tournaments.add.surfacePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {SURFACES.map((s) => (
@@ -184,7 +193,7 @@ export function AddTournamentDialog({
               <Label htmlFor="add-t-environment">{t("tournaments.add.environment")}</Label>
               <Select value={indoorOutdoor} onValueChange={(v) => setIndoorOutdoor(v as "indoor" | "outdoor")}>
                 <SelectTrigger id="add-t-environment">
-                  <SelectValue />
+                  <SelectValue placeholder={t("tournaments.add.environmentPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="outdoor">{t("tournaments.page.outdoor")}</SelectItem>

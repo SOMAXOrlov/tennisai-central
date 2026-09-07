@@ -638,6 +638,7 @@
       "startDate": "Primer día",
       "endDate": "Último día",
       "surface": "Superficie",
+      "surfacePlaceholder": "Elige una superficie",
       "surfaceOption": {
         "Hard": "Dura",
         "Clay": "Tierra batida",
@@ -646,6 +647,7 @@
         "Unknown": "No publicada"
       },
       "environment": "Interior o exterior",
+      "environmentPlaceholder": "Elige una opción",
       "level": "Nivel o categoría",
       "levelPlaceholder": "USTA Nivel 5, Regional 16U, campeonato del club…",
       "levelHint": "Obligatorio, para poder distinguir el evento del resto de la lista.",

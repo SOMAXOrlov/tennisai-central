@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Tournament, PlayerTournament, User } from "@prisma/client";
+import type { Prisma, Tournament, PlayerTournament, User } from "@prisma/client";
 import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
 import { requireRole, readablePlayerIds, assertCanActOnPlayer, getRole } from "../authz";
@@ -160,6 +160,11 @@ const MAX_ROWS = 2000;
 const MAX_OFFSET = 100_000;
 /** How many values one facet may be filtered on at once. */
 const MAX_FACET_VALUES = 60;
+/**
+ * Marks a row as typed in by a person rather than collected. Read by the list
+ * query as well as the write, so it lives up here with the other constants.
+ */
+const COACH_ENTERED_SOURCE = "coach-entered";
 
 /**
  * A facet the client may filter on, repeatable: `?country=Spain&country=France`.
@@ -227,23 +232,42 @@ function windowWhere(query: { from?: string; to?: string }) {
  * byte-for-byte the query it always was — which is what keeps the calendar, the
  * command palette and the tournament detail page working unchanged.
  */
-function listWhere(query: ListQuery) {
+function listWhere(query: ListQuery): Prisma.TournamentWhereInput {
+  // Two of these clauses are an OR of their own and a where object has only one
+  // `OR` key, so they are collected into an AND rather than overwriting each
+  // other.
+  const and: Prisma.TournamentWhereInput[] = [];
+
+  if (query.federation) {
+    // A hand-entered event is stored with no sanctioning body on purpose:
+    // nothing here knows which one runs it, and a badge nobody earned is worse
+    // than none. But that must not mean it disappears the moment a tour filter
+    // is on — a coach who adds an event and then filters to his own tour would
+    // watch his own row vanish from the list while it sat on the player's
+    // schedule, which reads as "it did not save". So his entries survive a tour
+    // filter alongside the rows that do claim one.
+    and.push({
+      OR: [{ federation: { in: query.federation } }, { source: COACH_ENTERED_SOURCE }],
+    });
+  }
+
+  if (query.q) {
+    and.push({
+      OR: [
+        { name: { contains: query.q, mode: "insensitive" } },
+        { city: { contains: query.q, mode: "insensitive" } },
+        { country: { contains: query.q, mode: "insensitive" } },
+      ],
+    });
+  }
+
   return {
     ...windowWhere(query),
     ...(query.country ? { country: { in: query.country } } : {}),
-    ...(query.federation ? { federation: { in: query.federation } } : {}),
     ...(query.surface ? { surface: { in: query.surface } } : {}),
     ...(query.category ? { category: { in: query.category } } : {}),
     ...(query.level ? { level: { in: query.level } } : {}),
-    ...(query.q
-      ? {
-          OR: [
-            { name: { contains: query.q, mode: "insensitive" as const } },
-            { city: { contains: query.q, mode: "insensitive" as const } },
-            { country: { contains: query.q, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
+    ...(and.length > 0 ? { AND: and } : {}),
   };
 }
 
@@ -516,9 +540,6 @@ tournamentsRouter.get(
 // It is NOT added to the curated snapshot. Hand-typing more rows into the
 // source code is what produced the single USTA event in the first place; the
 // difference here is that a coach owns their own entry and can fix it.
-
-/** Marks a row as typed in by a person rather than collected. */
-const COACH_ENTERED_SOURCE = "coach-entered";
 
 /**
  * The surfaces the app knows. Same vocabulary the feeds are normalised into

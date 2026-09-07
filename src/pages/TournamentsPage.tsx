@@ -196,7 +196,7 @@ export default function TournamentsPage() {
   // scope is a LAYER over the filters, not a filter itself: it can be more than
   // one country, and it steps aside the moment anyone picks a country by hand or
   // asks to see everything.
-  const { data: scope, isLoading: loadingScope } = useTournamentScope();
+  const { data: scope, isLoading: loadingScope, error: errorScope } = useTournamentScope();
   const [scopeDismissed, setScopeDismissed] = useState(false);
   const scopeCountries = scope?.countries ?? [];
   const scopeApplied = !scopeDismissed && country === ALL && scopeCountries.length > 0;
@@ -358,7 +358,13 @@ export default function TournamentsPage() {
   // spinner on each dropdown change would make the page flash on every click —
   // `placeholderData` keeps the previous rows on screen instead.
   if ((browsePending && !browseRows) || loadingPT) return <LoadingState message={tr("tournaments.page.loading")} />;
-  if (errorT || errorPT) return <ErrorState message={tr("tournaments.page.loadError")} onRetry={() => window.location.reload()} />;
+  // `errorScope` is in here on purpose. If the scope call fails, `loadingScope`
+  // goes false, the list fetches unfiltered and `scope` is undefined so the
+  // banner renders nothing — a silent whole-world page with no explanation,
+  // which is the one outcome the brief rules out. Say the page did not load
+  // instead.
+  if (errorT || errorPT || errorScope)
+    return <ErrorState message={tr("tournaments.page.loadError")} onRetry={() => window.location.reload()} />;
 
   return (
     <div className="space-y-6">
