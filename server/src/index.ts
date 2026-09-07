@@ -24,6 +24,7 @@ import { stringSetupsRouter } from "./stringSetups/routes";
 import { recommendRouter } from "./recommend/routes";
 import { notificationsRouter } from "./notifications/routes";
 import { profileRouter } from "./profile/routes";
+import { photosRouter } from "./photos/routes";
 import { trainingPlansRouter } from "./trainingPlans/routes";
 import { sessionsRouter } from "./sessions/routes";
 import { matchesRouter } from "./matches/routes";
@@ -55,6 +56,22 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many attempts. Please try again later." },
+});
+
+// Throttle changing your own profile photo. Same shape and window as
+// authLimiter above deliberately, because the reason is the same kind of
+// reason: each request costs a decode, a re-encode and two disk operations, so
+// a loop is a cheap way to spend the box's CPU. Twenty a window is far more
+// than a person who is choosing a picture will ever need. Mounted on the path
+// rather than inside photosRouter so the route-test harness — which composes
+// the routers without index.ts's limiters on purpose — is not counting requests
+// across tests.
+const photoWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many photo changes. Please try again in a few minutes." },
 });
 
 // General API throttle — a coarse ceiling on all /api traffic per client to
@@ -106,6 +123,13 @@ app.use("/api/matches", matchesRouter);
 // every route carries its own requireAuth.
 app.use("/api", matchIssuesRouter);
 app.use("/api/opponents", opponentsRouter);
+// Profile photos. Mounted at "/api" because they span /me/photo and
+// /players/:id/photo, and BEFORE profileRouter so /api/me/photo reaches its own
+// handler rather than falling through /api/me. Every route carries its own
+// requireAuth (see the feedRouter note above for the time mounting order made a
+// sibling path answer 401 before its own check ran).
+app.use("/api/me/photo", photoWriteLimiter);
+app.use("/api", photosRouter);
 app.use("/api/me", profileRouter);
 app.use("/api/catalogue", catalogueRouter);
 app.use("/api/admin/catalogue", adminCatalogueRouter);

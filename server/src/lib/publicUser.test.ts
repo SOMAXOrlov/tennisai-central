@@ -38,6 +38,21 @@ const KNOWN_USER_KEYS = [
   "guardianConsentToken",
   "guardianConsentSentAt",
   "passwordChangedAt",
+  // Profile photo (src/photos/). Classified PUBLIC-TO-SELF, and self is the
+  // only place a whole User row goes: publicUser is called from the auth routes
+  // and /api/me/profile, both of which serialise the caller's own row. The
+  // directory and every other cross-user read uses an explicit `select`, so
+  // `photoId` never travels to a third party.
+  //
+  // `photoId` is not a secret in the credential sense — knowing it grants
+  // nothing, because the bytes are only reachable through
+  // GET /api/players/:id/photo, which authorises by USER id and never accepts a
+  // photo id. It is still deliberately not broadcast: the owner's own client
+  // needs it to know a photo exists and to bust its cache, and nobody else has
+  // any use for it.
+  "photoId",
+  "photoUpdatedAt",
+  "photoMime",
   "createdAt",
   "updatedAt",
 ] as const;
