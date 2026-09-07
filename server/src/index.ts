@@ -24,6 +24,7 @@ import { stringSetupsRouter } from "./stringSetups/routes";
 import { recommendRouter } from "./recommend/routes";
 import { notificationsRouter } from "./notifications/routes";
 import { profileRouter } from "./profile/routes";
+import { homeCountryRouter } from "./profile/homeCountry";
 import { photosRouter } from "./photos/routes";
 import { trainingPlansRouter } from "./trainingPlans/routes";
 import { sessionsRouter } from "./sessions/routes";
@@ -143,6 +144,9 @@ app.use("/api", stringSetupsRouter);
 // Deterministic gear / tournament / money advice, computed at read time. Same
 // per-route requireAuth discipline as stringSetupsRouter, for the same reason.
 app.use("/api", recommendRouter);
+// Where a player competes (/countries, /players/:id/home-country). Same
+// per-route requireAuth discipline as its neighbours, for the same reason.
+app.use("/api", homeCountryRouter);
 app.use("/api", notificationsRouter);
 app.use("/api/ai", aiRouter);
 // Mounted alongside tournamentsRouter — adds the per-tournament conditions and
