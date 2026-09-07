@@ -366,7 +366,8 @@
       "edited": "edited {when}",
       "noFreshness": "freshness not available",
       "chipAria": "Source: {source}. {freshness}",
-      "legend": "Each chip names the feed that listed the event and when that feed last confirmed it. “Added manually” rows were entered by hand."
+      "legend": "Each chip names the feed that listed the event and when that feed last confirmed it. “Added manually” rows were entered by hand.",
+      "coachEntered": "Entered by a coach"
     },
     "conditions": {
       "title": "Playing conditions",
@@ -525,10 +526,6 @@
         "removeAria": "Remove {name} from your schedule"
       },
       "following": "Following",
-      "pick": {
-        "title": "Which tours do you follow?",
-        "body": "Pick one to start browsing. The feeds carry thousands of events worldwide, so nothing is shown until you choose. Your choice is saved and used on the calendar too."
-      },
       "noneFound": "No tournaments found",
       "noneMatch": "No tournaments match your filters.",
       "conditionsAria": "Playing conditions for {name}",
@@ -547,7 +544,11 @@
       "unhide": "Unhide",
       "hide": "Hide",
       "showingOf": "Showing {shown} of {total}",
-      "showMore": "Show more"
+      "showMore": "Show more",
+      "allTours": "All tours",
+      "curatedOnly": "curated only",
+      "curatedOnlyHint": "Every event on this tour is a hand-typed entry. Nothing collects it, so the list is not a calendar.",
+      "loadingMore": "Loading…"
     },
     "map": {
       "locating": "Locating…",
@@ -606,6 +607,60 @@
     "mapPopup": {
       "yourLocation": "Your location",
       "hide": "Hide"
+    },
+    "scope": {
+      "scopedPlayer": "Showing tournaments where you compete:",
+      "scopedCoach": "Showing tournaments where your players compete ({players} with a home country):",
+      "showEverything": "Show everything",
+      "showingEverything": "Showing every country the app collects.",
+      "backToScope": "Back to {countries}",
+      "cannotScope": "Showing everything, because there is nothing to narrow to yet",
+      "reason": {
+        "noPlayers": "This page normally opens on the countries your players compete in. You have no players connected yet, so there is nobody to work that out from.",
+        "noHomeCountryPlayer": "This page normally opens on the country you compete in. You have not said where that is, so it cannot be worked out.",
+        "noHomeCountryCoach": "This page normally opens on the countries your players compete in. None of them has said where that is, so it cannot be worked out.",
+        "unmatched": "Nothing has been collected in {countries}, which is where your players compete. The whole list is shown instead — and a tournament you know about can be added by hand."
+      },
+      "pickCountry": "Choose a country",
+      "yourCountry": "Where you compete",
+      "thisPlayer": "This player",
+      "meanwhile": "Until then the whole list is shown.",
+      "ageBandUnavailable": "Age band ({bands}) is not applied: no event in the calendar publishes one to match it against."
+    },
+    "add": {
+      "button": "Add tournament",
+      "title": "Add a tournament",
+      "body": "For an event no feed carries. It is saved as your own entry, marked as hand-entered, and no automatic import will ever remove it.",
+      "name": "Tournament name",
+      "city": "City",
+      "country": "Country",
+      "countryPlaceholder": "Choose a country",
+      "startDate": "First day",
+      "endDate": "Last day",
+      "surface": "Surface",
+      "surfacePlaceholder": "Choose a surface",
+      "surfaceOption": {
+        "Hard": "Hard",
+        "Clay": "Clay",
+        "Grass": "Grass",
+        "Carpet": "Carpet",
+        "Unknown": "Not published"
+      },
+      "environment": "Indoor or outdoor",
+      "environmentPlaceholder": "Choose one",
+      "level": "Level or category",
+      "levelPlaceholder": "USTA Level 5, Regional 16U, club championship…",
+      "levelHint": "Required, so the event can be told apart from the rest of the list.",
+      "entryDeadline": "Entries close (optional)",
+      "website": "Link (optional)",
+      "websitePlaceholder": "https://…",
+      "forPlayer": "Enter a player",
+      "nobody": "Nobody for now",
+      "forPlayerHint": "The event goes straight onto their schedule and into their next-tournament countdown. They are told about it.",
+      "provenanceNote": "No sanctioning body is recorded: nothing here can confirm which one runs the event, and a badge nobody earned is worse than none.",
+      "cancel": "Cancel",
+      "save": "Add tournament",
+      "saving": "Adding…"
     }
   },
   "ai": {
@@ -1482,7 +1537,15 @@
     },
     "ownSessionsAria": "Show my own sessions",
     "ownSessions": "My own sessions",
-    "ownSessionsHint": "Trainings, matches and anything you or your coach put on the calendar."
+    "ownSessionsHint": "Trainings, matches and anything you or your coach put on the calendar.",
+    "homeCountry": {
+      "title": "Where you compete",
+      "hint": "Your country decides what the tournaments page opens on. Nothing is guessed — leave it unset and the page shows everything and says why.",
+      "label": "Home country",
+      "placeholder": "Choose a country",
+      "unset": "Not set",
+      "clear": "Clear"
+    }
   },
   "photo": {
     "title": "Profile photo",
@@ -3239,7 +3302,8 @@
       "addFailed": "Couldn't add the tournament",
       "removeFailed": "Couldn't remove the tournament",
       "hideFailed": "Couldn't hide the tournament",
-      "unhideFailed": "Couldn't show the tournament again"
+      "unhideFailed": "Couldn't show the tournament again",
+      "added": "Tournament added"
     },
     "finance": {
       "added": "Expense added",
@@ -3292,6 +3356,10 @@
       "approveFailed": "Couldn't approve the connection",
       "rejectFailed": "Couldn't reject the request",
       "revokeFailed": "Couldn't revoke the connection"
+    },
+    "homeCountry": {
+      "saved": "Home country saved",
+      "saveFailed": "Couldn't save the home country"
     }
   }
 }

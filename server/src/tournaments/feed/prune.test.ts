@@ -50,4 +50,22 @@ describe("pruneStale", () => {
     await pruneStale(prisma, "utr-events", 3248);
     expect(deleteMany.mock.calls[0][0].where.source).toBe("utr-events");
   });
+
+  it("cannot reach a row a coach typed in, whichever source runs", async () => {
+    // A coach's own entry is the app's only route to an event no feed carries,
+    // so a nightly import must never delete it. The guarantee is the pinned
+    // `source`: "coach-entered" is not the name of any provider, so no
+    // provider's prune can match it. Proven rather than assumed, because the
+    // whole hand-entry feature rests on it.
+    const { prisma, deleteMany } = fakePrisma();
+
+    for (const source of ["utr-events", "itf-juniors", "static-snapshot", "http-live"]) {
+      await pruneStale(prisma, source, 500);
+    }
+
+    expect(deleteMany.mock.calls.length).toBe(4);
+    for (const call of deleteMany.mock.calls) {
+      expect(call[0].where.source).not.toBe("coach-entered");
+    }
+  });
 });

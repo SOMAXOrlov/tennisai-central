@@ -24,12 +24,18 @@ import { utrProvider } from "./utrProvider";
 /**
  * Providers this process pulls for itself, in order.
  *
- * A licensed feed replaces all of them: with FEED_API_URL/FEED_API_KEY set the
- * single configured provider wins, because a paid source covering everything
- * should not be mixed with scraped guesses at the same events.
+ * A licensed feed JOINS the others rather than replacing them. It used to
+ * replace them — with FEED_API_URL/FEED_API_KEY set, `[httpProvider]` was the
+ * whole list — on the theory that a paid source covering everything should not
+ * be mixed with scraped guesses at the same events. But nothing here knows that
+ * a configured feed covers everything, and each source keeps its own `source`
+ * stamp and its own natural key, so mixing them duplicates nothing. The cost of
+ * the old behaviour was that adding a key would silently delete the entire
+ * collected calendar on the next prune, which is not a thing a configuration
+ * value should be able to do.
  */
 export function getProviders(): TournamentFeedProvider[] {
-  if (env.feedApiUrl && env.feedApiKey) return [httpProvider];
+  if (env.feedApiUrl && env.feedApiKey) return [httpProvider, utrProvider, staticProvider];
   return [utrProvider, staticProvider];
 }
 

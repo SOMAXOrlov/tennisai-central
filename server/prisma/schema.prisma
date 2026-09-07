@@ -312,6 +312,10 @@ model Tournament {
 
   @@index([startDate])
   @@index([federation, startDate])
+  // The tournaments page now filters by country ON THE SERVER rather than
+  // shipping 2,000 rows to the browser, and the default scope is a country, so
+  // (country, startDate) is the shape of almost every query this table gets.
+  @@index([country, startDate])
   @@map("tournaments")
 }
 
@@ -655,6 +659,13 @@ model PlayerProfile {
   id                     String   @id @default(cuid())
   userId                 String   @unique
   dateOfBirth            String? // ISO "yyyy-MM-dd"; age is derived
+  // Where this player competes, as an ISO 3166-1 alpha-2 code ("US", "ES").
+  // The profile carried no location at all, which is why the tournaments page
+  // could only ever open on the whole world — 3,218 events from every circuit,
+  // when a squad plays in one country. Nullable and never guessed: an unset
+  // home country makes the page SAY it cannot scope itself rather than choose
+  // a country on the player's behalf.
+  homeCountry            String?
   playingLevel           String?
   ranking                String?
   dominantHand           String? // left | right

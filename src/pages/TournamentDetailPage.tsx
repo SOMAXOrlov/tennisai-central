@@ -18,6 +18,7 @@ import { TournamentConditionsPanel, type PrepCandidate } from "@/components/tour
 import { useAuth } from "@/auth/AuthContext";
 import { useTournaments, usePlayerTournaments } from "@/hooks/api/queries";
 import { timeLeft } from "@/lib/tournamentPlanning";
+import { safeExternalUrl } from "@/lib/externalUrl";
 import { useT } from "@/lib/i18n";
 
 /** One labelled fact. Renders nothing when the feed did not publish it —
@@ -178,9 +179,14 @@ export default function TournamentDetailPage() {
             <Fact label={t("tournaments.detail.venue")} value={tournament.venue} />
           </dl>
 
-          {tournament.website && (
+          {/* Only ever an http(s) address. This column is filled by a feed and
+              by a form a coach types into, and it goes straight into an href —
+              a `javascript:` value there would run on click. The write path
+              pins the scheme; this is the second line for a row that got in
+              another way. Not a link means it is not shown as one. */}
+          {safeExternalUrl(tournament.website) && (
             <a
-              href={tournament.website}
+              href={safeExternalUrl(tournament.website)!}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"

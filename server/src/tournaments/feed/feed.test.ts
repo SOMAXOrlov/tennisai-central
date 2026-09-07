@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { staticProvider } from "./staticProvider";
 import { getFeedProvider, getProviders, tournamentSlug } from "./index";
 import { TOURNAMENT_DATASET } from "../data/dataset";
@@ -69,6 +69,30 @@ describe("provider selection", () => {
     for (const provider of getProviders()) {
       expect(provider.federation).toBeTruthy();
     }
+  });
+
+  it("ADDS a licensed feed rather than replacing everything with it", async () => {
+    // It used to return `[httpProvider]` alone once FEED_API_URL and
+    // FEED_API_KEY were set, silently dropping UTR and the snapshot. Because
+    // `pruneStale` deletes rows a source has stopped confirming, setting a key
+    // would then have emptied the whole collected calendar within the week —
+    // which is not something a configuration value should be able to do. Each
+    // source keeps its own `source` stamp and its own natural key, so mixing
+    // them duplicates nothing.
+    vi.resetModules();
+    vi.doMock("../../env", () => ({
+      env: { feedApiUrl: "https://feed.example/api", feedApiKey: "k" },
+    }));
+
+    const { getProviders: withLicensedFeed } = await import("./index");
+    expect(withLicensedFeed().map((p) => p.name)).toEqual([
+      "http-live",
+      "utr-events",
+      "static-snapshot",
+    ]);
+
+    vi.doUnmock("../../env");
+    vi.resetModules();
   });
 });
 

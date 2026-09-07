@@ -366,7 +366,8 @@
       "edited": "editado {when}",
       "noFreshness": "actualidad no disponible",
       "chipAria": "Fuente: {source}. {freshness}",
-      "legend": "Cada etiqueta indica qué feed publicó el evento y cuándo lo confirmó por última vez. Las filas “Añadido a mano” se introdujeron manualmente."
+      "legend": "Cada etiqueta indica qué feed publicó el evento y cuándo lo confirmó por última vez. Las filas “Añadido a mano” se introdujeron manualmente.",
+      "coachEntered": "Introducido por un entrenador"
     },
     "conditions": {
       "title": "Condiciones de juego",
@@ -525,10 +526,6 @@
         "removeAria": "Quitar {name} de tu agenda"
       },
       "following": "Sigues",
-      "pick": {
-        "title": "¿Qué circuitos sigues?",
-        "body": "Elige uno para empezar a explorar. Los feeds recogen miles de eventos de todo el mundo, así que no se muestra nada hasta que elijas. Tu elección se guarda y también se usa en el calendario."
-      },
       "noneFound": "No se han encontrado torneos",
       "noneMatch": "Ningún torneo coincide con tus filtros.",
       "conditionsAria": "Condiciones de juego de {name}",
@@ -547,7 +544,11 @@
       "unhide": "Mostrar",
       "hide": "Ocultar",
       "showingOf": "Mostrando {shown} de {total}",
-      "showMore": "Ver más"
+      "showMore": "Ver más",
+      "allTours": "Todos los circuitos",
+      "curatedOnly": "solo curado",
+      "curatedOnlyHint": "Todos los eventos de este circuito se han escrito a mano. Nada los recopila, así que la lista no es un calendario.",
+      "loadingMore": "Cargando…"
     },
     "map": {
       "locating": "Localizando…",
@@ -606,6 +607,60 @@
     "mapPopup": {
       "yourLocation": "Tu ubicación",
       "hide": "Ocultar"
+    },
+    "scope": {
+      "scopedPlayer": "Mostrando torneos donde compites:",
+      "scopedCoach": "Mostrando torneos donde compiten tus jugadores ({players} con país indicado):",
+      "showEverything": "Mostrar todo",
+      "showingEverything": "Mostrando todos los países que recopila la aplicación.",
+      "backToScope": "Volver a {countries}",
+      "cannotScope": "Mostrando todo, porque todavía no hay nada por lo que filtrar",
+      "reason": {
+        "noPlayers": "Esta página suele abrirse en los países donde compiten tus jugadores. Todavía no tienes jugadores conectados, así que no hay de quién deducirlo.",
+        "noHomeCountryPlayer": "Esta página suele abrirse en el país donde compites. No has indicado cuál es, así que no se puede deducir.",
+        "noHomeCountryCoach": "Esta página suele abrirse en los países donde compiten tus jugadores. Ninguno ha indicado cuál es, así que no se puede deducir.",
+        "unmatched": "No se ha recopilado nada en {countries}, que es donde compiten tus jugadores. Se muestra la lista completa — y un torneo que conozcas se puede añadir a mano."
+      },
+      "pickCountry": "Elige un país",
+      "yourCountry": "Dónde compites",
+      "thisPlayer": "Este jugador",
+      "meanwhile": "Hasta entonces se muestra la lista completa.",
+      "ageBandUnavailable": "La categoría de edad ({bands}) no se aplica: ningún evento del calendario publica una con la que compararla."
+    },
+    "add": {
+      "button": "Añadir torneo",
+      "title": "Añadir un torneo",
+      "body": "Para un evento que ninguna fuente incluye. Se guarda como tu propia entrada, marcada como introducida a mano, y ninguna importación automática la borrará.",
+      "name": "Nombre del torneo",
+      "city": "Ciudad",
+      "country": "País",
+      "countryPlaceholder": "Elige un país",
+      "startDate": "Primer día",
+      "endDate": "Último día",
+      "surface": "Superficie",
+      "surfacePlaceholder": "Elige una superficie",
+      "surfaceOption": {
+        "Hard": "Dura",
+        "Clay": "Tierra batida",
+        "Grass": "Hierba",
+        "Carpet": "Moqueta",
+        "Unknown": "No publicada"
+      },
+      "environment": "Interior o exterior",
+      "environmentPlaceholder": "Elige una opción",
+      "level": "Nivel o categoría",
+      "levelPlaceholder": "USTA Nivel 5, Regional 16U, campeonato del club…",
+      "levelHint": "Obligatorio, para poder distinguir el evento del resto de la lista.",
+      "entryDeadline": "Cierre de inscripciones (opcional)",
+      "website": "Enlace (opcional)",
+      "websitePlaceholder": "https://…",
+      "forPlayer": "Inscribir a un jugador",
+      "nobody": "A nadie por ahora",
+      "forPlayerHint": "El evento pasa directamente a su calendario y a su cuenta atrás del próximo torneo. Se le avisa.",
+      "provenanceNote": "No se registra ningún organismo sancionador: nada aquí puede confirmar cuál organiza el evento, y una etiqueta sin fundamento es peor que ninguna.",
+      "cancel": "Cancelar",
+      "save": "Añadir torneo",
+      "saving": "Añadiendo…"
     }
   },
   "ai": {
@@ -1482,7 +1537,15 @@
     },
     "ownSessionsAria": "Mostrar mis propias sesiones",
     "ownSessions": "Mis propias sesiones",
-    "ownSessionsHint": "Entrenamientos, partidos y todo lo que tú o tu entrenador pongáis en el calendario."
+    "ownSessionsHint": "Entrenamientos, partidos y todo lo que tú o tu entrenador pongáis en el calendario.",
+    "homeCountry": {
+      "title": "Dónde compites",
+      "hint": "Tu país decide con qué se abre la página de torneos. Nada se adivina: si lo dejas sin indicar, la página muestra todo y explica por qué.",
+      "label": "País de residencia",
+      "placeholder": "Elige un país",
+      "unset": "Sin indicar",
+      "clear": "Borrar"
+    }
   },
   "photo": {
     "title": "Foto de perfil",
@@ -3239,7 +3302,8 @@
       "addFailed": "No se ha podido añadir el torneo",
       "removeFailed": "No se ha podido quitar el torneo",
       "hideFailed": "No se ha podido ocultar el torneo",
-      "unhideFailed": "No se ha podido volver a mostrar el torneo"
+      "unhideFailed": "No se ha podido volver a mostrar el torneo",
+      "added": "Torneo añadido"
     },
     "finance": {
       "added": "Gasto añadido",
@@ -3292,6 +3356,10 @@
       "approveFailed": "No se ha podido aprobar la conexión",
       "rejectFailed": "No se ha podido rechazar la solicitud",
       "revokeFailed": "No se ha podido revocar la conexión"
+    },
+    "homeCountry": {
+      "saved": "País guardado",
+      "saveFailed": "No se ha podido guardar el país"
     }
   }
 }
