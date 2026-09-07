@@ -1,17 +1,27 @@
-# Deploy runbook — private beta
+# Deploy runbook — private beta · HISTORICAL (Vercel + Render + Neon)
+
+> ## ⚠ This document is historical. Do not follow it to deploy.
+>
+> TennisAI moved to a **single self-hosted Docker host on 2026-08-31**. The live
+> procedure is **[`deploy/hetzner/README.md`](deploy/hetzner/README.md)** — start
+> there for anything you are deploying today.
+>
+> Nothing below describes the current stack. It is kept, not deleted, because it
+> records how the Vercel + Render + Neon layout was set up — which still matters
+> while that stack is being shut down. (The old Render API was still answering
+> `/api/health` on 2026-09-07, and the old Vercel hostname now serves a 404.)
+>
+> Companion documents for the live stack: the backup-restore procedure and the
+> last executed drill in [`deploy/hetzner/RESTORE.md`](deploy/hetzner/RESTORE.md),
+> the uptime healthcheck in
+> [`deploy/hetzner/monitoring/README.md`](deploy/hetzner/monitoring/README.md).
+> What has and has not been security-checked is in [`SECURITY.md`](SECURITY.md).
 
 Copy-paste steps to put TennisAI online for up to ~50 testers, with real email
 signup and data that survives.
 
 **Shape:** static frontend on Vercel → API on Render → Postgres on Neon (or
 Supabase). Roughly 45 minutes end to end, most of it waiting on builds.
-
-> **Where production runs today:** the self-hosted Docker stack described in
-> [`deploy/hetzner/README.md`](deploy/hetzner/README.md), with the backup-restore
-> procedure and the last executed drill in [`deploy/hetzner/RESTORE.md`](deploy/hetzner/RESTORE.md)
-> and the uptime healthcheck in [`deploy/hetzner/monitoring/README.md`](deploy/hetzner/monitoring/README.md).
-> This file documents the earlier Vercel + Render + Neon layout. What has and has
-> not been security-checked is in [`SECURITY.md`](SECURITY.md).
 
 **Definition of done:** a tester can sign up, receive a real verification email,
 verify, log in, create trainings and matches, see them after logging out and
