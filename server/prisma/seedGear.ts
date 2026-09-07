@@ -72,9 +72,9 @@ const NOT_FETCHED_STRING =
 // verification date, exactly as before.
 //
 // Three of the new pointers are weaker than a spec page, and say so rather
-// than pretending otherwise: BRAND_ONLY (the brand publishes no page for that
-// line at all), SUPERSEDED (the line's page now shows a later generation), and
-// TFIGHT_CONFLICT (the new page disagrees with the row).
+// than pretending otherwise: BRAND_ONLY (no page for that line could be found
+// on the brand's own site), SUPERSEDED (the line's page now shows a later
+// generation), and TFIGHT_CONFLICT (the new page disagrees with the row).
 
 /** Repointed at the manufacturer's current page for that product line. */
 const REPOINTED =
@@ -89,18 +89,23 @@ const REPOINTED_STRING =
   "(the previous URL 404s) — the numbers were NOT re-cross-checked against it";
 
 /**
- * No live manufacturer page exists for this line. sourceUrl is the brand's
- * tennis landing page and evidences nothing about the numbers in the row.
+ * No page for this line could be found on the manufacturer's own site, so
+ * sourceUrl is the brand's tennis landing page and evidences nothing about the
+ * numbers in the row. Stated as an observation, not a claim about what the
+ * brand publishes: Prince genuinely has no catalogue any more (its site links
+ * to a retailer, which this repo will not cite), but Wilson serves an empty
+ * DOM to a scripted browser, so its per-line pages could only be probed by
+ * guessing paths.
  */
 const BRAND_ONLY =
   NOT_FETCHED +
-  "; checked 2026-09-07: the manufacturer publishes no live page for this product line, so sourceUrl " +
+  "; checked 2026-09-07: no page for this product line could be found on the manufacturer's own site, so sourceUrl " +
   "is the brand's tennis landing page and evidences none of the numbers below";
 
 /** As BRAND_ONLY, for the rows that also carry the ratings caveat. */
 const BRAND_ONLY_STRING =
   NOT_FETCHED_STRING +
-  "; checked 2026-09-07: the manufacturer publishes no live page for this product line, so sourceUrl " +
+  "; checked 2026-09-07: no page for this product line could be found on the manufacturer's own site, so sourceUrl " +
   "is the brand's tennis landing page and evidences none of the numbers below";
 
 /**
