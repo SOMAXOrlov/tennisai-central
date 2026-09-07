@@ -20,6 +20,17 @@
 		file_server
 	}
 
+	# DO NOT ADD A ROUTE FOR UPLOADED PHOTOS.
+	#
+	# Profile photos live on the `uploads` volume, mounted on the api container
+	# and deliberately not on this one, so there is nothing here to serve even
+	# by accident. Mounting it and adding `handle /uploads/*` would make every
+	# photo readable by anyone holding the filename, with no authorization
+	# anywhere in the path — including a photograph of a child, which
+	# GET /api/players/:id/photo restricts to their coach and a consented
+	# guardian. If "just serve the images directly, it's faster" is ever
+	# proposed, this comment is the answer.
+
 	header {
 		# Caddy sets HSTS itself once HTTPS is live; these are the rest.
 		X-Content-Type-Options nosniff

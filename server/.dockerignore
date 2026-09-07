@@ -4,3 +4,6 @@ node_modules
 !.env.example
 *.log
 dist
+# Uploaded profile photos from a local dev run. Never baked into an image —
+# these are real people's pictures on a developer's disk (see src/photos/).
+.uploads

@@ -1,10 +1,21 @@
-# Restoring the database — procedure and the drill that proved it
+# Restoring — procedure and the drill that proved it
 
-The nightly dump in `/opt/tennisai/backups` is the only copy of the database
-that is not the database itself. A backup nobody has ever restored is a hope,
-not a backup, so this file records a restore that was actually performed, the
-exact commands, what came out, and how long it took — and the procedure to use
-when it is not a drill.
+The nightly archives in `/opt/tennisai/backups` are the only copies of this
+product's data that are not the running product itself. A backup nobody has
+ever restored is a hope, not a backup, so this file records a restore that was
+actually performed, the exact commands, what came out, and how long it took —
+and the procedure to use when it is not a drill.
+
+**There are now two things to restore, not one.** Profile photos
+(`server/src/photos/`) are files on the `uploads` volume and `pg_dump` has
+never seen them. A restore that brings back only the database produces an app
+in which every photo row points at a file that is not there: avatars quietly
+revert to initials, and nobody can tell whether a picture was deleted on
+purpose or lost. `backup.sh` therefore writes a second archive every night,
+`uploads_YYYY-MM-DD_HHMM.tar.gz`, and
+["Restoring the uploaded files"](#restoring-the-uploaded-files) is the other
+half of the procedure. **That half has not been drilled** — it is listed under
+"Known gaps" rather than presented as proven.
 
 Last drill: **2026-09-05 08:55 UTC**, on the production host, against a
 throwaway container. Re-run it with [`restore-drill.sh`](./restore-drill.sh)
@@ -20,6 +31,10 @@ clean up — the teardown in step 5 had done its job.
 
 ## Where backups are
 
+Two archives per night, from the same `backup.sh` run and the same timestamp.
+
+### The database
+
 | | |
 | --- | --- |
 | Written by | `deploy/hetzner/backup.sh`, cron `17 3 * * *` (host clock is UTC) |
@@ -28,6 +43,23 @@ clean up — the teardown in step 5 had done its job.
 | Size | ~260 KB compressed, ~1.5 MB uncompressed (2026-09-05) |
 | Retention | newest 14 files |
 | Off-site copy | **none** — the backups share the disk with the database (see "Known gaps") |
+
+### The uploaded profile photos
+
+| | |
+| --- | --- |
+| Written by | the same `backup.sh` run, immediately after the dump |
+| Location | `/opt/tennisai/backups/uploads_YYYY-MM-DD_HHMM.tar.gz` |
+| Source | `UPLOADS_DIR` inside the `api` container (`/data/uploads`), the `uploads` compose volume |
+| Format | gzipped tar, paths stored as `uploads/<32-hex-id>.webp` |
+| Size | one 512×512 WebP per person with a photo, typically 20–60 KB each |
+| Retention | newest 14 files |
+| Skipped when | `/data/uploads` does not exist yet — nobody has uploaded a photo; the run logs that and does not fail |
+| Off-site copy | **none**, same disk as everything else |
+
+These files are photographs of people, some of whom may be children. Handle the
+archive the way the "Data-handling rules" below handle a dump: do not copy it
+anywhere, and delete any copy you take by hand.
 
 ## The drill, as run
 
@@ -144,6 +176,57 @@ Expected duration for today's database size: well under a minute, most of it
 the API restarting. Restoring onto a **fresh** server (new box, empty volume) is
 the same from step 3 on, after `setup.sh` has brought the stack up once.
 
+**Then restore the photos as well** — the section below. A database-only
+restore leaves the app looking healthy and every avatar reverted to initials.
+
+## Restoring the uploaded files
+
+The photo archive belongs to the same night as the dump you just restored, so
+take the `uploads_*.tar.gz` with the matching timestamp. Restoring a photo
+archive from a different night is not harmful — a row whose file is missing
+answers 404 and shows initials, and a file with no row is simply never read —
+but it is avoidable confusion.
+
+**Not drilled.** The commands below are the inverse of what `backup.sh` writes
+and have not been executed against the live volume; see "Known gaps".
+
+```bash
+cd /opt/tennisai/deploy/hetzner
+
+# 0. Pick the archive from the same night as the dump, and check it.
+UPLOADS=/opt/tennisai/backups/uploads_2026-09-05_0317.tar.gz
+gzip -t "$UPLOADS" && tar -tzf "$UPLOADS" | head -3      # paths must be uploads/<id>.webp
+
+# 1. Nothing may write while you restore. If the API is already stopped from
+#    the database restore above, leave it stopped and skip this.
+docker compose stop api
+
+# 2. Unpack into the volume. `docker compose run` starts a throwaway container
+#    with the same volume mounted, so this works whether or not `api` is up,
+#    and never needs the volume's path on the host.
+#
+#    The API never overwrites a file (every upload gets a new random id), so
+#    unpacking on top of what is there is safe and additive: it restores what
+#    is missing and leaves newer photos alone. Wipe first ONLY if you mean to
+#    return the store to exactly its state that night:
+#      docker compose run --rm --no-deps --entrypoint sh api -c 'rm -rf /data/uploads/*'
+gunzip -c "$UPLOADS" | docker compose run --rm --no-deps -T --entrypoint sh api \
+  -c 'tar -C /data -xzf -'
+
+# 3. Check the count matches what the archive holds.
+tar -tzf "$UPLOADS" | grep -c '\.webp$'
+docker compose run --rm --no-deps --entrypoint sh api -c 'ls -1 /data/uploads | wc -l'
+
+# 4. Start the API and confirm a photo actually serves. Any 200 will do; a 404
+#    on a user who should have one means the files did not land.
+docker compose start api
+curl -s localhost/api/health | head -c 60
+```
+
+To confirm end to end, sign in as an account that had a photo and look at the
+profile page: the picture, not initials. There is deliberately no unauthenticated
+URL to `curl` for an image — that is the whole design of the read endpoint.
+
 Things that make a restore fail, in the order they have been seen or foreseen:
 
 - **Skipping the wipe** — errors like `relation "users" already exists`, and the
@@ -158,10 +241,19 @@ Things that make a restore fail, in the order they have been seen or foreseen:
 
 ## Known gaps — honest list
 
-- **No off-site copy.** Disk, database and backups are one `/dev/sda1`. A disk
-  failure or a deleted server loses everything at once. Fix is small (nightly
-  `rclone`/`scp` of the newest dump to a Hetzner Storage Box or object storage)
-  but it is a topology change and was deliberately left out of this wave.
+- **No off-site copy.** Disk, database, uploaded photos and backups are one
+  `/dev/sda1`. A disk failure or a deleted server loses everything at once. Fix
+  is small (nightly `rclone`/`scp` of the newest dump to a Hetzner Storage Box
+  or object storage) but it is a topology change and was deliberately left out
+  of this wave. Since profile photos arrived this covers more than it used to:
+  the only copy of a child's photograph is on that one disk plus its nightly
+  tarball beside it.
+- **The photo restore has not been drilled.** "Restoring the uploaded files"
+  above is the exact inverse of what `backup.sh` writes, read from the script
+  and reasoned through, but it has not been executed — not even against a
+  throwaway volume. The next drill should extend `restore-drill.sh` to unpack a
+  photo archive into a scratch volume and count the files, which is cheap and
+  needs nothing from the live stack.
 - **The live restore path was rehearsed, not executed.** Steps 1–6 above have not
   been run against `tennisai-db-1`; the throwaway proves the dump and the
   wipe-then-restore sequence, not the `docker compose stop/start` choreography.

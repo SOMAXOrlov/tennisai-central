@@ -16,21 +16,13 @@ const REQUEST_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "shor
 import { ArrowDownLeft, ArrowRight, Check, Inbox, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { RoleBadge } from "@/components/ui/shared";
 import { toast } from "@/hooks/use-toast";
 import { t } from "@/lib/i18n";
 import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import type { ConnectionRequest } from "@/types";
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("");
-}
 
 function RequestRow({
   request,
@@ -44,9 +36,15 @@ function RequestRow({
   const { t, formatDate } = useT();
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-secondary/30 px-4 py-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-        {initials(request.fromUserName)}
-      </div>
+      {/* The requester's photo when this viewer may see it, initials otherwise.
+          Nothing here distinguishes "no photo" from "not yours to see" — the
+          API answers both the same way on purpose. */}
+      <PlayerAvatar
+        userId={request.fromUserId}
+        name={request.fromUserName}
+        className="h-9 w-9 shrink-0"
+        fallbackClassName="text-xs"
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-medium text-foreground">{request.fromUserName}</p>

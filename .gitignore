@@ -18,6 +18,11 @@ dist-ssr
 # .env.test and .env.example are intentionally tracked (flags only, no secrets).
 .env
 
+# Uploaded profile photos (UPLOADS_DIR, default server/.uploads). Pictures of
+# real people, including possibly of a child — they belong on the server's disk
+# and in the backup, never in the repository. See server/src/photos/.
+server/.uploads/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

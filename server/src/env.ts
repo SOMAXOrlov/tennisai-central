@@ -1,10 +1,24 @@
 import "dotenv/config";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
 /**
  * Centralised, validated environment configuration.
  * The process refuses to start with an invalid/insecure config in production.
  */
+
+/**
+ * Where uploaded profile photos are written when UPLOADS_DIR is unset:
+ * `<repo>/server/.uploads`, git-ignored. Resolved from this module's own URL so
+ * it does not depend on the process's working directory — `npm run dev`, a
+ * vitest run and `tsx src/index.ts` from the repo root must all agree on it.
+ *
+ * The container overrides it with /data/uploads, which is a persistent volume
+ * (deploy/hetzner/docker-compose.yml). It has to be a volume: these files are
+ * NOT in the pg_dump, so a bind-less container would lose every photo on the
+ * next `docker compose up --build`.
+ */
+const DEFAULT_UPLOADS_DIR = fileURLToPath(new URL("../.uploads", import.meta.url));
 
 const INSECURE_JWT_DEFAULTS = new Set([
   "dev-only-insecure-secret-change-me",
@@ -32,6 +46,11 @@ const schema = z.object({
   JWT_SECRET: z.string().min(1),
   JWT_EXPIRES_IN: z.string().default("1d"),
   APP_URL: z.string().url().default("http://localhost:5180"),
+  // Directory holding uploaded profile photos (src/photos/). NOT served by any
+  // static file server — Caddy has no route to it and must never get one; every
+  // read goes through GET /api/players/:id/photo behind authorization. Blank is
+  // treated as unset so a copied .env.example still boots.
+  UPLOADS_DIR: blankAsUnset(z.string().min(1).default(DEFAULT_UPLOADS_DIR)),
   GMAIL_USER: z.string().default(""),
   GMAIL_APP_PASSWORD: z.string().default(""),
   MAIL_FROM_NAME: z.string().default("TennisAI"),
@@ -141,6 +160,8 @@ export const env = {
   jwtSecret: e.JWT_SECRET,
   jwtExpiresIn: e.JWT_EXPIRES_IN,
   appUrl: e.APP_URL,
+  /** Absolute path of the profile-photo store. Never a URL, never public. */
+  uploadsDir: e.UPLOADS_DIR,
   gmailUser: e.GMAIL_USER,
   gmailAppPassword: e.GMAIL_APP_PASSWORD.replace(/\s+/g, ""),
   mailFromName: e.MAIL_FROM_NAME,

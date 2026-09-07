@@ -162,6 +162,59 @@ export async function assertIsPlayerOrCoach(actorId: string, targetPlayerId: str
   throw new HttpError(403, "Only the player and their coach can do this");
 }
 
+/**
+ * May the actor see this player's PROFILE PHOTO?
+ *
+ * A composition of the three helpers above, not a fourth ladder — an audit
+ * already found three divergent ones in this file and the remedy is fewer, not
+ * more. Nothing here decides a relationship the helpers do not already decide,
+ * and nothing here reasons about age: the caller passes the verdict in
+ * (`isMinorAccount` in auth/guardianConsent.ts owns that), so this file keeps
+ * no clock and no calendar maths.
+ *
+ *   NOT a minor → `assertCanActOnPlayer`: the ordinary readable ladder — self,
+ *                 an active coach assignment, an active connection either way,
+ *                 or a consented guardian.
+ *
+ *   A MINOR     → `assertIsPlayerOrCoach` (self, an active coach assignment, or
+ *                 a coach holding an active connection) OR `assertGuardianOf`
+ *                 (a guardianship with parentalConsent recorded). Nobody else:
+ *                 not another player, not an observer who merely holds a
+ *                 connection, not a guardian whose consent was never given.
+ *
+ * The owner was told the risk of a minor having a photo at all and chose to
+ * allow it on the condition that it is their coach's to see and nobody else's.
+ * This function is that condition. The UI is not where it lives.
+ *
+ * Throws 403. The helpers' own messages differ ("not assigned to you", "not a
+ * consented guardian"), so the photo route catches the refusal and answers with
+ * ONE uniform body instead — a prober must not be able to read the reason, or
+ * the existence of a picture, off the response. See photos/routes.ts.
+ */
+export async function assertCanViewPlayerPhoto(
+  actorId: string,
+  targetPlayerId: string,
+  targetIsMinor: boolean,
+): Promise<void> {
+  if (actorId === targetPlayerId) return;
+
+  if (!targetIsMinor) {
+    await assertCanActOnPlayer(actorId, targetPlayerId);
+    return;
+  }
+
+  try {
+    await assertIsPlayerOrCoach(actorId, targetPlayerId);
+    return;
+  } catch (err) {
+    // Only a refusal is worth asking the second question. A 401 (the actor's
+    // own row has gone) or a database failure must surface as itself.
+    if (!(err instanceof HttpError) || err.status !== 403) throw err;
+  }
+
+  await assertGuardianOf(actorId, targetPlayerId);
+}
+
 /** Two users must share at least one academy. Throws 403 otherwise. */
 export async function assertSameAcademy(userIdA: string, userIdB: string): Promise<void> {
   const [a, b] = await Promise.all([

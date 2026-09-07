@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { OnboardingDialog } from "@/components/onboarding/OnboardingDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { RoleBadge, ReadOnlyBadge } from "@/components/ui/shared";
 import {
   Bell,
@@ -271,9 +272,15 @@ export function DashboardLayout() {
                 className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-2 text-left transition-colors touch-manipulation hover:bg-accent data-[state=open]:bg-accent coarse:min-h-11"
                 aria-label={t("dashboard.account.menuAria")}
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </span>
+                <PlayerAvatar
+                  userId={user?.id}
+                  firstName={user?.firstName}
+                  lastName={user?.lastName}
+                  version={user?.photoUpdatedAt ?? null}
+                  hasPhoto={Boolean(user?.photoId)}
+                  className="h-8 w-8 shrink-0"
+                  fallbackClassName="bg-primary text-xs text-primary-foreground"
+                />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-foreground">{user?.firstName} {user?.lastName}</span>
                   <span className="block truncate text-xs capitalize text-muted-foreground">{t(`dashboard.role.${role}`)}</span>

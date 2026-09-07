@@ -49,6 +49,18 @@ model User {
   // Bumped on every password change. A password-reset token issued BEFORE this
   // timestamp is rejected, which makes reset links effectively single-use.
   passwordChangedAt       DateTime?
+  // Profile photo. Deliberately NOT a URL: a URL is an address, and an address
+  // for a photograph of a child is the thing this feature must not create. The
+  // bytes live outside the database in UPLOADS_DIR under a random name, and
+  // every read goes through GET /api/players/:id/photo behind authorization
+  // (see src/photos/). `photoId` IS that random name (32 hex characters, the
+  // file is `<photoId>.webp`) — never the uploaded filename, never the user id.
+  // `photoUpdatedAt` is what makes the ETag change when the picture does.
+  // `photoMime` is always image/webp today; it is stored rather than assumed so
+  // a future format change does not need a migration to serve old rows.
+  photoId                 String?
+  photoUpdatedAt          DateTime?
+  photoMime               String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 

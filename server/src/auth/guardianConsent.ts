@@ -21,6 +21,7 @@
 // ============================================================================
 
 import { createHash, randomBytes } from "node:crypto";
+import { ageFromIsoDate, todayUtc } from "./age";
 
 /** Used when MINOR_AGE_THRESHOLD is unset or unusable. */
 export const DEFAULT_MINOR_AGE_THRESHOLD = 16;
@@ -70,6 +71,58 @@ export function minorAgeThreshold(): number {
 /** Test seam: forget that a bad value was already reported. */
 export function resetThresholdWarning(): void {
   warnedAboutThreshold = false;
+}
+
+/** The columns the minor question is answered from. Nothing else is consulted. */
+export interface MinorCheckFields {
+  /** Calendar date of birth, `yyyy-MM-dd`, or null on accounts that never gave one. */
+  dateOfBirth: string | null;
+  /** Set at signup when the declared date of birth was below the threshold. */
+  guardianConsentRequired: boolean;
+  /** Set at signup when the account affirmed it meets the minimum age. */
+  ageConfirmedAt: Date | null;
+}
+
+/**
+ * Is this account a minor, for the purposes of deciding who may see something
+ * of theirs?
+ *
+ * The age maths is `ageFromIsoDate` + `todayUtc` + `minorAgeThreshold()` — the
+ * same three calls signup makes (auth/routes.ts), deliberately not re-derived,
+ * so the threshold stays configurable in one place and a leap-day birthday is
+ * handled identically in both.
+ *
+ * WHERE THIS GOES FURTHER THAN SIGNUP, AND WHY
+ * Signup only ever asks the question about a date the applicant just typed.
+ * This asks it about a row that may predate the date-of-birth column, so it has
+ * to answer for accounts where the age is simply not known. It FAILS CLOSED in
+ * both such cases:
+ *
+ *   - a date of birth that will not parse (malformed, impossible, in the
+ *     future) counts as a minor, because `null` from `ageFromIsoDate` has never
+ *     meant "old enough";
+ *   - no date of birth AND no `ageConfirmedAt` counts as a minor, because the
+ *     account has never said anything about its age in either form.
+ *
+ * The cost of failing closed is that an adult in that state has their photo
+ * shown to a narrower audience than the read ladder would otherwise allow —
+ * their coach and themselves, not every connection. The cost of failing open is
+ * a child's photograph shown to someone who should not have it. That is not a
+ * close call.
+ *
+ * An account with `guardianConsentRequired` set is a minor whatever its other
+ * columns say: that flag is the explicit verdict signup already recorded.
+ */
+export function isMinorAccount(user: MinorCheckFields, now: Date = new Date()): boolean {
+  if (user.guardianConsentRequired) return true;
+
+  if (user.dateOfBirth !== null && user.dateOfBirth !== "") {
+    const age = ageFromIsoDate(user.dateOfBirth, todayUtc(now));
+    if (age === null) return true;
+    return age < minorAgeThreshold();
+  }
+
+  return user.ageConfirmedAt === null;
 }
 
 /**

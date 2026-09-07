@@ -16,6 +16,7 @@ that can break.
            |                 |
            |                 v
            +---------------- db     (PostgreSQL, volume: pgdata) not published
+                              api also mounts volume: uploads (profile photos)
 ```
 
 Only 80 and 443 are reachable from outside. The API and the database have no
@@ -60,8 +61,10 @@ Pulls, rebuilds, restarts. Database and `.env` are outside git and untouched.
 ## Backups
 
 The database now shares a disk with the app, so nothing else holds a copy.
-`backup.sh` writes a compressed dump to `/opt/tennisai/backups` and keeps the
-last 14. Install it as a nightly job:
+`backup.sh` writes **two** files to `/opt/tennisai/backups` and keeps the last
+14 of each: a compressed database dump, and an `uploads_*.tar.gz` of the
+`uploads` volume — profile photos live on disk, not in Postgres, so the dump
+alone would restore accounts with missing pictures. Install it as a nightly job:
 
 ```bash
 ( crontab -l 2>/dev/null; echo "17 3 * * * bash /opt/tennisai/deploy/hetzner/backup.sh >> /var/log/tennisai-backup.log 2>&1" ) | crontab -

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { GetStartedCard } from "@/components/dashboard/GetStartedCard";
 import { coachItems } from "@/components/dashboard/firstRunItems";
@@ -163,9 +164,12 @@ export default function CoachDashboard() {
                     onViewEquipment={setEquipmentPlayer}
                     trigger={
                       <IdentityTrigger name={`${player.firstName} ${player.lastName}`} className="-m-1 min-w-0 flex-1 p-1">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                          {player.firstName[0]}{player.lastName[0]}
-                        </span>
+                        <PlayerAvatar
+                          userId={player.id}
+                          firstName={player.firstName}
+                          lastName={player.lastName}
+                          className="h-9 w-9 shrink-0"
+                        />
                         <span className="min-w-0">
                           <span className="block text-sm font-medium text-foreground">{player.firstName} {player.lastName}</span>
                           <span className="block font-mono text-xs text-muted-foreground">{player.playerPublicId}</span>

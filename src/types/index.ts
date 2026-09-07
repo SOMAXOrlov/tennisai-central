@@ -80,6 +80,18 @@ export interface User {
   lastName: string;
   avatarUrl?: string;
   emailVerified: boolean;
+  /**
+   * Storage id of the profile photo, or null when there is none. Present only
+   * on your OWN user (GET /api/auth/me, /api/me/profile) — no listing of other
+   * people carries it. It is NOT an address: the photo is read from
+   * `/api/players/:id/photo`, which authorises by user id, and this field only
+   * answers "is there one".
+   */
+  photoId?: string | null;
+  /** When the photo last changed. Used to re-fetch your own avatar after a save. */
+  photoUpdatedAt?: string | null;
+  /** Stored image type, always image/webp today. */
+  photoMime?: string | null;
   /** Set once the user finishes the role-based onboarding questionnaire. */
   onboardingCompletedAt?: string | null;
   createdAt: string;
