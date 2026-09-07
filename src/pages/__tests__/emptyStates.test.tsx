@@ -60,6 +60,10 @@ vi.mock("@/hooks/api/queries", async () => {
     // PlayersPage now shows each player's teams as chips; without this the real
     // useTeams runs and the page needs a QueryClientProvider this suite does not mount.
     useTeams: () => emptyQuery,
+    // Same reason: each player card now carries a "what's next" line, which
+    // reads the coach's trainings and tournament entries.
+    useTrainings: () => emptyQuery,
+    usePlayerTournaments: () => emptyQuery,
     useTrainingRequests: () => emptyQuery,
     useCreateTrainingRequest: () => inertMutation,
     useApproveTrainingRequest: () => inertMutation,

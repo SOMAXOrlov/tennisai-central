@@ -1745,6 +1745,22 @@
       "manageTeam": "Gestionar el equipo"
     }
   },
+  "nextUp": {
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "inDays": "{count, plural, one {En # día} other {En # días}}",
+    "none": "Nada programado todavía",
+    "noTournament": "Ningún torneo programado",
+    "noSession": "Ninguna sesión programada",
+    "tournamentAria": "Próximo torneo: {tournament} — {when}",
+    "sessionAria": "Próxima sesión: {title} — {when}",
+    "othersUpcoming": "{count, plural, one {y 1 jugador más tiene un torneo próximo} other {y # jugadores más tienen torneos próximos}}",
+    "drawerTitle": "Lo siguiente",
+    "matches": {
+      "title": "Resultados de los partidos",
+      "empty": "Todavía no hay partidos registrados."
+    }
+  },
   "plans": {
     "title": "Planes de entrenamiento",
     "subtitleCoach": "Sesiones que has guardado desde el Creador de sesiones, más las que te hayan asignado.",

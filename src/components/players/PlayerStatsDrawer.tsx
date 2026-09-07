@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { BarChart3, Dumbbell, Star, Target, Clock, TrendingUp, ChevronRight } from "lucide-react";
+import { BarChart3, CalendarClock, Dumbbell, Star, Target, Clock, TrendingUp, ChevronRight } from "lucide-react";
 import { useTrainings, usePlayerTournaments } from "@/hooks/api/queries";
 import { format, parseISO, isPast } from "date-fns";
 import type { ConnectedPlayer } from "@/types";
@@ -9,6 +9,8 @@ import { useT } from "@/lib/i18n";
 /** Intl options for the review dates in this drawer. */
 const FULL_DATE: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 import { PlayerMatchIssues } from "@/components/matches/PlayerMatchIssues";
+import { PlayerMatchResults } from "@/components/matches/PlayerMatchResults";
+import { PlayerNextUp } from "@/components/coach/NextUpLines";
 
 interface PlayerStatsDrawerProps {
   player: ConnectedPlayer | null;
@@ -80,6 +82,18 @@ export function PlayerStatsDrawer({ player, open, onOpenChange }: PlayerStatsDra
               <p className="font-mono text-xs text-muted-foreground">{player.playerPublicId}</p>
             </div>
           </div>
+
+          {/* What's next — the same two countdowns the roster card carries, so
+              the drawer and the card can never name different days. */}
+          <div>
+            <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <CalendarClock className="h-3 w-3" /> {t("nextUp.drawerTitle")}
+            </h4>
+            <PlayerNextUp playerId={player.id} />
+          </div>
+
+          {/* Are they winning? Played, won–lost, win rate, recent form, surfaces. */}
+          <PlayerMatchResults key={player.id} player={player} />
 
           {/* Match notes: the pattern card + recent matches (open one to read/add what went wrong). */}
           <PlayerMatchIssues player={player} />

@@ -87,6 +87,18 @@ export const TRAVEL_BUFFER_DAYS = 1;
 /** A status that means the player is not actually going. */
 const NOT_ATTENDING = new Set(["withdrawn"]);
 
+/**
+ * Is this entry one the player is actually going to?
+ *
+ * Exported because the roster countdowns (`src/lib/roster/nextUp.ts`) need the
+ * same judgement, and two copies of "which statuses count" would eventually
+ * disagree — a withdrawn entry counted as the next tournament on the coach's
+ * roster and skipped on the player's dashboard.
+ */
+export function isAttending(status: string): boolean {
+  return !NOT_ATTENDING.has(status);
+}
+
 export interface Clash {
   entry: PlayerTournament;
   /** True when the dates genuinely overlap rather than only the travel buffer. */
@@ -116,7 +128,7 @@ export function findClashes(
   return entries
     .filter((e) => e.playerId === playerId)
     .filter((e) => e.tournamentId !== candidate.id)
-    .filter((e) => !NOT_ATTENDING.has(e.status))
+    .filter((e) => isAttending(e.status))
     .flatMap<Clash>((entry) => {
       const t = entry.tournament;
       // A malformed entry is skipped rather than crashing the dialog it feeds.
@@ -164,7 +176,7 @@ export function describeClash(clashes: Clash[], playerName?: string): string {
 export function nextUpcoming(entries: PlayerTournament[], now: Date = new Date()): PlayerTournament | null {
   const at = now.getTime();
   const live = entries
-    .filter((e) => !NOT_ATTENDING.has(e.status) && e.tournament)
+    .filter((e) => isAttending(e.status) && e.tournament)
     .filter((e) => {
       const end = new Date(e.tournament.endDate).getTime();
       return !Number.isNaN(end) && end >= at;
