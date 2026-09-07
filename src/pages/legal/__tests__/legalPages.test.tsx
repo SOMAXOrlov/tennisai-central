@@ -24,6 +24,17 @@ import {
 import PrivacyPolicyPage from "@/pages/legal/PrivacyPolicyPage";
 import TermsPage from "@/pages/legal/TermsPage";
 
+/** Every leaf string under the `legal` namespace of one bundle. */
+function legalStrings(bundle: typeof en): string[] {
+  const out: string[] = [];
+  const walk = (node: unknown) => {
+    if (typeof node === "string") out.push(node);
+    else if (node && typeof node === "object") Object.values(node).forEach(walk);
+  };
+  walk(bundle.legal);
+  return out;
+}
+
 function renderPage(Page: () => JSX.Element, locale: "en" | "es" = "en") {
   localStorage.setItem("tennisai_locale", locale);
   return render(
@@ -79,9 +90,19 @@ describe("privacy policy", () => {
     expect(screen.getByText(en.legal.draft.body)).toBeInTheDocument();
   });
 
-  it("renders the four controller tokens and the effective-date token", () => {
+  it("renders the four controller tokens, the effective date and the jurisdiction", () => {
     renderPage(PrivacyPolicyPage);
-    for (const value of [COMPANY_NAME, COMPANY_ADDRESS, COMPANY_CONTACT_EMAIL, COMPANY_DPO_EMAIL, LEGAL_EFFECTIVE_DATE]) {
+    for (const value of [
+      COMPANY_NAME,
+      COMPANY_ADDRESS,
+      COMPANY_CONTACT_EMAIL,
+      COMPANY_DPO_EMAIL,
+      LEGAL_EFFECTIVE_DATE,
+      // The complaints section cannot name a supervisory authority until the
+      // governing law is decided, so it shows the same unresolved token the
+      // terms page does rather than guessing at a regulator.
+      COMPANY_JURISDICTION,
+    ]) {
       expect(screen.getByText(value)).toBeInTheDocument();
     }
   });
@@ -89,7 +110,7 @@ describe("privacy policy", () => {
   it("marks each token for a screen reader, so the warning is not purely visual", () => {
     const { container } = renderPage(PrivacyPolicyPage);
     const tokens = container.querySelectorAll("[data-legal-token]");
-    expect(tokens.length).toBe(5);
+    expect(tokens.length).toBe(6);
     for (const token of tokens) {
       expect(token.textContent).toContain(en.legal.token.srLabel);
     }
@@ -182,6 +203,69 @@ describe("privacy policy", () => {
     expect(es.legal.privacy.device.intro).toMatch(/no hay banner de consentimiento/i);
   });
 
+  it("names no hosting country, because the repository does not record one", () => {
+    const { container } = renderPage(PrivacyPolicyPage);
+    expect(screen.getByRole("heading", { name: en.legal.privacy.transfers.heading })).toBeInTheDocument();
+    // deploy/hetzner/** shows a single rented host and a German provider; it
+    // never says which data centre. The page must not fill that in for itself,
+    // and the still-open list has to carry the question instead.
+    expect(en.legal.privacy.transfers.provider).toMatch(/not recorded/i);
+    expect(en.legal.privacy.open.item8).toMatch(/not recorded/i);
+    expect(container.textContent).not.toMatch(/\bGermany\b/);
+  });
+
+  it("awards itself no security verdict while listing what is not done", () => {
+    renderPage(PrivacyPolicyPage);
+    expect(screen.getByRole("heading", { name: en.legal.privacy.security.heading })).toBeInTheDocument();
+    expect(screen.getByText(en.legal.privacy.security.gaps)).toBeInTheDocument();
+
+    expect(en.legal.privacy.security.noVerdict).toMatch(/not been certified, audited or approved/i);
+    expect(en.legal.privacy.security.gaps).toMatch(/no external security review or penetration test/i);
+  });
+
+  it("never grades itself compliant, certified, audited or secure", () => {
+    // The product has had no external assessment of any kind (SECURITY.md), so
+    // a verdict anywhere on these pages would be the one claim a reader could
+    // not check.
+    //
+    // A forbidden-PHRASE list rather than a search for the word "secure",
+    // because the word has an innocent use ("keep your sign-in details secure")
+    // and because the honest disclaimers are denials. Writing the disclaimer so
+    // that it does not contain the phrase it forbids was part of the work.
+    const FORBIDDEN_CLAIMS = [
+      /GDPR[- ]compliant/i,
+      /compliant with the GDPR/i,
+      /cumple (con )?el RGPD/i,
+      /conforme al RGPD/i,
+      /\b(?:is|are)\s+secure\b/i,
+      /\bfully secure\b/i,
+      /\bpenetration[-\s]tested\b/i,
+      /\bsecurity[- ]approved\b/i,
+      /(?<!\bnot )(?:has|have) been (?:certified|audited|approved)/i,
+      /\b(?:es|son|sea)\s+segur[ao]s?\b/i,
+      /(?<!\bno )ha sido (?:certificad|auditad|aprobad)/i,
+    ];
+
+    for (const bundle of [en, es]) {
+      for (const value of legalStrings(bundle)) {
+        for (const claim of FORBIDDEN_CLAIMS) expect(value).not.toMatch(claim);
+      }
+    }
+  });
+
+  it("describes the recommendation engines as advice and still names the two rules that gate something", () => {
+    renderPage(PrivacyPolicyPage);
+    expect(screen.getByRole("heading", { name: en.legal.privacy.automated.heading })).toBeInTheDocument();
+    expect(en.legal.privacy.automated.body).toMatch(/deterministic/i);
+    expect(en.legal.privacy.automated.body).toMatch(/advice/i);
+    // The sign-up age gate and the tournament age filter really do decide
+    // something, so the section says so rather than claiming nothing is
+    // automated — and it does not reach for an Article 22 conclusion either.
+    expect(en.legal.privacy.automated.item1).toMatch(/age check at sign-up/i);
+    expect(en.legal.privacy.automated.item2).toMatch(/age eligibility/i);
+    expect(JSON.stringify(en.legal.privacy.automated)).not.toMatch(/Article 22/i);
+  });
+
   it("keeps the 'still open' list of decisions a lawyer has to make", () => {
     renderPage(PrivacyPolicyPage);
     expect(screen.getByRole("heading", { name: en.legal.privacy.open.heading })).toBeInTheDocument();
@@ -192,6 +276,12 @@ describe("privacy policy", () => {
       en.legal.privacy.open.item4,
       en.legal.privacy.open.item5,
       en.legal.privacy.open.item6,
+      en.legal.privacy.open.item7,
+      en.legal.privacy.open.item8,
+      en.legal.privacy.open.item9,
+      en.legal.privacy.open.item10,
+      en.legal.privacy.open.item11,
+      en.legal.privacy.open.item12,
     ]) {
       expect(screen.getByText(item)).toBeInTheDocument();
     }

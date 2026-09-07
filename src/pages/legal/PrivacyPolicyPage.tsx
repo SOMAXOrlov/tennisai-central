@@ -17,6 +17,7 @@ import {
   COMPANY_ADDRESS,
   COMPANY_CONTACT_EMAIL,
   COMPANY_DPO_EMAIL,
+  COMPANY_JURISDICTION,
   COMPANY_NAME,
   LEGAL_EFFECTIVE_DATE,
 } from "@/lib/legal/companyDetails";
@@ -223,11 +224,60 @@ export default function PrivacyPolicyPage() {
               <li>{t("legal.privacy.processors.item3")}</li>
               <li>{t("legal.privacy.processors.item4")}</li>
               <li>{t("legal.privacy.processors.item5")}</li>
+              {/* The last two are requests the BROWSER makes, not the server —
+                  which is exactly why they were missing from this list until
+                  somebody grepped the client for external URLs. */}
+              <li>{t("legal.privacy.processors.item6")}</li>
+              <li>{t("legal.privacy.processors.item7")}</li>
             </ul>
+          </Section>
+
+          <Section heading={t("legal.privacy.transfers.heading")}>
+            <p>{t("legal.privacy.transfers.body")}</p>
+            <p>{t("legal.privacy.transfers.provider")}</p>
+            <p>{t("legal.privacy.transfers.recipientsIntro")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.transfers.item1")}</li>
+              <li>{t("legal.privacy.transfers.item2")}</li>
+              <li>{t("legal.privacy.transfers.item3")}</li>
+              <li>{t("legal.privacy.transfers.item4")}</li>
+            </ul>
+            <p>{t("legal.privacy.transfers.note")}</p>
           </Section>
 
           <Section heading={t("legal.privacy.ai.heading")}>
             <p>{t("legal.privacy.ai.body")}</p>
+            <p>{t("legal.privacy.ai.pseudonymous")}</p>
+          </Section>
+
+          {/* Describes the behaviour rather than reaching for an Article 22
+              conclusion: the engines are advisory, and the two rules that do
+              gate something are named instead of being waved away. */}
+          <Section heading={t("legal.privacy.automated.heading")}>
+            <p>{t("legal.privacy.automated.body")}</p>
+            <p>{t("legal.privacy.automated.effectsIntro")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.automated.item1")}</li>
+              <li>{t("legal.privacy.automated.item2")}</li>
+            </ul>
+            <p>{t("legal.privacy.automated.note")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.security.heading")}>
+            <p>{t("legal.privacy.security.intro")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.privacy.security.item1")}</li>
+              <li>{t("legal.privacy.security.item2")}</li>
+              <li>{t("legal.privacy.security.item3")}</li>
+              <li>{t("legal.privacy.security.item4")}</li>
+              <li>{t("legal.privacy.security.item5")}</li>
+              <li>{t("legal.privacy.security.item6")}</li>
+            </ul>
+            {/* The gaps and the disclaimer are not optional trimmings. A
+                security section that lists only the good half is an
+                advertisement, and SECURITY.md records every one of these. */}
+            <p>{t("legal.privacy.security.gaps")}</p>
+            <p>{t("legal.privacy.security.noVerdict")}</p>
           </Section>
 
           <Section heading={t("legal.privacy.retention.heading")}>
@@ -239,6 +289,22 @@ export default function PrivacyPolicyPage() {
             <p>{t("legal.privacy.rights.contact")}</p>
           </Section>
 
+          <Section heading={t("legal.privacy.complaints.heading")}>
+            <p>{t("legal.privacy.complaints.body")}</p>
+            <dl className="mt-4">
+              {/* The authority follows from the jurisdiction, so it is named by
+                  reference to the token rather than hard-coded to one country's
+                  regulator — a guess here sends a complaint to the wrong desk. */}
+              <DetailRow label={t("legal.privacy.complaints.lawLabel")} value={COMPANY_JURISDICTION} />
+            </dl>
+            <p>{t("legal.privacy.complaints.note")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.changes.heading")}>
+            <p>{t("legal.privacy.changes.body")}</p>
+            <p>{t("legal.privacy.changes.notice")}</p>
+          </Section>
+
           <Section heading={t("legal.privacy.open.heading")}>
             <p>{t("legal.privacy.open.intro")}</p>
             <ul className="list-disc space-y-1.5 pl-5">
@@ -248,6 +314,12 @@ export default function PrivacyPolicyPage() {
               <li>{t("legal.privacy.open.item4")}</li>
               <li>{t("legal.privacy.open.item5")}</li>
               <li>{t("legal.privacy.open.item6")}</li>
+              <li>{t("legal.privacy.open.item7")}</li>
+              <li>{t("legal.privacy.open.item8")}</li>
+              <li>{t("legal.privacy.open.item9")}</li>
+              <li>{t("legal.privacy.open.item10")}</li>
+              <li>{t("legal.privacy.open.item11")}</li>
+              <li>{t("legal.privacy.open.item12")}</li>
             </ul>
           </Section>
         </div>

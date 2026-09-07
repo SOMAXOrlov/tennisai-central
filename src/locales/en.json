@@ -960,15 +960,49 @@
       "processors": {
         "heading": "Who else the data touches",
         "intro": "What the code shows today, and nothing more:",
-        "item1": "Hosting: the app, the API and the PostgreSQL database all run on one rented server. Neither the hosting company nor the country that server sits in is stated here yet — both have to be before launch.",
-        "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external SMTP provider configured by whoever runs the server. The trial's provider has not been named here yet.",
-        "item3": "Web push: if you turn on push notifications, your browser's push service (for example Google's or Mozilla's) relays them. Push is off unless the operator configures keys for it.",
-        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear.",
-        "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament’s coordinates. No account or personal data is sent with that request."
+        "item1": "Hosting: the app, the API, the PostgreSQL database and the uploaded photographs all run on one rented server. The machine is rented from a German hosting company; which of that company's data centres it physically sits in is not recorded anywhere in this project, so no country is claimed here — see “Where the data is”.",
+        "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external mail provider configured by whoever runs the server. The trial's provider has not been named here yet.",
+        "item3": "Web push: if you turn on push notifications, your browser's push service (Google's for Chrome, Mozilla's for Firefox) relays them. Push is off unless the operator configures keys for it.",
+        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation or training-advice prompt is sent to that provider. On this trial it is switched off, and the app says so where the feature would otherwise appear.",
+        "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament's coordinates. No account or personal data is sent with that request.",
+        "item6": "Typefaces: the app's stylesheet loads three typefaces from Google Fonts, so your browser fetches them from Google's servers. Google therefore sees your IP address and what browser you are using, on every visit and whether or not you are signed in. No account data is sent, and nothing in the app requires this — the typefaces could be served from the same server as everything else.",
+        "item7": "Map tiles: the tournaments map draws its background from the OpenStreetMap Foundation's public tile servers. Your browser requests those tiles directly, so that service sees your IP address and which part of the map you are looking at. It happens only when you open the map."
+      },
+      "transfers": {
+        "heading": "Where the data is",
+        "body": "Everything the product stores — the app, the API, the database and the uploaded photographs — sits on a single rented server. There is no second region and no second copy: one machine, one disk, and a nightly backup written to that same disk.",
+        "provider": "The machine is rented from a German hosting company. That company operates data centres in more than one country, including outside the European Economic Area, and which one this server is in is not recorded anywhere in this project. Rather than guess at a country, this page says so and the question is on the still-open list.",
+        "recipientsIntro": "Recipients outside the European Economic Area, each only when the feature concerned is switched on:",
+        "item1": "the AI provider, if the operator has configured one. The two the code can talk to are Anthropic and OpenAI, both United States companies, and the request goes to their US endpoints. Neither is configured on this trial.",
+        "item2": "your browser's push service, if you turn push notifications on. Which company that is depends on the browser you use.",
+        "item3": "Google, for the typefaces — on every visit, before you have done anything.",
+        "item4": "the mail provider the operator configures, which may be outside the European Economic Area depending on which one they choose.",
+        "note": "No transfer mechanism is recorded anywhere in this project for any of those — no standard contractual clauses, no documented reliance on an adequacy decision, nothing. That is a gap, and it is on the still-open list rather than papered over here."
       },
       "ai": {
         "heading": "Optional AI processing",
-        "body": "Match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first."
+        "body": "Match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first.",
+        "pseudonymous": "What would leave the server if a provider were configured is evidence, not identities: names and e-mail addresses are replaced with “Player 1”, “Player 2” and so on before the request is built, and swapped back for real names in the answer. Be aware of the limit of that, though — the free text itself is sent as written. A session goal, a coach's review of a session, a note on a match: if somebody typed a name into one of those boxes, that name goes with it. What comes back is checked against a strict shape before it is shown, and the record kept afterwards holds the provider, the model, a hash of the input and whether it worked — not the prompt and not the answer."
+      },
+      "automated": {
+        "heading": "Automated decisions and recommendations",
+        "body": "Most of what the product produces is a recommendation made by rule: which string, gauge and tension to try, how a player fits an upcoming tournament, what a season has cost. Those engines are deterministic — the same inputs give the same answer, every rule is written down, and each answer comes back with the reasons that produced it. They are advice. Nothing acts on them by itself; a coach or a player reads them and decides.",
+        "effectsIntro": "Two automated rules do settle something rather than suggest it, and both are a comparison against a date of birth you entered yourself:",
+        "item1": "the age check at sign-up. If the date of birth you give is below the age of digital consent this deployment is configured with, the account is created but cannot be used until a guardian approves it from a link sent to their e-mail address.",
+        "item2": "tournament age eligibility. An event whose age category your date of birth does not meet is taken out of your list, with the reason shown, because you could not enter it.",
+        "note": "Nothing here profiles anyone and none of it is used for advertising or sold. Whether the sign-up gate counts as an automated decision in the legal sense has not been assessed by a lawyer — it is on the still-open list. In both cases above, correcting your date of birth is what changes the outcome, and the data-protection contact above is where to ask."
+      },
+      "security": {
+        "heading": "How the data is protected",
+        "intro": "What is actually done, described without adjectives:",
+        "item1": "passwords are kept only as bcrypt hashes, and no part of the system can read one back;",
+        "item2": "traffic between your browser and the server travels over HTTPS, with the certificate obtained and renewed automatically;",
+        "item3": "who may read what is decided on the server, on every request, from the recorded relationships between accounts. What the app chooses to display is never the boundary;",
+        "item4": "the database and the API accept no connections from the internet at all — only the web server in front of them is reachable;",
+        "item5": "sign-in attempts, photograph uploads and ordinary requests are each rate-limited per address;",
+        "item6": "an uploaded image is identified by its actual bytes rather than by its name or its declared type, capped at five megabytes, and re-encoded before anything is stored.",
+        "gaps": "What is not done, because leaving this out is what would mislead: the product has had no external security review or penetration test of any kind, and everything above was done by the same people who wrote the code. The web app is served without a Content-Security-Policy header, and your sign-in token is kept in your browser's local storage rather than in a cookie the page cannot read — so a scripting flaw anywhere in the app would expose it. The nightly backup is unencrypted and sits on the same disk as the data it protects, with no copy anywhere else. The procedure for restoring the photograph archive has been written down but never executed.",
+        "noVerdict": "None of the above amounts to a guarantee. The product has not been certified, audited or approved by anybody, and this page deliberately gives no overall verdict on how well it is protected — that is not a verdict it has earned the right to give."
       },
       "retention": {
         "heading": "How long we keep it",
@@ -979,6 +1013,17 @@
         "body": "Depending on where you live you may have the right to access, correct, export or delete your personal data, and to object to or restrict certain processing. For a connected minor's data, a parent or guardian can exercise those rights on the player's behalf. There is no self-service export or erasure button in the app yet; a request today is handled by hand by the team.",
         "contact": "Requests go to the data-protection contact above, once that address exists."
       },
+      "complaints": {
+        "heading": "Complaining to a supervisory authority",
+        "body": "If you think your personal data has been mishandled, you can complain to a data-protection supervisory authority as well as, or instead of, writing to us. Which authority is competent for this service follows from where it is established and from the governing law — and that is one of the fields still to be decided:",
+        "lawLabel": "Governing law and courts",
+        "note": "Under EU data-protection law a complaint can normally also be made to the authority of the country where you live or work, whichever country the service turns out to be established in. Until the field above is filled in, this page cannot name the authority for you, and naming one on a guess would send a complaint to the wrong regulator."
+      },
+      "changes": {
+        "heading": "Changes to this policy",
+        "body": "This document will change. It is a draft, several of its fields are unfilled, and the product it describes is still being built. The effective date at the top is the date this version was adopted, written out by hand: it does not advance on its own, so if it looks old, it is old.",
+        "notice": "When a change matters to you rather than correcting a piece of wording, we will aim to tell trial participants directly instead of relying on anyone re-reading this page. There is no archive of superseded versions yet, which means you cannot currently see what a previous version said — worth knowing before you rely on having read this one."
+      },
       "open": {
         "heading": "Still open",
         "intro": "Kept visible rather than papered over. Each of these needs a decision, most of them from a lawyer:",
@@ -987,7 +1032,13 @@
         "item3": "retention periods per data category, and what happens to a coach's records when a player leaves;",
         "item4": "how a guardian's authority is verified, per national age of consent;",
         "item5": "the named processor list and a data-processing agreement with each;",
-        "item6": "the process and deadlines for handling an access, export or erasure request."
+        "item6": "the process and deadlines for handling an access, export or erasure request.",
+        "item7": "the age of digital consent to enforce. This deployment is set to 16, while Spain's is 14 — so a Spanish 15-year-old is treated here as needing a guardian's approval when the national rule would not require it;",
+        "item8": "the country the server actually sits in. The hosting company is German; the data centre is not recorded, and it has to be established rather than assumed;",
+        "item9": "a transfer mechanism for each recipient outside the European Economic Area named above — none is in place;",
+        "item10": "a way to close an account. There is none: no screen offers it and no part of the API deletes a user, so an erasure request has to be carried out by hand today, including the photograph file, which nothing else would clean up;",
+        "item11": "an external data-protection assessment of any kind. None has been done — no impact assessment, no record of processing activities, no legal review;",
+        "item12": "two questions the code raised and nobody has answered: whether the sign-up age gate counts as an automated decision in the legal sense, and whether a coach's private note about a player has to be disclosed when that player asks for their data."
       }
     },
     "terms": {

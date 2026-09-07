@@ -960,15 +960,49 @@
       "processors": {
         "heading": "Por dónde más pasan los datos",
         "intro": "Lo que hoy muestra el código, y nada más:",
-        "item1": "Alojamiento: la aplicación, la API y la base de datos PostgreSQL se ejecutan en un único servidor alquilado. Aquí no se indica todavía ni la empresa de alojamiento ni el país en el que está ese servidor: ambas cosas deben constar antes del lanzamiento.",
-        "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor SMTP externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
-        "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (por ejemplo el de Google o el de Mozilla) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
-        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería.",
-        "item5": "Meteorología y altitud: el servidor consulta la API pública Open-Meteo sobre las coordenadas de un torneo. Con esa petición no se envía ningún dato de cuenta ni personal."
+        "item1": "Alojamiento: la aplicación, la API, la base de datos PostgreSQL y las fotografías subidas se ejecutan en un único servidor alquilado. La máquina está alquilada a una empresa de alojamiento alemana; en qué centro de datos de esa empresa se encuentra físicamente no consta en ninguna parte de este proyecto, así que aquí no se afirma ningún país: véase «Dónde están los datos».",
+        "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor de correo externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
+        "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (el de Google en Chrome, el de Mozilla en Firefox) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
+        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido o de consejo de entrenamiento se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería la función.",
+        "item5": "Meteorología y altitud: el servidor consulta la API pública Open-Meteo sobre las coordenadas de un torneo. Con esa petición no se envía ningún dato de cuenta ni personal.",
+        "item6": "Tipografías: la hoja de estilos de la aplicación carga tres tipografías desde Google Fonts, de modo que su navegador las descarga de los servidores de Google. Google ve por tanto su dirección IP y qué navegador utiliza, en cada visita y con independencia de que haya iniciado sesión. No se envía ningún dato de cuenta, y nada en la aplicación lo exige: las tipografías podrían servirse desde el mismo servidor que todo lo demás.",
+        "item7": "Teselas de mapa: el mapa de torneos toma su fondo de los servidores públicos de teselas de la OpenStreetMap Foundation. Su navegador solicita esas teselas directamente, así que ese servicio ve su dirección IP y qué zona del mapa está consultando. Solo ocurre cuando abre el mapa."
+      },
+      "transfers": {
+        "heading": "Dónde están los datos",
+        "body": "Todo lo que el producto almacena —la aplicación, la API, la base de datos y las fotografías subidas— está en un único servidor alquilado. No hay una segunda región ni una segunda copia: una máquina, un disco y una copia de seguridad nocturna escrita en ese mismo disco.",
+        "provider": "La máquina está alquilada a una empresa de alojamiento alemana. Esa empresa opera centros de datos en más de un país, incluidos algunos fuera del Espacio Económico Europeo, y en cuál de ellos está este servidor no consta en ninguna parte de este proyecto. En lugar de conjeturar un país, esta página lo dice y la cuestión figura en la lista de puntos pendientes.",
+        "recipientsIntro": "Destinatarios situados fuera del Espacio Económico Europeo, cada uno solo cuando la función correspondiente está activada:",
+        "item1": "el proveedor de IA, si el administrador ha configurado uno. Los dos con los que el código puede comunicarse son Anthropic y OpenAI, ambas empresas estadounidenses, y la petición se dirige a sus extremos en Estados Unidos. En esta prueba no hay ninguno configurado.",
+        "item2": "el servicio de push de su navegador, si activa las notificaciones push. Qué empresa sea depende del navegador que utilice.",
+        "item3": "Google, para las tipografías: en cada visita, antes de que usted haya hecho nada.",
+        "item4": "el proveedor de correo que configure el administrador, que puede estar fuera del Espacio Económico Europeo según cuál elija.",
+        "note": "En este proyecto no consta ningún mecanismo de transferencia para ninguno de ellos: ni cláusulas contractuales tipo, ni una decisión de adecuación documentada, nada. Es una carencia, y figura en la lista de puntos pendientes en lugar de disimularse aquí."
       },
       "ai": {
         "heading": "Tratamiento opcional mediante IA",
-        "body": "El texto de preparación de un partido puede generarlo un proveedor de IA externo, pero solo cuando quien administra el servidor ha configurado uno. En esta prueba no hay ninguno configurado, así que nada sale del servidor con esa finalidad. Si una instalación lo activa, ese proveedor pasa a ser un encargado del tratamiento y debe nombrarse aquí antes."
+        "body": "El texto de preparación de un partido puede generarlo un proveedor de IA externo, pero solo cuando quien administra el servidor ha configurado uno. En esta prueba no hay ninguno configurado, así que nada sale del servidor con esa finalidad. Si una instalación lo activa, ese proveedor pasa a ser un encargado del tratamiento y debe nombrarse aquí antes.",
+        "pseudonymous": "Lo que saldría del servidor si hubiera un proveedor configurado son evidencias, no identidades: los nombres y las direcciones de correo se sustituyen por «Jugador 1», «Jugador 2» y así sucesivamente antes de construir la petición, y se vuelven a cambiar por los nombres reales en la respuesta. Conviene conocer el límite de eso: el texto libre se envía tal como está escrito. El objetivo de una sesión, la revisión de una sesión por el entrenador, una nota sobre un partido: si alguien escribió un nombre en uno de esos campos, ese nombre va con la petición. Lo que vuelve se comprueba contra una estructura estricta antes de mostrarse, y el registro que queda después contiene el proveedor, el modelo, un hash de la entrada y si funcionó, no la solicitud ni la respuesta."
+      },
+      "automated": {
+        "heading": "Decisiones automatizadas y recomendaciones",
+        "body": "Casi todo lo que produce el producto es una recomendación elaborada mediante reglas: qué cordaje, calibre y tensión probar, cómo encaja un jugador en un torneo próximo, cuánto ha costado una temporada. Esos motores son deterministas: las mismas entradas dan la misma respuesta, cada regla está escrita y cada respuesta llega acompañada de los motivos que la produjeron. Son consejos. Nada actúa sobre ellos por sí mismo: los lee un entrenador o un jugador y decide.",
+        "effectsIntro": "Dos reglas automatizadas sí resuelven algo en lugar de sugerirlo, y ambas consisten en una comparación con una fecha de nacimiento que usted mismo introdujo:",
+        "item1": "la comprobación de edad en el registro. Si la fecha de nacimiento que facilita está por debajo de la edad de consentimiento digital configurada en esta instalación, la cuenta se crea pero no puede usarse hasta que un tutor la apruebe desde un enlace enviado a su dirección de correo.",
+        "item2": "la elegibilidad por edad en los torneos. Un evento cuya categoría de edad no cumple su fecha de nacimiento se retira de su lista, indicando el motivo, porque no podría inscribirse en él.",
+        "note": "Nada de esto elabora perfiles de nadie ni se utiliza con fines publicitarios, ni se vende. Si la comprobación de edad del registro constituye una decisión automatizada en sentido jurídico no ha sido valorado por un abogado: figura en la lista de puntos pendientes. En los dos casos anteriores, corregir su fecha de nacimiento es lo que cambia el resultado, y el contacto de protección de datos indicado arriba es el sitio donde preguntar."
+      },
+      "security": {
+        "heading": "Cómo se protegen los datos",
+        "intro": "Lo que se hace realmente, descrito sin adjetivos:",
+        "item1": "las contraseñas se guardan únicamente como hashes bcrypt, y ninguna parte del sistema puede recuperarlas;",
+        "item2": "el tráfico entre su navegador y el servidor viaja por HTTPS, con el certificado obtenido y renovado automáticamente;",
+        "item3": "quién puede leer qué se decide en el servidor, en cada petición, a partir de las relaciones registradas entre las cuentas. Lo que la aplicación decida mostrar nunca es la frontera;",
+        "item4": "la base de datos y la API no aceptan ninguna conexión desde internet: solo es accesible el servidor web situado delante de ellas;",
+        "item5": "los intentos de inicio de sesión, las subidas de fotografías y las peticiones ordinarias tienen cada uno un límite de tasa por dirección;",
+        "item6": "una imagen subida se identifica por sus bytes reales y no por su nombre ni por el tipo declarado, se limita a cinco megabytes y se recodifica antes de almacenar nada.",
+        "gaps": "Lo que no se hace, porque omitirlo sería lo que induciría a error: el producto no ha pasado ninguna revisión de seguridad externa ni ninguna prueba de intrusión, y todo lo anterior lo hicieron las mismas personas que escribieron el código. La aplicación web se sirve sin cabecera Content-Security-Policy, y su token de sesión se guarda en el almacenamiento local del navegador y no en una cookie que la página no pueda leer, de modo que un fallo de scripting en cualquier parte de la aplicación lo expondría. La copia de seguridad nocturna no está cifrada y reside en el mismo disco que los datos que protege, sin ninguna copia en otro lugar. El procedimiento para restaurar el archivo de fotografías está escrito pero nunca se ha ejecutado.",
+        "noVerdict": "Nada de lo anterior constituye una garantía. El producto no ha sido certificado, auditado ni aprobado por nadie, y esta página no emite deliberadamente ningún veredicto global sobre su nivel de protección: no es un veredicto que se haya ganado el derecho a emitir."
       },
       "retention": {
         "heading": "Cuánto tiempo lo conservamos",
@@ -979,6 +1013,17 @@
         "body": "Según dónde resida, puede tener derecho a acceder a sus datos personales, rectificarlos, exportarlos o suprimirlos, y a oponerse a determinados tratamientos o limitarlos. En el caso de los datos de un menor conectado, un padre, madre o tutor puede ejercer esos derechos en su nombre. La aplicación todavía no tiene un botón de exportación o supresión automática; hoy una solicitud la atiende el equipo a mano.",
         "contact": "Las solicitudes se dirigen al contacto de protección de datos indicado arriba, en cuanto esa dirección exista."
       },
+      "complaints": {
+        "heading": "Reclamar ante una autoridad de control",
+        "body": "Si considera que sus datos personales han sido tratados indebidamente, puede presentar una reclamación ante una autoridad de control en materia de protección de datos, además de escribirnos o en lugar de hacerlo. Qué autoridad es competente respecto de este servicio depende de dónde esté establecido y de la ley aplicable, y eso es uno de los campos que quedan por decidir:",
+        "lawLabel": "Ley aplicable y tribunales",
+        "note": "Conforme al derecho europeo de protección de datos, por lo general también puede reclamarse ante la autoridad del país donde usted resida o trabaje, sea cual sea el país en el que resulte estar establecido el servicio. Hasta que se rellene el campo anterior, esta página no puede nombrarle la autoridad, y nombrar una por conjetura enviaría la reclamación al organismo equivocado."
+      },
+      "changes": {
+        "heading": "Cambios en esta política",
+        "body": "Este documento cambiará. Es un borrador, varios de sus campos están sin rellenar y el producto que describe se sigue construyendo. La fecha de entrada en vigor que figura arriba es la fecha en que se adoptó esta versión, escrita a mano: no avanza por sí sola, así que si parece antigua, es antigua.",
+        "notice": "Cuando un cambio le afecte de verdad, en lugar de corregir una expresión, procuraremos comunicarlo directamente a los participantes en la prueba y no confiar en que alguien vuelva a leer esta página. Todavía no hay un archivo de versiones superadas, lo que significa que hoy no puede consultar qué decía una versión anterior; conviene saberlo antes de confiar en haber leído esta."
+      },
       "open": {
         "heading": "Pendiente",
         "intro": "Se deja a la vista en lugar de disimularlo. Cada punto necesita una decisión, y la mayoría de un abogado:",
@@ -987,7 +1032,13 @@
         "item3": "los plazos de conservación por categoría de datos y qué ocurre con los registros de un entrenador cuando un jugador se va;",
         "item4": "cómo se verifica la condición de tutor según la edad de consentimiento de cada país;",
         "item5": "la lista nominal de encargados del tratamiento y un contrato de encargo con cada uno;",
-        "item6": "el procedimiento y los plazos para atender una solicitud de acceso, exportación o supresión."
+        "item6": "el procedimiento y los plazos para atender una solicitud de acceso, exportación o supresión.",
+        "item7": "qué edad de consentimiento digital aplicar. Esta instalación está configurada en 16 años, mientras que en España es de 14: un chico o una chica de 15 años en España se trata aquí como si necesitara la aprobación de un tutor cuando la norma nacional no lo exigiría;",
+        "item8": "en qué país está realmente el servidor. La empresa de alojamiento es alemana; el centro de datos no consta, y hay que determinarlo en lugar de darlo por supuesto;",
+        "item9": "un mecanismo de transferencia para cada destinatario situado fuera del Espacio Económico Europeo de los mencionados arriba: no hay ninguno;",
+        "item10": "una forma de cerrar una cuenta. No existe: ninguna pantalla la ofrece y ninguna parte de la API suprime un usuario, de modo que hoy una solicitud de supresión debe atenderse a mano, incluido el archivo de la fotografía, que nada más limpiaría;",
+        "item11": "una evaluación externa de protección de datos de cualquier tipo. No se ha hecho ninguna: ni evaluación de impacto, ni registro de actividades de tratamiento, ni revisión jurídica;",
+        "item12": "dos preguntas que planteó el código y que nadie ha respondido: si la comprobación de edad del registro constituye una decisión automatizada en sentido jurídico, y si la nota privada de un entrenador sobre un jugador debe comunicarse cuando ese jugador ejerce su derecho de acceso."
       }
     },
     "terms": {
