@@ -43,6 +43,94 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * The data categories, in the order they appear in the table.
+ *
+ * A list rather than thirteen hand-written rows, because the four cells of a
+ * row have to stay in step, and because `t()` on a template literal is what
+ * lets `src/locales/__tests__/unusedKeys.test.ts` see the whole
+ * `legal.privacy.collect.rows.*` subtree as used. Adding a category means
+ * adding an id here and four strings to each bundle; the parity test then
+ * insists on the Spanish half.
+ */
+const DATA_CATEGORIES = [
+  "account",
+  "age",
+  "profile",
+  "photo",
+  "activity",
+  "equipment",
+  "finance",
+  "connections",
+  "coachNotes",
+  "opponents",
+  "push",
+  "aiRecords",
+  "technical",
+] as const;
+
+/**
+ * Category · why it is held · lawful basis · how long.
+ *
+ * The shape a reader of sports-platform policies expects, and the reason the
+ * retention question is answered per category here instead of in one paragraph
+ * that says "as long as necessary". The lawful-basis column says "not settled"
+ * in every row on purpose: none of them has been decided, and a table that
+ * quietly asserted six different bases would be the most convincing false
+ * thing on the page.
+ *
+ * Four columns do not fit a phone, so the table keeps its own width and scrolls
+ * inside its own box. The page itself must never scroll sideways — that would
+ * break every other section to accommodate this one.
+ */
+function DataCategoryTable() {
+  const { t } = useT();
+
+  return (
+    <div className="mt-4 overflow-x-auto border border-border">
+      <table className="w-full min-w-[40rem] border-collapse text-left">
+        {/* A real caption rather than an aria-label: it is the table's name in a
+            screen reader's list of tables, and it still makes sense read out of
+            context. Hidden visually because the heading above it already says
+            the same thing to a sighted reader. */}
+        <caption className="sr-only">{t("legal.privacy.collect.tableLabel")}</caption>
+        <thead>
+          <tr className="border-b border-border bg-muted/60">
+            <th scope="col" className="px-3 py-2 align-top font-bold text-foreground">
+              {t("legal.privacy.collect.columns.category")}
+            </th>
+            <th scope="col" className="px-3 py-2 align-top font-bold text-foreground">
+              {t("legal.privacy.collect.columns.why")}
+            </th>
+            <th scope="col" className="px-3 py-2 align-top font-bold text-foreground">
+              {t("legal.privacy.collect.columns.basis")}
+            </th>
+            <th scope="col" className="px-3 py-2 align-top font-bold text-foreground">
+              {t("legal.privacy.collect.columns.retention")}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {DATA_CATEGORIES.map((category) => (
+            <tr key={category} className="border-b border-border last:border-b-0">
+              <th
+                scope="row"
+                className="w-[28%] px-3 py-3 align-top font-normal text-foreground"
+                data-legal-category={category}
+              >
+                {t(`legal.privacy.collect.rows.${category}.category`)}
+              </th>
+              <td className="w-[26%] px-3 py-3 align-top">{t(`legal.privacy.collect.rows.${category}.why`)}</td>
+              <td className="w-[22%] px-3 py-3 align-top">{t(`legal.privacy.collect.rows.${category}.basis`)}</td>
+              <td className="w-[24%] px-3 py-3 align-top">{t(`legal.privacy.collect.rows.${category}.retention`)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function PrivacyPolicyPage() {
   const { t } = useT();
 
@@ -76,15 +164,9 @@ export default function PrivacyPolicyPage() {
           </Section>
 
           <Section heading={t("legal.privacy.collect.heading")}>
-            <ul className="list-disc space-y-1.5 pl-5">
-              <li>{t("legal.privacy.collect.item1")}</li>
-              <li>{t("legal.privacy.collect.item2")}</li>
-              <li>{t("legal.privacy.collect.item3")}</li>
-              <li>{t("legal.privacy.collect.item4")}</li>
-              <li>{t("legal.privacy.collect.item5")}</li>
-              <li>{t("legal.privacy.collect.item6")}</li>
-              <li>{t("legal.privacy.collect.item7")}</li>
-            </ul>
+            <p>{t("legal.privacy.collect.intro")}</p>
+            <p>{t("legal.privacy.collect.basisNote")}</p>
+            <DataCategoryTable />
             <p>{t("legal.privacy.collect.note")}</p>
           </Section>
 

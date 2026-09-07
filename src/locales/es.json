@@ -830,15 +830,97 @@
         "body": "Tennis AI la usan jugadores, entrenadores, padres y madres (mediante cuentas de observador conectadas) y administradores de academia. Algunos jugadores son menores; en ese caso el padre, la madre o el tutor suele tener la cuenta de observador conectada, y la cuenta propia del menor no puede usarse hasta que un tutor la haya aprobado."
       },
       "collect": {
-        "heading": "Qué recogemos",
-        "item1": "Datos de la cuenta: nombre, dirección de correo, rol, fecha de nacimiento (usada para decidir si hace falta el consentimiento de un tutor) y una contraseña, almacenada con hash.",
-        "item2": "Las respuestas de perfil que se dan durante la incorporación: nivel de juego, objetivos, foco de entrenamiento y similares.",
-        "item3": "La actividad que usted o su entrenador introducen: sesiones de entrenamiento y sus revisiones, partidos con los sets y lo que falló en ellos, inscripciones en torneos, material y montajes de cordaje, y eventos de calendario.",
-        "item4": "Las anotaciones de gastos que decida registrar: entrenamiento, viajes, torneos y material.",
-        "item5": "Las conexiones entre cuentas —jugador con entrenador, jugador con padre o madre, pertenencia a una academia— y las notificaciones asociadas.",
-        "item6": "Registros de consentimiento del tutor para jugadores por debajo de la edad de consentimiento digital: la dirección de correo del tutor, un token de un solo uso almacenado con hash y la fecha en que se dio el consentimiento.",
-        "item7": "Datos técnicos de funcionamiento: tokens de autenticación y registros de peticiones y errores del servidor.",
-        "note": "La incorporación no pide deliberadamente ningún dato de salud ni médico."
+        "heading": "Qué se conserva, para qué y durante cuánto tiempo",
+        "intro": "Una fila por cada tipo de información que el producto almacena realmente. Está redactada a partir del esquema de la base de datos y del código que escribe en ella: si algo no aparece en esta tabla, el producto no lo conserva.",
+        "basisNote": "Todavía no se ha decidido la base jurídica de ninguna de estas categorías. Cada entrada de esa columna es la lectura que hace el equipo de qué base resultaría aplicable, no una decisión: véase «Pendiente» al final de esta página.",
+        "tableLabel": "Información conservada, para qué se conserva, su base jurídica previsible y durante cuánto tiempo se conserva",
+        "columns": {
+          "category": "Información",
+          "why": "Para qué se conserva",
+          "basis": "Base jurídica",
+          "retention": "Cuánto tiempo"
+        },
+        "rows": {
+          "account": {
+            "category": "Cuenta y acceso: nombre y apellidos, dirección de correo electrónico, rol, un identificador de directorio que se puede compartir, la contraseña almacenada únicamente como hash bcrypt, si la dirección ha sido verificada y el momento en que se aceptaron las condiciones.",
+            "why": "Para crear la cuenta, iniciar la sesión, dirigirse a usted por su nombre y permitir que otra cuenta le encuentre de forma deliberada y no por conjetura.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta. No se ha implementado ninguna supresión automática."
+          },
+          "age": {
+            "category": "Edad y consentimiento del tutor: fecha de nacimiento, la confirmación de edad hecha en el registro y, en las cuentas por debajo de la edad de consentimiento digital, el nombre y la dirección de correo del tutor, un token de un solo uso almacenado únicamente como hash y la fecha en que se dio el consentimiento.",
+            "why": "Para decidir si un tutor debe aprobar la cuenta antes de que pueda usarse, y para pedírselo por correo electrónico.",
+            "basis": "Sin decidir. Previsiblemente una obligación respecto de los menores, con el consentimiento del tutor en lugar del del menor.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "profile": {
+            "category": "Perfil de juego: nivel, ranking, mano dominante, revés, superficie preferida, puntos fuertes técnicos y físicos, valoraciones de estilo de juego de uno a diez, objetivos actuales y las respuestas dadas durante la incorporación.",
+            "why": "Para ajustar una sesión, un montaje de cordaje y una preselección de torneos al jugador concreto que usa la aplicación y no a uno promedio.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "photo": {
+            "category": "Una fotografía de perfil, recodificada por el servidor como un WebP cuadrado de 512 píxeles como máximo. El archivo que usted eligió no se almacena en ningún momento.",
+            "why": "Para que quienes ya trabajan con un jugador puedan reconocerlo en una lista de nombres.",
+            "basis": "Sin decidir. En el producto es opcional: nada exige una fotografía.",
+            "retention": "Hasta que la elimine o la sustituya, lo que borra el archivo de inmediato. Una copia de seguridad nocturna conserva una copia durante un máximo de catorce días."
+          },
+          "activity": {
+            "category": "Lo que usted o su entrenador registran: sesiones de entrenamiento con sus bloques y revisiones, sus propios comentarios sobre una sesión, partidos con sus sets y las incidencias señaladas en ellos, inscripciones en torneos, eventos de calendario y solicitudes de entrenamiento.",
+            "why": "Esto es el producto: el registro compartido que llevan juntos un entrenador y un jugador.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta. No se ha implementado ninguna supresión automática."
+          },
+          "equipment": {
+            "category": "Raquetas, cordajes, calzado y accesorios de su bolsa, y sus montajes de cordaje con sus tensiones, sus fechas y el modo en que terminó cada uno.",
+            "why": "Para recomendar un cordaje, un calibre y una tensión a partir de lo que usted ha jugado realmente, y para indicar cuándo toca un nuevo encordado.",
+            "basis": "Sin decidir. En el producto es opcional.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "finance": {
+            "category": "Los gastos que decida registrar: un importe, su divisa, una categoría, una descripción, una fecha y, opcionalmente, el torneo al que corresponde el gasto.",
+            "why": "Para totalizar lo que cuestan realmente una temporada, un torneo o una hora de pista. Los importes nunca se convierten entre divisas.",
+            "basis": "Sin decidir. En el producto es opcional.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "connections": {
+            "category": "Los vínculos entre cuentas —jugador con entrenador, jugador con tutor, pertenencia a un equipo y a una academia—, las notificaciones enviadas al respecto y sus preferencias de notificación y de calendario.",
+            "why": "Para decidir quién puede ver qué. Cada lectura de datos de otra persona se comprueba contra estos vínculos en el servidor.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "coachNotes": {
+            "category": "Las notas privadas de un entrenador sobre un jugador, guardadas en una tabla propia para que una nota no pueda aparecer en la vista de la aplicación de un jugador ni de un padre o una madre.",
+            "why": "Para que un entrenador pueda llevar notas de trabajo. Solo el entrenador que escribió una nota puede leerla.",
+            "basis": "Sin decidir. Si tal nota debe comunicarse cuando el jugador ejerce su derecho de acceso es una cuestión abierta.",
+            "retention": "Mientras exista la cuenta del entrenador."
+          },
+          "opponents": {
+            "category": "Fichas de rivales: un nombre, tendencias de juego y observaciones escritas que introduce un entrenador o un jugador sobre alguien que normalmente no tiene cuenta aquí, además de los informes de scouting y los planes de partido elaborados a partir de ellas.",
+            "why": "Para preparar un partido contra un rival concreto.",
+            "basis": "Sin decidir, y es la entrada más difícil de esta página: no se ha preguntado a la persona descrita.",
+            "retention": "Mientras exista la cuenta que introdujo la ficha."
+          },
+          "push": {
+            "category": "Si activa las notificaciones push: el extremo (endpoint) que emite el servicio de push de su navegador, las dos claves que lo acompañan y la descripción que el navegador hace de sí mismo.",
+            "why": "Para entregar una notificación a ese navegador concreto.",
+            "basis": "Sin decidir. Se crea por una acción expresa suya en la aplicación.",
+            "retention": "Hasta que desactive el push. Una suscripción que el servicio de push rechaza se elimina la siguiente vez que falla un envío."
+          },
+          "aiRecords": {
+            "category": "Un registro de cada generación mediante IA: qué proveedor y qué modelo respondieron, un hash de la entrada, si tuvo éxito, cualquier mensaje de error y cuánto tardó. Ese registro no conserva ni la solicitud ni la respuesta.",
+            "why": "Para contabilizar un límite mensual de cien generaciones por cuenta y para comprobar si la función funciona.",
+            "basis": "Sin decidir.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "technical": {
+            "category": "Los registros de peticiones de la API y del servidor web situado delante de ella, que incluyen direcciones IP, y el token de sesión que guarda su propio navegador.",
+            "why": "Para mantener el servicio en funcionamiento, localizar fallos y limitar la tasa de peticiones abusivas.",
+            "basis": "Sin decidir. Previsiblemente el interés propio del operador en prestar el servicio.",
+            "retention": "El servidor web conserva cinco archivos rotados de registro de acceso de diez megabytes cada uno. El registro propio de la API no está limitado por nada de lo que contiene este repositorio."
+          }
+        },
+        "note": "Ni el registro ni la incorporación preguntan nada sobre salud o cuestiones médicas, y la aplicación no tiene ningún campo para ello. En la base de datos existen dos columnas para restricciones por lesión y limitaciones físicas, que leen el constructor de sesiones y el de cordajes, pero nada en la aplicación escribe en ellas. Los campos de texto libre —el objetivo de una sesión, la revisión de un entrenador, una nota sobre un partido— se guardan tal como se escriben, de modo que también se conserva lo que una persona decida escribir en ellos."
       },
       "purpose": {
         "heading": "Para qué lo recogemos",

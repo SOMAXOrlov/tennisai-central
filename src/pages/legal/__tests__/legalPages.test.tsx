@@ -101,6 +101,52 @@ describe("privacy policy", () => {
     expect(container.querySelectorAll('a[href^="mailto:"]').length).toBe(0);
   });
 
+  it("renders every data category as a row of the table, with all four cells filled", () => {
+    const { container } = renderPage(PrivacyPolicyPage);
+    const headers = Array.from(container.querySelectorAll("[data-legal-category]"));
+
+    // The list is spelled out rather than derived from the bundle: a category
+    // silently dropped from the page would otherwise take its own assertion
+    // with it and the test would still pass.
+    expect(headers.map((header) => header.getAttribute("data-legal-category"))).toEqual([
+      "account",
+      "age",
+      "profile",
+      "photo",
+      "activity",
+      "equipment",
+      "finance",
+      "connections",
+      "coachNotes",
+      "opponents",
+      "push",
+      "aiRecords",
+      "technical",
+    ]);
+
+    for (const header of headers) {
+      const cells = header.parentElement!.querySelectorAll("th, td");
+      expect(cells.length).toBe(4);
+      for (const cell of cells) expect(cell.textContent?.trim()).not.toBe("");
+    }
+  });
+
+  it("answers retention per category, and claims no lawful basis anywhere", () => {
+    renderPage(PrivacyPolicyPage);
+    // The reason the table exists: the photo row can carry the backup window
+    // and the log row the web server's rotation, which one shared paragraph
+    // about "as long as necessary" could never have said.
+    expect(screen.getByText(en.legal.privacy.collect.rows.photo.retention)).toBeInTheDocument();
+    expect(screen.getByText(en.legal.privacy.collect.rows.technical.retention)).toBeInTheDocument();
+    // Nothing has been decided, so no row may assert a basis — in either language.
+    for (const row of Object.values(en.legal.privacy.collect.rows)) {
+      expect(row.basis).toMatch(/^Not settled/);
+    }
+    for (const row of Object.values(es.legal.privacy.collect.rows)) {
+      expect(row.basis).toMatch(/^Sin decidir/);
+    }
+  });
+
   it("keeps the 'still open' list of decisions a lawyer has to make", () => {
     renderPage(PrivacyPolicyPage);
     expect(screen.getByRole("heading", { name: en.legal.privacy.open.heading })).toBeInTheDocument();

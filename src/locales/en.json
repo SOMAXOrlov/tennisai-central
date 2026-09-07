@@ -830,15 +830,97 @@
         "body": "Tennis AI is used by players, coaches, parents (as connected observer accounts) and academy admins. Some players are minors; where that is the case a parent or guardian normally holds the connected observer account, and a junior's own account is not usable until a guardian has approved it."
       },
       "collect": {
-        "heading": "What we collect",
-        "item1": "Account details: name, e-mail address, role, date of birth (used to decide whether guardian consent is required) and a password, stored hashed.",
-        "item2": "Profile answers given during onboarding — playing level, goals, coaching focus and similar.",
-        "item3": "Activity you or your coach enter: training sessions and their reviews, matches with set scores and what went wrong in them, tournament entries, equipment and string setups, and calendar events.",
-        "item4": "Finance entries you choose to log: training, travel, tournament and equipment costs.",
-        "item5": "Connections between accounts — player to coach, player to parent, academy memberships — and the notifications that go with them.",
-        "item6": "Guardian consent records for players under the age of digital consent: the guardian's e-mail address, a hashed one-time token, and when consent was given.",
-        "item7": "Operational technical data: authentication tokens, server request and error logs.",
-        "note": "Onboarding deliberately asks for no health or medical information."
+        "heading": "What is held, why, and for how long",
+        "intro": "One row for each kind of information the product actually stores. It is written from the database schema and the code that writes to it: if something is not in this table, the product does not hold it.",
+        "basisNote": "No lawful basis has been settled for any of these categories yet. Each entry in that column is the team's reading of which basis is likely to apply, not a decision — see “Still open” at the end of this page.",
+        "tableLabel": "Information held, why it is held, its likely lawful basis, and how long it is kept",
+        "columns": {
+          "category": "Information",
+          "why": "Why it is held",
+          "basis": "Lawful basis",
+          "retention": "How long"
+        },
+        "rows": {
+          "account": {
+            "category": "Account and sign-in: first and last name, e-mail address, role, a shareable directory id, your password stored only as a bcrypt hash, whether the address has been verified, and the moment you accepted the terms.",
+            "why": "To create the account, sign you in, address you by name, and let another account find you deliberately rather than by guessing.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists. No automatic deletion is implemented."
+          },
+          "age": {
+            "category": "Age and guardian consent: date of birth, the age confirmation made at sign-up, and — for an account below the age of digital consent — a guardian's name and e-mail address, a one-time consent token stored only as a hash, and when consent was given.",
+            "why": "To decide whether a guardian has to approve the account before it can be used, and to ask that guardian by e-mail.",
+            "basis": "Not settled. Likely an obligation towards children, with the guardian's consent standing in for the child's.",
+            "retention": "For as long as the account exists."
+          },
+          "profile": {
+            "category": "Playing profile: level, ranking, dominant hand, backhand, preferred surface, technical and physical strengths, playing-style ratings from one to ten, current goals, and the answers given during onboarding.",
+            "why": "To fit a session, a string setup and a tournament shortlist to the player in front of the app rather than to an average one.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists."
+          },
+          "photo": {
+            "category": "One profile photograph, re-encoded by the server into a square WebP of at most 512 pixels. The file you chose is never stored.",
+            "why": "So the people who already work with a player can recognise them in a list of names.",
+            "basis": "Not settled. It is optional in the product: nothing requires a photograph.",
+            "retention": "Until you remove or replace it, which deletes the file immediately. A nightly backup keeps a copy for up to fourteen days."
+          },
+          "activity": {
+            "category": "What you or your coach record: training sessions with their blocks and reviews, your own feedback on a session, matches with their set scores and the issues raised about them, tournament entries, calendar events and training requests.",
+            "why": "This is the product — the shared record a coach and a player keep together.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists. No automatic deletion is implemented."
+          },
+          "equipment": {
+            "category": "Rackets, strings, shoes and accessories in your bag, and your string setups with their tensions, dates and how each one ended.",
+            "why": "To recommend a string, a gauge and a tension from what you have actually played with, and to say when a restring is due.",
+            "basis": "Not settled. It is optional in the product.",
+            "retention": "For as long as the account exists."
+          },
+          "finance": {
+            "category": "Costs you choose to log: an amount, its currency, a category, a description, a date, and optionally the tournament the cost belongs to.",
+            "why": "To total what a season, a tournament or an hour on court actually costs. Amounts are never converted between currencies.",
+            "basis": "Not settled. It is optional in the product.",
+            "retention": "For as long as the account exists."
+          },
+          "connections": {
+            "category": "The links between accounts — player to coach, player to guardian, team and academy membership — the notifications sent about them, and your notification and calendar preferences.",
+            "why": "To decide who may see what. Every read of another person's data is checked against these links on the server.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists."
+          },
+          "coachNotes": {
+            "category": "A coach's private notes about a player, kept in a table of their own so that a note cannot be read into a player's or a parent's view of the app.",
+            "why": "So a coach can keep working notes. Only the coach who wrote a note can read it.",
+            "basis": "Not settled. Whether such a note is disclosed when the player asks for their data is an open question.",
+            "retention": "For as long as the coach's account exists."
+          },
+          "opponents": {
+            "category": "Opponent records: a name, playing tendencies and written observations entered by a coach or a player about somebody who usually has no account here, plus the scouting reports and game plans built on them.",
+            "why": "To prepare for a match against a specific opponent.",
+            "basis": "Not settled, and the hardest entry on this page: the person described has not been asked.",
+            "retention": "For as long as the account that entered the record exists."
+          },
+          "push": {
+            "category": "If you switch on push notifications: the endpoint your browser's push service issues, the two keys that go with it, and the description the browser gives of itself.",
+            "why": "To deliver a notification to that particular browser.",
+            "basis": "Not settled. It is created by your own explicit action in the app.",
+            "retention": "Until you switch push off. A subscription the push service rejects is deleted the next time a message fails."
+          },
+          "aiRecords": {
+            "category": "A record of each AI generation: which provider and model answered, a hash of the input, whether it succeeded, any error message, and how long it took. Neither the prompt nor the answer is kept in that record.",
+            "why": "To count a monthly cap of one hundred generations per account and to see whether the feature is working.",
+            "basis": "Not settled.",
+            "retention": "For as long as the account exists."
+          },
+          "technical": {
+            "category": "Request logs from the API and from the web server in front of it, which include IP addresses, and the sign-in token your own browser holds.",
+            "why": "To keep the service running, to find faults, and to rate-limit abuse.",
+            "basis": "Not settled. Likely the operator's own interest in running the service.",
+            "retention": "The web server keeps five rolled access-log files of ten megabytes each. The API's own log is not bounded by anything in this repository."
+          }
+        },
+        "note": "Sign-up and onboarding ask no health or medical question, and the app has no field for one. Two columns for injury restrictions and physical limitations do exist in the database and are read by the session and string builders, but nothing in the app writes to them. Free-text boxes — a session goal, a coach's review, a note on a match — are stored exactly as typed, so whatever a person chooses to write in one is held too."
       },
       "purpose": {
         "heading": "Why we collect it",
