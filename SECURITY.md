@@ -72,6 +72,24 @@ means tests, a code reading, or an executed drill — not a third-party audit.
   child, and so on).
 - Frontend role gating (`src/auth/RouteGuard.tsx`) is user experience only;
   the server is the boundary.
+- **Profile photos** — `GET /api/players/:id/photo` (`server/src/photos/`) is
+  the only way to read an uploaded photo. The files sit in `UPLOADS_DIR` under
+  32 random hex characters and no web server has a route to that directory
+  (`deploy/hetzner/Caddyfile` carries a comment saying why one must never be
+  added). Authorization runs **before** the endpoint looks at whether a photo
+  exists, and the 403 and the 404 carry byte-identical bodies, so a response
+  cannot be used to discover whether a given person has a picture; an unknown
+  user id is refused the same way rather than 404, so it is not an
+  account-enumeration oracle either. For an account below the age of digital
+  consent (`isMinorAccount`, which fails closed when the age is unknown) only
+  the player, an actively assigned or connected coach, or a guardian with
+  `parentalConsent` recorded may read it — not another player, not an observer
+  holding a connection, not an unconsented guardian. The check is composed from
+  the existing helpers (`assertCanViewPlayerPhoto`) rather than added as a
+  fourth ladder. Verified by `server/src/photos/photo.routes.test.ts` (each
+  rung and each refusal) and `server/src/auth/minorAccount.test.ts`. Uploads
+  are self-only: no route exists for one account to put a photo on another's
+  profile.
 
 ### Input handling
 
@@ -81,10 +99,23 @@ means tests, a code reading, or an executed drill — not a third-party audit.
 - Prisma parameterises all queries. The one raw statement is the health
   probe's `SELECT 1` with no inputs.
 - JSON bodies are capped at 1 MB (`express.json({ limit: "1mb" })`).
+- **Uploaded images** (`POST /api/me/photo`) — the accepted formats are decided
+  by magic bytes, not by the declared `Content-Type` or the file extension. The
+  5 MB cap is enforced twice: from `Content-Length` before parsing, and by
+  multer's streaming byte count, so a full body is never buffered. Every upload
+  is re-encoded with `sharp` into a 512-pixel square WebP and only those bytes
+  are written — that re-encode is what removes EXIF and GPS, and the original
+  bytes are never persisted. `server/src/photos/storage.test.ts` uploads a JPEG
+  carrying a real GPS IFD, proves the fixture carries it, then asserts the
+  stored bytes contain no EXIF block at all. Stripping metadata in the browser
+  was considered and rejected: anyone can `POST` the original straight to the
+  endpoint. The route is rate-limited to 20 changes per 15 minutes per address.
 
 ### Rate limits
 
 - `/api/auth/*`: 30 requests per 15 minutes per address.
+- `/api/me/photo`: 20 requests per 15 minutes per address — each upload costs a
+  decode, a re-encode and two disk operations.
 - All other `/api/*`: 300 requests per 15 minutes per address.
 - `/api/health`: outside the general limiter so uptime monitors are never
   throttled into a false alarm, with its own ceiling of 120 requests per
@@ -134,11 +165,29 @@ means tests, a code reading, or an executed drill — not a third-party audit.
   counts on every table users write to. The procedure, timings and gaps are in
   `deploy/hetzner/RESTORE.md`. The dump is unencrypted on the host's disk and
   there is no off-site copy; both are listed there as open items.
+- Since profile photos arrived, the same script also writes a nightly
+  `uploads_*.tar.gz` of `UPLOADS_DIR` (14 kept), because those files are not in
+  the `pg_dump` and a database-only restore would leave every photo row
+  pointing at a file that is not there. The photos are on a persistent compose
+  volume (`uploads`), added in the same change. **The photo restore has not
+  been drilled** — the procedure in `RESTORE.md` is the exact inverse of what
+  the backup writes, but it has not been executed, and it is listed there as an
+  open item.
 
 ## What has NOT been checked
 
 - **No external penetration test** or independent security review of any
   kind. Everything above was done by the people who wrote the code.
+- **There is no account-deletion or erasure path at all.** Searched on
+  2026-09-07 while adding profile photos: no `DELETE` route touches a user, no
+  `prisma.user.delete` call exists anywhere in `server/`, and nothing in the
+  client offers it. So a person cannot delete their account, and the photo
+  feature has nothing to hook a "delete the file too" step onto. Replacing a
+  photo deletes the file it replaces and removing one deletes it, but an
+  erasure request would today have to be carried out by hand — including the
+  file under `UPLOADS_DIR`, which nothing else would clean up. This is the
+  first data the product holds that an erasure would have to reach outside the
+  database, and it needs building.
 - **No formal GDPR / data-protection assessment.** The product stores names,
   e-mail addresses, and training data about people who may be minors. A
   privacy policy and a guardian-consent step exist; no DPIA, no records of
