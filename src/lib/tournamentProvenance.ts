@@ -11,9 +11,38 @@
 import { getLocale } from "@/lib/i18n";
 import type { Tournament } from "@/types";
 
-/** Feed identifiers the server writes into `Tournament.source`. */
-export const KNOWN_SOURCES = ["utr-events", "itf-juniors", "static-snapshot", "http-live"] as const;
+/** Source identifiers the server writes into `Tournament.source`. */
+export const KNOWN_SOURCES = [
+  "utr-events",
+  "itf-juniors",
+  "static-snapshot",
+  "http-live",
+  // A coach typed this event in. Not a feed: nothing goes and checks it, which
+  // is exactly why it is safe from the nightly prune and why its freshness is
+  // "when it was last edited" rather than "when a source last confirmed it".
+  "coach-entered",
+] as const;
 export type KnownSource = (typeof KNOWN_SOURCES)[number];
+
+/**
+ * Sources that actually go and look. `coach-entered` is a source in the column
+ * but not a feed, so a row carrying it has no freshness check behind it and
+ * must not be shown as though it did.
+ */
+const FEED_SOURCES: ReadonlySet<string> = new Set([
+  "utr-events",
+  "itf-juniors",
+  "static-snapshot",
+  "http-live",
+]);
+
+/** Was this row produced by something that fetches, rather than by a person? */
+export function isFeedSource(source: string | null | undefined): boolean {
+  const trimmed = source?.trim() ?? "";
+  // An unrecognised source is assumed to be a feed: it came from somewhere
+  // this app does not know about, and its `lastSeenAt` is the best it has.
+  return trimmed !== "" && (FEED_SOURCES.has(trimmed) || !isKnownSource(trimmed));
+}
 
 export type ProvenanceKind = KnownSource | "manual" | "other";
 
@@ -51,9 +80,12 @@ export interface Freshness {
 export function freshnessOf(
   t: Pick<Tournament, "source" | "lastSeenAt" | "updatedAt">,
 ): Freshness {
-  const hasSource = provenanceOf(t.source).kind !== "manual";
-  if (hasSource && isIsoDate(t.lastSeenAt)) return { basis: "feed", at: t.lastSeenAt };
-  if (!hasSource && isIsoDate(t.updatedAt)) return { basis: "edited", at: t.updatedAt };
+  // Keyed on whether a FEED produced the row, not on whether the column has
+  // any value at all: a coach-entered row has a source and no feed behind it,
+  // so its freshness is when a person last touched it.
+  const fromFeed = isFeedSource(t.source);
+  if (fromFeed && isIsoDate(t.lastSeenAt)) return { basis: "feed", at: t.lastSeenAt };
+  if (!fromFeed && isIsoDate(t.updatedAt)) return { basis: "edited", at: t.updatedAt };
   return { basis: null, at: null };
 }
 
@@ -113,9 +145,15 @@ export function describeProvenance(
   now: Date = new Date(),
 ): ProvenanceText {
   const provenance = provenanceOf(row.source);
-  const manual = provenance.kind === "manual";
+  // A coach's own entry reads as hand-entered, because that is what it is —
+  // the pencil icon, not the feed icon.
+  const manual = provenance.kind === "manual" || provenance.kind === "coach-entered";
   const source = manual
-    ? t("tournaments.provenance.manual")
+    ? t(
+        provenance.kind === "coach-entered"
+          ? "tournaments.provenance.coachEntered"
+          : "tournaments.provenance.manual",
+      )
     : t("tournaments.provenance.viaSource", {
         source:
           provenance.kind === "other"

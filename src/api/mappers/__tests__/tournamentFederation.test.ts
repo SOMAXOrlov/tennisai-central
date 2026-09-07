@@ -65,3 +65,49 @@ describe("mapTournament — provenance and planning facts", () => {
     expect(t.registeredCount).toBeUndefined();
   });
 });
+
+// ── The sanctioning body ───────────────────────────────────────────────────
+// This mapper used to INFER a federation when the record did not state one,
+// matching "USTA", "ATP" and "JUNIOR" against the name, category and level and
+// falling back to "ITF". Every row therefore arrived wearing a tour badge
+// whether or not anyone knew which tour ran the event — and it undid the
+// server's own decision to store a coach-entered row with no federation at all.
+describe("mapTournament — the sanctioning body is read, never guessed", () => {
+  const base = {
+    id: "x",
+    name: "Palm Springs Junior Open",
+    city: "Palm Springs",
+    country: "United States",
+    startDate: "2026-11-14T00:00:00.000Z",
+    endDate: "2026-11-16T00:00:00.000Z",
+  };
+
+  it("passes a stated federation through", () => {
+    expect(mapTournament({ ...base, federation: "UTR" }).federation).toBe("UTR");
+    expect(mapTournament({ ...base, federation: "itf" }).federation).toBe("ITF");
+  });
+
+  it("leaves a row that states none WITHOUT one", () => {
+    // A coach-entered event: nothing knows who sanctions it, so no badge.
+    expect(mapTournament(base).federation).toBeUndefined();
+    expect(mapTournament({ ...base, federation: null }).federation).toBeUndefined();
+  });
+
+  it("does not read a federation out of the level, name or category", () => {
+    // The exact regression: "USTA Level 5" in the level field made the mapper
+    // stamp the row "USTA", inventing a sanctioning body the server had
+    // deliberately declined to record.
+    expect(mapTournament({ ...base, level: "USTA Level 5" }).federation).toBeUndefined();
+    expect(mapTournament({ ...base, name: "ATP Masters lookalike" }).federation).toBeUndefined();
+    expect(mapTournament({ ...base, category: "Junior Futures" }).federation).toBeUndefined();
+  });
+
+  it("still reads the alternative keys a record may use for the field itself", () => {
+    expect(mapTournament({ ...base, tour: "WTA" }).federation).toBe("WTA");
+    expect(mapTournament({ ...base, circuit: "ATP" }).federation).toBe("ATP");
+  });
+
+  it("ignores a value that is not a federation this app knows", () => {
+    expect(mapTournament({ ...base, federation: "LTA" }).federation).toBeUndefined();
+  });
+});

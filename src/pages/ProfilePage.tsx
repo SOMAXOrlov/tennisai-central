@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/lib/i18n";
-import { User, Copy, Check, ClipboardList, Pencil, CalendarRange, Trophy } from "lucide-react";
+import { User, Copy, Check, ClipboardList, Pencil, CalendarRange, Trophy, MapPin } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
+import { useCalendarPreferences, useSaveCalendarPreferences, useCountries, useHomeCountry, useSaveHomeCountry } from "@/hooks/api/queries";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toastSuccess } from "@/lib/feedback";
 import { onboardingApi } from "@/api/endpoints/onboarding";
 import { questionsForRole } from "@/lib/onboarding/questions";
@@ -23,6 +24,51 @@ import { PlayerAvatar } from "@/components/PlayerAvatar";
 // The federation code doubles as its own label (they are codes, not words to
 // translate); only the one-line explanation is copy, looked up per render.
 const FEDERATION_OPTIONS = ["ITF", "UTR", "ATP", "WTA", "USTA"] as const;
+
+/**
+ * The one place a player says where they compete.
+ *
+ * Its own component so it can hold its own query state without adding four
+ * hooks to a page that is mostly a form — and so the "not set" state is
+ * rendered as a real answer rather than an empty select.
+ */
+function HomeCountryCard({ playerId }: { playerId: string }) {
+  const { t } = useT();
+  const { data: countries = [] } = useCountries();
+  const { data: home } = useHomeCountry(playerId);
+  const save = useSaveHomeCountry(playerId);
+  const current = home?.homeCountry ?? "";
+
+  return (
+    <DashboardCard title={t("profile.homeCountry.title")} icon={<MapPin className="h-4 w-4" />}>
+      <p className="mb-3 text-sm text-muted-foreground">{t("profile.homeCountry.hint")}</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="profile-home-country">{t("profile.homeCountry.label")}</Label>
+          <Select value={current} onValueChange={(next) => save.mutate(next)}>
+            <SelectTrigger id="profile-home-country" className="w-[260px]" disabled={save.isPending}>
+              <SelectValue placeholder={t("profile.homeCountry.placeholder")} />
+            </SelectTrigger>
+            <SelectContent>
+              {countries.map((c) => (
+                <SelectItem key={c.code} value={c.code}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {current ? (
+          <Button variant="ghost" size="sm" disabled={save.isPending} onClick={() => save.mutate(null)}>
+            {t("profile.homeCountry.clear")}
+          </Button>
+        ) : (
+          <span className="pb-2 text-xs text-muted-foreground">{t("profile.homeCountry.unset")}</span>
+        )}
+      </div>
+    </DashboardCard>
+  );
+}
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -131,6 +177,13 @@ export default function ProfilePage() {
           </dl>
         )}
       </DashboardCard>
+
+      {/* Where this player competes. The tournaments page opens on it, and
+          nothing is inferred from an IP address or a timezone — an unset country
+          makes that page say it cannot narrow itself rather than pick one. Only
+          a player has one: a coach sets it for each of their players, from the
+          tournaments page itself. */}
+      {user?.role === "player" && <HomeCountryCard playerId={user.id} />}
 
       <DashboardCard title={t("profile.calendars")} icon={<CalendarRange className="h-4 w-4" />}>
         <p className="mb-3 text-sm text-muted-foreground">{t("profile.calendarsHint")}</p>

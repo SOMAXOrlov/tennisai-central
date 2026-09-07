@@ -1,7 +1,21 @@
-// Maps a raw tournament record (from the AWS REST API) to a TournamentFederation.
-// The upstream feed aggregates events from multiple sanctioning bodies and may
-// expose the federation under different keys (`federation`, `tour`, `sanction`,
-// `circuit`, `organization`). When absent, we infer it from category / name.
+// Maps a raw tournament record from the API onto the client's `Tournament`.
+//
+// SANCTIONING BODY: READ, NEVER GUESSED
+// This used to infer a federation when the record did not state one — matching
+// "USTA", "ATP", "JUNIOR" and so on against the name, category and level, and
+// falling back to "ITF" when nothing matched. Every row therefore arrived
+// wearing a tour badge, whether or not anybody knew which tour ran the event.
+//
+// It also actively undid a decision made on the server. A tournament a coach
+// types in is stored with NO federation on purpose, because nothing knows
+// whether the event is USTA-sanctioned — and the old heuristic read the words
+// "USTA Level 5" out of the level field and stamped it "USTA" regardless.
+// Inventing a sanctioning body is precisely what made the owner distrust this
+// data, so it is now read and never derived.
+//
+// The alternative keys are still consulted, because a record may name the field
+// differently, but nothing is derived from prose. Every consumer of
+// `federation` already handles its absence.
 import type { Tournament, TournamentFederation } from "@/types";
 
 const VALID: readonly TournamentFederation[] = ["ITF", "WTA", "ATP", "UTR", "USTA"];
@@ -14,22 +28,22 @@ function normalize(value: unknown): TournamentFederation | undefined {
   return undefined;
 }
 
-export function inferFederation(raw: Partial<Tournament> & Record<string, unknown>): TournamentFederation {
-  const direct =
+/**
+ * The sanctioning body the record STATES, or undefined when it states none.
+ *
+ * Undefined is a real answer: the page shows no badge, rather than a badge for
+ * a tour nobody said ran the event.
+ */
+export function readFederation(
+  raw: Partial<Tournament> & Record<string, unknown>,
+): TournamentFederation | undefined {
+  return (
     normalize(raw.federation) ??
     normalize(raw.tour) ??
     normalize(raw.sanction) ??
     normalize(raw.circuit) ??
-    normalize(raw.organization);
-  if (direct) return direct;
-
-  const haystack = `${raw.category ?? ""} ${raw.name ?? ""} ${raw.level ?? ""}`.toUpperCase();
-  if (/\bATP\b|\bMASTERS\b/.test(haystack)) return "ATP";
-  if (/\bWTA\b/.test(haystack)) return "WTA";
-  if (/\bUSTA\b|\bUS OPEN\b/.test(haystack)) return "USTA";
-  if (/\bUTR\b/.test(haystack)) return "UTR";
-  if (/\bITF\b|\bFUTURES\b|\bJUNIOR\b|\bWORLD TENNIS TOUR\b/.test(haystack)) return "ITF";
-  return "ITF";
+    normalize(raw.organization)
+  );
 }
 
 export function mapTournament(raw: Record<string, unknown>): Tournament {
@@ -49,7 +63,7 @@ export function mapTournament(raw: Record<string, unknown>): Tournament {
     startDate: String(t.startDate ?? raw.start ?? raw.startsAt ?? ""),
     endDate: String(t.endDate ?? raw.end ?? raw.endsAt ?? t.startDate ?? ""),
     description: t.description as string | undefined,
-    federation: inferFederation(t),
+    federation: readFederation(t),
     latitude: typeof t.latitude === "number" ? t.latitude : null,
     longitude: typeof t.longitude === "number" ? t.longitude : null,
     // Planning facts and provenance. The server has sent these for a while; this

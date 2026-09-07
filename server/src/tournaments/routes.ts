@@ -193,6 +193,14 @@ function facet(name: string) {
 const listQuery = z.object({
   from: z.string().optional(),
   to: z.string().optional(),
+  /**
+   * Free text across the name, host city and country — the page's search box.
+   *
+   * It has to be here rather than in the browser now that the list is paged: a
+   * search that only looked at the 48 rows on screen would answer "no results"
+   * for an event three pages down.
+   */
+  q: z.string().trim().max(120).optional(),
   limit: z.coerce.number().int().positive().max(MAX_ROWS).optional(),
   offset: z.coerce.number().int().min(0).max(MAX_OFFSET).optional(),
   country: facet("country"),
@@ -227,6 +235,15 @@ function listWhere(query: ListQuery) {
     ...(query.surface ? { surface: { in: query.surface } } : {}),
     ...(query.category ? { category: { in: query.category } } : {}),
     ...(query.level ? { level: { in: query.level } } : {}),
+    ...(query.q
+      ? {
+          OR: [
+            { name: { contains: query.q, mode: "insensitive" as const } },
+            { city: { contains: query.q, mode: "insensitive" as const } },
+            { country: { contains: query.q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
   };
 }
 
@@ -451,6 +468,20 @@ tournamentsRouter.get(
       unmatchedCountryCodes: unmatched.map((code) => ({ code, name: countryNameFor(code) })),
       playersReadable: playerIds.length,
       playersWithHomeCountry: codes.length,
+      /**
+       * Which readable players have not said where they compete.
+       *
+       * Ids only — the caller already knows the names of everyone they may
+       * read, and sending them again from here would widen what this endpoint
+       * discloses for no gain. It exists so the page's empty state can offer
+       * "set it" for the actual players who are missing one, rather than
+       * sending a coach off to hunt through profiles.
+       */
+      missingHomeCountry: profiles
+        .filter((p) => normaliseCountryCode(p.homeCountry) === null)
+        .map((p) => p.userId)
+        .concat(playerIds.filter((id) => !profiles.some((p) => p.userId === id)))
+        .sort(),
       /** `ok` | `no-players` | `no-home-country` | `unmatched` */
       reason,
       /**

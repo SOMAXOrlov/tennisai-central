@@ -8,7 +8,12 @@ import { trainingsApi } from "@/api/endpoints/trainings";
 import { trainingRequestsApi } from "@/api/endpoints/trainingRequests";
 import { teamsApi } from "@/api/endpoints/teams";
 import { calendarApi } from "@/api/endpoints/calendar";
-import { tournamentsApi } from "@/api/endpoints/tournaments";
+import {
+  tournamentsApi,
+  homeCountryApi,
+  type TournamentQuery,
+  type NewTournament,
+} from "@/api/endpoints/tournaments";
 import { hiddenTournamentsApi } from "@/api/endpoints/hiddenTournaments";
 import { financeApi } from "@/api/endpoints/finance";
 import { equipmentApi } from "@/api/endpoints/equipment";
@@ -24,7 +29,15 @@ export const queryKeys = {
   trainingRequests: ["trainingRequests"] as const,
   teams: ["teams"] as const,
   calendarEvents: ["calendarEvents"] as const,
+  // The bare key stays exactly `["tournaments"]` so the unfiltered callers
+  // (calendar, command palette, tournament detail) keep their cache entry, and
+  // so `invalidateQueries({ queryKey: queryKeys.tournaments })` still matches
+  // every filtered variant by prefix.
   tournaments: ["tournaments"] as const,
+  tournamentFacets: (query: TournamentQuery) => ["tournamentFacets", query] as const,
+  tournamentScope: ["tournamentScope"] as const,
+  countries: ["countries"] as const,
+  homeCountry: (playerId: string) => ["homeCountry", playerId] as const,
   playerTournaments: ["playerTournaments"] as const,
   hiddenTournaments: ["hidden-tournaments"] as const,
   finance: (playerId: string) => ["finance", playerId] as const,
@@ -339,10 +352,98 @@ export function useDeleteCalendarEvent() {
 
 // ─── Tournament Hooks ───
 
-export function useTournaments() {
+/**
+ * The catalog, narrowed on the server.
+ *
+ * Called with no argument it is the query it always was — the whole date
+ * window — which is what the calendar, the command palette and the tournament
+ * detail page need, since they look their row up in the list. Called with a
+ * query it fetches only the page asked for.
+ *
+ * `placeholderData` keeps the previous page on screen while the next one
+ * arrives, so changing a filter does not blank the grid.
+ */
+export function useTournaments(query?: TournamentQuery, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: queryKeys.tournaments,
-    queryFn: async () => (await tournamentsApi.getTournaments()).data,
+    queryKey: query ? [...queryKeys.tournaments, query] : queryKeys.tournaments,
+    queryFn: async () => (await tournamentsApi.getTournaments(query)).data,
+    enabled: options?.enabled ?? true,
+    placeholderData: (previous) => previous,
+  });
+}
+
+/**
+ * What there is to filter BY, aggregated over the whole date window.
+ *
+ * Separate from the row query on purpose: the option lists must not shrink as
+ * the list shrinks, which is what happened when the page built its dropdowns
+ * from whichever rows it happened to be holding.
+ */
+export function useTournamentFacets(query: TournamentQuery = {}) {
+  return useQuery({
+    queryKey: queryKeys.tournamentFacets(query),
+    queryFn: async () => (await tournamentsApi.getFacets(query)).data,
+    placeholderData: (previous) => previous,
+  });
+}
+
+/** What this viewer's page should open on, and why it might not be able to. */
+export function useTournamentScope() {
+  return useQuery({
+    queryKey: queryKeys.tournamentScope,
+    queryFn: async () => (await tournamentsApi.getScope()).data,
+  });
+}
+
+/** Coach or admin: add an event no feed carries. */
+export function useCreateTournament() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: NewTournament) => tournamentsApi.createTournament(data),
+    onSuccess: () => {
+      // The catalog, the facet counts and — when a player was entered — that
+      // player's schedule and next-tournament countdown all just changed.
+      qc.invalidateQueries({ queryKey: queryKeys.tournaments });
+      qc.invalidateQueries({ queryKey: ["tournamentFacets"] });
+      qc.invalidateQueries({ queryKey: queryKeys.playerTournaments });
+      qc.invalidateQueries({ queryKey: queryKeys.calendarEvents });
+      toastSuccess("toast.tournament.added");
+    },
+    onError: (e: unknown) => toastError("toast.tournament.addFailed", e),
+  });
+}
+
+/** The countries the server will accept as a home country. */
+export function useCountries() {
+  return useQuery({
+    queryKey: queryKeys.countries,
+    queryFn: async () => (await homeCountryApi.listCountries()).data,
+    // A fixed list. Fetching it once per session is enough.
+    staleTime: Infinity,
+  });
+}
+
+/** Where one player competes. */
+export function useHomeCountry(playerId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.homeCountry(playerId ?? ""),
+    queryFn: async () => (await homeCountryApi.get(playerId!)).data,
+    enabled: Boolean(playerId),
+  });
+}
+
+/** Set or clear it — a player their own, a coach their player's. */
+export function useSaveHomeCountry(playerId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (homeCountry: string | null) => homeCountryApi.save(playerId!, homeCountry),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.homeCountry(playerId ?? "") });
+      // The tournaments page's default scope is computed from exactly this.
+      qc.invalidateQueries({ queryKey: queryKeys.tournamentScope });
+      toastSuccess("toast.homeCountry.saved");
+    },
+    onError: (e: unknown) => toastError("toast.homeCountry.saveFailed", e),
   });
 }
 

@@ -69,3 +69,30 @@ describe("formatRelativeTime (en)", () => {
     expect(formatRelativeTime(new Date(NOW.getTime() + 60_000).toISOString(), NOW)).toBe("now");
   });
 });
+
+// ── A coach's own entry ────────────────────────────────────────────────────
+// `coach-entered` is a source in the column but not a feed: nothing goes and
+// confirms it, which is why no feed run can prune it and why its freshness has
+// to come from when a person last touched it.
+describe("a coach-entered row", () => {
+  it("is a known source, not an unrecognised slug", () => {
+    expect(provenanceOf("coach-entered")).toEqual({ kind: "coach-entered", raw: "coach-entered" });
+  });
+
+  it("takes its freshness from when it was edited, never from a feed check", () => {
+    // Keying on "has any source" would have made this read "freshness not
+    // available", because a hand-entered row has no lastSeenAt by design.
+    const edited = ago(2 * 86_400_000);
+    expect(freshnessOf({ source: "coach-entered", lastSeenAt: null, updatedAt: edited })).toEqual({
+      basis: "edited",
+      at: edited,
+    });
+  });
+
+  it("ignores a lastSeenAt even if one somehow got written", () => {
+    const edited = ago(86_400_000);
+    expect(
+      freshnessOf({ source: "coach-entered", lastSeenAt: ago(60_000), updatedAt: edited }),
+    ).toEqual({ basis: "edited", at: edited });
+  });
+});

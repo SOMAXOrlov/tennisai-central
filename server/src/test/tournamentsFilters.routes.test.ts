@@ -360,3 +360,44 @@ describe("GET /api/tournaments/scope", () => {
     expect(db.playerProfile.findMany).not.toHaveBeenCalled();
   });
 });
+
+describe("GET /api/tournaments — search", () => {
+  beforeEach(() => {
+    db.tournament.findMany.mockResolvedValue([]);
+  });
+
+  it("searches on the server, across name, city and country", async () => {
+    // A search that only looked at the 48 rows on screen would answer "no
+    // results" for an event three pages down, which is what made this a server
+    // parameter rather than a browser pass.
+    await request(app).get("/api/tournaments?q=lisbon").set("Authorization", bearer(COACH));
+
+    const where = firstCallArg<{ where: { OR?: unknown[] } }>(db.tournament.findMany).where;
+    expect(where.OR).toEqual([
+      { name: { contains: "lisbon", mode: "insensitive" } },
+      { city: { contains: "lisbon", mode: "insensitive" } },
+      { country: { contains: "lisbon", mode: "insensitive" } },
+    ]);
+  });
+
+  it("ignores an empty search box", async () => {
+    await request(app).get("/api/tournaments?q=%20%20").set("Authorization", bearer(COACH));
+    expect(firstCallArg<{ where: { OR?: unknown[] } }>(db.tournament.findMany).where.OR).toBeUndefined();
+  });
+
+  it("counts the search in `matching` but not in the option lists", async () => {
+    // The dropdowns must not shrink as the search narrows the list.
+    db.tournament.groupBy.mockResolvedValue([]);
+    db.tournament.count.mockResolvedValue(0);
+
+    await request(app).get("/api/tournaments/facets?q=lisbon").set("Authorization", bearer(COACH));
+
+    for (const call of db.tournament.groupBy.mock.calls) {
+      expect(call[0].where.OR).toBeUndefined();
+    }
+    // The window total ignores it; the matching count applies it.
+    const [windowCall, matchingCall] = db.tournament.count.mock.calls;
+    expect(windowCall[0].where.OR).toBeUndefined();
+    expect(matchingCall[0].where.OR).toBeDefined();
+  });
+});

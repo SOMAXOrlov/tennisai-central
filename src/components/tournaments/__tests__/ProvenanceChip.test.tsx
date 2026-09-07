@@ -65,3 +65,28 @@ describe("<ProvenanceChip />", () => {
     expect(screen.getByTestId("provenance-legend")).toHaveTextContent(/Each chip names the feed/);
   });
 });
+
+describe("a coach-entered row", () => {
+  it("reads as hand-entered, and says when it was last edited", () => {
+    // Not "via coach-entered", and not a feed freshness it never had. A coach
+    // must be able to tell their own entry from a collected one at a glance.
+    const text = describeProvenance(
+      { source: "coach-entered", lastSeenAt: undefined, updatedAt: hoursAgo(26) },
+      t,
+      NOW,
+    );
+    expect(text.source).toBe("Entered by a coach");
+    expect(text.manual).toBe(true);
+    expect(text.freshness).toBe("edited yesterday");
+  });
+
+  it("renders with the hand-entered wording rather than a feed name", () => {
+    render(
+      <ProvenanceChip
+        tournament={{ source: "coach-entered", lastSeenAt: undefined, updatedAt: hoursAgo(2) }}
+      />,
+    );
+    expect(screen.getByTestId("provenance-chip").textContent).toContain("Entered by a coach");
+    expect(screen.getByTestId("provenance-chip").textContent).not.toContain("via");
+  });
+});
