@@ -1754,7 +1754,12 @@
     "noSession": "No session scheduled",
     "tournamentAria": "Next tournament: {tournament} — {when}",
     "sessionAria": "Next session: {title} — {when}",
-    "othersUpcoming": "{count, plural, one {and 1 other has a tournament coming up} other {and # others have tournaments coming up}}"
+    "othersUpcoming": "{count, plural, one {and 1 other has a tournament coming up} other {and # others have tournaments coming up}}",
+    "drawerTitle": "What's next",
+    "matches": {
+      "title": "Match results",
+      "empty": "No matches logged yet."
+    }
   },
   "plans": {
     "title": "Training plans",
