@@ -927,14 +927,35 @@
         "body": "To run the features you use directly: scheduling, the session builder, training reviews, match logging, tournaments, equipment, finance tracking and the connections between coaches, players and parents. We do not sell personal data and we do not use it for third-party advertising.",
         "legalBasisNote": "The legal basis for each of those purposes has not been settled yet — see “Still open” at the end of this page."
       },
+      "photos": {
+        "heading": "Profile photographs",
+        "stored": "A profile photograph is optional; nothing in the app requires one. When one is uploaded the server decodes it, crops it to a square of at most 512 pixels and writes a fresh WebP file. The file you chose is never written to disk — only the re-encoded picture is.",
+        "metadata": "That re-encode is also what removes the photograph's metadata. A picture taken on a phone normally carries the exact coordinates of the place it was taken, along with the date, the device, and often a thumbnail of the original frame. None of that survives being decoded and written out again, so what is stored is the picture and nothing else. For a photograph of a child, the coordinates are the part that matters: they would otherwise say where that child trains. Stripping the metadata in the browser instead was considered and rejected — the original file can be sent straight to the server, skipping the browser entirely.",
+        "whoCanSee": "For an account below the age of digital consent, a photograph can be read by exactly three kinds of person: the player themselves, a coach actively assigned to them or connected to them as their coach, and a parent or guardian whose consent has actually been recorded. Nobody else — not another player, not an observer who merely holds a connection, and not a guardian who never consented. For an account at or above that age the ordinary rule applies: the player, a coach assigned to them, a connected account, or a consented guardian.",
+        "serverEnforced": "That is decided on the server, on every single request, from the relationships stored in the database. It is not a matter of which buttons the app chooses to show.",
+        "notPublic": "A photograph has no address of its own. It is not held anywhere the web server can reach, no URL serves it, and its file name is 32 random characters rather than anything derived from the person in it. The only way to read one is an authorised request to the API, and that request is checked before it is even looked up — so the answer cannot be used to work out whether a particular child has a picture at all.",
+        "upload": "Only you can put a photograph on your own profile. No route exists for a coach, a parent or an administrator to upload one for somebody else.",
+        "deletion": "Removing or replacing your photograph deletes the file immediately. The nightly backup is the exception worth knowing about: it archives the photograph directory alongside the database, and fourteen of those archives are kept. So for up to fourteen nights after you remove a photograph, a copy still exists in a backup on the server's disk, and it goes when that archive is rotated out. Saying otherwise would be simpler and untrue."
+      },
+      "minors": {
+        "heading": "Minors and guardian consent",
+        "body": "Sign-up asks for a date of birth. At or above the age of digital consent this deployment is configured with — 16 unless the operator changes it — nothing extra happens. Below it, the account is created but stays inert: we send a one-time link to the guardian's e-mail address, and until the guardian approves, the account cannot be used. GDPR Article 8 leaves the exact age to each member state (13 to 16), which is why it is a setting rather than a fixed number.",
+        "note": "Which national age applies to which user, and how a guardian's authority is verified beyond holding the e-mail address, are open questions for counsel."
+      },
       "device": {
-        "heading": "What stays on your device",
-        "intro": "Tennis AI sets no advertising or analytics cookies. It does keep a handful of values in your browser's local storage:",
-        "item1": "your sign-in token, so a refresh does not log you out;",
-        "item2": "your light/dark theme choice and your language choice;",
-        "item3": "an approximate location, only if you ask the tournaments map to show distances. That location is stored on your device only and is never sent to our server — the distances are calculated in your browser;",
-        "item4": "small interface preferences, such as whether you have dismissed a notice.",
-        "note": "Clearing your browser's site data removes all of these and signs you out."
+        "heading": "Cookies and what stays on your device",
+        "intro": "The app sets no cookies at all — none for analytics, none for advertising, and none that identify you. Because nothing it stores requires your consent under the cookie rules, there is no consent banner. If you expected one, that is why: it is not an omission.",
+        "storageIntro": "What the app does keep is a short list of values in your browser's own storage. None of them leaves your device unless it says so:",
+        "item1": "your sign-in token. Strictly necessary: without it, loading a page would sign you out;",
+        "item2": "your language choice and your light or dark theme choice;",
+        "item3": "an approximate location, and only if you ask the tournaments map to show distances. It stays on your device and is never sent to the server — the distances are worked out in your browser;",
+        "item4": "how far you have got with the “get started” checklist, and when you last dismissed it;",
+        "item5": "drafts of long forms — a match you were half-way through entering, for example — so a refresh or a wrong tap does not lose what you typed. A restored draft is always announced rather than quietly put back, and it is cleared once you save;",
+        "item6": "small interface preferences, such as whether the side navigation is collapsed.",
+        "necessary": "Only the first of those is strictly necessary. The rest are conveniences and the app works without any of them.",
+        "serviceWorker": "The app also installs a service worker, which keeps a copy of its own program files — the HTML, the JavaScript, the icons — so a repeat visit is quick and survives a poor connection. It is written never to store a reply from the API, so no personal data goes into that cache.",
+        "thirdParty": "Two things your browser fetches do not come from this app's own server: the three typefaces the design uses, and — on the tournaments map — the map tiles. Both are described under “Who else the data touches”.",
+        "note": "Clearing this site's data in your browser removes everything above and signs you out."
       },
       "processors": {
         "heading": "Who else the data touches",
@@ -944,11 +965,6 @@
         "item3": "Web push: if you turn on push notifications, your browser's push service (for example Google's or Mozilla's) relays them. Push is off unless the operator configures keys for it.",
         "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear.",
         "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament’s coordinates. No account or personal data is sent with that request."
-      },
-      "minors": {
-        "heading": "Minors and guardian consent",
-        "body": "Sign-up asks for a date of birth. At or above the age of digital consent this deployment is configured with — 16 unless the operator changes it — nothing extra happens. Below it, the account is created but stays inert: we send a one-time link to the guardian's e-mail address, and until the guardian approves, the account cannot be used. GDPR Article 8 leaves the exact age to each member state (13 to 16), which is why it is a setting rather than a fixed number.",
-        "note": "Which national age applies to which user, and how a guardian's authority is verified beyond holding the e-mail address, are open questions for counsel."
       },
       "ai": {
         "heading": "Optional AI processing",

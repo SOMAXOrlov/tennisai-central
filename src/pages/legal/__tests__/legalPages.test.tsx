@@ -147,6 +147,41 @@ describe("privacy policy", () => {
     }
   });
 
+  it("has a photographs section that admits the metadata strip and the backup window", () => {
+    renderPage(PrivacyPolicyPage);
+    expect(screen.getByRole("heading", { name: en.legal.privacy.photos.heading })).toBeInTheDocument();
+
+    // The two facts that are easy to leave out and expensive to leave out.
+    // The re-encode is what removes the coordinates (server/src/photos/storage.ts),
+    // and the nightly archive keeps fourteen copies (deploy/hetzner/backup.sh),
+    // so "deleted immediately" on its own would be a small lie.
+    expect(en.legal.privacy.photos.metadata).toMatch(/metadata/i);
+    expect(en.legal.privacy.photos.metadata).toMatch(/coordinates/i);
+    expect(en.legal.privacy.photos.deletion).toMatch(/fourteen/i);
+    expect(es.legal.privacy.photos.metadata).toMatch(/metadatos/i);
+    expect(es.legal.privacy.photos.deletion).toMatch(/catorce/i);
+    expect(screen.getByText(en.legal.privacy.photos.deletion)).toBeInTheDocument();
+  });
+
+  it("says a child's photograph is limited to the player, their coach and a consented guardian", () => {
+    renderPage(PrivacyPolicyPage);
+    const body = en.legal.privacy.photos.whoCanSee;
+    expect(screen.getByText(body)).toBeInTheDocument();
+    expect(body).toMatch(/coach/i);
+    expect(body).toMatch(/consent/i);
+    // The refusals matter as much as the permissions — assertCanViewPlayerPhoto
+    // in server/src/authz.ts turns each of these away.
+    expect(body).toMatch(/not another player/i);
+    expect(body).toMatch(/never consented/i);
+  });
+
+  it("does not imply a cookie consent banner, because there is none", () => {
+    renderPage(PrivacyPolicyPage);
+    expect(screen.getByRole("heading", { name: en.legal.privacy.device.heading })).toBeInTheDocument();
+    expect(en.legal.privacy.device.intro).toMatch(/no consent banner/i);
+    expect(es.legal.privacy.device.intro).toMatch(/no hay banner de consentimiento/i);
+  });
+
   it("keeps the 'still open' list of decisions a lawyer has to make", () => {
     renderPage(PrivacyPolicyPage);
     expect(screen.getByRole("heading", { name: en.legal.privacy.open.heading })).toBeInTheDocument();

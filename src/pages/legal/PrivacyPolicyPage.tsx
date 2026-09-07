@@ -175,14 +175,43 @@ export default function PrivacyPolicyPage() {
             <p>{t("legal.privacy.purpose.legalBasisNote")}</p>
           </Section>
 
+          {/* Photographs come straight after the purpose section rather than
+              being folded into it: a picture of a child is the most sensitive
+              thing here, and burying it under "what we collect" would hide the
+              part a parent is reading the page for. */}
+          <Section heading={t("legal.privacy.photos.heading")}>
+            <p>{t("legal.privacy.photos.stored")}</p>
+            <p>{t("legal.privacy.photos.metadata")}</p>
+            <p>{t("legal.privacy.photos.whoCanSee")}</p>
+            <p>{t("legal.privacy.photos.serverEnforced")}</p>
+            <p>{t("legal.privacy.photos.notPublic")}</p>
+            <p>{t("legal.privacy.photos.upload")}</p>
+            <p>{t("legal.privacy.photos.deletion")}</p>
+          </Section>
+
+          <Section heading={t("legal.privacy.minors.heading")}>
+            <p>{t("legal.privacy.minors.body")}</p>
+            <p>{t("legal.privacy.minors.note")}</p>
+          </Section>
+
+          {/* Cookies and local storage are their own section because they are
+              their own legal question, and because the answer here is unusual
+              enough to be worth stating plainly: there are no cookies, and
+              therefore no banner. */}
           <Section heading={t("legal.privacy.device.heading")}>
             <p>{t("legal.privacy.device.intro")}</p>
+            <p>{t("legal.privacy.device.storageIntro")}</p>
             <ul className="list-disc space-y-1.5 pl-5">
               <li>{t("legal.privacy.device.item1")}</li>
               <li>{t("legal.privacy.device.item2")}</li>
               <li>{t("legal.privacy.device.item3")}</li>
               <li>{t("legal.privacy.device.item4")}</li>
+              <li>{t("legal.privacy.device.item5")}</li>
+              <li>{t("legal.privacy.device.item6")}</li>
             </ul>
+            <p>{t("legal.privacy.device.necessary")}</p>
+            <p>{t("legal.privacy.device.serviceWorker")}</p>
+            <p>{t("legal.privacy.device.thirdParty")}</p>
             <p>{t("legal.privacy.device.note")}</p>
           </Section>
 
@@ -195,11 +224,6 @@ export default function PrivacyPolicyPage() {
               <li>{t("legal.privacy.processors.item4")}</li>
               <li>{t("legal.privacy.processors.item5")}</li>
             </ul>
-          </Section>
-
-          <Section heading={t("legal.privacy.minors.heading")}>
-            <p>{t("legal.privacy.minors.body")}</p>
-            <p>{t("legal.privacy.minors.note")}</p>
           </Section>
 
           <Section heading={t("legal.privacy.ai.heading")}>

@@ -927,14 +927,35 @@
         "body": "Para hacer funcionar lo que usted utiliza directamente: la programación, el constructor de sesiones, las revisiones de entrenamiento, el registro de partidos, los torneos, el material, el control de gastos y las conexiones entre entrenadores, jugadores y familias. No vendemos datos personales ni los usamos para publicidad de terceros.",
         "legalBasisNote": "La base jurídica de cada una de esas finalidades todavía no está decidida: véase «Pendiente» al final de esta página."
       },
+      "photos": {
+        "heading": "Fotografías de perfil",
+        "stored": "La fotografía de perfil es opcional; nada en la aplicación la exige. Cuando se sube una, el servidor la decodifica, la recorta en un cuadrado de 512 píxeles como máximo y escribe un archivo WebP nuevo. El archivo que usted eligió no se escribe nunca en disco: solo se guarda la imagen recodificada.",
+        "metadata": "Esa recodificación es también lo que elimina los metadatos de la fotografía. Una imagen tomada con un teléfono suele llevar las coordenadas exactas del lugar en que se hizo, junto con la fecha, el dispositivo y, a menudo, una miniatura del encuadre original. Nada de eso sobrevive a ser decodificado y escrito de nuevo, así que lo que se almacena es la imagen y nada más. En la fotografía de un menor, las coordenadas son la parte que importa: de lo contrario indicarían dónde entrena ese menor. Se valoró eliminar los metadatos en el navegador y se descartó: el archivo original puede enviarse directamente al servidor, sin pasar por el navegador.",
+        "whoCanSee": "En una cuenta por debajo de la edad de consentimiento digital, la fotografía solo pueden verla tres tipos de persona: el propio jugador, un entrenador asignado activamente a él o conectado con él como su entrenador, y el padre, la madre o el tutor cuyo consentimiento consta efectivamente registrado. Nadie más: ni otro jugador, ni un observador que solo tenga una conexión, ni un tutor que nunca prestó su consentimiento. En una cuenta que alcanza esa edad se aplica la regla ordinaria: el jugador, un entrenador asignado, una cuenta conectada o un tutor con consentimiento registrado.",
+        "serverEnforced": "Eso se decide en el servidor, en cada petición, a partir de las relaciones almacenadas en la base de datos. No depende de qué botones muestre la aplicación.",
+        "notPublic": "Una fotografía no tiene dirección propia. No se guarda en ningún lugar al que pueda acceder el servidor web, ninguna URL la sirve y su nombre de archivo son 32 caracteres aleatorios, no algo derivado de la persona que aparece en ella. La única forma de leerla es una petición autorizada a la API, y esa petición se comprueba antes incluso de consultar si existe la fotografía: así la respuesta no permite averiguar si un menor concreto tiene imagen.",
+        "upload": "Solo usted puede poner una fotografía en su propio perfil. No existe ninguna ruta que permita a un entrenador, a un progenitor o a un administrador subir una por otra persona.",
+        "deletion": "Eliminar o sustituir su fotografía borra el archivo de inmediato. La copia de seguridad nocturna es la excepción que conviene conocer: archiva el directorio de fotografías junto con la base de datos, y se conservan catorce de esos archivos. Por tanto, hasta catorce noches después de eliminar una fotografía sigue existiendo una copia en una copia de seguridad en el disco del servidor, y desaparece cuando ese archivo se rota. Decir otra cosa sería más sencillo y falso."
+      },
+      "minors": {
+        "heading": "Menores y consentimiento del tutor",
+        "body": "El registro pide la fecha de nacimiento. A partir de la edad de consentimiento digital configurada en esta instalación —16 años salvo que el administrador la cambie— no ocurre nada adicional. Por debajo de ella, la cuenta se crea pero queda inactiva: enviamos un enlace de un solo uso a la dirección de correo del tutor y, hasta que el tutor lo aprueba, la cuenta no puede usarse. El artículo 8 del RGPD deja la edad exacta a cada Estado miembro (entre 13 y 16 años), y por eso es un ajuste y no un número fijo.",
+        "note": "Qué edad nacional se aplica a cada usuario, y cómo se verifica la condición de tutor más allá de tener acceso al correo, son cuestiones abiertas para asesoría jurídica."
+      },
       "device": {
-        "heading": "Qué se queda en su dispositivo",
-        "intro": "Tennis AI no instala cookies publicitarias ni de analítica. Sí guarda unos pocos valores en el almacenamiento local de su navegador:",
-        "item1": "su token de sesión, para que al recargar no se cierre la sesión;",
-        "item2": "su elección de tema claro u oscuro y su elección de idioma;",
-        "item3": "una ubicación aproximada, solo si pide al mapa de torneos que muestre distancias. Esa ubicación se guarda únicamente en su dispositivo y nunca se envía a nuestro servidor: las distancias se calculan en su navegador;",
-        "item4": "pequeñas preferencias de interfaz, como si ya ha descartado un aviso.",
-        "note": "Borrar los datos del sitio en su navegador elimina todo lo anterior y cierra la sesión."
+        "heading": "Cookies y qué se queda en su dispositivo",
+        "intro": "La aplicación no instala ninguna cookie: ninguna de analítica, ninguna publicitaria y ninguna que le identifique. Como nada de lo que guarda requiere su consentimiento conforme a la normativa sobre cookies, no hay banner de consentimiento. Si esperaba encontrarlo, ese es el motivo: no es un olvido.",
+        "storageIntro": "Lo que sí guarda la aplicación es una lista corta de valores en el almacenamiento propio de su navegador. Ninguno sale de su dispositivo salvo que se indique:",
+        "item1": "su token de sesión. Estrictamente necesario: sin él, cargar una página cerraría la sesión;",
+        "item2": "su elección de idioma y su elección de tema claro u oscuro;",
+        "item3": "una ubicación aproximada, y solo si pide al mapa de torneos que muestre distancias. Se queda en su dispositivo y nunca se envía al servidor: las distancias se calculan en su navegador;",
+        "item4": "hasta dónde ha avanzado en la lista de «primeros pasos» y cuándo la descartó por última vez;",
+        "item5": "borradores de los formularios largos —un partido que estaba introduciendo a medias, por ejemplo— para que una recarga o un toque equivocado no le hagan perder lo escrito. La restauración de un borrador siempre se avisa, nunca se hace en silencio, y el borrador se elimina al guardar;",
+        "item6": "pequeñas preferencias de interfaz, como si la navegación lateral está plegada.",
+        "necessary": "Solo el primero de esos valores es estrictamente necesario. Los demás son comodidades y la aplicación funciona sin ninguno de ellos.",
+        "serviceWorker": "La aplicación instala además un service worker, que conserva una copia de sus propios archivos de programa —el HTML, el JavaScript, los iconos— para que una visita posterior sea rápida y resista una conexión mala. Está escrito para no almacenar nunca una respuesta de la API, de modo que en esa caché no entra ningún dato personal.",
+        "thirdParty": "Dos de los elementos que descarga su navegador no proceden del servidor propio de esta aplicación: las tres tipografías que usa el diseño y, en el mapa de torneos, las teselas del mapa. Ambos se describen en «Por dónde más pasan los datos».",
+        "note": "Borrar los datos de este sitio en su navegador elimina todo lo anterior y cierra la sesión."
       },
       "processors": {
         "heading": "Por dónde más pasan los datos",
@@ -944,11 +965,6 @@
         "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (por ejemplo el de Google o el de Mozilla) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
         "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería.",
         "item5": "Meteorología y altitud: el servidor consulta la API pública Open-Meteo sobre las coordenadas de un torneo. Con esa petición no se envía ningún dato de cuenta ni personal."
-      },
-      "minors": {
-        "heading": "Menores y consentimiento del tutor",
-        "body": "El registro pide la fecha de nacimiento. A partir de la edad de consentimiento digital configurada en esta instalación —16 años salvo que el administrador la cambie— no ocurre nada adicional. Por debajo de ella, la cuenta se crea pero queda inactiva: enviamos un enlace de un solo uso a la dirección de correo del tutor y, hasta que el tutor lo aprueba, la cuenta no puede usarse. El artículo 8 del RGPD deja la edad exacta a cada Estado miembro (entre 13 y 16 años), y por eso es un ajuste y no un número fijo.",
-        "note": "Qué edad nacional se aplica a cada usuario, y cómo se verifica la condición de tutor más allá de tener acceso al correo, son cuestiones abiertas para asesoría jurídica."
       },
       "ai": {
         "heading": "Tratamiento opcional mediante IA",
