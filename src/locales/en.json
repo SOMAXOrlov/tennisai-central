@@ -624,7 +624,7 @@
       "pickCountry": "Choose a country",
       "yourCountry": "Where you compete",
       "thisPlayer": "This player",
-      "meanwhile": "Until then the whole list is shown — {total} players are readable from here.",
+      "meanwhile": "Until then the whole list is shown.",
       "ageBandUnavailable": "Age band ({bands}) is not applied: no event in the calendar publishes one to match it against."
     },
     "add": {

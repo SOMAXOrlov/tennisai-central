@@ -199,7 +199,7 @@ export function TournamentScopeBanner({
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
         <span className="text-xs text-muted-foreground">
-          {t("tournaments.scope.meanwhile", { total: scope.playersReadable })}
+          {t("tournaments.scope.meanwhile")}
         </span>
         <Button variant="outline" size="sm" className="ml-auto gap-1.5" onClick={onShowEverything}>
           <Globe className="h-3.5 w-3.5" /> {t("tournaments.scope.showEverything")}

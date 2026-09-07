@@ -624,7 +624,7 @@
       "pickCountry": "Elige un país",
       "yourCountry": "Dónde compites",
       "thisPlayer": "Este jugador",
-      "meanwhile": "Hasta entonces se muestra la lista completa — desde aquí se pueden ver {total} jugadores.",
+      "meanwhile": "Hasta entonces se muestra la lista completa.",
       "ageBandUnavailable": "La categoría de edad ({bands}) no se aplica: ningún evento del calendario publica una con la que compararla."
     },
     "add": {
