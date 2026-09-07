@@ -45,9 +45,24 @@ function trainingRowFrom(data: Record<string, unknown>) {
     review: data.review ?? null,
     playerSessionFeedback: data.playerSessionFeedback ?? null,
     analysis: data.analysis ?? null,
+    status: (data.status as string) ?? "scheduled",
+    seriesId: (data.seriesId as string | null) ?? null,
+    recurrence: data.recurrence ?? null,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     participants: participants.map((p, i) => ({ id: `p-${i}`, trainingId: TRAINING, playerId: p.playerId })),
+    blocks: ((data.blocks as { create?: Record<string, unknown>[] } | undefined)?.create ?? []).map(
+      (b, i) => ({ id: `b-${i}`, trainingId: TRAINING, ...b }),
+    ),
   };
+}
+
+/**
+ * A session the COACH owns, as the write routes load it: with its participants
+ * and its blocks, because they now read both in one go rather than fetching the
+ * participant list separately afterwards.
+ */
+function ownedRow(overrides: Record<string, unknown> = {}) {
+  return trainingRowFrom({ coachId: COACH, ...overrides });
 }
 
 function asRole(role: string) {
@@ -72,6 +87,12 @@ beforeEach(() => {
   db.training.create.mockImplementation((args: { data: Record<string, unknown> }) =>
     Promise.resolve(trainingRowFrom(args.data)),
   );
+  // Creating a session (and now a whole weekly series) and patching one run
+  // inside an interactive transaction, so the writes have to be reachable
+  // through the handle it hands the callback. Pointing it back at the same mock
+  // keeps every existing assertion about `db.training.create` / `.update`
+  // working, and is the idiom `library/importDrills.test.ts` already uses.
+  db.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) => fn(db));
 });
 
 // ── POST /api/trainings — role gate ─────────────────────────────────────────
@@ -247,10 +268,10 @@ describe("PATCH /api/trainings/:id", () => {
 
   it("lets the owning coach update the session (200)", async () => {
     asRole("coach");
-    db.training.findUnique.mockResolvedValue({ coachId: COACH });
-    // The route reads the participant set before writing, so that it can tell
-    // anyone added to — or dropped from — the session.
-    db.trainingParticipant.findMany.mockResolvedValue([]);
+    // One read now, not two: the route loads the session WITH its participants
+    // and blocks, because it needs the participant set to work out who was
+    // added or dropped and to notify them.
+    db.training.findUnique.mockResolvedValue(ownedRow());
     db.training.update.mockImplementation((args: { data: Record<string, unknown> }) =>
       Promise.resolve(trainingRowFrom({ coachId: COACH, ...args.data })),
     );
@@ -297,7 +318,7 @@ describe("DELETE /api/trainings/:id", () => {
   it("401s an unauthenticated caller", async () => {
     const res = await request(app).delete(`/api/trainings/${TRAINING}`);
     expect(res.status).toBe(401);
-    expect(db.training.delete).not.toHaveBeenCalled();
+    expect(db.training.deleteMany).not.toHaveBeenCalled();
   });
 
   // DELETE is `requireRole("coach")` like POST and PATCH. The ownership check
@@ -313,27 +334,28 @@ describe("DELETE /api/trainings/:id", () => {
 
     expect(res.status).toBe(403);
     expect(db.training.findUnique).not.toHaveBeenCalled();
-    expect(db.training.delete).not.toHaveBeenCalled();
+    expect(db.training.deleteMany).not.toHaveBeenCalled();
   });
 
   it("lets the owning coach delete (200)", async () => {
     asRole("coach");
     // Deleting reads the whole row first: the cascade removes the participants,
     // so the people who need telling it is cancelled must be read beforehand.
-    db.training.findUnique.mockResolvedValue({
-      coachId: COACH,
-      title: "Serve & first ball",
-      startDate: new Date("2026-06-02T14:00:00.000Z"),
-      participants: [],
-    });
-    db.training.delete.mockResolvedValue({ id: TRAINING });
+    // It also reads their attendance, because a session with a register taken
+    // is refused outright — this one has nobody marked, so it goes through.
+    db.training.findUnique.mockResolvedValue(
+      ownedRow({ title: "Serve & first ball", startDate: new Date("2026-06-02T14:00:00.000Z") }),
+    );
+    db.training.deleteMany.mockResolvedValue({ count: 1 });
 
     const res = await request(app)
       .delete(`/api/trainings/${TRAINING}`)
       .set("Authorization", bearer(COACH));
 
     expect(res.status).toBe(200);
-    expect(firstCallArg(db.training.delete)).toEqual({ where: { id: TRAINING } });
+    // `deleteMany` over a list of ids rather than `delete` of one, because the
+    // same route deletes a whole series when `?scope=` asks it to.
+    expect(firstCallArg(db.training.deleteMany)).toEqual({ where: { id: { in: [TRAINING] } } });
   });
 
   it("403s a DIFFERENT authenticated user and does NOT delete", async () => {
@@ -347,7 +369,7 @@ describe("DELETE /api/trainings/:id", () => {
       .set("Authorization", bearer(OUTSIDER));
 
     expect(res.status).toBe(403);
-    expect(db.training.delete).not.toHaveBeenCalled();
+    expect(db.training.deleteMany).not.toHaveBeenCalled();
   });
 
   it("404s a missing session", async () => {
@@ -357,7 +379,7 @@ describe("DELETE /api/trainings/:id", () => {
       .delete("/api/trainings/ghost")
       .set("Authorization", bearer(COACH));
     expect(res.status).toBe(404);
-    expect(db.training.delete).not.toHaveBeenCalled();
+    expect(db.training.deleteMany).not.toHaveBeenCalled();
   });
 });
 
@@ -443,9 +465,12 @@ describe("trainings notify the players", () => {
     asRole("coach");
     db.coachAssignment.findUnique.mockResolvedValue({ status: "active" });
     db.notification.create.mockResolvedValue({ id: "n-1" });
-    db.training.findUnique.mockResolvedValue({ coachId: COACH });
     // PLAYER was on the session; the PATCH replaces the set with OUTSIDER.
-    db.trainingParticipant.findMany.mockResolvedValue([{ playerId: PLAYER }]);
+    // The route now reads the existing roster off the row it already loaded,
+    // which is also what lets it delete only the players who actually left.
+    db.training.findUnique.mockResolvedValue(
+      ownedRow({ participants: { create: [{ playerId: PLAYER }] } }),
+    );
     db.training.update.mockImplementation((args: { data: Record<string, unknown> }) =>
       Promise.resolve(trainingRowFrom({ coachId: COACH, ...args.data })),
     );
@@ -476,7 +501,7 @@ describe("trainings notify the players", () => {
       startDate: new Date("2026-06-02T14:00:00.000Z"),
       participants: [{ playerId: PLAYER }],
     });
-    db.training.delete.mockResolvedValue({ id: TRAINING });
+    db.training.deleteMany.mockResolvedValue({ count: 1 });
 
     const res = await request(app)
       .delete(`/api/trainings/${TRAINING}`)

@@ -74,8 +74,12 @@ function trainingRow(
     review: null,
     playerSessionFeedback: null,
     analysis: null,
+    status: "scheduled",
+    seriesId: null,
+    recurrence: null,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     participants: overrides.participants ?? [participant(ALICE), participant(BOB)],
+    blocks: [],
   };
 }
 
@@ -309,8 +313,11 @@ describe("PATCH /api/trainings/:id/feedback — one field and nothing else", () 
 describe("the owning coach still saves feedback through the general PATCH", () => {
   it("200s a coach PATCHing /:id with playerSessionFeedback", async () => {
     db.user.findUnique.mockResolvedValue({ role: "coach", firstName: "Sam", lastName: "Coach" });
-    db.training.findUnique.mockResolvedValue({ coachId: COACH });
-    db.trainingParticipant.findMany.mockResolvedValue([{ playerId: ALICE }, { playerId: BOB }]);
+    // The route loads the session with its participants and blocks in one read,
+    // and writes inside a transaction so a scoped change to a whole series is
+    // all-or-nothing.
+    db.training.findUnique.mockResolvedValue(trainingRow());
+    db.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) => fn(db));
     db.training.update.mockResolvedValue(trainingRow());
 
     const res = await request(app)
@@ -337,21 +344,24 @@ describe("DELETE /api/trainings/:id — role-gated like the other writes", () =>
     expect(res.status).toBe(403);
     expect(res.body.message).toMatch(/do not have permission/i);
     expect(db.training.findUnique).not.toHaveBeenCalled();
-    expect(db.training.delete).not.toHaveBeenCalled();
+    expect(db.training.deleteMany).not.toHaveBeenCalled();
   });
 
   it("still lets the owning coach delete", async () => {
     db.user.findUnique.mockResolvedValue({ role: "coach", firstName: "Sam", lastName: "Coach" });
+    // Nobody is marked on this session, so a hard delete is still allowed. A
+    // session whose register HAS been taken is refused with a 409 — covered in
+    // cancel.routes.test.ts.
     db.training.findUnique.mockResolvedValue(trainingRow());
-    db.training.delete.mockResolvedValue(trainingRow());
+    db.training.deleteMany.mockResolvedValue({ count: 1 });
 
     const res = await request(app)
       .delete(`/api/trainings/${TRAINING}`)
       .set("Authorization", bearer(COACH));
 
     expect(res.status).toBe(200);
-    expect(firstCallArg<{ where: { id: string } }>(db.training.delete).where).toEqual({
-      id: TRAINING,
+    expect(firstCallArg<{ where: unknown }>(db.training.deleteMany).where).toEqual({
+      id: { in: [TRAINING] },
     });
   });
 
@@ -364,6 +374,6 @@ describe("DELETE /api/trainings/:id — role-gated like the other writes", () =>
       .set("Authorization", bearer(COACH));
 
     expect(res.status).toBe(403);
-    expect(db.training.delete).not.toHaveBeenCalled();
+    expect(db.training.deleteMany).not.toHaveBeenCalled();
   });
 });

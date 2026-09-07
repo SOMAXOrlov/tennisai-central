@@ -2,7 +2,13 @@
 // absolute API base is configured (production, or local dev pointed at the API),
 // calls go live; otherwise they fall back to the in-memory mock for offline
 // frontend work and tests.
-import type { TrainingSession, ApiResponse, TrainingAnalysis, PlayerSessionFeedback } from "@/types";
+import type {
+  TrainingSession,
+  ApiResponse,
+  TrainingAnalysis,
+  PlayerSessionFeedback,
+  TrainingScope,
+} from "@/types";
 import { apiClient } from "@/api/client";
 import { mockStore } from "@/mock/store";
 
@@ -30,14 +36,46 @@ export const trainingsApi = {
     return apiClient.post("/trainings", data);
   },
 
-  async updateTraining(id: string, data: Partial<TrainingSession>): Promise<ApiResponse<TrainingSession>> {
-    if (USE_MOCK) { await delay(); return { data: mockStore.updateTraining(id, data), message: "Training updated" }; }
-    return apiClient.patch(`/trainings/${id}`, data);
+  // `scope` says which occurrences of a weekly series a change reaches. It goes
+  // in the BODY here and in the query string on delete, because a DELETE has no
+  // body — that asymmetry belongs to the server, and hiding it here is why
+  // these wrappers exist rather than callers assembling URLs.
+  async updateTraining(
+    id: string,
+    data: Partial<TrainingSession>,
+    scope?: TrainingScope,
+  ): Promise<ApiResponse<TrainingSession>> {
+    if (USE_MOCK) {
+      await delay();
+      // Mock mode holds one row per series (see `mockStore.createTraining`), so
+      // every scope resolves to that one session. Nothing is silently skipped —
+      // there are no other occurrences to skip.
+      return { data: mockStore.updateTraining(id, data), message: "Training updated" };
+    }
+    return apiClient.patch(`/trainings/${id}`, scope ? { ...data, scope } : data);
   },
 
-  async deleteTraining(id: string): Promise<ApiResponse<null>> {
+  async deleteTraining(id: string, scope?: TrainingScope): Promise<ApiResponse<null>> {
     if (USE_MOCK) { await delay(); mockStore.deleteTraining(id); return { data: null, message: "Training deleted" }; }
-    return apiClient.delete(`/trainings/${id}`);
+    return apiClient.delete(`/trainings/${id}${scope ? `?scope=${scope}` : ""}`);
+  },
+
+  /**
+   * Repeat last week's session on a new date. The server copies the plan and the
+   * roster and deliberately leaves the register, the review, the feedback and
+   * the analysis behind — those are statements about a session that has already
+   * happened, and a copy of them on one that has not would be a fabrication.
+   */
+  async duplicateTraining(
+    id: string,
+    startDate: string,
+    endDate?: string,
+  ): Promise<ApiResponse<TrainingSession>> {
+    if (USE_MOCK) {
+      await delay();
+      return { data: mockStore.duplicateTraining(id, startDate, endDate), message: "Training duplicated" };
+    }
+    return apiClient.post(`/trainings/${id}/duplicate`, { startDate, endDate });
   },
 
   // A player's own feedback on a session they played in.
