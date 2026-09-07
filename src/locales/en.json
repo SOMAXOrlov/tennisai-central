@@ -1058,6 +1058,11 @@
         "heading": "The trial",
         "body": "Tennis AI is currently an early trial for a small group of coaches, players and parents. There is no paid plan. Features change often, and the trial may be paused or ended at any time while we build the product."
       },
+      "payments": {
+        "heading": "There is nothing to pay",
+        "body": "Tennis AI is free while it is a trial. There is no price, no plan to choose, no card to enter and no invoice. Nor is there any payment machinery behind the scenes: no payment processor, nothing that handles a card number, nothing that issues a receipt. The database schema carries a dormant table for a plan tier, left over from earlier design work, and no part of the running application reads or writes it.",
+        "note": "If that ever changes it will change these terms first, and trial participants will be told before anything is charged rather than after. The costs the app can total up are the ones you type into it yourself — your own coaching, travel and equipment spending. They are not money owed to anybody here."
+      },
       "accounts": {
         "heading": "Accounts",
         "body": "You need an account to use Tennis AI. You are responsible for keeping your sign-in details secure and for the accuracy of what you enter. Sign-up may ask you to verify your e-mail address before the account can be used."
@@ -1068,18 +1073,51 @@
       },
       "use": {
         "heading": "Acceptable use",
-        "item1": "Only enter data about yourself, or about a player you coach or are the parent or guardian of.",
+        "item1": "Only enter data about yourself, or about a player you coach or are the parent or guardian of — with the one narrow exception below.",
         "item2": "Do not use the app to harass, impersonate or misrepresent yourself or anyone else.",
-        "item3": "Do not attempt to reach accounts or data that are not yours."
+        "item3": "Do not attempt to reach accounts or data that are not yours.",
+        "item4": "That exception is an opponent record, and it is narrow: a name, and observations about how somebody plays, kept for preparing a match. Keep it factual and about tennis. Do not record an opponent's health, their personal life or your opinion of their character, and do not write anything you would be uncomfortable showing them."
+      },
+      "content": {
+        "heading": "What you upload",
+        "body": "The only file you can upload today is your own profile photograph. These terms treat it the way they would treat anything else you contribute.",
+        "rights": "You must have the right to upload what you upload. For a photograph that means it is of you — or, where you hold the account for a player you are the parent or guardian of, of that player and with their knowledge. Do not upload a picture of somebody else, and do not upload one you did not take or have no permission to use.",
+        "licence": "You keep whatever rights you have in it. Uploading it gives the operator permission to do one thing: store it and show it to the people this product allows to see it — the player, their coach, and a consented parent or guardian. That permission covers nothing else. It is not used to promote the product, not shown to anyone outside those relationships, not sold or licensed to anybody, and not used to train any model.",
+        "prohibited": "Nothing sexual, nothing violent, nothing that identifies a child beyond their own face, no document or screenshot standing in for a photograph, and nothing meant to pass you off as somebody else.",
+        "removal": "You can remove your photograph yourself at any time, from your profile page, and doing so deletes the stored file. The operator may also remove one that breaks the rules above, or that is reported as breaking them, and will tell the account it belonged to."
+      },
+      "relationship": {
+        "heading": "Coaching is between you and your coach",
+        "body": "The operator of this product is not a party to the arrangement between a coach and a player. The coaching itself, its content, its schedule and its price are agreed between those people — or between a coach and a player's parents. This product records what they agree and gives them one shared place to keep it.",
+        "noVetting": "The operator does not employ, vet, supervise, endorse or certify any coach here. Nobody's qualifications are checked, nobody's insurance is checked, and nothing in the product verifies anyone's right to work with children. A connection between a coach and a player exists because the two of them accepted it, and for no other reason.",
+        "note": "Whether the operator ought to be checking a coach's credentials before they can be connected to a junior is not settled by these terms and is not implemented in the product. It is a decision still to be taken, and it is a serious one."
+      },
+      "advice": {
+        "heading": "Nothing here is professional advice",
+        "body": "This is the most important clause on this page, and it matters most for a junior player.",
+        "item1": "The training sessions, drills and plans the product produces are assembled by rule from what has been entered. They are not physiotherapy, not sports medicine, not a rehabilitation programme, and not a substitute for a qualified coach who is watching the player in person.",
+        "item2": "The session builder does apply age rules when it picks drills — some work is limited to bodyweight for younger players, some is excluded by age band, some is marked as needing supervision, and anything left out is listed with the reason. Those rules are a floor, not a judgement about a particular child.",
+        "item3": "What the product does with pain or injury is one thing and one thing only: where a profile mentions a physical concern, it adds a caution asking for a qualified assessment and steers the recommendation towards comfort. It never names a condition, never diagnoses one, and never says a player is fit to play.",
+        "item4": "The equipment recommendations — string, gauge, tension, restring interval — are a stringer's rules of thumb applied to what you logged. Getting them wrong can hurt an arm, so treat them as the start of a conversation with a stringer or a physiotherapist, not an instruction.",
+        "item5": "The cost figures are arithmetic on what you entered. They are not financial, tax or investment advice, and nothing in the product is capable of giving any.",
+        "item6": "Where an operator has enabled an AI provider, the text it produces comes from a language model and can be confidently wrong. Nobody reviews it before you see it.",
+        "health": "Decisions about a player's health, body and training load belong to that player, to their parents, and to a qualified person who has examined them. If a player is in pain, stop and get them seen. Nothing in this product should ever be the reason a junior plays on through an injury."
       },
       "data": {
         "heading": "Your data",
         "before": "See our",
-        "after": "for what is collected and why. You can ask us to export or delete your data using the contact details there."
+        "after": "for what is collected and why. You can ask us to export or delete your data using the contact details there.",
+        "erasure": "A copy of your data, a correction you cannot make yourself, or a full erasure is asked for in writing, because there is no button for any of them. “Your rights, and how to use them” in the privacy policy says where to send it and how long it takes."
+      },
+      "closure": {
+        "heading": "Ending your account",
+        "body": "You can stop using the product whenever you like. Actually closing the account is a written request today: send it to the contact address above and the account and its data will be dealt with by hand, within a month. There is no self-service closure in the app, and these terms will not describe one that does not exist — building it is on the privacy policy's list of open items.",
+        "operator": "The operator may suspend or end an account that breaks these terms, and may end the trial altogether, and will say why. Because the trial can end, do not treat this product as the only copy of anything you would mind losing."
       },
       "warranty": {
         "heading": "No warranty, limited liability",
         "body": "This is early-stage trial software provided “as is”, without warranties of any kind. Session plans are produced by a deterministic rule-based builder; match-preparation text, where an operator has enabled an AI provider, is generated by that provider and can be wrong. Neither is a substitute for professional coaching, and nothing in the app is medical advice. To the extent the law allows, we are not liable for damages arising from your use of the trial.",
+        "availability": "There is no promise about availability either. The whole product runs on a single server, it can be down, the nightly backup is one copy on that same machine, and support is best effort by one small team.",
         "note": "The liability wording above has not been reviewed by a lawyer and its enforceability is untested."
       },
       "changes": {

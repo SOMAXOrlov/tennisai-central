@@ -1058,6 +1058,11 @@
         "heading": "La prueba",
         "body": "Tennis AI es por ahora una prueba inicial para un grupo pequeño de entrenadores, jugadores y familias. No hay plan de pago. Las funciones cambian a menudo y la prueba puede pausarse o terminarse en cualquier momento mientras construimos el producto."
       },
+      "payments": {
+        "heading": "No hay nada que pagar",
+        "body": "Tennis AI es gratuito mientras sea una prueba. No hay precio, ni plan que elegir, ni tarjeta que introducir, ni factura. Tampoco hay maquinaria de pago detrás: ningún proveedor de pagos, nada que maneje un número de tarjeta, nada que emita un recibo. El esquema de la base de datos conserva una tabla inactiva para un tipo de plan, resto de un diseño anterior, y ninguna parte de la aplicación en funcionamiento la lee ni la escribe.",
+        "note": "Si eso cambia algún día, cambiarán antes estas condiciones, y se avisará a los participantes en la prueba antes de cobrar nada y no después. Los gastos que la aplicación puede totalizar son los que usted mismo introduce: su propio gasto en entrenamiento, viajes y material. No son cantidades debidas a nadie de aquí."
+      },
       "accounts": {
         "heading": "Cuentas",
         "body": "Necesita una cuenta para usar Tennis AI. Usted es responsable de mantener seguras sus credenciales y de la exactitud de lo que introduce. El registro puede pedirle que verifique su dirección de correo antes de poder usar la cuenta."
@@ -1068,18 +1073,51 @@
       },
       "use": {
         "heading": "Uso aceptable",
-        "item1": "Introduzca únicamente datos sobre usted o sobre un jugador al que entrene o del que sea padre, madre o tutor.",
+        "item1": "Introduzca únicamente datos sobre usted mismo o sobre un jugador al que entrene o del que sea padre, madre o tutor, con la única excepción concreta que se indica más abajo.",
         "item2": "No use la aplicación para acosar, suplantar o tergiversar su identidad ni la de otras personas.",
-        "item3": "No intente acceder a cuentas o datos que no sean suyos."
+        "item3": "No intente acceder a cuentas o datos que no sean suyos.",
+        "item4": "Esa excepción es la ficha de un rival, y es concreta: un nombre y observaciones sobre cómo juega alguien, guardadas para preparar un partido. Manténgala objetiva y referida al tenis. No registre la salud de un rival, ni su vida personal, ni su opinión sobre su carácter, y no escriba nada que le incomodaría mostrarle."
+      },
+      "content": {
+        "heading": "Lo que usted sube",
+        "body": "El único archivo que hoy se puede subir es su propia fotografía de perfil. Estas condiciones la tratan igual que tratarían cualquier otro contenido aportado por usted.",
+        "rights": "Debe tener derecho a subir lo que sube. En una fotografía eso significa que aparece usted o, cuando es titular de la cuenta de un jugador del que es padre, madre o tutor, que aparece ese jugador y con su conocimiento. No suba la imagen de otra persona ni una que no haya hecho usted o para la que no tenga permiso.",
+        "licence": "Usted conserva los derechos que tenga sobre ella. Subirla otorga al operador permiso para una sola cosa: almacenarla y mostrarla a las personas a las que este producto permite verla —el jugador, su entrenador y el padre, la madre o el tutor con consentimiento registrado—. Ese permiso no cubre nada más. No se utiliza para promocionar el producto, no se muestra a nadie ajeno a esas relaciones, no se vende ni se licencia a nadie y no se emplea para entrenar ningún modelo.",
+        "prohibited": "Nada sexual, nada violento, nada que identifique a un menor más allá de su propia cara, ningún documento ni captura de pantalla en lugar de una fotografía, y nada destinado a hacerle pasar por otra persona.",
+        "removal": "Puede eliminar su fotografía usted mismo en cualquier momento, desde su página de perfil, y al hacerlo se borra el archivo almacenado. El operador también puede retirar una que infrinja las reglas anteriores, o que se denuncie por infringirlas, e informará a la cuenta a la que pertenecía."
+      },
+      "relationship": {
+        "heading": "El entrenamiento es cosa suya y de su entrenador",
+        "body": "El operador de este producto no es parte en la relación entre un entrenador y un jugador. El entrenamiento en sí, su contenido, su calendario y su precio se acuerdan entre esas personas, o entre un entrenador y los padres de un jugador. Este producto registra lo que acuerdan y les da un único lugar compartido donde guardarlo.",
+        "noVetting": "El operador no emplea, ni selecciona, ni supervisa, ni respalda, ni certifica a ningún entrenador de aquí. No se comprueban las cualificaciones de nadie, no se comprueba el seguro de nadie y nada en el producto verifica el derecho de nadie a trabajar con menores. Una conexión entre un entrenador y un jugador existe porque ambos la aceptaron, y por ningún otro motivo.",
+        "note": "Si el operador debería comprobar las credenciales de un entrenador antes de que pueda conectarse con un menor no lo resuelven estas condiciones y no está implementado en el producto. Es una decisión pendiente, y es grave."
+      },
+      "advice": {
+        "heading": "Nada de esto es asesoramiento profesional",
+        "body": "Esta es la cláusula más importante de esta página, y lo es sobre todo para un jugador menor de edad.",
+        "item1": "Las sesiones de entrenamiento, los ejercicios y los planes que produce el producto se componen mediante reglas a partir de lo que se ha introducido. No son fisioterapia, ni medicina deportiva, ni un programa de rehabilitación, ni un sustituto de un entrenador cualificado que observe al jugador en persona.",
+        "item2": "El constructor de sesiones sí aplica reglas de edad al elegir los ejercicios: parte del trabajo se limita al propio peso corporal en los más jóvenes, parte se excluye por franja de edad, parte se marca como necesitada de supervisión, y lo que queda fuera se enumera con su motivo. Esas reglas son un mínimo, no un juicio sobre un menor concreto.",
+        "item3": "Lo que el producto hace con el dolor o una lesión es una sola cosa: cuando un perfil menciona una molestia física, añade una advertencia que pide una valoración cualificada y orienta la recomendación hacia el confort. Nunca nombra una dolencia, nunca la diagnostica y nunca afirma que un jugador esté en condiciones de jugar.",
+        "item4": "Las recomendaciones de material —cordaje, calibre, tensión, intervalo de encordado— son las reglas prácticas de un encordador aplicadas a lo que usted registró. Equivocarse en ellas puede dañar un brazo, así que trátelas como el inicio de una conversación con un encordador o un fisioterapeuta, no como una instrucción.",
+        "item5": "Las cifras de gasto son aritmética sobre lo que usted introdujo. No son asesoramiento financiero, fiscal ni de inversión, y nada en el producto es capaz de darlo.",
+        "item6": "Cuando un administrador ha activado un proveedor de IA, el texto que produce procede de un modelo de lenguaje y puede equivocarse con toda seguridad aparente. Nadie lo revisa antes de que usted lo vea.",
+        "health": "Las decisiones sobre la salud, el cuerpo y la carga de entrenamiento de un jugador corresponden a ese jugador, a sus padres y a una persona cualificada que le haya examinado. Si un jugador tiene dolor, pare y haga que lo vean. Nada de este producto debería ser nunca el motivo de que un menor siga jugando con una lesión."
       },
       "data": {
         "heading": "Sus datos",
         "before": "Consulte nuestra",
-        "after": "para saber qué se recoge y por qué. Puede pedirnos que exportemos o suprimamos sus datos usando los datos de contacto que allí figuran."
+        "after": "para saber qué se recoge y por qué. Puede pedirnos que exportemos o suprimamos sus datos usando los datos de contacto que allí figuran.",
+        "erasure": "Una copia de sus datos, una rectificación que no pueda hacer usted mismo o una supresión completa se solicitan por escrito, porque no hay ningún botón para ninguna de las tres. El apartado «Sus derechos y cómo ejercerlos» de la política de privacidad indica dónde enviarla y cuánto tarda."
+      },
+      "closure": {
+        "heading": "Finalizar su cuenta",
+        "body": "Puede dejar de usar el producto cuando quiera. Cerrar efectivamente la cuenta es hoy una solicitud por escrito: envíela a la dirección de contacto indicada arriba y la cuenta y sus datos se tratarán a mano, en el plazo de un mes. En la aplicación no hay cierre automático, y estas condiciones no van a describir uno que no existe: construirlo figura en la lista de puntos pendientes de la política de privacidad.",
+        "operator": "El operador puede suspender o finalizar una cuenta que infrinja estas condiciones, y puede dar por terminada la prueba por completo, e indicará el motivo. Como la prueba puede terminar, no trate este producto como la única copia de nada que le importe perder."
       },
       "warranty": {
         "heading": "Sin garantía, responsabilidad limitada",
         "body": "Este es software de prueba en fase inicial, facilitado «tal cual», sin garantías de ningún tipo. Los planes de sesión los produce un constructor determinista basado en reglas; el texto de preparación de partido, cuando un administrador ha activado un proveedor de IA, lo genera ese proveedor y puede ser erróneo. Ninguno de los dos sustituye a un entrenador profesional, y nada en la aplicación es consejo médico. En la medida en que la ley lo permita, no respondemos de los daños derivados del uso de la prueba.",
+        "availability": "Tampoco se promete nada sobre la disponibilidad. Todo el producto funciona en un único servidor, puede estar caído, la copia de seguridad nocturna es una sola copia en esa misma máquina y el soporte es el mejor esfuerzo de un equipo pequeño.",
         "note": "La redacción sobre responsabilidad que antecede no ha sido revisada por un abogado y su validez no está contrastada."
       },
       "changes": {

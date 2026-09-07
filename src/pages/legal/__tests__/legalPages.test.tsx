@@ -349,6 +349,68 @@ describe("terms of service", () => {
     expect(en.legal.terms.warranty.body).toMatch(/AI provider/);
   });
 
+  it("licenses an uploaded photograph only for showing it to the people entitled to see it", () => {
+    renderPage(TermsPage);
+    expect(screen.getByRole("heading", { name: en.legal.terms.content.heading })).toBeInTheDocument();
+
+    const licence = en.legal.terms.content.licence;
+    expect(licence).toMatch(/you keep whatever rights you have/i);
+    // The four uses the narrow licence must rule out. A profile picture is not
+    // a content contribution to a media platform, and the clause has to be
+    // proportionate to what the feature actually does.
+    expect(licence).toMatch(/not used to promote/i);
+    expect(licence).toMatch(/not sold or licensed/i);
+    expect(licence).toMatch(/not used to train any model/i);
+    expect(licence).toMatch(/not shown to anyone outside/i);
+    expect(en.legal.terms.content.rights).toMatch(/must have the right to upload/i);
+    expect(screen.getByText(en.legal.terms.content.prohibited)).toBeInTheDocument();
+    expect(screen.getByText(en.legal.terms.content.removal)).toBeInTheDocument();
+  });
+
+  it("says plainly that nothing it produces is medical, physiotherapeutic or financial advice", () => {
+    renderPage(TermsPage);
+    expect(screen.getByRole("heading", { name: en.legal.terms.advice.heading })).toBeInTheDocument();
+
+    const clause = JSON.stringify(en.legal.terms.advice);
+    expect(clause).toMatch(/not physiotherapy/i);
+    expect(clause).toMatch(/not sports medicine/i);
+    expect(clause).toMatch(/not financial, tax or investment advice/i);
+    // Never names a condition, never says a player is fit to play — which is
+    // what server/src/recommend/strings.ts actually does with a pain flag.
+    expect(en.legal.terms.advice.item3).toMatch(/never names a condition/i);
+    expect(en.legal.terms.advice.item3).toMatch(/never says a player is fit to play/i);
+    // The sentence that has to survive every future edit of this page.
+    expect(screen.getByText(en.legal.terms.advice.health)).toBeInTheDocument();
+    expect(en.legal.terms.advice.health).toMatch(/qualified person who has examined them/i);
+    expect(es.legal.terms.advice.health).toMatch(/persona cualificada que le haya examinado/i);
+  });
+
+  it("puts the operator outside the coach–player relationship, and admits no vetting", () => {
+    renderPage(TermsPage);
+    expect(screen.getByRole("heading", { name: en.legal.terms.relationship.heading })).toBeInTheDocument();
+    expect(en.legal.terms.relationship.body).toMatch(/not a party/i);
+    // Nothing in server/ checks a qualification, an insurance or a right to
+    // work with children, so the clause says so rather than staying quiet.
+    expect(en.legal.terms.relationship.noVetting).toMatch(/does not employ, vet, supervise, endorse or certify/i);
+    expect(en.legal.terms.relationship.noVetting).toMatch(/right to work with children/i);
+  });
+
+  it("says there is nothing to pay, and matches the privacy page on closure", () => {
+    renderPage(TermsPage);
+    expect(screen.getByRole("heading", { name: en.legal.terms.payments.heading })).toBeInTheDocument();
+    expect(en.legal.terms.payments.body).toMatch(/no payment processor/i);
+    expect(es.legal.terms.payments.body).toMatch(/ning[úu]n proveedor de pagos/i);
+
+    // Closure has to say the same thing the privacy policy's erasure route
+    // says. Two documents describing one act differently is how a reader
+    // learns to trust neither.
+    expect(screen.getByRole("heading", { name: en.legal.terms.closure.heading })).toBeInTheDocument();
+    expect(en.legal.terms.closure.body).toMatch(/written request/i);
+    expect(en.legal.terms.closure.body).toMatch(/within a month/i);
+    expect(en.legal.terms.closure.body).toMatch(/no self-service closure/i);
+    expect(en.legal.privacy.rights.erasure).toMatch(/within one month/i);
+  });
+
   it("resolves every key in Spanish too", () => {
     const { container } = renderPage(TermsPage, "es");
     expect(screen.getByRole("heading", { level: 1, name: es.legal.terms.title })).toBeInTheDocument();
