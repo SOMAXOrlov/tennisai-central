@@ -1,4 +1,21 @@
-# Deploy TennisAI as a real test site (free)
+# Deploy TennisAI as a real test site (free) · HISTORICAL (Render + Vercel)
+
+> ## ⚠ This document is historical. Do not follow it to deploy.
+>
+> TennisAI moved to a **single self-hosted Docker host on 2026-08-31**. The live
+> procedure is **[`deploy/hetzner/README.md`](deploy/hetzner/README.md)**.
+>
+> This guide describes the retired Render + Vercel free-tier setup. It is kept,
+> not deleted, because it records how that stack was put together while it is
+> being shut down. Two consequences to expect if you read on: the example site
+> URL `https://<your-project>.vercel.app` no longer serves the app (the old
+> `tennisai.vercel.app` returns 404), and the old Render API
+> `https://tennisai-api.onrender.com` was still answering `/api/health` on
+> 2026-09-07 — if it is still up, it is an orphan to shut down deliberately,
+> not part of the current deployment.
+>
+> The older Vercel + Render + Neon runbook is [`DEPLOY.md`](DEPLOY.md), also
+> historical.
 
 A step-by-step guide to put TennisAI online so a coach can log in and test it, using
 **Render** (API + Postgres) and **Vercel** (website), both on their **free** tier.

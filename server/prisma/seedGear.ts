@@ -24,7 +24,13 @@
 // must label them as such.
 //
 // NO marketing copy and NO image URLs are stored, from anywhere. Retailers were
-// not consulted at all.
+// not consulted at all. Prince now sells only through a retailer, and its rows
+// point at its own landing page rather than that retailer.
+//
+// 2026-09-07: twenty-three `sourceUrl` values had rotted (the brands restructured)
+// and were repointed after a browser check — see "The 2026-09-07 link sweep"
+// below. Repointing is not re-verification: the count of rows with a
+// verification date is still exactly THREE.
 // ============================================================================
 
 import type { PrismaClient } from "@prisma/client";
@@ -52,6 +58,76 @@ const NOT_FETCHED = "Manufacturer spec sheet — not fetched during seed";
 const NOT_FETCHED_STRING =
   "Manufacturer spec sheet — not fetched during seed; the 1–10 ratings are editorial " +
   "comparative estimates, not manufacturer figures";
+
+// ── The 2026-09-07 link sweep ────────────────────────────────────────────
+//
+// Twenty-three of the sourceUrl values above had rotted: the manufacturers
+// restructured their sites and the cited pages returned 404. Each one was
+// re-checked in a real browser on 2026-09-07 and repointed at whatever the
+// brand actually publishes today.
+//
+// REPOINTING A CITATION IS NOT A RE-VERIFICATION. Nothing was re-measured and
+// no number below was changed, so `lastVerifiedAt` stays null on every one of
+// these rows. The three Babolat frames remain the only rows with a
+// verification date, exactly as before.
+//
+// Three of the new pointers are weaker than a spec page, and say so rather
+// than pretending otherwise: BRAND_ONLY (no page for that line could be found
+// on the brand's own site), SUPERSEDED (the line's page now shows a later
+// generation), and TFIGHT_CONFLICT (the new page disagrees with the row).
+
+/** Repointed at the manufacturer's current page for that product line. */
+const REPOINTED =
+  NOT_FETCHED +
+  "; sourceUrl repointed 2026-09-07 to the manufacturer's current page for this product line " +
+  "(the previous URL 404s) — the numbers were NOT re-cross-checked against it";
+
+/** As REPOINTED, for the rows that also carry the ratings caveat. */
+const REPOINTED_STRING =
+  NOT_FETCHED_STRING +
+  "; sourceUrl repointed 2026-09-07 to the manufacturer's current page for this product line " +
+  "(the previous URL 404s) — the numbers were NOT re-cross-checked against it";
+
+/**
+ * No page for this line could be found on the manufacturer's own site, so
+ * sourceUrl is the brand's tennis landing page and evidences nothing about the
+ * numbers in the row. Stated as an observation, not a claim about what the
+ * brand publishes: Prince genuinely has no catalogue any more (its site links
+ * to a retailer, which this repo will not cite), but Wilson serves an empty
+ * DOM to a scripted browser, so its per-line pages could only be probed by
+ * guessing paths.
+ */
+const BRAND_ONLY =
+  NOT_FETCHED +
+  "; checked 2026-09-07: no page for this product line could be found on the manufacturer's own site, so sourceUrl " +
+  "is the brand's tennis landing page and evidences none of the numbers below";
+
+/** As BRAND_ONLY, for the rows that also carry the ratings caveat. */
+const BRAND_ONLY_STRING =
+  NOT_FETCHED_STRING +
+  "; checked 2026-09-07: no page for this product line could be found on the manufacturer's own site, so sourceUrl " +
+  "is the brand's tennis landing page and evidences none of the numbers below";
+
+/**
+ * The line's page is live but has moved on a generation, so it does not show
+ * this model. Kept in preference to the brand root because it is still the
+ * page for this line — but it is not evidence for these numbers.
+ */
+const SUPERSEDED =
+  NOT_FETCHED +
+  "; sourceUrl repointed 2026-09-07 to the manufacturer's live page for this product line, which now " +
+  "shows a later generation of it — it does not evidence this model's numbers";
+
+/**
+ * Repointed, and the new page openly disagrees with the row. Left standing as
+ * a disagreement: this seed does not get to pick a winner by editing a number
+ * nobody re-measured.
+ */
+const TFIGHT_CONFLICT =
+  NOT_FETCHED +
+  "; sourceUrl repointed 2026-09-07 to Tecnifibre's current T-Fight 300 page, which publishes a " +
+  "645 cm² head — this row says 632 cm² / 98 in². The disagreement is UNRESOLVED: no number below was " +
+  "changed and lastVerifiedAt stays null. Whoever next has the frame in hand should settle it";
 
 // Standard grip runs, as published.
 const GRIPS_FULL = ["L0", "L1", "L2", "L3", "L4"];
@@ -222,8 +298,8 @@ const RACKETS: SeedProduct[] = [
     variant: "v14",
     releaseYear: 2023,
     msrpEur: 279,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.wilson.com/en-us/tennis/rackets/pro-staff",
+    source: REPOINTED,
+    sourceUrl: "https://www.wilson.com/en-us/tennis/tennis-rackets/performance-rackets/pro-staff",
     racket: {
       headSizeCm2: 626,
       headSizeIn2: 97,
@@ -276,8 +352,8 @@ const RACKETS: SeedProduct[] = [
     variant: "Auxetic 2.0",
     releaseYear: 2024,
     msrpEur: 259,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.head.com/en_US/tennis/racquets/speed.html",
+    source: REPOINTED,
+    sourceUrl: "https://www.head.com/en_US/sports/tennis/speed-racquets",
     racket: {
       headSizeCm2: 645,
       headSizeIn2: 100,
@@ -302,8 +378,8 @@ const RACKETS: SeedProduct[] = [
     variant: "Auxetic",
     releaseYear: 2023,
     msrpEur: 249,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.head.com/en_US/tennis/racquets/radical.html",
+    source: REPOINTED,
+    sourceUrl: "https://www.head.com/en_US/sports/tennis/radical-racquets",
     racket: {
       headSizeCm2: 632,
       headSizeIn2: 98,
@@ -327,8 +403,8 @@ const RACKETS: SeedProduct[] = [
     model: "Prestige Pro",
     releaseYear: 2021,
     msrpEur: 269,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.head.com/en_US/tennis/racquets/prestige.html",
+    source: REPOINTED,
+    sourceUrl: "https://www.head.com/en_US/sports/tennis/prestige-racquets",
     racket: {
       headSizeCm2: 613,
       headSizeIn2: 95,
@@ -401,8 +477,8 @@ const RACKETS: SeedProduct[] = [
     model: "TFight 300",
     variant: "ISOFLEX",
     msrpEur: 259,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.tecnifibre.com/en/tennis/racquets",
+    source: TFIGHT_CONFLICT,
+    sourceUrl: "https://www.tecnifibre.com/en/products/t-fight-300",
     racket: {
       headSizeCm2: 632,
       headSizeIn2: 98,
@@ -425,8 +501,8 @@ const RACKETS: SeedProduct[] = [
     brand: "Dunlop",
     model: "FX 500",
     msrpEur: 229,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.dunlopsports.com/tennis/racquets",
+    source: REPOINTED,
+    sourceUrl: "https://dunlopsports.com/en-gb/tennis/rackets/fx500",
     racket: {
       headSizeCm2: 645,
       headSizeIn2: 100,
@@ -449,8 +525,8 @@ const RACKETS: SeedProduct[] = [
     brand: "Prince",
     model: "Phantom 100X 305",
     msrpEur: 219,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.princetennis.com/racquets",
+    source: BRAND_ONLY,
+    sourceUrl: "https://princetennis.com/",
     racket: {
       headSizeCm2: 645,
       headSizeIn2: 100,
@@ -556,8 +632,8 @@ const STRINGS: SeedProduct[] = [
     model: "RPM Blast",
     variant: "1.25 mm",
     msrpEur: 20,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://www.babolat.com/us/tennis/strings",
+    source: REPOINTED_STRING,
+    sourceUrl: "https://www.babolat.com/us/rpm-blast-12m/241101.html",
     string: {
       material: "co_polyester",
       gaugeMm: 1.25,
@@ -581,8 +657,8 @@ const STRINGS: SeedProduct[] = [
     model: "VS Touch",
     variant: "1.30 mm",
     msrpEur: 45,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://www.babolat.com/us/tennis/strings",
+    source: REPOINTED_STRING,
+    sourceUrl: "https://www.babolat.com/us/touch-vs-12m/201031.html",
     string: {
       material: "natural_gut",
       gaugeMm: 1.3,
@@ -607,8 +683,8 @@ const STRINGS: SeedProduct[] = [
     model: "Hyper-G",
     variant: "1.20 mm",
     msrpEur: 18,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://solincosports.com/pages/tennis-strings",
+    source: REPOINTED_STRING,
+    sourceUrl: "https://solincosports.com/equipment/hyper-g/",
     string: {
       material: "co_polyester",
       gaugeMm: 1.2,
@@ -632,8 +708,8 @@ const STRINGS: SeedProduct[] = [
     model: "Tour Bite",
     variant: "1.25 mm",
     msrpEur: 18,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://solincosports.com/pages/tennis-strings",
+    source: REPOINTED_STRING,
+    sourceUrl: "https://solincosports.com/equipment/tour-bite/",
     string: {
       material: "co_polyester",
       gaugeMm: 1.25,
@@ -758,8 +834,8 @@ const STRINGS: SeedProduct[] = [
     model: "X-One Biphase",
     variant: "1.30 mm",
     msrpEur: 24,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://www.tecnifibre.com/en/tennis/strings",
+    source: REPOINTED_STRING,
+    sourceUrl: "https://www.tecnifibre.com/en/products/garniture-x-one-biphase-naturel",
     string: {
       material: "multifilament",
       gaugeMm: 1.3,
@@ -783,8 +859,8 @@ const STRINGS: SeedProduct[] = [
     model: "Razor Code",
     variant: "1.25 mm",
     msrpEur: 19,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://www.tecnifibre.com/en/tennis/strings",
+    source: REPOINTED_STRING,
+    sourceUrl: "https://www.tecnifibre.com/en/products/garniture-razor-code-carbon",
     string: {
       material: "co_polyester",
       gaugeMm: 1.25,
@@ -808,8 +884,8 @@ const STRINGS: SeedProduct[] = [
     model: "Synthetic Gut Duraflex",
     variant: "1.30 mm",
     msrpEur: 9,
-    source: NOT_FETCHED_STRING,
-    sourceUrl: "https://www.princetennis.com/strings",
+    source: BRAND_ONLY_STRING,
+    sourceUrl: "https://princetennis.com/",
     string: {
       material: "synthetic_gut",
       gaugeMm: 1.3,
@@ -836,8 +912,8 @@ const SHOES: SeedProduct[] = [
     brand: "Asics",
     model: "GEL-RESOLUTION 9",
     msrpEur: 150,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.asics.com/us/en-us/tennis-shoes",
+    source: SUPERSEDED,
+    sourceUrl: "https://www.asics.com/us/en-us/gel-resolution/c/aa50116000/",
     shoe: {
       courtType: "all_court",
       weightG: 355,
@@ -856,8 +932,8 @@ const SHOES: SeedProduct[] = [
     model: "GEL-RESOLUTION 9",
     variant: "Clay",
     msrpEur: 150,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.asics.com/us/en-us/tennis-shoes",
+    source: SUPERSEDED,
+    sourceUrl: "https://www.asics.com/us/en-us/gel-resolution/c/aa50116000/",
     shoe: {
       courtType: "clay",
       weightG: 350,
@@ -875,8 +951,8 @@ const SHOES: SeedProduct[] = [
     brand: "Asics",
     model: "COURT FF 3",
     msrpEur: 170,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.asics.com/us/en-us/tennis-shoes",
+    source: REPOINTED,
+    sourceUrl: "https://www.asics.com/us/en-us/court-ff-3/p/ANA_1041A370-107.html",
     shoe: {
       courtType: "all_court",
       weightG: 340,
@@ -963,8 +1039,8 @@ const SHOES: SeedProduct[] = [
     model: "Jet Mach 3",
     variant: "Clay",
     msrpEur: 150,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.babolat.com/us/tennis/shoes",
+    source: BRAND_ONLY,
+    sourceUrl: "https://www.babolat.com/us/tennis.html",
     shoe: {
       courtType: "clay",
       weightG: 310,
@@ -980,8 +1056,8 @@ const SHOES: SeedProduct[] = [
     brand: "Wilson",
     model: "Rush Pro 4.0",
     msrpEur: 130,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.wilson.com/en-us/tennis/footwear",
+    source: BRAND_ONLY,
+    sourceUrl: "https://www.wilson.com/en-us/tennis",
     shoe: {
       courtType: "all_court",
       weightG: 380,
@@ -1005,8 +1081,8 @@ const ACCESSORIES: SeedProduct[] = [
     model: "Pro Overgrip",
     variant: "3-pack",
     msrpEur: 9,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.wilson.com/en-us/tennis/accessories",
+    source: BRAND_ONLY,
+    sourceUrl: "https://www.wilson.com/en-us/tennis",
     accessory: { kind: "grip", gripType: "overgrip", thicknessMm: 0.55, packCount: 3, material: "Polyurethane", tacky: true },
   },
   {
@@ -1015,8 +1091,8 @@ const ACCESSORIES: SeedProduct[] = [
     brand: "Babolat",
     model: "Syntec Pro",
     msrpEur: 11,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.babolat.com/us/tennis/accessories",
+    source: REPOINTED,
+    sourceUrl: "https://www.babolat.com/us/syntec-pro/670051.html",
     accessory: { kind: "grip", gripType: "replacement", thicknessMm: 1.8, packCount: 1, material: "Polyurethane", tacky: true },
   },
   {
@@ -1036,8 +1112,8 @@ const ACCESSORIES: SeedProduct[] = [
     brand: "Babolat",
     model: "Pure Strike RH X6",
     msrpEur: 90,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.babolat.com/us/tennis/bags",
+    source: REPOINTED,
+    sourceUrl: "https://www.babolat.com/us/rh6-pure-strike-carbon-grey/751249.html",
     accessory: { kind: "bag", racketCapacity: 6, compartments: 2, insulatedCompartment: true, shoeCompartment: false },
   },
   {
@@ -1078,8 +1154,8 @@ const ACCESSORIES: SeedProduct[] = [
     model: "ATP Championship Extra Duty",
     variant: "3-ball can",
     msrpEur: 5,
-    source: NOT_FETCHED,
-    sourceUrl: "https://www.dunlopsports.com/tennis/balls",
+    source: REPOINTED,
+    sourceUrl: "https://dunlopsports.com/en-gb/tennis/balls/atp-championship-3pet",
     accessory: { kind: "balls", felt: "extra_duty", pressurised: true, ballsPerCan: 3, approval: "ITF approved", surface: "all_court" },
   },
 ];
