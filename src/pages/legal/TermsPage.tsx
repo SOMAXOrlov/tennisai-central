@@ -74,6 +74,14 @@ export default function TermsPage() {
             <p>{t("legal.terms.trial.body")}</p>
           </Section>
 
+          {/* Stated rather than left as a gap. Silence where a price would go
+              reads as "the billing terms must be somewhere else". There is no
+              billing: nothing payment-related exists in the codebase at all. */}
+          <Section heading={t("legal.terms.payments.heading")}>
+            <p>{t("legal.terms.payments.body")}</p>
+            <p>{t("legal.terms.payments.note")}</p>
+          </Section>
+
           <Section heading={t("legal.terms.accounts.heading")}>
             <p>{t("legal.terms.accounts.body")}</p>
           </Section>
@@ -87,7 +95,45 @@ export default function TermsPage() {
               <li>{t("legal.terms.use.item1")}</li>
               <li>{t("legal.terms.use.item2")}</li>
               <li>{t("legal.terms.use.item3")}</li>
+              {/* item4 exists because item1 was not true of the product: an
+                  opponent record is data about a third party who never
+                  consented. The rule now names the exception and bounds it. */}
+              <li>{t("legal.terms.use.item4")}</li>
             </ul>
+          </Section>
+
+          {/* Required now that a photograph can be uploaded — and kept
+              proportionate. This is a profile picture, not a media platform,
+              so the licence is the narrowest one that lets the feature work. */}
+          <Section heading={t("legal.terms.content.heading")}>
+            <p>{t("legal.terms.content.body")}</p>
+            <p>{t("legal.terms.content.rights")}</p>
+            <p>{t("legal.terms.content.licence")}</p>
+            <p>{t("legal.terms.content.prohibited")}</p>
+            <p>{t("legal.terms.content.removal")}</p>
+          </Section>
+
+          <Section heading={t("legal.terms.relationship.heading")}>
+            <p>{t("legal.terms.relationship.body")}</p>
+            <p>{t("legal.terms.relationship.noVetting")}</p>
+            <p>{t("legal.terms.relationship.note")}</p>
+          </Section>
+
+          {/* The most important clause on the page. The product writes training
+              sessions, recommends equipment and records injuries, and children
+              use it — so what it is NOT has to be said in full, not implied by
+              a line in the warranty clause. */}
+          <Section heading={t("legal.terms.advice.heading")}>
+            <p>{t("legal.terms.advice.body")}</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>{t("legal.terms.advice.item1")}</li>
+              <li>{t("legal.terms.advice.item2")}</li>
+              <li>{t("legal.terms.advice.item3")}</li>
+              <li>{t("legal.terms.advice.item4")}</li>
+              <li>{t("legal.terms.advice.item5")}</li>
+              <li>{t("legal.terms.advice.item6")}</li>
+            </ul>
+            <p className="font-medium text-foreground">{t("legal.terms.advice.health")}</p>
           </Section>
 
           <Section heading={t("legal.terms.data.heading")}>
@@ -98,10 +144,20 @@ export default function TermsPage() {
               </Link>{" "}
               {t("legal.terms.data.after")}
             </p>
+            <p>{t("legal.terms.data.erasure")}</p>
+          </Section>
+
+          {/* Matches the privacy page's erasure route on purpose. Two documents
+              describing the same act differently is how a reader learns not to
+              trust either. */}
+          <Section heading={t("legal.terms.closure.heading")}>
+            <p>{t("legal.terms.closure.body")}</p>
+            <p>{t("legal.terms.closure.operator")}</p>
           </Section>
 
           <Section heading={t("legal.terms.warranty.heading")}>
             <p>{t("legal.terms.warranty.body")}</p>
+            <p>{t("legal.terms.warranty.availability")}</p>
             <p>{t("legal.terms.warranty.note")}</p>
           </Section>
 

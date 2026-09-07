@@ -830,56 +830,209 @@
         "body": "Tennis AI is used by players, coaches, parents (as connected observer accounts) and academy admins. Some players are minors; where that is the case a parent or guardian normally holds the connected observer account, and a junior's own account is not usable until a guardian has approved it."
       },
       "collect": {
-        "heading": "What we collect",
-        "item1": "Account details: name, e-mail address, role, date of birth (used to decide whether guardian consent is required) and a password, stored hashed.",
-        "item2": "Profile answers given during onboarding — playing level, goals, coaching focus and similar.",
-        "item3": "Activity you or your coach enter: training sessions and their reviews, matches with set scores and what went wrong in them, tournament entries, equipment and string setups, and calendar events.",
-        "item4": "Finance entries you choose to log: training, travel, tournament and equipment costs.",
-        "item5": "Connections between accounts — player to coach, player to parent, academy memberships — and the notifications that go with them.",
-        "item6": "Guardian consent records for players under the age of digital consent: the guardian's e-mail address, a hashed one-time token, and when consent was given.",
-        "item7": "Operational technical data: authentication tokens, server request and error logs.",
-        "note": "Onboarding deliberately asks for no health or medical information."
+        "heading": "What is held, why, and for how long",
+        "intro": "One row for each kind of information the product actually stores. It is written from the database schema and from the routes that write to it: if something is not in this table, the product does not hold it.",
+        "basisNote": "No lawful basis has been settled for any of these categories yet. Each entry in that column is the team's reading of which basis is likely to apply, not a decision — see “Still open” at the end of this page.",
+        "tableLabel": "Information held, why it is held, its likely lawful basis, and how long it is kept",
+        "columns": {
+          "category": "Information",
+          "why": "Why it is held",
+          "basis": "Lawful basis",
+          "retention": "How long"
+        },
+        "rows": {
+          "account": {
+            "category": "Account and sign-in: first and last name, e-mail address, role, a shareable directory id, your password stored only as a bcrypt hash, whether the address has been verified, and the moment you accepted the terms.",
+            "why": "To create the account, sign you in, address you by name, and let another account find you deliberately rather than by guessing.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists. No automatic deletion is implemented."
+          },
+          "age": {
+            "category": "Age and guardian consent: date of birth, the age confirmation made at sign-up, and — for an account below the age of digital consent — a guardian's name and e-mail address, a one-time consent token stored only as a hash, and when consent was given.",
+            "why": "To decide whether a guardian has to approve the account before it can be used, and to ask that guardian by e-mail.",
+            "basis": "Not settled. Likely an obligation towards children, with the guardian's consent standing in for the child's.",
+            "retention": "For as long as the account exists."
+          },
+          "profile": {
+            "category": "Playing profile: level, ranking, dominant hand, backhand, preferred surface, technical and physical strengths, playing-style ratings from one to ten, current goals, and the answers given during onboarding.",
+            "why": "To fit a session, a string setup and a tournament shortlist to the player in front of the app rather than to an average one.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists."
+          },
+          "photo": {
+            "category": "One profile photograph, re-encoded by the server into a square WebP of at most 512 pixels. The file you chose is never stored.",
+            "why": "So the people who already work with a player can recognise them in a list of names.",
+            "basis": "Not settled. It is optional in the product: nothing requires a photograph.",
+            "retention": "Until you remove or replace it, which deletes the file immediately. A nightly backup keeps a copy for up to fourteen days."
+          },
+          "activity": {
+            "category": "What you or your coach record: training sessions with their blocks and reviews, your own feedback on a session, matches with their set scores and the issues raised about them, tournament entries, the tournaments you have hidden from your own list, calendar events and training requests.",
+            "why": "This is the product — the shared record a coach and a player keep together.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists. No automatic deletion is implemented."
+          },
+          "plans": {
+            "category": "Session plans: a saved training plan and its drills, stamped with which generator produced it and which version of it. For a session put together by the session builder, also the constraints it was given, the proposal it produced, the coach's edits to that proposal, and whether it was saved or discarded.",
+            "why": "So a plan can be reviewed, repeated and corrected, and so a coach can see what they changed about a proposal rather than only the result.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists. No automatic deletion is implemented."
+          },
+          "equipment": {
+            "category": "Rackets, strings, shoes and accessories in your bag, and your string setups with their tensions, dates and how each one ended.",
+            "why": "To recommend a string, a gauge and a tension from what you have actually played with, and to say when a restring is due.",
+            "basis": "Not settled. It is optional in the product.",
+            "retention": "For as long as the account exists."
+          },
+          "finance": {
+            "category": "Costs you choose to log: an amount, its currency, a category, a description, a date, and optionally the tournament the cost belongs to.",
+            "why": "To total what a season, a tournament or an hour on court actually costs. Amounts are never converted between currencies.",
+            "basis": "Not settled. It is optional in the product.",
+            "retention": "For as long as the account exists."
+          },
+          "connections": {
+            "category": "The links between accounts: the connection requests two people send and accept, team membership, the notifications sent about them, and your notification and calendar preferences. For a junior, the guardian-consent record sits on their own account.",
+            "why": "To decide who may see what. Every read of another person's data is checked against these links on the server.",
+            "basis": "Not settled. Likely the contract you asked for.",
+            "retention": "For as long as the account exists."
+          },
+          "coachNotes": {
+            "category": "A coach's private notes about a player. The table exists, deliberately separate so that a note could never be read into a player's or a parent's view of the app — but nothing in the app writes to it, so no note has ever been recorded.",
+            "why": "Reserved so that a coach could keep working notes. If it is ever built, only the coach who wrote a note will be able to read it.",
+            "basis": "Not settled. Whether such a note is disclosed when the player asks for their data is an open question.",
+            "retention": "Nothing is held today. Were it built: for as long as the coach's account exists."
+          },
+          "opponents": {
+            "category": "Opponent records: a name, playing tendencies and written observations entered by a coach or a player about somebody who usually has no account here. The schema also reserves tables for scouting reports and game plans built on those records, and nothing in the app writes to them.",
+            "why": "To prepare for a match against a specific opponent.",
+            "basis": "Not settled, and the hardest entry on this page: the person described has not been asked.",
+            "retention": "For as long as the account that entered the record exists."
+          },
+          "push": {
+            "category": "If you switch on push notifications: the endpoint your browser's push service issues, the two keys that go with it, and the description the browser gives of itself.",
+            "why": "To deliver a notification to that particular browser.",
+            "basis": "Not settled. It is created by your own explicit action in the app.",
+            "retention": "Until you switch push off. A subscription the push service rejects is deleted the next time a message fails."
+          },
+          "aiRecords": {
+            "category": "A record of each AI generation: which provider and model answered, a hash of the input, whether it succeeded, any error message, and how long it took. Neither the prompt nor the answer is kept in that record.",
+            "why": "To count a monthly cap of one hundred generations per account and to see whether the feature is working.",
+            "basis": "Not settled.",
+            "retention": "For as long as the account exists."
+          },
+          "technical": {
+            "category": "Request logs from the API and from the web server in front of it, which include IP addresses, and the sign-in token your own browser holds.",
+            "why": "To keep the service running, to find faults, and to rate-limit abuse.",
+            "basis": "Not settled. Likely the operator's own interest in running the service.",
+            "retention": "The web server keeps five rolled access-log files of ten megabytes each. The API's own log is not bounded by anything in this repository."
+          }
+        },
+        "note": "Sign-up and onboarding ask no health or medical question, and the app has no field for one. Two columns for injury restrictions and physical limitations do exist in the database and are read by the session and string builders, but nothing in the app writes to them. Free-text boxes — a session goal, a coach's review, a note on a match — are stored exactly as typed, so whatever a person chooses to write in one is held too.",
+        "dormant": "Several tables in the database are reserved and empty. Nothing in the app writes to private coach notes, scouting reports, game plans, post-match reports, session templates, coach preferences, drill reviews or the plan tier, so the product holds none of that today. They are named here because they are in the schema, a backup would carry them, and one of them — a coach's private note about a player — is an open question at the foot of this page. Separately, the guardianship, coach-assignment and academy-membership tables are read by the authorisation checks but are filled only by the synthetic demo data; the links the app really creates are the connection requests between accounts and the guardian-consent record on a junior's own account."
       },
       "purpose": {
         "heading": "Why we collect it",
         "body": "To run the features you use directly: scheduling, the session builder, training reviews, match logging, tournaments, equipment, finance tracking and the connections between coaches, players and parents. We do not sell personal data and we do not use it for third-party advertising.",
         "legalBasisNote": "The legal basis for each of those purposes has not been settled yet — see “Still open” at the end of this page."
       },
-      "device": {
-        "heading": "What stays on your device",
-        "intro": "Tennis AI sets no advertising or analytics cookies. It does keep a handful of values in your browser's local storage:",
-        "item1": "your sign-in token, so a refresh does not log you out;",
-        "item2": "your light/dark theme choice and your language choice;",
-        "item3": "an approximate location, only if you ask the tournaments map to show distances. That location is stored on your device only and is never sent to our server — the distances are calculated in your browser;",
-        "item4": "small interface preferences, such as whether you have dismissed a notice.",
-        "note": "Clearing your browser's site data removes all of these and signs you out."
-      },
-      "processors": {
-        "heading": "Who else the data touches",
-        "intro": "What the code shows today, and nothing more:",
-        "item1": "Hosting: the app, the API and the PostgreSQL database all run on one rented server. Neither the hosting company nor the country that server sits in is stated here yet — both have to be before launch.",
-        "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external SMTP provider configured by whoever runs the server. The trial's provider has not been named here yet.",
-        "item3": "Web push: if you turn on push notifications, your browser's push service (for example Google's or Mozilla's) relays them. Push is off unless the operator configures keys for it.",
-        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation prompt is sent to that provider. On this trial it is switched off, and the app says so where it would otherwise appear.",
-        "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament’s coordinates. No account or personal data is sent with that request."
+      "photos": {
+        "heading": "Profile photographs",
+        "stored": "A profile photograph is optional; nothing in the app requires one. When one is uploaded the server decodes it, crops it to a square of at most 512 pixels and writes a fresh WebP file. The file you chose is never written to disk — only the re-encoded picture is.",
+        "metadata": "That re-encode is also what removes the photograph's metadata. A picture taken on a phone normally carries the exact coordinates of the place it was taken, along with the date, the device, and often a thumbnail of the original frame. None of that survives being decoded and written out again, so what is stored is the picture and nothing else. For a photograph of a child, the coordinates are the part that matters: they would otherwise say where that child trains. Stripping the metadata in the browser instead was considered and rejected — the original file can be sent straight to the server, skipping the browser entirely.",
+        "whoCanSee": "For an account below the age of digital consent, a photograph can be read by exactly three kinds of person: the player themselves, a coach actively assigned to them or connected to them as their coach, and a parent or guardian whose consent has actually been recorded. Nobody else — not another player, not an observer who merely holds a connection, and not a guardian who never consented. For an account at or above that age the ordinary rule applies: the player, a coach assigned to them, a connected account, or a consented guardian.",
+        "serverEnforced": "That is decided on the server, on every single request, from the relationships stored in the database. It is not a matter of which buttons the app chooses to show.",
+        "notPublic": "A photograph has no address of its own. It is not held anywhere the web server can reach, no URL serves it, and its file name is 32 random characters rather than anything derived from the person in it. The only way to read one is an authorised request to the API, and that request is checked before it is even looked up — so the answer cannot be used to work out whether a particular child has a picture at all.",
+        "upload": "Only you can put a photograph on your own profile. No route exists for a coach, a parent or an administrator to upload one for somebody else.",
+        "deletion": "Removing or replacing your photograph deletes the file immediately. The nightly backup is the exception worth knowing about: it archives the photograph directory alongside the database, and fourteen of those archives are kept. So for up to fourteen nights after you remove a photograph, a copy still exists in a backup on the server's disk, and it goes when that archive is rotated out. Saying otherwise would be simpler and untrue."
       },
       "minors": {
         "heading": "Minors and guardian consent",
         "body": "Sign-up asks for a date of birth. At or above the age of digital consent this deployment is configured with — 16 unless the operator changes it — nothing extra happens. Below it, the account is created but stays inert: we send a one-time link to the guardian's e-mail address, and until the guardian approves, the account cannot be used. GDPR Article 8 leaves the exact age to each member state (13 to 16), which is why it is a setting rather than a fixed number.",
         "note": "Which national age applies to which user, and how a guardian's authority is verified beyond holding the e-mail address, are open questions for counsel."
       },
+      "device": {
+        "heading": "Cookies and what stays on your device",
+        "intro": "The app sets no cookies at all — none for analytics, none for advertising, and none that identify you. Because nothing it stores requires your consent under the cookie rules, there is no consent banner. If you expected one, that is why: it is not an omission.",
+        "storageIntro": "What the app does keep is a short list of values in your browser's own storage. None of them leaves your device unless it says so:",
+        "item1": "your sign-in token. Strictly necessary: without it, loading a page would sign you out;",
+        "item2": "your language choice and your light or dark theme choice;",
+        "item3": "an approximate location, and only if you ask the tournaments map to show distances. It stays on your device and is never sent to the server — the distances are worked out in your browser;",
+        "item4": "how far you have got with the “get started” checklist, and when you last dismissed it;",
+        "item5": "drafts of long forms — a match you were half-way through entering, for example — so a refresh or a wrong tap does not lose what you typed. A restored draft is always announced rather than quietly put back, and it is cleared once you save;",
+        "item6": "small interface preferences, such as whether the side navigation is collapsed.",
+        "necessary": "Only the first of those is strictly necessary. The rest are conveniences and the app works without any of them.",
+        "serviceWorker": "The app also installs a service worker, which keeps a copy of its own program files — the HTML, the JavaScript, the icons — so a repeat visit is quick and survives a poor connection. It is written never to store a reply from the API, so no personal data goes into that cache.",
+        "thirdParty": "Two things your browser fetches do not come from this app's own server: the three typefaces the design uses, and — on the tournaments map — the map tiles. Both are described under “Who else the data touches”.",
+        "note": "Clearing this site's data in your browser removes everything above and signs you out."
+      },
+      "processors": {
+        "heading": "Who else the data touches",
+        "intro": "What the code shows today, and nothing more:",
+        "item1": "Hosting: the app, the API, the PostgreSQL database and the uploaded photographs all run on one rented server. The machine is rented from a German hosting company; which of that company's data centres it physically sits in is not recorded anywhere in this project, so no country is claimed here — see “Where the data is”.",
+        "item2": "E-mail: verification, password-reset and guardian-consent messages are sent through an external mail provider configured by whoever runs the server. The trial's provider has not been named here yet.",
+        "item3": "Web push: if you turn on push notifications, your browser's push service (Google's for Chrome, Mozilla's for Firefox) relays them. Push is off unless the operator configures keys for it.",
+        "item4": "AI provider: optional, and off unless the operator sets both a provider and an API key. When it is on, the text of a match-preparation or training-advice prompt is sent to that provider. On this trial it is switched off, and the app says so where the feature would otherwise appear.",
+        "item5": "Weather and elevation: the server asks the public Open-Meteo API about a tournament's coordinates. No account or personal data is sent with that request.",
+        "item6": "Typefaces: the app's stylesheet loads three typefaces from Google Fonts, so your browser fetches them from Google's servers. Google therefore sees your IP address and what browser you are using, on every visit and whether or not you are signed in. No account data is sent, and nothing in the app requires this — the typefaces could be served from the same server as everything else.",
+        "item7": "Map tiles: the tournaments map draws its background from the OpenStreetMap Foundation's public tile servers. Your browser requests those tiles directly, so that service sees your IP address and which part of the map you are looking at. It happens only when you open the map."
+      },
+      "transfers": {
+        "heading": "Where the data is",
+        "body": "Everything the product stores — the app, the API, the database and the uploaded photographs — sits on a single rented server. There is no second region and no second copy: one machine, one disk, and a nightly backup written to that same disk.",
+        "provider": "The machine is rented from a German hosting company. That company operates data centres in more than one country, including outside the European Economic Area, and which one this server is in is not recorded anywhere in this project. Rather than guess at a country, this page says so and the question is on the still-open list.",
+        "recipientsIntro": "Recipients outside the European Economic Area, each only when the feature concerned is switched on:",
+        "item1": "the AI provider, if the operator has configured one. The two the code can talk to are Anthropic and OpenAI, both United States companies. Neither is configured on this trial.",
+        "item2": "your browser's push service, if you turn push notifications on. Which company that is depends on the browser you use.",
+        "item3": "Google, for the typefaces — on every visit, before you have done anything.",
+        "item4": "the mail provider the operator configures, which may be outside the European Economic Area depending on which one they choose.",
+        "note": "No transfer mechanism is recorded anywhere in this project for any of those — no standard contractual clauses, no documented reliance on an adequacy decision, nothing. That is a gap, and it is on the still-open list rather than papered over here."
+      },
       "ai": {
         "heading": "Optional AI processing",
-        "body": "Match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first."
+        "body": "Training advice and match-preparation text can be generated by an external AI provider, but only when whoever runs the server has configured one. There is no provider configured on this trial, so nothing leaves the server for that purpose. If a deployment turns it on, the provider becomes a processor and has to be named here first.",
+        "pseudonymous": "What would leave the server if a provider were configured is evidence, not identities: names and e-mail addresses are replaced with “Player 1”, “Player 2” and so on before the request is built, and swapped back for real names in the answer. Be aware of the limit of that, though — the free text itself is sent as written. A session goal, a coach's review of a session, a note on a match: if somebody typed a name into one of those boxes, that name goes with it. What comes back is checked against a strict shape before it is shown, and the record kept afterwards holds the provider, the model, a hash of the input and whether it worked — not the prompt and not the answer."
+      },
+      "automated": {
+        "heading": "Automated decisions and recommendations",
+        "body": "Most of what the product produces is a recommendation made by rule: which string, gauge and tension to try, how a player fits an upcoming tournament, what a season has cost. Those engines are deterministic — the same inputs give the same answer, every rule is written down, and each answer comes back with the reasons that produced it. They are advice. Nothing acts on them by itself; a coach or a player reads them and decides.",
+        "effectsIntro": "Two automated rules do settle something rather than suggest it, and both are a comparison against a date of birth you entered yourself:",
+        "item1": "the age check at sign-up. If the date of birth you give is below the age of digital consent this deployment is configured with, the account is created but cannot be used until a guardian approves it from a link sent to their e-mail address.",
+        "item2": "tournament age eligibility. An event whose age category your date of birth does not meet is taken out of your list, with the reason shown, because you could not enter it.",
+        "note": "Nothing here profiles anyone and none of it is used for advertising or sold. Whether the sign-up gate counts as an automated decision in the legal sense has not been assessed by a lawyer — it is on the still-open list. In both cases above, correcting your date of birth is what changes the outcome, and the data-protection contact above is where to ask."
+      },
+      "security": {
+        "heading": "How the data is protected",
+        "intro": "What is actually done, described without adjectives:",
+        "item1": "passwords are kept only as bcrypt hashes, and no part of the system can read one back;",
+        "item2": "traffic between your browser and the server travels over HTTPS, with the certificate obtained and renewed automatically;",
+        "item3": "who may read what is decided on the server, on every request, from the recorded relationships between accounts. What the app chooses to display is never the boundary;",
+        "item4": "the database and the API accept no connections from the internet at all — only the web server in front of them is reachable;",
+        "item5": "sign-in attempts, photograph uploads and ordinary requests are each rate-limited per address;",
+        "item6": "an uploaded image is identified by its actual bytes rather than by its name or its declared type, capped at five megabytes, and re-encoded before anything is stored.",
+        "gaps": "What is not done, because leaving this out is what would mislead: the product has had no external security review or penetration test of any kind, and everything above was done by the same people who wrote the code. The web app is served without a Content-Security-Policy header, and your sign-in token is kept in your browser's local storage rather than in a cookie the page cannot read — so a scripting flaw anywhere in the app would expose it. The nightly backup is unencrypted and sits on the same disk as the data it protects, with no copy anywhere else. The procedure for restoring the photograph archive has been written down but never executed.",
+        "noVerdict": "None of the above amounts to a guarantee. The product has not been certified, audited or approved by anybody, and this page deliberately gives no overall verdict on how well it is protected — that is not a verdict it has earned the right to give."
       },
       "retention": {
         "heading": "How long we keep it",
-        "body": "Today: account and activity data is kept for as long as the account exists. No automatic deletion schedule has been implemented, and no retention period has been agreed. That is a gap, not a policy — it is listed below."
+        "body": "Per category, in the table above, because the answer is not the same for all of them. The short version is: for as long as the account exists. No automatic deletion schedule is implemented and no retention period has been agreed — a gap rather than a policy, and it is listed below.",
+        "exceptions": "Two things do have a real number. The nightly backups keep fourteen copies of the database and of the photograph directory, so anything deleted today is still in an archive for up to fourteen nights. The web server's access log, which records IP addresses, keeps five rolled files of ten megabytes."
       },
       "rights": {
-        "heading": "Your rights",
-        "body": "Depending on where you live you may have the right to access, correct, export or delete your personal data, and to object to or restrict certain processing. For a connected minor's data, a parent or guardian can exercise those rights on the player's behalf. There is no self-service export or erasure button in the app yet; a request today is handled by hand by the team.",
-        "contact": "Requests go to the data-protection contact above, once that address exists."
+        "heading": "Your rights, and how to use them",
+        "body": "Depending on where you live you may have the right to ask for a copy of your personal data, to have it corrected, to have it deleted, to have it given to you in a portable form, and to object to or restrict some of what is done with it. Where the data is a connected minor's, a parent or guardian can exercise those rights on the player's behalf.",
+        "erasure": "Erasure is requested in writing. Send the request to the data-protection address at the top of this page and it will be acted on within one month. There is no “delete my account” button in the app, and this page will not imply one: nothing in the product closes an account, so an erasure is carried out by hand — the database rows, and separately the photograph file, which nothing else would clean up.",
+        "selfService": "What you can do yourself today is remove your profile photograph, from your own profile page. That deletes the file at once, subject only to the fourteen-night backup window described above. Everything else — a copy of your data, a correction you cannot make in the app, a full erasure — is a written request.",
+        "contact": "Requests go to the data-protection contact at the top of this page, once that address exists. Until it does there is nowhere to send one, which is why the identity of the controller is the first item on the list below."
+      },
+      "complaints": {
+        "heading": "Complaining to a supervisory authority",
+        "body": "If you think your personal data has been mishandled, you can complain to a data-protection supervisory authority as well as, or instead of, writing to us. Which authority is competent for this service follows from where it is established and from the governing law — and that is one of the fields still to be decided:",
+        "lawLabel": "Governing law and courts",
+        "note": "Under EU data-protection law a complaint can normally also be made to the authority of the country where you live or work, whichever country the service turns out to be established in. Until the field above is filled in, this page cannot name the authority for you, and naming one on a guess would send a complaint to the wrong regulator."
+      },
+      "changes": {
+        "heading": "Changes to this policy",
+        "body": "This document will change. It is a draft, several of its fields are unfilled, and the product it describes is still being built. The effective date at the top is the date this version was adopted, written out by hand: it does not advance on its own, so if it looks old, it is old.",
+        "notice": "When a change matters to you rather than correcting a piece of wording, we will aim to tell trial participants directly instead of relying on anyone re-reading this page. There is no archive of superseded versions yet, which means you cannot currently see what a previous version said — worth knowing before you rely on having read this one."
       },
       "open": {
         "heading": "Still open",
@@ -889,7 +1042,13 @@
         "item3": "retention periods per data category, and what happens to a coach's records when a player leaves;",
         "item4": "how a guardian's authority is verified, per national age of consent;",
         "item5": "the named processor list and a data-processing agreement with each;",
-        "item6": "the process and deadlines for handling an access, export or erasure request."
+        "item6": "the process and deadlines for handling an access, export or erasure request.",
+        "item7": "the age of digital consent to enforce. This deployment is set to 16, while Spain's is 14 — so a Spanish 15-year-old is treated here as needing a guardian's approval when the national rule would not require it;",
+        "item8": "the country the server actually sits in. The hosting company is German; the data centre is not recorded, and it has to be established rather than assumed;",
+        "item9": "a transfer mechanism for each recipient outside the European Economic Area named above — none is in place;",
+        "item10": "a way to close an account. There is none: no screen offers it and no part of the API deletes a user, so an erasure request has to be carried out by hand today, including the photograph file, which nothing else would clean up;",
+        "item11": "an external data-protection assessment of any kind. None has been done — no impact assessment, no record of processing activities, no legal review;",
+        "item12": "two questions the code raised and nobody has answered: whether the sign-up age gate counts as an automated decision in the legal sense, and whether a coach's private note about a player has to be disclosed when that player asks for their data."
       }
     },
     "terms": {
@@ -906,6 +1065,11 @@
         "heading": "The trial",
         "body": "Tennis AI is currently an early trial for a small group of coaches, players and parents. There is no paid plan. Features change often, and the trial may be paused or ended at any time while we build the product."
       },
+      "payments": {
+        "heading": "There is nothing to pay",
+        "body": "Tennis AI is free while it is a trial. There is no price, no plan to choose, no card to enter and no invoice. Nor is there any payment machinery behind the scenes: no payment processor, nothing that handles a card number, nothing that issues a receipt. The database schema carries a dormant table for a plan tier, left over from earlier design work, and no part of the running application reads or writes it.",
+        "note": "If that ever changes it will change these terms first, and trial participants will be told before anything is charged rather than after. The costs the app can total up are the ones you type into it yourself — your own coaching, travel and equipment spending. They are not money owed to anybody here."
+      },
       "accounts": {
         "heading": "Accounts",
         "body": "You need an account to use Tennis AI. You are responsible for keeping your sign-in details secure and for the accuracy of what you enter. Sign-up may ask you to verify your e-mail address before the account can be used."
@@ -916,18 +1080,51 @@
       },
       "use": {
         "heading": "Acceptable use",
-        "item1": "Only enter data about yourself, or about a player you coach or are the parent or guardian of.",
+        "item1": "Only enter data about yourself, or about a player you coach or are the parent or guardian of — with the one narrow exception below.",
         "item2": "Do not use the app to harass, impersonate or misrepresent yourself or anyone else.",
-        "item3": "Do not attempt to reach accounts or data that are not yours."
+        "item3": "Do not attempt to reach accounts or data that are not yours.",
+        "item4": "That exception is an opponent record, and it is narrow: a name, and observations about how somebody plays, kept for preparing a match. Keep it factual and about tennis. Do not record an opponent's health, their personal life or your opinion of their character, and do not write anything you would be uncomfortable showing them."
+      },
+      "content": {
+        "heading": "What you upload",
+        "body": "The only file you can upload today is your own profile photograph. These terms treat it the way they would treat anything else you contribute.",
+        "rights": "You must have the right to upload what you upload. For a photograph that means it is of you — or, where you hold the account for a player you are the parent or guardian of, of that player and with their knowledge. Do not upload a picture of somebody else, and do not upload one you did not take or have no permission to use.",
+        "licence": "You keep whatever rights you have in it. Uploading it gives the operator permission to do one thing: store it and show it to the people this product allows to see it — the player, their coach, and a consented parent or guardian. That permission covers nothing else. It is not used to promote the product, not shown to anyone outside those relationships, not sold or licensed to anybody, and not used to train any model.",
+        "prohibited": "Nothing sexual, nothing violent, nothing that identifies a child beyond their own face, no document or screenshot standing in for a photograph, and nothing meant to pass you off as somebody else.",
+        "removal": "You can remove your photograph yourself at any time, from your profile page, and doing so deletes the stored file. The operator may also remove one that breaks the rules above, or that is reported as breaking them, and will tell the account it belonged to."
+      },
+      "relationship": {
+        "heading": "Coaching is between you and your coach",
+        "body": "The operator of this product is not a party to the arrangement between a coach and a player. The coaching itself, its content, its schedule and its price are agreed between those people — or between a coach and a player's parents. This product records what they agree and gives them one shared place to keep it.",
+        "noVetting": "The operator does not employ, vet, supervise, endorse or certify any coach here. Nobody's qualifications are checked, nobody's insurance is checked, and nothing in the product verifies anyone's right to work with children. A connection between a coach and a player exists because the two of them accepted it, and for no other reason.",
+        "note": "Whether the operator ought to be checking a coach's credentials before they can be connected to a junior is not settled by these terms and is not implemented in the product. It is a decision still to be taken, and it is a serious one."
+      },
+      "advice": {
+        "heading": "Nothing here is professional advice",
+        "body": "This is the most important clause on this page, and it matters most for a junior player.",
+        "item1": "The training sessions, drills and plans the product produces are assembled by rule from what has been entered. They are not physiotherapy, not sports medicine, not a rehabilitation programme, and not a substitute for a qualified coach who is watching the player in person.",
+        "item2": "The session builder does apply age rules when it picks drills — some work is limited to bodyweight for younger players, some is excluded by age band, some is marked as needing supervision, and anything left out is listed with the reason. Those rules are a floor, not a judgement about a particular child.",
+        "item3": "What the product does with pain or injury is one thing and one thing only: where a profile mentions a physical concern, it adds a caution asking for a qualified assessment and steers the recommendation towards comfort. It never names a condition, never diagnoses one, and never says a player is fit to play.",
+        "item4": "The equipment recommendations — string, gauge, tension, restring interval — are a stringer's rules of thumb applied to what you logged. Getting them wrong can hurt an arm, so treat them as the start of a conversation with a stringer or a physiotherapist, not an instruction.",
+        "item5": "The cost figures are arithmetic on what you entered. They are not financial, tax or investment advice, and nothing in the product is capable of giving any.",
+        "item6": "Where an operator has enabled an AI provider, the text it produces comes from a language model and can be confidently wrong. Nobody reviews it before you see it.",
+        "health": "Decisions about a player's health, body and training load belong to that player, to their parents, and to a qualified person who has examined them. If a player is in pain, stop and get them seen. Nothing in this product should ever be the reason a junior plays on through an injury."
       },
       "data": {
         "heading": "Your data",
         "before": "See our",
-        "after": "for what is collected and why. You can ask us to export or delete your data using the contact details there."
+        "after": "for what is collected and why. You can ask us to export or delete your data using the contact details there.",
+        "erasure": "A copy of your data, a correction you cannot make yourself, or a full erasure is asked for in writing, because there is no button for any of them. “Your rights, and how to use them” in the privacy policy says where to send it and how long it takes."
+      },
+      "closure": {
+        "heading": "Ending your account",
+        "body": "You can stop using the product whenever you like. Actually closing the account is a written request today: send it to the contact address above and the account and its data will be dealt with by hand, within a month. There is no self-service closure in the app, and these terms will not describe one that does not exist — building it is on the privacy policy's list of open items.",
+        "operator": "The operator may suspend or end an account that breaks these terms, and may end the trial altogether, and will say why. Because the trial can end, do not treat this product as the only copy of anything you would mind losing."
       },
       "warranty": {
         "heading": "No warranty, limited liability",
         "body": "This is early-stage trial software provided “as is”, without warranties of any kind. Session plans are produced by a deterministic rule-based builder; match-preparation text, where an operator has enabled an AI provider, is generated by that provider and can be wrong. Neither is a substitute for professional coaching, and nothing in the app is medical advice. To the extent the law allows, we are not liable for damages arising from your use of the trial.",
+        "availability": "There is no promise about availability either. The whole product runs on a single server, it can be down, the nightly backup is one copy on that same machine, and support is best effort by one small team.",
         "note": "The liability wording above has not been reviewed by a lawyer and its enforceability is untested."
       },
       "changes": {

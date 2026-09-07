@@ -830,56 +830,209 @@
         "body": "Tennis AI la usan jugadores, entrenadores, padres y madres (mediante cuentas de observador conectadas) y administradores de academia. Algunos jugadores son menores; en ese caso el padre, la madre o el tutor suele tener la cuenta de observador conectada, y la cuenta propia del menor no puede usarse hasta que un tutor la haya aprobado."
       },
       "collect": {
-        "heading": "Qué recogemos",
-        "item1": "Datos de la cuenta: nombre, dirección de correo, rol, fecha de nacimiento (usada para decidir si hace falta el consentimiento de un tutor) y una contraseña, almacenada con hash.",
-        "item2": "Las respuestas de perfil que se dan durante la incorporación: nivel de juego, objetivos, foco de entrenamiento y similares.",
-        "item3": "La actividad que usted o su entrenador introducen: sesiones de entrenamiento y sus revisiones, partidos con los sets y lo que falló en ellos, inscripciones en torneos, material y montajes de cordaje, y eventos de calendario.",
-        "item4": "Las anotaciones de gastos que decida registrar: entrenamiento, viajes, torneos y material.",
-        "item5": "Las conexiones entre cuentas —jugador con entrenador, jugador con padre o madre, pertenencia a una academia— y las notificaciones asociadas.",
-        "item6": "Registros de consentimiento del tutor para jugadores por debajo de la edad de consentimiento digital: la dirección de correo del tutor, un token de un solo uso almacenado con hash y la fecha en que se dio el consentimiento.",
-        "item7": "Datos técnicos de funcionamiento: tokens de autenticación y registros de peticiones y errores del servidor.",
-        "note": "La incorporación no pide deliberadamente ningún dato de salud ni médico."
+        "heading": "Qué se conserva, para qué y durante cuánto tiempo",
+        "intro": "Una fila por cada tipo de información que el producto almacena realmente. Está redactada a partir del esquema de la base de datos y de las rutas que escriben en ella: si algo no aparece en esta tabla, el producto no lo conserva.",
+        "basisNote": "Todavía no se ha decidido la base jurídica de ninguna de estas categorías. Cada entrada de esa columna es la lectura que hace el equipo de qué base resultaría aplicable, no una decisión: véase «Pendiente» al final de esta página.",
+        "tableLabel": "Información conservada, para qué se conserva, su base jurídica previsible y durante cuánto tiempo se conserva",
+        "columns": {
+          "category": "Información",
+          "why": "Para qué se conserva",
+          "basis": "Base jurídica",
+          "retention": "Cuánto tiempo"
+        },
+        "rows": {
+          "account": {
+            "category": "Cuenta y acceso: nombre y apellidos, dirección de correo electrónico, rol, un identificador de directorio que se puede compartir, la contraseña almacenada únicamente como hash bcrypt, si la dirección ha sido verificada y el momento en que se aceptaron las condiciones.",
+            "why": "Para crear la cuenta, iniciar la sesión, dirigirse a usted por su nombre y permitir que otra cuenta le encuentre de forma deliberada y no por conjetura.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta. No se ha implementado ninguna supresión automática."
+          },
+          "age": {
+            "category": "Edad y consentimiento del tutor: fecha de nacimiento, la confirmación de edad hecha en el registro y, en las cuentas por debajo de la edad de consentimiento digital, el nombre y la dirección de correo del tutor, un token de un solo uso almacenado únicamente como hash y la fecha en que se dio el consentimiento.",
+            "why": "Para decidir si un tutor debe aprobar la cuenta antes de que pueda usarse, y para pedírselo por correo electrónico.",
+            "basis": "Sin decidir. Previsiblemente una obligación respecto de los menores, con el consentimiento del tutor en lugar del del menor.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "profile": {
+            "category": "Perfil de juego: nivel, ranking, mano dominante, revés, superficie preferida, puntos fuertes técnicos y físicos, valoraciones de estilo de juego de uno a diez, objetivos actuales y las respuestas dadas durante la incorporación.",
+            "why": "Para ajustar una sesión, un montaje de cordaje y una preselección de torneos al jugador concreto que usa la aplicación y no a uno promedio.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "photo": {
+            "category": "Una fotografía de perfil, recodificada por el servidor como un WebP cuadrado de 512 píxeles como máximo. El archivo que usted eligió no se almacena en ningún momento.",
+            "why": "Para que quienes ya trabajan con un jugador puedan reconocerlo en una lista de nombres.",
+            "basis": "Sin decidir. En el producto es opcional: nada exige una fotografía.",
+            "retention": "Hasta que la elimine o la sustituya, lo que borra el archivo de inmediato. Una copia de seguridad nocturna conserva una copia durante un máximo de catorce días."
+          },
+          "activity": {
+            "category": "Lo que usted o su entrenador registran: sesiones de entrenamiento con sus bloques y revisiones, sus propios comentarios sobre una sesión, partidos con sus sets y las incidencias señaladas en ellos, inscripciones en torneos, los torneos que ha ocultado de su propia lista, eventos de calendario y solicitudes de entrenamiento.",
+            "why": "Esto es el producto: el registro compartido que llevan juntos un entrenador y un jugador.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta. No se ha implementado ninguna supresión automática."
+          },
+          "plans": {
+            "category": "Planes de sesión: un plan de entrenamiento guardado y sus ejercicios, con la marca de qué generador lo produjo y con qué versión. En una sesión compuesta por el constructor de sesiones, además las restricciones que recibió, la propuesta que produjo, las modificaciones del entrenador sobre esa propuesta y si se guardó o se descartó.",
+            "why": "Para poder revisar, repetir y corregir un plan, y para que un entrenador vea qué cambió de una propuesta y no solo el resultado.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta. No se ha implementado ninguna supresión automática."
+          },
+          "equipment": {
+            "category": "Raquetas, cordajes, calzado y accesorios de su bolsa, y sus montajes de cordaje con sus tensiones, sus fechas y el modo en que terminó cada uno.",
+            "why": "Para recomendar un cordaje, un calibre y una tensión a partir de lo que usted ha jugado realmente, y para indicar cuándo toca un nuevo encordado.",
+            "basis": "Sin decidir. En el producto es opcional.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "finance": {
+            "category": "Los gastos que decida registrar: un importe, su divisa, una categoría, una descripción, una fecha y, opcionalmente, el torneo al que corresponde el gasto.",
+            "why": "Para totalizar lo que cuestan realmente una temporada, un torneo o una hora de pista. Los importes nunca se convierten entre divisas.",
+            "basis": "Sin decidir. En el producto es opcional.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "connections": {
+            "category": "Los vínculos entre cuentas: las solicitudes de conexión que dos personas envían y aceptan, la pertenencia a un equipo, las notificaciones enviadas al respecto y sus preferencias de notificación y de calendario. En el caso de un menor, el registro del consentimiento del tutor figura en su propia cuenta.",
+            "why": "Para decidir quién puede ver qué. Cada lectura de datos de otra persona se comprueba contra estos vínculos en el servidor.",
+            "basis": "Sin decidir. Previsiblemente la ejecución del contrato que usted ha solicitado.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "coachNotes": {
+            "category": "Las notas privadas de un entrenador sobre un jugador. La tabla existe, deliberadamente separada para que una nota no pudiera aparecer nunca en la vista de la aplicación de un jugador ni de un padre o una madre, pero nada en la aplicación escribe en ella, así que no se ha registrado ninguna nota.",
+            "why": "Reservada para que un entrenador pudiera llevar notas de trabajo. Si algún día se construye, solo el entrenador que escribió una nota podrá leerla.",
+            "basis": "Sin decidir. Si tal nota debe comunicarse cuando el jugador ejerce su derecho de acceso es una cuestión abierta.",
+            "retention": "Hoy no se conserva nada. Si se construyera: mientras exista la cuenta del entrenador."
+          },
+          "opponents": {
+            "category": "Fichas de rivales: un nombre, tendencias de juego y observaciones escritas que introduce un entrenador o un jugador sobre alguien que normalmente no tiene cuenta aquí. El esquema reserva además tablas para los informes de scouting y los planes de partido elaborados a partir de ellas, y nada en la aplicación escribe en ellas.",
+            "why": "Para preparar un partido contra un rival concreto.",
+            "basis": "Sin decidir, y es la entrada más difícil de esta página: no se ha preguntado a la persona descrita.",
+            "retention": "Mientras exista la cuenta que introdujo la ficha."
+          },
+          "push": {
+            "category": "Si activa las notificaciones push: el extremo (endpoint) que emite el servicio de push de su navegador, las dos claves que lo acompañan y la descripción que el navegador hace de sí mismo.",
+            "why": "Para entregar una notificación a ese navegador concreto.",
+            "basis": "Sin decidir. Se crea por una acción expresa suya en la aplicación.",
+            "retention": "Hasta que desactive el push. Una suscripción que el servicio de push rechaza se elimina la siguiente vez que falla un envío."
+          },
+          "aiRecords": {
+            "category": "Un registro de cada generación mediante IA: qué proveedor y qué modelo respondieron, un hash de la entrada, si tuvo éxito, cualquier mensaje de error y cuánto tardó. Ese registro no conserva ni la solicitud ni la respuesta.",
+            "why": "Para contabilizar un límite mensual de cien generaciones por cuenta y para comprobar si la función funciona.",
+            "basis": "Sin decidir.",
+            "retention": "Mientras exista la cuenta."
+          },
+          "technical": {
+            "category": "Los registros de peticiones de la API y del servidor web situado delante de ella, que incluyen direcciones IP, y el token de sesión que guarda su propio navegador.",
+            "why": "Para mantener el servicio en funcionamiento, localizar fallos y limitar la tasa de peticiones abusivas.",
+            "basis": "Sin decidir. Previsiblemente el interés propio del operador en prestar el servicio.",
+            "retention": "El servidor web conserva cinco archivos rotados de registro de acceso de diez megabytes cada uno. El registro propio de la API no está limitado por nada de lo que contiene este repositorio."
+          }
+        },
+        "note": "Ni el registro ni la incorporación preguntan nada sobre salud o cuestiones médicas, y la aplicación no tiene ningún campo para ello. En la base de datos existen dos columnas para restricciones por lesión y limitaciones físicas, que leen el constructor de sesiones y el de cordajes, pero nada en la aplicación escribe en ellas. Los campos de texto libre —el objetivo de una sesión, la revisión de un entrenador, una nota sobre un partido— se guardan tal como se escriben, de modo que también se conserva lo que una persona decida escribir en ellos.",
+        "dormant": "Varias tablas de la base de datos están reservadas y vacías. Nada en la aplicación escribe en las notas privadas del entrenador, los informes de scouting, los planes de partido, los informes posteriores al partido, las plantillas de sesión, las preferencias del entrenador, las valoraciones de ejercicios ni el tipo de plan, de modo que hoy el producto no conserva nada de eso. Se mencionan aquí porque están en el esquema, una copia de seguridad las arrastraría y una de ellas —la nota privada de un entrenador sobre un jugador— es una cuestión abierta al pie de esta página. Por otra parte, las tablas de tutela, de asignación de entrenador y de pertenencia a academia las leen las comprobaciones de autorización, pero solo las rellenan los datos sintéticos de demostración; los vínculos que la aplicación crea realmente son las solicitudes de conexión entre cuentas y el registro de consentimiento del tutor en la propia cuenta del menor."
       },
       "purpose": {
         "heading": "Para qué lo recogemos",
         "body": "Para hacer funcionar lo que usted utiliza directamente: la programación, el constructor de sesiones, las revisiones de entrenamiento, el registro de partidos, los torneos, el material, el control de gastos y las conexiones entre entrenadores, jugadores y familias. No vendemos datos personales ni los usamos para publicidad de terceros.",
         "legalBasisNote": "La base jurídica de cada una de esas finalidades todavía no está decidida: véase «Pendiente» al final de esta página."
       },
-      "device": {
-        "heading": "Qué se queda en su dispositivo",
-        "intro": "Tennis AI no instala cookies publicitarias ni de analítica. Sí guarda unos pocos valores en el almacenamiento local de su navegador:",
-        "item1": "su token de sesión, para que al recargar no se cierre la sesión;",
-        "item2": "su elección de tema claro u oscuro y su elección de idioma;",
-        "item3": "una ubicación aproximada, solo si pide al mapa de torneos que muestre distancias. Esa ubicación se guarda únicamente en su dispositivo y nunca se envía a nuestro servidor: las distancias se calculan en su navegador;",
-        "item4": "pequeñas preferencias de interfaz, como si ya ha descartado un aviso.",
-        "note": "Borrar los datos del sitio en su navegador elimina todo lo anterior y cierra la sesión."
-      },
-      "processors": {
-        "heading": "Por dónde más pasan los datos",
-        "intro": "Lo que hoy muestra el código, y nada más:",
-        "item1": "Alojamiento: la aplicación, la API y la base de datos PostgreSQL se ejecutan en un único servidor alquilado. Aquí no se indica todavía ni la empresa de alojamiento ni el país en el que está ese servidor: ambas cosas deben constar antes del lanzamiento.",
-        "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor SMTP externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
-        "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (por ejemplo el de Google o el de Mozilla) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
-        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería.",
-        "item5": "Meteorología y altitud: el servidor consulta la API pública Open-Meteo sobre las coordenadas de un torneo. Con esa petición no se envía ningún dato de cuenta ni personal."
+      "photos": {
+        "heading": "Fotografías de perfil",
+        "stored": "La fotografía de perfil es opcional; nada en la aplicación la exige. Cuando se sube una, el servidor la decodifica, la recorta en un cuadrado de 512 píxeles como máximo y escribe un archivo WebP nuevo. El archivo que usted eligió no se escribe nunca en disco: solo se guarda la imagen recodificada.",
+        "metadata": "Esa recodificación es también lo que elimina los metadatos de la fotografía. Una imagen tomada con un teléfono suele llevar las coordenadas exactas del lugar en que se hizo, junto con la fecha, el dispositivo y, a menudo, una miniatura del encuadre original. Nada de eso sobrevive a ser decodificado y escrito de nuevo, así que lo que se almacena es la imagen y nada más. En la fotografía de un menor, las coordenadas son la parte que importa: de lo contrario indicarían dónde entrena ese menor. Se valoró eliminar los metadatos en el navegador y se descartó: el archivo original puede enviarse directamente al servidor, sin pasar por el navegador.",
+        "whoCanSee": "En una cuenta por debajo de la edad de consentimiento digital, la fotografía solo pueden verla tres tipos de persona: el propio jugador, un entrenador asignado activamente a él o conectado con él como su entrenador, y el padre, la madre o el tutor cuyo consentimiento consta efectivamente registrado. Nadie más: ni otro jugador, ni un observador que solo tenga una conexión, ni un tutor que nunca prestó su consentimiento. En una cuenta que alcanza esa edad se aplica la regla ordinaria: el jugador, un entrenador asignado, una cuenta conectada o un tutor con consentimiento registrado.",
+        "serverEnforced": "Eso se decide en el servidor, en cada petición, a partir de las relaciones almacenadas en la base de datos. No depende de qué botones muestre la aplicación.",
+        "notPublic": "Una fotografía no tiene dirección propia. No se guarda en ningún lugar al que pueda acceder el servidor web, ninguna URL la sirve y su nombre de archivo son 32 caracteres aleatorios, no algo derivado de la persona que aparece en ella. La única forma de leerla es una petición autorizada a la API, y esa petición se comprueba antes incluso de consultar si existe la fotografía: así la respuesta no permite averiguar si un menor concreto tiene imagen.",
+        "upload": "Solo usted puede poner una fotografía en su propio perfil. No existe ninguna ruta que permita a un entrenador, a un progenitor o a un administrador subir una por otra persona.",
+        "deletion": "Eliminar o sustituir su fotografía borra el archivo de inmediato. La copia de seguridad nocturna es la excepción que conviene conocer: archiva el directorio de fotografías junto con la base de datos, y se conservan catorce de esos archivos. Por tanto, hasta catorce noches después de eliminar una fotografía sigue existiendo una copia en una copia de seguridad en el disco del servidor, y desaparece cuando ese archivo se rota. Decir otra cosa sería más sencillo y falso."
       },
       "minors": {
         "heading": "Menores y consentimiento del tutor",
         "body": "El registro pide la fecha de nacimiento. A partir de la edad de consentimiento digital configurada en esta instalación —16 años salvo que el administrador la cambie— no ocurre nada adicional. Por debajo de ella, la cuenta se crea pero queda inactiva: enviamos un enlace de un solo uso a la dirección de correo del tutor y, hasta que el tutor lo aprueba, la cuenta no puede usarse. El artículo 8 del RGPD deja la edad exacta a cada Estado miembro (entre 13 y 16 años), y por eso es un ajuste y no un número fijo.",
         "note": "Qué edad nacional se aplica a cada usuario, y cómo se verifica la condición de tutor más allá de tener acceso al correo, son cuestiones abiertas para asesoría jurídica."
       },
+      "device": {
+        "heading": "Cookies y qué se queda en su dispositivo",
+        "intro": "La aplicación no instala ninguna cookie: ninguna de analítica, ninguna publicitaria y ninguna que le identifique. Como nada de lo que guarda requiere su consentimiento conforme a la normativa sobre cookies, no hay banner de consentimiento. Si esperaba encontrarlo, ese es el motivo: no es un olvido.",
+        "storageIntro": "Lo que sí guarda la aplicación es una lista corta de valores en el almacenamiento propio de su navegador. Ninguno sale de su dispositivo salvo que se indique:",
+        "item1": "su token de sesión. Estrictamente necesario: sin él, cargar una página cerraría la sesión;",
+        "item2": "su elección de idioma y su elección de tema claro u oscuro;",
+        "item3": "una ubicación aproximada, y solo si pide al mapa de torneos que muestre distancias. Se queda en su dispositivo y nunca se envía al servidor: las distancias se calculan en su navegador;",
+        "item4": "hasta dónde ha avanzado en la lista de «primeros pasos» y cuándo la descartó por última vez;",
+        "item5": "borradores de los formularios largos —un partido que estaba introduciendo a medias, por ejemplo— para que una recarga o un toque equivocado no le hagan perder lo escrito. La restauración de un borrador siempre se avisa, nunca se hace en silencio, y el borrador se elimina al guardar;",
+        "item6": "pequeñas preferencias de interfaz, como si la navegación lateral está plegada.",
+        "necessary": "Solo el primero de esos valores es estrictamente necesario. Los demás son comodidades y la aplicación funciona sin ninguno de ellos.",
+        "serviceWorker": "La aplicación instala además un service worker, que conserva una copia de sus propios archivos de programa —el HTML, el JavaScript, los iconos— para que una visita posterior sea rápida y resista una conexión mala. Está escrito para no almacenar nunca una respuesta de la API, de modo que en esa caché no entra ningún dato personal.",
+        "thirdParty": "Dos de los elementos que descarga su navegador no proceden del servidor propio de esta aplicación: las tres tipografías que usa el diseño y, en el mapa de torneos, las teselas del mapa. Ambos se describen en «Por dónde más pasan los datos».",
+        "note": "Borrar los datos de este sitio en su navegador elimina todo lo anterior y cierra la sesión."
+      },
+      "processors": {
+        "heading": "Por dónde más pasan los datos",
+        "intro": "Lo que hoy muestra el código, y nada más:",
+        "item1": "Alojamiento: la aplicación, la API, la base de datos PostgreSQL y las fotografías subidas se ejecutan en un único servidor alquilado. La máquina está alquilada a una empresa de alojamiento alemana; en qué centro de datos de esa empresa se encuentra físicamente no consta en ninguna parte de este proyecto, así que aquí no se afirma ningún país: véase «Dónde están los datos».",
+        "item2": "Correo: los mensajes de verificación, de restablecimiento de contraseña y de consentimiento del tutor se envían mediante un proveedor de correo externo que configura quien administra el servidor. El proveedor de esta prueba no se ha nombrado aquí todavía.",
+        "item3": "Notificaciones push: si las activa, el servicio de push de su navegador (el de Google en Chrome, el de Mozilla en Firefox) las retransmite. El push está desactivado salvo que el administrador configure claves para ello.",
+        "item4": "Proveedor de IA: opcional, y desactivado salvo que el administrador indique a la vez un proveedor y una clave de API. Cuando está activo, el texto de una solicitud de preparación de partido o de consejo de entrenamiento se envía a ese proveedor. En esta prueba está desactivado, y la aplicación lo indica allí donde aparecería la función.",
+        "item5": "Meteorología y altitud: el servidor consulta la API pública Open-Meteo sobre las coordenadas de un torneo. Con esa petición no se envía ningún dato de cuenta ni personal.",
+        "item6": "Tipografías: la hoja de estilos de la aplicación carga tres tipografías desde Google Fonts, de modo que su navegador las descarga de los servidores de Google. Google ve por tanto su dirección IP y qué navegador utiliza, en cada visita y con independencia de que haya iniciado sesión. No se envía ningún dato de cuenta, y nada en la aplicación lo exige: las tipografías podrían servirse desde el mismo servidor que todo lo demás.",
+        "item7": "Teselas de mapa: el mapa de torneos toma su fondo de los servidores públicos de teselas de la OpenStreetMap Foundation. Su navegador solicita esas teselas directamente, así que ese servicio ve su dirección IP y qué zona del mapa está consultando. Solo ocurre cuando abre el mapa."
+      },
+      "transfers": {
+        "heading": "Dónde están los datos",
+        "body": "Todo lo que el producto almacena —la aplicación, la API, la base de datos y las fotografías subidas— está en un único servidor alquilado. No hay una segunda región ni una segunda copia: una máquina, un disco y una copia de seguridad nocturna escrita en ese mismo disco.",
+        "provider": "La máquina está alquilada a una empresa de alojamiento alemana. Esa empresa opera centros de datos en más de un país, incluidos algunos fuera del Espacio Económico Europeo, y en cuál de ellos está este servidor no consta en ninguna parte de este proyecto. En lugar de conjeturar un país, esta página lo dice y la cuestión figura en la lista de puntos pendientes.",
+        "recipientsIntro": "Destinatarios situados fuera del Espacio Económico Europeo, cada uno solo cuando la función correspondiente está activada:",
+        "item1": "el proveedor de IA, si el administrador ha configurado uno. Los dos con los que el código puede comunicarse son Anthropic y OpenAI, ambas empresas estadounidenses. En esta prueba no hay ninguno configurado.",
+        "item2": "el servicio de push de su navegador, si activa las notificaciones push. Qué empresa sea depende del navegador que utilice.",
+        "item3": "Google, para las tipografías: en cada visita, antes de que usted haya hecho nada.",
+        "item4": "el proveedor de correo que configure el administrador, que puede estar fuera del Espacio Económico Europeo según cuál elija.",
+        "note": "En este proyecto no consta ningún mecanismo de transferencia para ninguno de ellos: ni cláusulas contractuales tipo, ni una decisión de adecuación documentada, nada. Es una carencia, y figura en la lista de puntos pendientes en lugar de disimularse aquí."
+      },
       "ai": {
         "heading": "Tratamiento opcional mediante IA",
-        "body": "El texto de preparación de un partido puede generarlo un proveedor de IA externo, pero solo cuando quien administra el servidor ha configurado uno. En esta prueba no hay ninguno configurado, así que nada sale del servidor con esa finalidad. Si una instalación lo activa, ese proveedor pasa a ser un encargado del tratamiento y debe nombrarse aquí antes."
+        "body": "El consejo de entrenamiento y el texto de preparación de un partido puede generarlos un proveedor de IA externo, pero solo cuando quien administra el servidor ha configurado uno. En esta prueba no hay ninguno configurado, así que nada sale del servidor con esa finalidad. Si una instalación lo activa, ese proveedor pasa a ser un encargado del tratamiento y debe nombrarse aquí antes.",
+        "pseudonymous": "Lo que saldría del servidor si hubiera un proveedor configurado son evidencias, no identidades: los nombres y las direcciones de correo se sustituyen por «Jugador 1», «Jugador 2» y así sucesivamente antes de construir la petición, y se vuelven a cambiar por los nombres reales en la respuesta. Conviene conocer el límite de eso: el texto libre se envía tal como está escrito. El objetivo de una sesión, la revisión de una sesión por el entrenador, una nota sobre un partido: si alguien escribió un nombre en uno de esos campos, ese nombre va con la petición. Lo que vuelve se comprueba contra una estructura estricta antes de mostrarse, y el registro que queda después contiene el proveedor, el modelo, un hash de la entrada y si funcionó, no la solicitud ni la respuesta."
+      },
+      "automated": {
+        "heading": "Decisiones automatizadas y recomendaciones",
+        "body": "Casi todo lo que produce el producto es una recomendación elaborada mediante reglas: qué cordaje, calibre y tensión probar, cómo encaja un jugador en un torneo próximo, cuánto ha costado una temporada. Esos motores son deterministas: las mismas entradas dan la misma respuesta, cada regla está escrita y cada respuesta llega acompañada de los motivos que la produjeron. Son consejos. Nada actúa sobre ellos por sí mismo: los lee un entrenador o un jugador y decide.",
+        "effectsIntro": "Dos reglas automatizadas sí resuelven algo en lugar de sugerirlo, y ambas consisten en una comparación con una fecha de nacimiento que usted mismo introdujo:",
+        "item1": "la comprobación de edad en el registro. Si la fecha de nacimiento que facilita está por debajo de la edad de consentimiento digital configurada en esta instalación, la cuenta se crea pero no puede usarse hasta que un tutor la apruebe desde un enlace enviado a su dirección de correo.",
+        "item2": "la elegibilidad por edad en los torneos. Un evento cuya categoría de edad no cumple su fecha de nacimiento se retira de su lista, indicando el motivo, porque no podría inscribirse en él.",
+        "note": "Nada de esto elabora perfiles de nadie ni se utiliza con fines publicitarios, ni se vende. Si la comprobación de edad del registro constituye una decisión automatizada en sentido jurídico no ha sido valorado por un abogado: figura en la lista de puntos pendientes. En los dos casos anteriores, corregir su fecha de nacimiento es lo que cambia el resultado, y el contacto de protección de datos indicado arriba es el sitio donde preguntar."
+      },
+      "security": {
+        "heading": "Cómo se protegen los datos",
+        "intro": "Lo que se hace realmente, descrito sin adjetivos:",
+        "item1": "las contraseñas se guardan únicamente como hashes bcrypt, y ninguna parte del sistema puede recuperarlas;",
+        "item2": "el tráfico entre su navegador y el servidor viaja por HTTPS, con el certificado obtenido y renovado automáticamente;",
+        "item3": "quién puede leer qué se decide en el servidor, en cada petición, a partir de las relaciones registradas entre las cuentas. Lo que la aplicación decida mostrar nunca es la frontera;",
+        "item4": "la base de datos y la API no aceptan ninguna conexión desde internet: solo es accesible el servidor web situado delante de ellas;",
+        "item5": "los intentos de inicio de sesión, las subidas de fotografías y las peticiones ordinarias tienen cada uno un límite de tasa por dirección;",
+        "item6": "una imagen subida se identifica por sus bytes reales y no por su nombre ni por el tipo declarado, se limita a cinco megabytes y se recodifica antes de almacenar nada.",
+        "gaps": "Lo que no se hace, porque omitirlo sería lo que induciría a error: el producto no ha pasado ninguna revisión de seguridad externa ni ninguna prueba de intrusión, y todo lo anterior lo hicieron las mismas personas que escribieron el código. La aplicación web se sirve sin cabecera Content-Security-Policy, y su token de sesión se guarda en el almacenamiento local del navegador y no en una cookie que la página no pueda leer, de modo que un fallo de scripting en cualquier parte de la aplicación lo expondría. La copia de seguridad nocturna no está cifrada y reside en el mismo disco que los datos que protege, sin ninguna copia en otro lugar. El procedimiento para restaurar el archivo de fotografías está escrito pero nunca se ha ejecutado.",
+        "noVerdict": "Nada de lo anterior constituye una garantía. El producto no ha sido certificado, auditado ni aprobado por nadie, y esta página no emite deliberadamente ningún veredicto global sobre su nivel de protección: no es un veredicto que se haya ganado el derecho a emitir."
       },
       "retention": {
         "heading": "Cuánto tiempo lo conservamos",
-        "body": "Hoy: los datos de cuenta y de actividad se conservan mientras exista la cuenta. No se ha implementado ningún borrado automático ni se ha acordado ningún plazo de conservación. Eso es una carencia, no una política, y figura en la lista de abajo."
+        "body": "Por categorías, en la tabla anterior, porque la respuesta no es la misma para todas. La versión breve es: mientras exista la cuenta. No se ha implementado ningún calendario de supresión automática ni se ha acordado ningún plazo de conservación; es una carencia, no una política, y figura más abajo.",
+        "exceptions": "Dos cosas sí tienen una cifra concreta. Las copias de seguridad nocturnas conservan catorce copias de la base de datos y del directorio de fotografías, así que lo que se elimine hoy sigue estando en un archivo hasta catorce noches. El registro de acceso del servidor web, que anota direcciones IP, conserva cinco archivos rotados de diez megabytes."
       },
       "rights": {
-        "heading": "Sus derechos",
-        "body": "Según dónde resida, puede tener derecho a acceder a sus datos personales, rectificarlos, exportarlos o suprimirlos, y a oponerse a determinados tratamientos o limitarlos. En el caso de los datos de un menor conectado, un padre, madre o tutor puede ejercer esos derechos en su nombre. La aplicación todavía no tiene un botón de exportación o supresión automática; hoy una solicitud la atiende el equipo a mano.",
-        "contact": "Las solicitudes se dirigen al contacto de protección de datos indicado arriba, en cuanto esa dirección exista."
+        "heading": "Sus derechos y cómo ejercerlos",
+        "body": "Según dónde resida, puede tener derecho a solicitar una copia de sus datos personales, a que se rectifiquen, a que se supriman, a que se le entreguen en un formato portátil y a oponerse a determinados tratamientos o a solicitar su limitación. Cuando los datos son de un menor conectado, su padre, madre o tutor puede ejercer esos derechos en su nombre.",
+        "erasure": "La supresión se solicita por escrito. Envíe la solicitud a la dirección de protección de datos que figura al principio de esta página y se atenderá en el plazo de un mes. En la aplicación no hay ningún botón de «eliminar mi cuenta», y esta página no va a insinuar que exista: nada en el producto cierra una cuenta, de modo que una supresión se ejecuta a mano —los registros de la base de datos y, por separado, el archivo de la fotografía, que nada más limpiaría—.",
+        "selfService": "Lo que sí puede hacer usted mismo hoy es eliminar su fotografía de perfil, desde su propia página de perfil. Eso borra el archivo de inmediato, con la única salvedad de las catorce noches de copia de seguridad descritas más arriba. Todo lo demás —una copia de sus datos, una rectificación que no pueda hacer en la aplicación, una supresión completa— se solicita por escrito.",
+        "contact": "Las solicitudes se dirigen al contacto de protección de datos indicado al principio de esta página, en cuanto esa dirección exista. Mientras no exista no hay dónde enviarlas, y por eso la identidad del responsable del tratamiento es el primer punto de la lista siguiente."
+      },
+      "complaints": {
+        "heading": "Reclamar ante una autoridad de control",
+        "body": "Si considera que sus datos personales han sido tratados indebidamente, puede presentar una reclamación ante una autoridad de control en materia de protección de datos, además de escribirnos o en lugar de hacerlo. Qué autoridad es competente respecto de este servicio depende de dónde esté establecido y de la ley aplicable, y eso es uno de los campos que quedan por decidir:",
+        "lawLabel": "Ley aplicable y tribunales",
+        "note": "Conforme al derecho europeo de protección de datos, por lo general también puede reclamarse ante la autoridad del país donde usted resida o trabaje, sea cual sea el país en el que resulte estar establecido el servicio. Hasta que se rellene el campo anterior, esta página no puede nombrarle la autoridad, y nombrar una por conjetura enviaría la reclamación al organismo equivocado."
+      },
+      "changes": {
+        "heading": "Cambios en esta política",
+        "body": "Este documento cambiará. Es un borrador, varios de sus campos están sin rellenar y el producto que describe se sigue construyendo. La fecha de entrada en vigor que figura arriba es la fecha en que se adoptó esta versión, escrita a mano: no avanza por sí sola, así que si parece antigua, es antigua.",
+        "notice": "Cuando un cambio le afecte de verdad, en lugar de corregir una expresión, procuraremos comunicarlo directamente a los participantes en la prueba y no confiar en que alguien vuelva a leer esta página. Todavía no hay un archivo de versiones superadas, lo que significa que hoy no puede consultar qué decía una versión anterior; conviene saberlo antes de confiar en haber leído esta."
       },
       "open": {
         "heading": "Pendiente",
@@ -889,7 +1042,13 @@
         "item3": "los plazos de conservación por categoría de datos y qué ocurre con los registros de un entrenador cuando un jugador se va;",
         "item4": "cómo se verifica la condición de tutor según la edad de consentimiento de cada país;",
         "item5": "la lista nominal de encargados del tratamiento y un contrato de encargo con cada uno;",
-        "item6": "el procedimiento y los plazos para atender una solicitud de acceso, exportación o supresión."
+        "item6": "el procedimiento y los plazos para atender una solicitud de acceso, exportación o supresión.",
+        "item7": "qué edad de consentimiento digital aplicar. Esta instalación está configurada en 16 años, mientras que en España es de 14: un chico o una chica de 15 años en España se trata aquí como si necesitara la aprobación de un tutor cuando la norma nacional no lo exigiría;",
+        "item8": "en qué país está realmente el servidor. La empresa de alojamiento es alemana; el centro de datos no consta, y hay que determinarlo en lugar de darlo por supuesto;",
+        "item9": "un mecanismo de transferencia para cada destinatario situado fuera del Espacio Económico Europeo de los mencionados arriba: no hay ninguno;",
+        "item10": "una forma de cerrar una cuenta. No existe: ninguna pantalla la ofrece y ninguna parte de la API suprime un usuario, de modo que hoy una solicitud de supresión debe atenderse a mano, incluido el archivo de la fotografía, que nada más limpiaría;",
+        "item11": "una evaluación externa de protección de datos de cualquier tipo. No se ha hecho ninguna: ni evaluación de impacto, ni registro de actividades de tratamiento, ni revisión jurídica;",
+        "item12": "dos preguntas que planteó el código y que nadie ha respondido: si la comprobación de edad del registro constituye una decisión automatizada en sentido jurídico, y si la nota privada de un entrenador sobre un jugador debe comunicarse cuando ese jugador ejerce su derecho de acceso."
       }
     },
     "terms": {
@@ -906,6 +1065,11 @@
         "heading": "La prueba",
         "body": "Tennis AI es por ahora una prueba inicial para un grupo pequeño de entrenadores, jugadores y familias. No hay plan de pago. Las funciones cambian a menudo y la prueba puede pausarse o terminarse en cualquier momento mientras construimos el producto."
       },
+      "payments": {
+        "heading": "No hay nada que pagar",
+        "body": "Tennis AI es gratuito mientras sea una prueba. No hay precio, ni plan que elegir, ni tarjeta que introducir, ni factura. Tampoco hay maquinaria de pago detrás: ningún proveedor de pagos, nada que maneje un número de tarjeta, nada que emita un recibo. El esquema de la base de datos conserva una tabla inactiva para un tipo de plan, resto de un diseño anterior, y ninguna parte de la aplicación en funcionamiento la lee ni la escribe.",
+        "note": "Si eso cambia algún día, cambiarán antes estas condiciones, y se avisará a los participantes en la prueba antes de cobrar nada y no después. Los gastos que la aplicación puede totalizar son los que usted mismo introduce: su propio gasto en entrenamiento, viajes y material. No son cantidades debidas a nadie de aquí."
+      },
       "accounts": {
         "heading": "Cuentas",
         "body": "Necesita una cuenta para usar Tennis AI. Usted es responsable de mantener seguras sus credenciales y de la exactitud de lo que introduce. El registro puede pedirle que verifique su dirección de correo antes de poder usar la cuenta."
@@ -916,18 +1080,51 @@
       },
       "use": {
         "heading": "Uso aceptable",
-        "item1": "Introduzca únicamente datos sobre usted o sobre un jugador al que entrene o del que sea padre, madre o tutor.",
+        "item1": "Introduzca únicamente datos sobre usted mismo o sobre un jugador al que entrene o del que sea padre, madre o tutor, con la única excepción concreta que se indica más abajo.",
         "item2": "No use la aplicación para acosar, suplantar o tergiversar su identidad ni la de otras personas.",
-        "item3": "No intente acceder a cuentas o datos que no sean suyos."
+        "item3": "No intente acceder a cuentas o datos que no sean suyos.",
+        "item4": "Esa excepción es la ficha de un rival, y es concreta: un nombre y observaciones sobre cómo juega alguien, guardadas para preparar un partido. Manténgala objetiva y referida al tenis. No registre la salud de un rival, ni su vida personal, ni su opinión sobre su carácter, y no escriba nada que le incomodaría mostrarle."
+      },
+      "content": {
+        "heading": "Lo que usted sube",
+        "body": "El único archivo que hoy se puede subir es su propia fotografía de perfil. Estas condiciones la tratan igual que tratarían cualquier otro contenido aportado por usted.",
+        "rights": "Debe tener derecho a subir lo que sube. En una fotografía eso significa que aparece usted o, cuando es titular de la cuenta de un jugador del que es padre, madre o tutor, que aparece ese jugador y con su conocimiento. No suba la imagen de otra persona ni una que no haya hecho usted o para la que no tenga permiso.",
+        "licence": "Usted conserva los derechos que tenga sobre ella. Subirla otorga al operador permiso para una sola cosa: almacenarla y mostrarla a las personas a las que este producto permite verla —el jugador, su entrenador y el padre, la madre o el tutor con consentimiento registrado—. Ese permiso no cubre nada más. No se utiliza para promocionar el producto, no se muestra a nadie ajeno a esas relaciones, no se vende ni se licencia a nadie y no se emplea para entrenar ningún modelo.",
+        "prohibited": "Nada sexual, nada violento, nada que identifique a un menor más allá de su propia cara, ningún documento ni captura de pantalla en lugar de una fotografía, y nada destinado a hacerle pasar por otra persona.",
+        "removal": "Puede eliminar su fotografía usted mismo en cualquier momento, desde su página de perfil, y al hacerlo se borra el archivo almacenado. El operador también puede retirar una que infrinja las reglas anteriores, o que se denuncie por infringirlas, e informará a la cuenta a la que pertenecía."
+      },
+      "relationship": {
+        "heading": "El entrenamiento es cosa suya y de su entrenador",
+        "body": "El operador de este producto no es parte en la relación entre un entrenador y un jugador. El entrenamiento en sí, su contenido, su calendario y su precio se acuerdan entre esas personas, o entre un entrenador y los padres de un jugador. Este producto registra lo que acuerdan y les da un único lugar compartido donde guardarlo.",
+        "noVetting": "El operador no emplea, ni selecciona, ni supervisa, ni respalda, ni certifica a ningún entrenador de aquí. No se comprueban las cualificaciones de nadie, no se comprueba el seguro de nadie y nada en el producto verifica el derecho de nadie a trabajar con menores. Una conexión entre un entrenador y un jugador existe porque ambos la aceptaron, y por ningún otro motivo.",
+        "note": "Si el operador debería comprobar las credenciales de un entrenador antes de que pueda conectarse con un menor no lo resuelven estas condiciones y no está implementado en el producto. Es una decisión pendiente, y es grave."
+      },
+      "advice": {
+        "heading": "Nada de esto es asesoramiento profesional",
+        "body": "Esta es la cláusula más importante de esta página, y lo es sobre todo para un jugador menor de edad.",
+        "item1": "Las sesiones de entrenamiento, los ejercicios y los planes que produce el producto se componen mediante reglas a partir de lo que se ha introducido. No son fisioterapia, ni medicina deportiva, ni un programa de rehabilitación, ni un sustituto de un entrenador cualificado que observe al jugador en persona.",
+        "item2": "El constructor de sesiones sí aplica reglas de edad al elegir los ejercicios: parte del trabajo se limita al propio peso corporal en los más jóvenes, parte se excluye por franja de edad, parte se marca como necesitada de supervisión, y lo que queda fuera se enumera con su motivo. Esas reglas son un mínimo, no un juicio sobre un menor concreto.",
+        "item3": "Lo que el producto hace con el dolor o una lesión es una sola cosa: cuando un perfil menciona una molestia física, añade una advertencia que pide una valoración cualificada y orienta la recomendación hacia el confort. Nunca nombra una dolencia, nunca la diagnostica y nunca afirma que un jugador esté en condiciones de jugar.",
+        "item4": "Las recomendaciones de material —cordaje, calibre, tensión, intervalo de encordado— son las reglas prácticas de un encordador aplicadas a lo que usted registró. Equivocarse en ellas puede dañar un brazo, así que trátelas como el inicio de una conversación con un encordador o un fisioterapeuta, no como una instrucción.",
+        "item5": "Las cifras de gasto son aritmética sobre lo que usted introdujo. No son asesoramiento financiero, fiscal ni de inversión, y nada en el producto es capaz de darlo.",
+        "item6": "Cuando un administrador ha activado un proveedor de IA, el texto que produce procede de un modelo de lenguaje y puede equivocarse con toda seguridad aparente. Nadie lo revisa antes de que usted lo vea.",
+        "health": "Las decisiones sobre la salud, el cuerpo y la carga de entrenamiento de un jugador corresponden a ese jugador, a sus padres y a una persona cualificada que le haya examinado. Si un jugador tiene dolor, pare y haga que lo vean. Nada de este producto debería ser nunca el motivo de que un menor siga jugando con una lesión."
       },
       "data": {
         "heading": "Sus datos",
         "before": "Consulte nuestra",
-        "after": "para saber qué se recoge y por qué. Puede pedirnos que exportemos o suprimamos sus datos usando los datos de contacto que allí figuran."
+        "after": "para saber qué se recoge y por qué. Puede pedirnos que exportemos o suprimamos sus datos usando los datos de contacto que allí figuran.",
+        "erasure": "Una copia de sus datos, una rectificación que no pueda hacer usted mismo o una supresión completa se solicitan por escrito, porque no hay ningún botón para ninguna de las tres. El apartado «Sus derechos y cómo ejercerlos» de la política de privacidad indica dónde enviarla y cuánto tarda."
+      },
+      "closure": {
+        "heading": "Finalizar su cuenta",
+        "body": "Puede dejar de usar el producto cuando quiera. Cerrar efectivamente la cuenta es hoy una solicitud por escrito: envíela a la dirección de contacto indicada arriba y la cuenta y sus datos se tratarán a mano, en el plazo de un mes. En la aplicación no hay cierre automático, y estas condiciones no van a describir uno que no existe: construirlo figura en la lista de puntos pendientes de la política de privacidad.",
+        "operator": "El operador puede suspender o finalizar una cuenta que infrinja estas condiciones, y puede dar por terminada la prueba por completo, e indicará el motivo. Como la prueba puede terminar, no trate este producto como la única copia de nada que le importe perder."
       },
       "warranty": {
         "heading": "Sin garantía, responsabilidad limitada",
         "body": "Este es software de prueba en fase inicial, facilitado «tal cual», sin garantías de ningún tipo. Los planes de sesión los produce un constructor determinista basado en reglas; el texto de preparación de partido, cuando un administrador ha activado un proveedor de IA, lo genera ese proveedor y puede ser erróneo. Ninguno de los dos sustituye a un entrenador profesional, y nada en la aplicación es consejo médico. En la medida en que la ley lo permita, no respondemos de los daños derivados del uso de la prueba.",
+        "availability": "Tampoco se promete nada sobre la disponibilidad. Todo el producto funciona en un único servidor, puede estar caído, la copia de seguridad nocturna es una sola copia en esa misma máquina y el soporte es el mejor esfuerzo de un equipo pequeño.",
         "note": "La redacción sobre responsabilidad que antecede no ha sido revisada por un abogado y su validez no está contrastada."
       },
       "changes": {
