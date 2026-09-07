@@ -1006,12 +1006,15 @@
       },
       "retention": {
         "heading": "Cuánto tiempo lo conservamos",
-        "body": "Hoy: los datos de cuenta y de actividad se conservan mientras exista la cuenta. No se ha implementado ningún borrado automático ni se ha acordado ningún plazo de conservación. Eso es una carencia, no una política, y figura en la lista de abajo."
+        "body": "Por categorías, en la tabla anterior, porque la respuesta no es la misma para todas. La versión breve es: mientras exista la cuenta. No se ha implementado ningún calendario de supresión automática ni se ha acordado ningún plazo de conservación; es una carencia, no una política, y figura más abajo.",
+        "exceptions": "Dos cosas sí tienen una cifra concreta. Las copias de seguridad nocturnas conservan catorce copias de la base de datos y del directorio de fotografías, así que lo que se elimine hoy sigue estando en un archivo hasta catorce noches. El registro de acceso del servidor web, que anota direcciones IP, conserva cinco archivos rotados de diez megabytes."
       },
       "rights": {
-        "heading": "Sus derechos",
-        "body": "Según dónde resida, puede tener derecho a acceder a sus datos personales, rectificarlos, exportarlos o suprimirlos, y a oponerse a determinados tratamientos o limitarlos. En el caso de los datos de un menor conectado, un padre, madre o tutor puede ejercer esos derechos en su nombre. La aplicación todavía no tiene un botón de exportación o supresión automática; hoy una solicitud la atiende el equipo a mano.",
-        "contact": "Las solicitudes se dirigen al contacto de protección de datos indicado arriba, en cuanto esa dirección exista."
+        "heading": "Sus derechos y cómo ejercerlos",
+        "body": "Según dónde resida, puede tener derecho a solicitar una copia de sus datos personales, a que se rectifiquen, a que se supriman, a que se le entreguen en un formato portátil y a oponerse a determinados tratamientos o a solicitar su limitación. Cuando los datos son de un menor conectado, su padre, madre o tutor puede ejercer esos derechos en su nombre.",
+        "erasure": "La supresión se solicita por escrito. Envíe la solicitud a la dirección de protección de datos que figura al principio de esta página y se responderá en el plazo de un mes. En la aplicación no hay ningún botón de «eliminar mi cuenta», y esta página no va a insinuar que exista: nada en el producto cierra una cuenta, de modo que una supresión se ejecuta a mano —los registros de la base de datos y, por separado, el archivo de la fotografía, que nada más limpiaría—.",
+        "selfService": "Lo que sí puede hacer usted mismo hoy es eliminar su fotografía de perfil, desde su propia página de perfil. Eso borra el archivo de inmediato, con la única salvedad de las catorce noches de copia de seguridad descritas más arriba. Todo lo demás —una copia de sus datos, una rectificación que no pueda hacer en la aplicación, una supresión completa— se solicita por escrito.",
+        "contact": "Las solicitudes se dirigen al contacto de protección de datos indicado al principio de esta página, en cuanto esa dirección exista. Mientras no exista no hay dónde enviarlas, y por eso la identidad del responsable del tratamiento es el primer punto de la lista siguiente."
       },
       "complaints": {
         "heading": "Reclamar ante una autoridad de control",

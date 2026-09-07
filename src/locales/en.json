@@ -1006,12 +1006,15 @@
       },
       "retention": {
         "heading": "How long we keep it",
-        "body": "Today: account and activity data is kept for as long as the account exists. No automatic deletion schedule has been implemented, and no retention period has been agreed. That is a gap, not a policy — it is listed below."
+        "body": "Per category, in the table above, because the answer is not the same for all of them. The short version is: for as long as the account exists. No automatic deletion schedule is implemented and no retention period has been agreed — a gap rather than a policy, and it is listed below.",
+        "exceptions": "Two things do have a real number. The nightly backups keep fourteen copies of the database and of the photograph directory, so anything deleted today is still in an archive for up to fourteen nights. The web server's access log, which records IP addresses, keeps five rolled files of ten megabytes."
       },
       "rights": {
-        "heading": "Your rights",
-        "body": "Depending on where you live you may have the right to access, correct, export or delete your personal data, and to object to or restrict certain processing. For a connected minor's data, a parent or guardian can exercise those rights on the player's behalf. There is no self-service export or erasure button in the app yet; a request today is handled by hand by the team.",
-        "contact": "Requests go to the data-protection contact above, once that address exists."
+        "heading": "Your rights, and how to use them",
+        "body": "Depending on where you live you may have the right to ask for a copy of your personal data, to have it corrected, to have it deleted, to have it given to you in a portable form, and to object to or restrict some of what is done with it. Where the data is a connected minor's, a parent or guardian can exercise those rights on the player's behalf.",
+        "erasure": "Erasure is requested in writing. Send the request to the data-protection address at the top of this page and it will be answered within one month. There is no “delete my account” button in the app, and this page will not imply one: nothing in the product closes an account, so an erasure is carried out by hand — the database rows, and separately the photograph file, which nothing else would clean up.",
+        "selfService": "What you can do yourself today is remove your profile photograph, from your own profile page. That deletes the file at once, subject only to the fourteen-night backup window described above. Everything else — a copy of your data, a correction you cannot make in the app, a full erasure — is a written request.",
+        "contact": "Requests go to the data-protection contact at the top of this page, once that address exists. Until it does there is nowhere to send one, which is why the identity of the controller is the first item on the list below."
       },
       "complaints": {
         "heading": "Complaining to a supervisory authority",

@@ -266,6 +266,33 @@ describe("privacy policy", () => {
     expect(JSON.stringify(en.legal.privacy.automated)).not.toMatch(/Article 22/i);
   });
 
+  it("offers a written erasure route and never a self-service deletion button", () => {
+    const { container } = renderPage(PrivacyPolicyPage);
+    expect(screen.getByRole("heading", { name: en.legal.privacy.rights.heading })).toBeInTheDocument();
+    expect(screen.getByText(en.legal.privacy.rights.erasure)).toBeInTheDocument();
+
+    // The route: in writing, answered within a month.
+    expect(en.legal.privacy.rights.erasure).toMatch(/in writing/i);
+    expect(en.legal.privacy.rights.erasure).toMatch(/within one month/i);
+    expect(es.legal.privacy.rights.erasure).toMatch(/por escrito/i);
+    expect(es.legal.privacy.rights.erasure).toMatch(/plazo de un mes/i);
+
+    // What a reader can do alone today: remove their own photograph. That one
+    // really is a button, and it really does delete the file.
+    expect(en.legal.privacy.rights.selfService).toMatch(/remove your profile photograph/i);
+
+    // And what the page must never OFFER. Fourteen DELETE routes exist in the
+    // API and not one of them touches a user row, so there is no such control
+    // to describe. The phrase itself is allowed — it appears as the denial —
+    // but no sentence may point a reader at a control.
+    const prose = container.textContent ?? "";
+    expect(prose).toMatch(/there is no .delete my account. button/i);
+    expect(es.legal.privacy.rights.erasure).toMatch(/no hay ning[úu]n bot[óo]n/i);
+    expect(prose).not.toMatch(/you can (?:delete|close) your account/i);
+    expect(prose).not.toMatch(/(?:click|tap|press|go to|use the)[^.]{0,60}(?:delete|close)[^.]{0,24}account/i);
+    expect(prose).not.toMatch(/account settings.{0,40}delet/i);
+  });
+
   it("keeps the 'still open' list of decisions a lawyer has to make", () => {
     renderPage(PrivacyPolicyPage);
     expect(screen.getByRole("heading", { name: en.legal.privacy.open.heading })).toBeInTheDocument();

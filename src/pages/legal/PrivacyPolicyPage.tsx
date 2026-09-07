@@ -282,10 +282,17 @@ export default function PrivacyPolicyPage() {
 
           <Section heading={t("legal.privacy.retention.heading")}>
             <p>{t("legal.privacy.retention.body")}</p>
+            <p>{t("legal.privacy.retention.exceptions")}</p>
           </Section>
 
+          {/* The erasure route is a written request because that is the only
+              route that exists — 14 DELETE routes in the API and not one of
+              them touches a user row. Describing a "delete my account" button
+              would be describing something nobody has built. */}
           <Section heading={t("legal.privacy.rights.heading")}>
             <p>{t("legal.privacy.rights.body")}</p>
+            <p>{t("legal.privacy.rights.erasure")}</p>
+            <p>{t("legal.privacy.rights.selfService")}</p>
             <p>{t("legal.privacy.rights.contact")}</p>
           </Section>
 
