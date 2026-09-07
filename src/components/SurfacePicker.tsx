@@ -1,23 +1,29 @@
 import { Check } from "lucide-react";
-import clayImg from "@/assets/surface-clay.jpg";
-import grassImg from "@/assets/surface-grass.jpg";
-import hardImg from "@/assets/surface-hard.jpg";
 import { SurfaceImage } from "@/components/SurfaceImage";
 import { SURFACE_COLOR } from "@/lib/calendar/colors";
 import type { Surface } from "@/types";
 import { cn } from "@/lib/utils";
 
+/**
+ * All four surfaces are drawn (`CourtSurfaceArt`), not photographed — the
+ * three JPEGs that used to be here had no licence and no attribution, and the
+ * fourth surface never had a photo at all.
+ *
+ * `src` stays on the shape deliberately: a real club photograph for a surface
+ * only has to be imported and set here, and `SurfaceImage` renders it instead.
+ * Nothing else has to change.
+ */
 const SURFACES: { value: Surface; label: string; src?: string }[] = [
-  { value: "hard", label: "Hard", src: hardImg },
-  { value: "clay", label: "Clay", src: clayImg },
-  { value: "grass", label: "Grass", src: grassImg },
-  { value: "indoor", label: "Indoor" }, // no photo → painted-court fallback
+  { value: "hard", label: "Hard" },
+  { value: "clay", label: "Clay" },
+  { value: "grass", label: "Grass" },
+  { value: "indoor", label: "Indoor" },
 ];
 
 /**
- * Court-type picker: selectable image tiles (with a graceful painted-court
- * fallback for surfaces without a photo). Replaces a plain surface dropdown
- * so the coach/player sees the actual court when choosing.
+ * Court-type picker: selectable tiles showing each surface as a drawn court.
+ * Replaces a plain surface dropdown so the coach/player sees the court they
+ * are choosing.
  */
 export function SurfacePicker({
   value,
@@ -46,11 +52,12 @@ export function SurfacePicker({
             )}
           >
             <div className="aspect-[4/3]">
-              {s.src ? (
-                <SurfaceImage src={s.src} name={s.label} color={SURFACE_COLOR[s.value]} />
-              ) : (
-                <SurfaceImage src="" name={s.label} color={SURFACE_COLOR[s.value]} />
-              )}
+              <SurfaceImage
+                src={s.src ?? ""}
+                surface={s.value}
+                name={s.label}
+                color={SURFACE_COLOR[s.value]}
+              />
             </div>
             <span
               className={cn(
