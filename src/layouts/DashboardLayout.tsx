@@ -1,6 +1,5 @@
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
-import { AmbientCourt } from "@/components/motion/AmbientCourt";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -328,15 +327,16 @@ export function DashboardLayout() {
   );
 
   return (
-    // `isolate` is required, not decorative: AmbientCourt sits at -z-10, and
-    // without a stacking context here it drops behind the opaque page
-    // background and is never seen.
-    <div className="relative isolate flex min-h-screen bg-background">
-      {/* The moving background. Sibling of the shell rather than a child of
-          `main`, because `main` is a scroll container above `md` and an
-          absolutely-positioned child would scroll away with the content. */}
-      <AmbientCourt />
-
+    // NO MOVING BACKGROUND IN HERE, deliberately.
+    //
+    // `AmbientCourt` used to be mounted right below, and this element carried
+    // `isolate` for the sole purpose of giving that -z-10 layer a stacking
+    // context. Both are gone: a coach reads a session plan or a roster on
+    // these pages for an hour at a time, and drifting court lines behind that
+    // work are a cost with no reader. Atmosphere is the landing page's job —
+    // which is now the layer's only mount, and a test holds it to that
+    // (src/components/motion/__tests__/ambientCourtMounts.test.ts).
+    <div className="relative flex min-h-screen bg-background">
       {/* First-run, role-based onboarding questionnaire (empty new accounts). */}
       {user && <OnboardingDialog user={user} open={onboardingOpen} onOpenChange={setOnboardingOpen} />}
 

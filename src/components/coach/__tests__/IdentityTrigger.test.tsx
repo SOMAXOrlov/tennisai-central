@@ -7,13 +7,26 @@
 // for …") and each must open the full menu on its own. The touch-target and
 // focus-ring classes are asserted because they are the contract with the
 // `coarse:` convention the rest of the app follows.
+//
+// The `stretch` mode is here too. Its behaviour — a press anywhere on the
+// card opening the menu — cannot be proved in jsdom: the hit area is an
+// `::after` overlay, and jsdom has neither pseudo-elements nor layout, so a
+// press on the card body does not reach a button that is not its ancestor.
+// What is asserted instead is the CONTRACT: the classes and the marker
+// attribute that the card and the trigger have to agree on, and the fact that
+// both roster pages use the two halves together. The overlay itself was
+// checked in a browser.
 // ============================================================================
 
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { IdentityTrigger, PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import {
+  IdentityTrigger, PlayerActionsMenu, TeamActionsMenu, STRETCH_TARGET_CARD,
+} from "@/components/coach/EntityActionsMenu";
 import { identityTriggerLabel } from "@/components/coach/entityLinks";
 import type { ConnectedPlayer, Team } from "@/types";
 
@@ -126,5 +139,94 @@ describe("IdentityTrigger on a team", () => {
     expect(screen.queryByRole("menuitem", { name: /stats/i })).toBeNull();
     await user.click(screen.getByRole("menuitem", { name: /manage team/i }));
     expect(screen.getByTestId("loc")).toHaveTextContent("/teams?team=t1");
+  });
+});
+
+describe("IdentityTrigger stretched over a whole card", () => {
+  /** The one attribute the card's `has-[…]` selector keys off. */
+  const MARKER = "data-stretch-trigger";
+
+  function mountStretched() {
+    mount(
+      <PlayerActionsMenu
+        player={ALICE}
+        onViewStats={() => {}}
+        trigger={<IdentityTrigger stretch name="Alice Adams">AA</IdentityTrigger>}
+      />,
+    );
+    return screen.getByRole("button", { name: "Open menu for Alice Adams" });
+  }
+
+  it("marks itself, grows the overlay, and hands hover and the ring to the card", () => {
+    const identity = mountStretched();
+
+    expect(identity).toHaveAttribute(MARKER);
+
+    // `content-['']` is not decoration: Tailwind's `after:` variant sets
+    // `content: var(--tw-content)`, which renders nothing until this fills it,
+    // and an ::after with no content box has no hit area at all.
+    expect(identity.className).toContain("after:absolute");
+    expect(identity.className).toContain("after:inset-0");
+    expect(identity.className).toContain("after:content-['']");
+
+    // NOT positioned itself. `relative` here would make the button the
+    // overlay's containing block, and it would stretch over nothing but the
+    // name — the exact bug this mode exists to remove, silently restored.
+    expect(identity.className).not.toContain("relative");
+
+    // Hover and focus ring belong to the card while the card is the target.
+    expect(identity.className).not.toContain("hover:bg-accent/40");
+    expect(identity.className).not.toContain("focus-visible:ring-2");
+
+    // The touch-target contract holds in both modes.
+    expect(identity.className).toContain("coarse:min-h-11");
+  });
+
+  it("leaves the un-stretched trigger exactly as it was", () => {
+    mount(<PlayerActionsMenu player={ALICE} trigger={<IdentityTrigger name="Alice Adams">AA</IdentityTrigger>} />);
+    const identity = screen.getByRole("button", { name: "Open menu for Alice Adams" });
+
+    expect(identity).not.toHaveAttribute(MARKER);
+    expect(identity.className).not.toContain("after:absolute");
+    expect(identity.className).toContain("focus-visible:ring-2");
+    expect(identity.className).toContain("hover:bg-accent/40");
+  });
+
+  it("still opens the same menu, and still says whose it is", async () => {
+    const user = userEvent.setup();
+    const identity = mountStretched();
+
+    expect(identity).toHaveAccessibleName("Open menu for Alice Adams");
+    await user.click(identity);
+    expect(await screen.findByRole("menuitem", { name: /schedule/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /stats/i })).toBeInTheDocument();
+  });
+
+  it("keeps the card's selector and the trigger's marker naming the same attribute", () => {
+    // Two literals in two files. Nothing else in the app would notice them
+    // drifting apart: the focus ring would just quietly stop appearing, and
+    // keyboard users would lose the only sign of where they are.
+    expect(STRETCH_TARGET_CARD).toContain(`has-[[${MARKER}]:focus-visible]:ring-2`);
+
+    // The containing block for the overlay.
+    expect(STRETCH_TARGET_CARD).toContain("relative");
+    expect(STRETCH_TARGET_CARD).toContain("cursor-pointer");
+
+    // Links inside the card sit above the overlay, or the team chips and the
+    // next-up lines stop navigating and open the menu instead.
+    expect(STRETCH_TARGET_CARD).toContain("[&_a]:relative");
+    expect(STRETCH_TARGET_CARD).toContain("[&_a]:z-10");
+  });
+
+  it("is used in pairs on both roster pages", () => {
+    // Half of this pattern is useless and the failure is silent either way:
+    // `stretch` without a `relative` card resolves the overlay against some
+    // ancestor further up the tree, and the card constant without `stretch`
+    // renders a card that looks clickable and is not.
+    for (const page of ["PlayersPage.tsx", "TeamsPage.tsx"]) {
+      const src = readFileSync(resolve(__dirname, "..", "..", "..", "pages", page), "utf8");
+      expect(src).toContain("<IdentityTrigger stretch");
+      expect(src).toContain("STRETCH_TARGET_CARD");
+    }
   });
 });

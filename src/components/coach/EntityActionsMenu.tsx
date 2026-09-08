@@ -15,6 +15,11 @@
 // wrapped in `IdentityTrigger` — so tapping the person opens the same menu.
 // The two triggers carry DIFFERENT accessible names ("Actions for …" vs
 // "Open menu for …") so a page that shows both stays unambiguous.
+//
+// On CARDS that identity trigger stretches over the whole card: pass `stretch`
+// and give the card STRETCH_TARGET_CARD. Read the notes on those two before
+// changing either — the obvious alternative, making the card itself a
+// role="button", is the wrong one, and the note says why.
 // ============================================================
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
@@ -71,8 +76,65 @@ function MenuTrigger({ label, compact, className }: TriggerProps) {
 export interface IdentityTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Display name of the player or team; becomes "Open menu for <name>". */
   name: string;
+  /**
+   * Make the whole CARD the target instead of just the name.
+   *
+   * The button keeps its own box for layout and grows an `::after` overlay
+   * that fills the nearest positioned ancestor — the card, which must wear
+   * STRETCH_TARGET_CARD. The hover tint and the focus ring move to the card
+   * with it: a ring drawn tightly around the name, inside a card that is
+   * entirely clickable, describes the wrong thing.
+   *
+   * WHY AN OVERLAY RATHER THAN A CLICKABLE CARD. The direct approach is
+   * role="button" on the card plus stopPropagation on everything inside it.
+   * ARIA gives `button` children-presentational semantics, so assistive
+   * technology is entitled to flatten what the card contains — the team
+   * chips and the next-up links on a player card would stop being reachable.
+   * This leaves exactly one control in the accessibility tree, the button
+   * below, with the real links still above the overlay and still links.
+   *
+   * Cards only. On a dense row the name should stay the name: a row is a much
+   * wider accidental-tap surface, and the rows here sit beside Remove buttons.
+   */
+  stretch?: boolean;
   children: ReactNode;
 }
+
+/**
+ * What the CARD must wear for `<IdentityTrigger stretch>` to work.
+ *
+ * One exported string, because these are not independent choices — drop any
+ * one and the pattern breaks in a way that is easy to miss in review:
+ *
+ *   relative               the overlay is `absolute inset-0`, so it fills the
+ *                          nearest POSITIONED ancestor. Without this it fills
+ *                          whatever else happens to be positioned up the tree.
+ *   [&_a]:relative + z-10  lifts every link inside the card back above the
+ *                          overlay, so the team chips and the next-up lines
+ *                          still navigate where they say instead of opening
+ *                          the menu. Card-scoped on purpose rather than edited
+ *                          into PlayerTeamChips / NextUpLines, which are
+ *                          shared with the Teams page and the stats drawer.
+ *   has-[…]:ring-*         draws the focus ring around the card, which is
+ *                          what the trigger now stands for.
+ *   cursor-pointer         on a pointer device, the cue that the surface is a
+ *                          target at all.
+ *
+ * BUTTONS ARE DELIBERATELY NOT COVERED. A card with buttons of its own has to
+ * give each one `relative z-10` explicitly: which of them stays pressable is a
+ * decision per card, not one this constant can make for it.
+ *
+ * One accepted cost. Text under the overlay cannot be drag-selected, so the
+ * `TAI-P-…` id on a player card is no longer selectable from the card.
+ * Copying an id off the roster grid is not what that page is for; being able
+ * to tap a player is.
+ */
+export const STRETCH_TARGET_CARD =
+  "relative cursor-pointer [&_a]:relative [&_a]:z-10 " +
+  "has-[[data-stretch-trigger]:focus-visible]:ring-2 " +
+  "has-[[data-stretch-trigger]:focus-visible]:ring-ring " +
+  "has-[[data-stretch-trigger]:focus-visible]:ring-offset-2 " +
+  "has-[[data-stretch-trigger]:focus-visible]:ring-offset-background";
 
 /**
  * Wraps an avatar and/or name so tapping the PERSON opens their menu. It is a
@@ -81,15 +143,24 @@ export interface IdentityTriggerProps extends ButtonHTMLAttributes<HTMLButtonEle
  * needs both to attach its behaviour. Meets the 44px target on touch screens.
  */
 export const IdentityTrigger = forwardRef<HTMLButtonElement, IdentityTriggerProps>(
-  function IdentityTrigger({ name, children, className, ...props }, ref) {
+  function IdentityTrigger({ name, children, className, stretch, ...props }, ref) {
     return (
       <button
         ref={ref}
         type="button"
         aria-label={identityTriggerLabel(name)}
+        // Marks the stretched instance for the card’s `has-[…]` focus ring. An
+        // attribute rather than a class, so a `className` at the call site
+        // cannot quietly take the ring away.
+        {...(stretch ? { "data-stretch-trigger": "" } : {})}
         className={cn(
           "flex min-w-0 items-center gap-3 rounded-md text-left outline-none transition-colors",
-          "hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          stretch
+            ? // No `relative` on this button, on purpose: the overlay has to
+              // resolve against the CARD, and a positioned button would catch
+              // it first and stretch to nothing but itself.
+              "after:absolute after:inset-0 after:content-['']"
+            : "hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "coarse:min-h-11",
           className,
         )}
