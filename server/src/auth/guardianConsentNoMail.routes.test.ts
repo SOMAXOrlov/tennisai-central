@@ -44,18 +44,28 @@ import { authRouter } from "./routes";
 import { sendNotificationEmail } from "../email/mailer";
 import { createTestApp, prismaMockFrom, firstCallArg } from "../test/harness";
 import { ageFromIsoDate, todayUtc } from "./age";
-import { GUARDIAN_CONSENT_PENDING_STATUS } from "./guardianConsent";
+import { GUARDIAN_CONSENT_PENDING_STATUS, minorAgeThreshold } from "./guardianConsent";
 
 const db = prismaMockFrom(prisma);
 const app = createTestApp([["/api/auth", authRouter]]);
 
-/** A date of birth that makes someone exactly 14 today (UTC). */
-function dobFor14(): string {
+/**
+ * A date of birth one year under the age of digital consent today (UTC) — the
+ * applicant this file is about.
+ *
+ * Read from `minorAgeThreshold()` rather than written as a number: this spec
+ * does not pin MINOR_AGE_THRESHOLD, so the threshold in force is whatever the
+ * deployment (or the run) says, and "a 14-year-old" would stop meaning "a
+ * minor" the moment that changed. The age is checked against the real maths
+ * before use, so a month or leap-year edge cannot silently mis-age it.
+ */
+function dobBelowThreshold(): string {
+  const years = minorAgeThreshold() - 1;
   const now = new Date();
-  const iso = new Date(Date.UTC(now.getUTCFullYear() - 14, now.getUTCMonth(), now.getUTCDate()))
+  const iso = new Date(Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate()))
     .toISOString()
     .slice(0, 10);
-  expect(ageFromIsoDate(iso, todayUtc())).toBe(14);
+  expect(ageFromIsoDate(iso, todayUtc()), `fixture ${iso}`).toBe(years);
   return iso;
 }
 
@@ -66,7 +76,7 @@ const minorSignup = () => ({
   lastName: "Ramirez",
   role: "player",
   termsAccepted: true,
-  dateOfBirth: dobFor14(),
+  dateOfBirth: dobBelowThreshold(),
   guardianName: "Marta Ramirez",
   guardianEmail: "marta@example.com",
 });

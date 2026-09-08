@@ -31,6 +31,8 @@ import { prisma } from "../db";
 import { PHOTO_UNAVAILABLE_MESSAGE, photosRouter } from "./routes";
 import { MAX_PHOTO_BYTES, photoPath, setUploadsDirForTests, writePhoto } from "./storage";
 import { bearer, createTestApp, firstCallArg, prismaMockFrom } from "../test/harness";
+import { ageFromIsoDate, todayUtc } from "../auth/age";
+import { minorAgeThreshold } from "../auth/guardianConsent";
 
 const db = prismaMockFrom(prisma);
 const app = createTestApp([["/api", photosRouter]]);
@@ -72,9 +74,28 @@ afterAll(async () => {
 // ── The world each spec starts from ─────────────────────────────────────────
 
 /**
+ * A date of birth one year under the age of digital consent today (UTC).
+ *
+ * Taken from `minorAgeThreshold()` rather than written as a year: the
+ * threshold is configuration (GDPR Art. 8 leaves it to each member state), and
+ * a date that means "a child" under one threshold means "an adult" under a
+ * lower one — which would quietly turn the refusal specs below into specs
+ * about an adult, still green. Checked against the real age maths before use.
+ */
+function dobBelowThreshold(): string {
+  const years = minorAgeThreshold() - 1;
+  const now = new Date();
+  const iso = new Date(Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate()))
+    .toISOString()
+    .slice(0, 10);
+  expect(ageFromIsoDate(iso, todayUtc()), `fixture ${iso}`).toBe(years);
+  return iso;
+}
+
+/**
  * A user row as the read endpoint selects it. `ageConfirmedAt` set + no date of
- * birth is the adult shape (every seeded account looks like this);
- * `dateOfBirth` in 2012 is the minor shape.
+ * birth is the adult shape (every seeded account looks like this); a
+ * `dateOfBirth` under the threshold is the minor shape.
  */
 interface Row {
   id: string;
@@ -102,7 +123,11 @@ function adultRow(id: string, overrides: Partial<Row> = {}): Row {
 }
 
 function minorRow(id: string, overrides: Partial<Row> = {}): Row {
-  return adultRow(id, { dateOfBirth: "2012-03-04", guardianConsentRequired: true, ...overrides });
+  return adultRow(id, {
+    dateOfBirth: dobBelowThreshold(),
+    guardianConsentRequired: true,
+    ...overrides,
+  });
 }
 
 /** Rows the mocked `user.findUnique` will answer with, keyed by id. */
@@ -469,7 +494,10 @@ describe("GET /api/players/:id/photo — a minor", () => {
   it("applies the rule from the date of birth alone, with no consent flag set", async () => {
     // The flag is signup's verdict; a row that only carries a date of birth
     // must reach the same answer, or an imported or edited account slips out.
-    rows[MINOR] = adultRow(MINOR, { dateOfBirth: "2012-03-04", guardianConsentRequired: false });
+    rows[MINOR] = adultRow(MINOR, {
+      dateOfBirth: dobBelowThreshold(),
+      guardianConsentRequired: false,
+    });
     withConnection();
     const res = await request(app).get(`/api/players/${MINOR}/photo`).set("Authorization", bearer(OBSERVER));
     expect(res.status).toBe(403);
