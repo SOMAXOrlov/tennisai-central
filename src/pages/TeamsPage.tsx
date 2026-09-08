@@ -18,7 +18,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Plus, Users, Pencil, Trash2, UserPlus, UserMinus, ArrowLeft, Search, Check } from "lucide-react";
 import type { Team, ConnectedPlayer } from "@/types";
 import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from "@/hooks/api/queries";
-import { IdentityTrigger, PlayerActionsMenu, TeamActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { IdentityTrigger, PlayerActionsMenu, TeamActionsMenu, STRETCH_TARGET_CARD } from "@/components/coach/EntityActionsMenu";
+import { cn } from "@/lib/utils";
 import { TeamNextUp } from "@/components/coach/NextUpLines";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
@@ -38,14 +39,17 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
 }) {
   const { t, formatDate } = useT();
   return (
-    <div className="group flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:bg-accent/20">
+    // The whole card is the target, exactly as on the Players page — see
+    // STRETCH_TARGET_CARD. Every control this card owns carries `relative
+    // z-10` below, because that constant lifts links and nothing else.
+    <div className={cn("group flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:bg-accent/20", STRETCH_TARGET_CARD)}>
       <div className="flex items-start justify-between">
-        {/* The team's badge and name open the same menu as the "…" button. */}
+        {/* Tapping anywhere on the card opens the same menu as the "…" button. */}
         <TeamActionsMenu
           team={team}
           onManage={onSelect}
           trigger={
-            <IdentityTrigger name={team.name} className="-m-1 p-1">
+            <IdentityTrigger stretch name={team.name}>
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></span>
               <span className="min-w-0">
                 <span className="block font-semibold text-foreground">{team.name}</span>
@@ -56,10 +60,10 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
         />
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-            <Button size="icon" variant="ghost" aria-label={t("a11y.teams.rename", { name: team.name })} className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onRename(); }}><Pencil className="h-3.5 w-3.5" /></Button>
-            <Button size="icon" variant="ghost" aria-label={t("a11y.teams.delete", { name: team.name })} className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+            <Button size="icon" variant="ghost" aria-label={t("a11y.teams.rename", { name: team.name })} className="relative z-10 h-8 w-8" onClick={(e) => { e.stopPropagation(); onRename(); }}><Pencil className="h-3.5 w-3.5" /></Button>
+            <Button size="icon" variant="ghost" aria-label={t("a11y.teams.delete", { name: team.name })} className="relative z-10 h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(); }}><Trash2 className="h-3.5 w-3.5" /></Button>
           </div>
-          <TeamActionsMenu team={team} onManage={onSelect} compact />
+          <TeamActionsMenu team={team} onManage={onSelect} compact className="relative z-10" />
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -69,7 +73,7 @@ function TeamCard({ team, onSelect, onRename, onDelete }: {
       </div>
       {/* What the squad has coming up: whoever's tournament is soonest, and the squad's own next session. */}
       <TeamNextUp team={team} />
-      <Button variant="outline" className="w-full gap-1.5" onClick={onSelect}>{t("teams.manage")}<ArrowLeft className="h-3.5 w-3.5 rotate-180" /></Button>
+      <Button variant="outline" className="relative z-10 w-full gap-1.5" onClick={onSelect}>{t("teams.manage")}<ArrowLeft className="h-3.5 w-3.5 rotate-180" /></Button>
     </div>
   );
 }

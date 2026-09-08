@@ -10,7 +10,8 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { PlayerStatsDrawer } from "@/components/players/PlayerStatsDrawer";
 import { PlayerEquipmentDrawer } from "@/components/equipment/PlayerEquipmentDrawer";
-import { IdentityTrigger, PlayerActionsMenu } from "@/components/coach/EntityActionsMenu";
+import { IdentityTrigger, PlayerActionsMenu, STRETCH_TARGET_CARD } from "@/components/coach/EntityActionsMenu";
+import { cn } from "@/lib/utils";
 import { PlayerTeamChips } from "@/components/coach/PlayerTeamChips";
 import { PlayerNextUp } from "@/components/coach/NextUpLines";
 import { useTeams } from "@/hooks/api/queries";
@@ -87,14 +88,28 @@ export default function PlayersPage() {
           {filtered.map((player) => (
             <DashboardCard
               key={player.id}
+              // THE WHOLE CARD IS THE TARGET, not just the name. A coach
+              // reading a roster aims at a person, and the person on this page
+              // is the card; a 200px-wide name inside a 400px-wide card is a
+              // smaller target than it looks like.
+              //
+              // STRETCH_TARGET_CARD carries everything that makes that work
+              // (and everything that would break if a class went missing) —
+              // read it there rather than re-deriving it here. The hover tint
+              // matches the team cards on /teams so the two roster pages
+              // behave and look the same.
+              className={cn(STRETCH_TARGET_CARD, "transition-colors hover:border-primary/20 hover:bg-accent/20")}
               title={
-                // Tapping the avatar or the name opens the same menu as "Actions".
+                // Tapping anywhere on the card opens the same menu as "Actions".
                 <PlayerActionsMenu
                   player={player}
                   onViewStats={setStatsPlayer}
                   onViewEquipment={setEquipmentPlayer}
                   trigger={
-                    <IdentityTrigger name={`${player.firstName} ${player.lastName}`} className="-m-1 p-1">
+                    // No `-m-1 p-1` under `stretch`: that pair existed to give
+                    // the name a slightly larger hit area and a tint that
+                    // cleared the text. Both now belong to the card.
+                    <IdentityTrigger stretch name={`${player.firstName} ${player.lastName}`}>
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
                         {player.firstName[0]}{player.lastName[0]}
                       </span>
@@ -120,7 +135,12 @@ export default function PlayersPage() {
                 <StatusBadge status="active" />
                 <PlayerActionsMenu
                   player={player}
-                  className="ml-auto"
+                  // `relative z-10` keeps this button above the card-wide
+                  // overlay. Without it the press lands on the overlay and
+                  // opens the identity trigger’s copy of the menu instead —
+                  // the same items, but anchored to the name rather than to
+                  // the button that was pressed.
+                  className="relative z-10 ml-auto"
                   onViewStats={setStatsPlayer}
                   onViewEquipment={setEquipmentPlayer}
                 />
