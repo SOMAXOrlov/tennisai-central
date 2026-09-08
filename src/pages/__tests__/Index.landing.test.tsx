@@ -52,6 +52,47 @@ describe("landing page — English", () => {
     expect(container.textContent).not.toMatch(/\blanding\.[a-z]/i);
   });
 
+  // The moving background, and the scrim that makes the hero readable over it.
+  // The layer was taken off every screen inside the app, so this page is the
+  // only place it survives and the assertion belongs here. WHICH files may
+  // mount it at all is a separate, tree-wide check:
+  // src/components/motion/__tests__/ambientCourtMounts.test.ts.
+  it("keeps the moving court background - the one page it is still mounted on", () => {
+    const { container } = renderLanding("en");
+
+    // `ambient-pan` is the class the keyframes hang off in index.css, so its
+    // presence is what proves the animated layer rather than merely a div.
+    expect(container.querySelector(".ambient-pan")).not.toBeNull();
+    expect(container.querySelectorAll(".ambient-rally").length).toBeGreaterThan(0);
+  });
+
+  it("backs the hero text with a scrim, so it reads over that background", () => {
+    renderLanding("en");
+
+    const h1 = screen.getByRole("heading", { level: 1 });
+    const hero = h1.closest("section");
+    expect(hero).not.toBeNull();
+
+    // A presentational direct child of the section. Found by walking the
+    // children rather than with a descendant selector: the lucide arrows
+    // further down the page are aria-hidden too.
+    const scrim = Array.from((hero as HTMLElement).children).find(
+      (el) => el.tagName === "DIV" && el.getAttribute("aria-hidden") === "true",
+    ) as HTMLElement | undefined;
+    expect(scrim).toBeDefined();
+
+    const cls = (scrim as HTMLElement).className;
+    expect(cls).toContain("bg-gradient-to-r");
+    expect(cls).toContain("from-background");
+    // Ends at a zero-alpha BACKGROUND, never at `transparent` - see the note in
+    // Index.tsx: rgba(0,0,0,0) would drag the middle of the fade through grey.
+    expect(cls).toContain("to-background/0");
+    expect(cls).not.toContain("to-transparent");
+
+    // And the text paints above it: positioned, and later in the DOM.
+    expect(h1.parentElement?.className).toContain("relative");
+  });
+
   it("renders every section: capabilities, how it works, differentiators, roles, access, demo, closing", () => {
     renderLanding("en");
 

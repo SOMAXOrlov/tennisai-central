@@ -56,8 +56,40 @@ const Index = () => {
       <AmbientCourt intensity="hero" />
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="border-b border-foreground/15">
-        <div className="container max-w-6xl py-20 md:py-28">
+      <section className="relative border-b border-foreground/15">
+        {/* THE SCRIM. The headline and — much more so — the muted subtitle were
+            hard to read with the court panning behind them, which is the one
+            complaint this page had.
+
+            A left-anchored fade rather than a panel, because the court is
+            drawn deliberately right of centre (the SVG viewBox starts at -170)
+            to clear the headline: fading out on the right leaves the animation
+            visible exactly where it was composed to be seen, instead of
+            covering it with a box.
+
+            Three details are load-bearing:
+
+              * it ends at `background/0`, NOT at `transparent`. `transparent`
+                is rgba(0,0,0,0), so interpolating to it from a near-white
+                paper drags the middle of the gradient through grey — the
+                classic dirty fade. Zero-alpha *background* stays the same hue
+                all the way out, in both themes.
+              * the left edge is the viewport edge, so there is no vertical
+                seam where the fill starts and the court lines get cut.
+              * the width is capped at half the viewport plus 34rem, which is
+                past the end of the `max-w-4xl` headline on a wide screen but
+                still short of the right margin, so the fade lands in empty
+                space rather than mid-sentence. Below `md` it spans the full
+                width, where the text does too.
+
+            `absolute` and positioned-but-z-auto, with `relative` on the text
+            wrapper below: no z-index arithmetic, and nothing to reconcile with
+            the -z-10 background layer. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-background from-85% to-background/0 md:w-[min(100%,calc(50%+34rem))]"
+        />
+        <div className="container relative max-w-6xl py-20 md:py-28">
           {/* Hero animates on load rather than on scroll — it is already in
               view, so waiting for an intersection would leave it blank. The
               60ms steps read as one considered movement, not four separate
