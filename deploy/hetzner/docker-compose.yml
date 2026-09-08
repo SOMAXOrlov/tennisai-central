@@ -43,6 +43,22 @@ services:
       # site itself, which is why cross-origin never enters into it.
       APP_URL: https://${SITE_ADDRESS:?set SITE_ADDRESS in .env}
       REQUIRE_EMAIL_VERIFICATION: ${REQUIRE_EMAIL_VERIFICATION:-true}
+      # The age of digital consent this deployment enforces. 14 is Spain's
+      # (LOPDGDD Art. 7) and matches the code's default.
+      #
+      # It is passed explicitly because it was NOT reachable before. The code
+      # reads MINOR_AGE_THRESHOLD from the environment per call, and the legal
+      # pages tell the reader it can be changed by the operator — but this file
+      # never passed it, and server/.dockerignore keeps `.env` out of the
+      # image, so dotenv found nothing inside the container. The knob the
+      # policy described did not exist. Now it does.
+      #
+      # CHANGING THIS IS NOT ONLY A DEPLOYMENT CHANGE. The privacy policy and
+      # the terms state this age to the reader in both languages, and
+      # server/src/auth/__tests__/ageInLegalCopy.test.ts holds that copy to the
+      # code's default. A deployment that sets a different number here has a
+      # policy that lies to its users until the copy is changed too.
+      MINOR_AGE_THRESHOLD: ${MINOR_AGE_THRESHOLD:-14}
       GMAIL_USER: ${GMAIL_USER:-}
       GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD:-}
       MAIL_FROM_NAME: ${MAIL_FROM_NAME:-TennisAI}

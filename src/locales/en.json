@@ -1001,7 +1001,7 @@
       },
       "minors": {
         "heading": "Minors and guardian consent",
-        "body": "Sign-up asks for a date of birth. At or above the age of digital consent this deployment is configured with — 16 unless the operator changes it — nothing extra happens. Below it, the account is created but stays inert: we send a one-time link to the guardian's e-mail address, and until the guardian approves, the account cannot be used. GDPR Article 8 leaves the exact age to each member state (13 to 16), which is why it is a setting rather than a fixed number.",
+        "body": "Sign-up asks for a date of birth. At or above the age of digital consent this deployment is configured with — 14 unless the operator changes it — nothing extra happens. Below it, the account is created but stays inert: we send a one-time link to the guardian's e-mail address, and until the guardian approves, the account cannot be used. GDPR Article 8 leaves the exact age to each member state (13 to 16), which is why it is a setting rather than a fixed number.",
         "note": "Which national age applies to which user, and how a guardian's authority is verified beyond holding the e-mail address, are open questions for counsel."
       },
       "device": {
@@ -1098,7 +1098,7 @@
         "item4": "how a guardian's authority is verified, per national age of consent;",
         "item5": "the named processor list and a data-processing agreement with each;",
         "item6": "the process and deadlines for handling an access, export or erasure request.",
-        "item7": "the age of digital consent to enforce. This deployment is set to 16, while Spain's is 14 — so a Spanish 15-year-old is treated here as needing a guardian's approval when the national rule would not require it;",
+        "item7": "the age of digital consent to enforce for a player who is not resident in Spain. This deployment enforces 14, which is Spain's age. A 14- or 15-year-old resident in a member state that sets a higher age — Ireland, for instance, sets 16 — is treated here as needing no guardian approval, when their own national rule would require it;",
         "item8": "the country the server actually sits in. The hosting company is German; the data centre is not recorded, and it has to be established rather than assumed;",
         "item9": "a transfer mechanism for each recipient outside the European Economic Area named above — none is in place;",
         "item10": "a way to close an account. There is none: no screen offers it and no part of the API deletes a user, so an erasure request has to be carried out by hand today, including the photograph file, which nothing else would clean up;",
@@ -1131,7 +1131,7 @@
       },
       "minors": {
         "heading": "Players under the age of digital consent",
-        "body": "A player whose date of birth puts them under the age this deployment is configured with — 16 unless the operator changes it — gets an account that stays inert until a parent or guardian approves it from a one-time link sent to the guardian's e-mail address. The guardian is expected to oversee that account."
+        "body": "A player whose date of birth puts them under the age this deployment is configured with — 14 unless the operator changes it — gets an account that stays inert until a parent or guardian approves it from a one-time link sent to the guardian's e-mail address. The guardian is expected to oversee that account."
       },
       "use": {
         "heading": "Acceptable use",

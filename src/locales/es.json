@@ -1001,7 +1001,7 @@
       },
       "minors": {
         "heading": "Menores y consentimiento del tutor",
-        "body": "El registro pide la fecha de nacimiento. A partir de la edad de consentimiento digital configurada en esta instalación —16 años salvo que el administrador la cambie— no ocurre nada adicional. Por debajo de ella, la cuenta se crea pero queda inactiva: enviamos un enlace de un solo uso a la dirección de correo del tutor y, hasta que el tutor lo aprueba, la cuenta no puede usarse. El artículo 8 del RGPD deja la edad exacta a cada Estado miembro (entre 13 y 16 años), y por eso es un ajuste y no un número fijo.",
+        "body": "El registro pide la fecha de nacimiento. A partir de la edad de consentimiento digital configurada en esta instalación —14 años salvo que el administrador la cambie— no ocurre nada adicional. Por debajo de ella, la cuenta se crea pero queda inactiva: enviamos un enlace de un solo uso a la dirección de correo del tutor y, hasta que el tutor lo aprueba, la cuenta no puede usarse. El artículo 8 del RGPD deja la edad exacta a cada Estado miembro (entre 13 y 16 años), y por eso es un ajuste y no un número fijo.",
         "note": "Qué edad nacional se aplica a cada usuario, y cómo se verifica la condición de tutor más allá de tener acceso al correo, son cuestiones abiertas para asesoría jurídica."
       },
       "device": {
@@ -1098,7 +1098,7 @@
         "item4": "cómo se verifica la condición de tutor según la edad de consentimiento de cada país;",
         "item5": "la lista nominal de encargados del tratamiento y un contrato de encargo con cada uno;",
         "item6": "el procedimiento y los plazos para atender una solicitud de acceso, exportación o supresión.",
-        "item7": "qué edad de consentimiento digital aplicar. Esta instalación está configurada en 16 años, mientras que en España es de 14: un chico o una chica de 15 años en España se trata aquí como si necesitara la aprobación de un tutor cuando la norma nacional no lo exigiría;",
+        "item7": "qué edad de consentimiento digital aplicar a un jugador que no reside en España. Esta instalación aplica 14 años, la edad española. Un chico o una chica de 14 o 15 años que resida en un Estado miembro que fija una edad superior —Irlanda, por ejemplo, fija los 16— se trata aquí como si no necesitara la aprobación de un tutor, cuando su norma nacional sí la exigiría;",
         "item8": "en qué país está realmente el servidor. La empresa de alojamiento es alemana; el centro de datos no consta, y hay que determinarlo en lugar de darlo por supuesto;",
         "item9": "un mecanismo de transferencia para cada destinatario situado fuera del Espacio Económico Europeo de los mencionados arriba: no hay ninguno;",
         "item10": "una forma de cerrar una cuenta. No existe: ninguna pantalla la ofrece y ninguna parte de la API suprime un usuario, de modo que hoy una solicitud de supresión debe atenderse a mano, incluido el archivo de la fotografía, que nada más limpiaría;",
@@ -1131,7 +1131,7 @@
       },
       "minors": {
         "heading": "Jugadores por debajo de la edad de consentimiento digital",
-        "body": "El jugador cuya fecha de nacimiento lo sitúe por debajo de la edad configurada en esta instalación —16 años salvo que el administrador la cambie— recibe una cuenta que permanece inactiva hasta que un padre, madre o tutor la aprueba desde un enlace de un solo uso enviado a su correo. Se espera que ese tutor supervise la cuenta."
+        "body": "El jugador cuya fecha de nacimiento lo sitúe por debajo de la edad configurada en esta instalación —14 años salvo que el administrador la cambie— recibe una cuenta que permanece inactiva hasta que un padre, madre o tutor la aprueba desde un enlace de un solo uso enviado a su correo. Se espera que ese tutor supervise la cuenta."
       },
       "use": {
         "heading": "Uso aceptable",

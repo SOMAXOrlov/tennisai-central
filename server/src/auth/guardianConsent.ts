@@ -14,6 +14,24 @@
 // ranges 13-16 (Spain 14, Germany 16, Ireland 16, Denmark 13). Any single baked
 // -in number is wrong somewhere by design, so it is read from the environment.
 //
+// WHY THE DEFAULT IS 14 AND NOT 16
+// The default was 16 — the top of that range, and so the cautious choice for a
+// deployment that has not said where it operates. The owner has decided this
+// product operates under SPANISH law, where the age is 14 (LOPDGDD Art. 7), and
+// 14 is now the default.
+//
+// Understand what that lowers: a 14- or 15-year-old can now use the product
+// WITHOUT a guardian ever being involved. That is what Spanish law permits, and
+// it is a deliberate decision rather than an oversight.
+//
+// It is also why the number is not only here. The privacy policy and the terms
+// both state this age to the reader, and a policy that says 16 while the code
+// enforces 14 is a lie to a parent. `legalPages.test.tsx` asserts the copy
+// against this constant, so the two cannot drift apart again — they had already
+// drifted once, which is how this comment came to be written. If you change
+// this number, that test fails until the copy in BOTH languages is changed too.
+// A deployment outside Spain has to revisit the copy, not just the env var.
+//
 // WHY IT IS READ HERE AND NOT IN src/env.ts
 // `src/env.ts` is owned by another workstream in this change. Reading it here,
 // per call, keeps the whole feature inside one directory and makes the
@@ -23,8 +41,14 @@
 import { createHash, randomBytes } from "node:crypto";
 import { ageFromIsoDate, todayUtc } from "./age";
 
-/** Used when MINOR_AGE_THRESHOLD is unset or unusable. */
-export const DEFAULT_MINOR_AGE_THRESHOLD = 16;
+/**
+ * Used when MINOR_AGE_THRESHOLD is unset or unusable.
+ *
+ * 14 — Spain's age of digital consent. See the note at the top of this file
+ * before changing it: the legal pages state this number to the reader and a
+ * test holds them to it.
+ */
+export const DEFAULT_MINOR_AGE_THRESHOLD = 14;
 
 /** Sanity bounds. Outside these the value is a mistake, not a jurisdiction. */
 const MIN_ALLOWED_THRESHOLD = 0;
@@ -42,8 +66,15 @@ let warnedAboutThreshold = false;
  *
  * A malformed value falls back to the default and warns ONCE. It deliberately
  * does not exit the process: an operator fat-fingering an env var should not be
- * able to take the whole API down, and the fallback is the strictest common
- * value in the GDPR range anyway.
+ * able to take the whole API down.
+ *
+ * That reasoning used to end "and the fallback is the strictest common value in
+ * the GDPR range anyway", which was true when the default was 16 and is the
+ * opposite of true now that it is 14 — the most permissive end of the range,
+ * not the strictest. So the fallback is no longer the cautious choice: a
+ * mistyped `MINOR_AGE_THRESHOLD` on a deployment that meant to enforce 16
+ * quietly enforces Spain's 14 instead. The warning is the only signal, which is
+ * why it is a warning and not a debug line.
  */
 export function minorAgeThreshold(): number {
   const raw = process.env.MINOR_AGE_THRESHOLD;

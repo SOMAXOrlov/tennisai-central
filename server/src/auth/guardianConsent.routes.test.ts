@@ -11,6 +11,14 @@
 //     neither the raw token nor the digest that is stored for it;
 //   • the threshold really is read from MINOR_AGE_THRESHOLD.
 //
+// AGES ARE RELATIVE TO THE THRESHOLD, NOT WRITTEN AS NUMBERS. The age of
+// digital consent is configuration (GDPR Art. 8 leaves it to each member
+// state), so "a 14-year-old" is not a durable way to say "a minor" — it stops
+// being one the moment the deployment moves. Fixtures are built from the
+// threshold instead, and the handful of specs that name two jurisdictions'
+// ages outright set MINOR_AGE_THRESHOLD themselves, where the numbers are the
+// subject rather than an encoding of the default.
+//
 // ENV IS PINNED, NOT INHERITED (this has broken CI here before): server/.env
 // sets REQUIRE_EMAIL_VERIFICATION=false locally while CI has no .env and gets
 // the secure default — under which signup 503s outright when no transport
@@ -82,6 +90,29 @@ function expectAge(dateOfBirth: string, years: number): string {
   return dateOfBirth;
 }
 
+/**
+ * One year under the age of digital consent: the archetypal minor.
+ *
+ * Relative to DEFAULT_MINOR_AGE_THRESHOLD rather than to the live
+ * `minorAgeThreshold()` because `beforeEach` clears MINOR_AGE_THRESHOLD — in
+ * this file the default IS the threshold in force, everywhere except the few
+ * specs that set the variable themselves.
+ */
+function dobBelowThreshold(): string {
+  const years = DEFAULT_MINOR_AGE_THRESHOLD - 1;
+  return expectAge(dobForAge(years), years);
+}
+
+/**
+ * Comfortably an adult: ten years clear of the threshold, and clear of the
+ * highest value the code will accept for it, so this one is old enough
+ * wherever the deployment runs.
+ */
+function dobWellOverThreshold(): string {
+  const years = DEFAULT_MINOR_AGE_THRESHOLD + 10;
+  return expectAge(dobForAge(years), years);
+}
+
 const baseSignup = {
   email: "junior@example.com",
   password: "correct-horse-battery",
@@ -112,7 +143,9 @@ function userRow(overrides: Record<string, unknown> = {}) {
     onboardingCompletedAt: null,
     termsAcceptedAt: new Date("2026-01-01T00:00:00.000Z"),
     ageConfirmedAt: null,
-    dateOfBirth: "2012-01-01",
+    // These rows stand in for the minor whose account the gate tests exercise,
+    // so the date of birth agrees with that rather than naming a year.
+    dateOfBirth: dobForAge(DEFAULT_MINOR_AGE_THRESHOLD - 1),
     guardianConsentRequired: false,
     guardianEmail: null,
     guardianName: null,
@@ -179,7 +212,7 @@ afterEach(() => {
 
 describe("signup at or above the age of digital consent", () => {
   it("creates an ordinary, immediately usable account from a date of birth", async () => {
-    const dateOfBirth = expectAge(dobForAge(24), 24);
+    const dateOfBirth = dobWellOverThreshold();
     const res = await request(app).post("/api/auth/signup").send({ ...baseSignup, dateOfBirth });
 
     expect(res.status).toBe(201);
@@ -236,7 +269,7 @@ describe("signup at or above the age of digital consent", () => {
 
 describe("signup below the age of digital consent", () => {
   it("refuses without a guardian, and says what is missing rather than 'you are too young'", async () => {
-    const dateOfBirth = expectAge(dobForAge(14), 14);
+    const dateOfBirth = dobBelowThreshold();
     const res = await request(app).post("/api/auth/signup").send({ ...baseSignup, dateOfBirth });
 
     expect(res.status).toBe(400);
@@ -245,7 +278,7 @@ describe("signup below the age of digital consent", () => {
   });
 
   it("refuses a guardian address equal to the applicant's own", async () => {
-    const dateOfBirth = expectAge(dobForAge(14), 14);
+    const dateOfBirth = dobBelowThreshold();
     const res = await request(app)
       .post("/api/auth/signup")
       .send({
@@ -261,7 +294,7 @@ describe("signup below the age of digital consent", () => {
   });
 
   it("creates a consent-required account and emails the guardian a link", async () => {
-    const dateOfBirth = expectAge(dobForAge(14), 14);
+    const dateOfBirth = dobBelowThreshold();
     const res = await request(app)
       .post("/api/auth/signup")
       .send({ ...baseSignup, dateOfBirth, ...guardian });
@@ -283,7 +316,7 @@ describe("signup below the age of digital consent", () => {
   });
 
   it("stores only the DIGEST of the token that was emailed", async () => {
-    const dateOfBirth = expectAge(dobForAge(14), 14);
+    const dateOfBirth = dobBelowThreshold();
     await request(app).post("/api/auth/signup").send({ ...baseSignup, dateOfBirth, ...guardian });
 
     const stored = firstCallArg<{ data: Record<string, string> }>(db.user.create).data
@@ -296,7 +329,7 @@ describe("signup below the age of digital consent", () => {
   });
 
   it("NEVER puts the token — raw or hashed — in the signup response", async () => {
-    const dateOfBirth = expectAge(dobForAge(14), 14);
+    const dateOfBirth = dobBelowThreshold();
     const res = await request(app)
       .post("/api/auth/signup")
       .send({ ...baseSignup, dateOfBirth, ...guardian });
@@ -339,11 +372,12 @@ describe("MINOR_AGE_THRESHOLD", () => {
 
   it("falls back to the default rather than dying on a nonsense value", async () => {
     process.env.MINOR_AGE_THRESHOLD = "sixteen";
-    const dateOfBirth = expectAge(dobForAge(15), 15);
+    const dateOfBirth = dobBelowThreshold();
 
     const res = await request(app).post("/api/auth/signup").send({ ...baseSignup, dateOfBirth });
 
-    // 15 < the default 16, so a guardian is still required.
+    // Below the DEFAULT threshold, which is what an unusable value falls back
+    // to, so a guardian is still required.
     expect(res.status).toBe(400);
     expect(res.body.message).toMatch(new RegExp(`under ${DEFAULT_MINOR_AGE_THRESHOLD}`));
   });
@@ -559,7 +593,7 @@ describe("POST /api/auth/guardian-consent", () => {
   });
 
   it("full round trip: signed-up minor is refused, consents, then signs in", async () => {
-    const dateOfBirth = expectAge(dobForAge(14), 14);
+    const dateOfBirth = dobBelowThreshold();
     await request(app).post("/api/auth/signup").send({ ...baseSignup, dateOfBirth, ...guardian });
     const emailed = tokenFromGuardianEmail();
     const digest = hashGuardianConsentToken(emailed);
