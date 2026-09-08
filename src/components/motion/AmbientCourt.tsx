@@ -1,4 +1,9 @@
-// The moving background behind the app.
+// The moving background on the landing page — and nowhere else.
+//
+// It was behind every screen in the app too, mounted in DashboardLayout. It no
+// longer is: the pages a coach works on all day are better without movement in
+// them, and the one page where atmosphere earns its keep is the page a stranger
+// arrives on. `ambientCourtMounts.test.ts` fails if a second mount appears.
 //
 // Court geometry, not particles. A generic field of drifting dots would sit
 // equally well behind a crypto dashboard; the court, the service boxes and the
@@ -28,10 +33,15 @@ import { cn } from "@/lib/utils";
 /**
  * How much of it there is.
  *
- * `ambient` sits behind working screens a coach reads for an hour, so it is
- * faint and slow enough to be noticed only when you look for it. `hero` is the
- * landing page, where the background is doing a job — more contrast, more
- * movement, one extra arc.
+ * `hero` is the landing page, and the only setting anything mounts today: the
+ * background is doing a job there — more contrast, more movement, one extra
+ * arc.
+ *
+ * `ambient` is the quiet setting, faint and slow enough to be noticed only
+ * when you look for it. It is kept rather than deleted because it is the
+ * setting that would be right if this layer ever went back behind a working
+ * screen — but it is not mounted anywhere, on purpose, and re-mounting it
+ * inside the app is a product decision rather than a tidy-up.
  */
 export type AmbientIntensity = "ambient" | "hero";
 
