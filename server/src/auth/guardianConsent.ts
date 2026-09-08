@@ -66,8 +66,15 @@ let warnedAboutThreshold = false;
  *
  * A malformed value falls back to the default and warns ONCE. It deliberately
  * does not exit the process: an operator fat-fingering an env var should not be
- * able to take the whole API down, and the fallback is the strictest common
- * value in the GDPR range anyway.
+ * able to take the whole API down.
+ *
+ * That reasoning used to end "and the fallback is the strictest common value in
+ * the GDPR range anyway", which was true when the default was 16 and is the
+ * opposite of true now that it is 14 — the most permissive end of the range,
+ * not the strictest. So the fallback is no longer the cautious choice: a
+ * mistyped `MINOR_AGE_THRESHOLD` on a deployment that meant to enforce 16
+ * quietly enforces Spain's 14 instead. The warning is the only signal, which is
+ * why it is a warning and not a debug line.
  */
 export function minorAgeThreshold(): number {
   const raw = process.env.MINOR_AGE_THRESHOLD;
