@@ -18,10 +18,23 @@ import { DEFAULT_MINOR_AGE_THRESHOLD } from "../guardianConsent";
 
 const LOCALES = ["en", "es"] as const;
 
-function loadLegal(locale: string): Record<string, any> {
+/** Only the parts this test reads. Declared rather than `any`: a typo in one of
+ *  these paths should be a compile error, not an undefined at runtime. */
+interface LegalCopy {
+  privacy: {
+    minors: { body: string };
+    open: { item7: string };
+  };
+  terms: {
+    minors: { body: string };
+  };
+}
+
+function loadLegal(locale: string): LegalCopy {
   // server/src/auth/__tests__ -> repo root -> src/locales
   const path = resolve(__dirname, "..", "..", "..", "..", "src", "locales", `${locale}.json`);
-  return JSON.parse(readFileSync(path, "utf8")).legal;
+  const parsed = JSON.parse(readFileSync(path, "utf8")) as { legal: LegalCopy };
+  return parsed.legal;
 }
 
 /** Standalone integers in the GDPR range that a reader could take as the age. */
@@ -64,7 +77,7 @@ describe("the age of digital consent, in the code and on the page", () => {
 
   it.each(LOCALES)("%s: the still-open list names the enforced age", (locale) => {
     const legal = loadLegal(locale);
-    const item = legal.privacy.open.item7 as string;
+    const item = legal.privacy.open.item7;
 
     // This entry legitimately mentions other member states' ages, so it is not
     // held to a single number — only to naming the one in force here.
