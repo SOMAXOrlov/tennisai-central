@@ -34,18 +34,20 @@ should set the threshold for a 14-year-old is a coaching judgement, and it is yo
 not the paper's.
 
 **2. "Reviewed" is a status, not a signature.** All ten are marked `reviewed`, which
-in this project means an automated check passed — the shape of the file, the links
-working, no copied text, the tags spelled correctly. No person is named anywhere in
-any of the ten files as having reviewed them. Every one was written by the same
-automated author, and every source was fetched on the same day, 4 September 2026.
+in this project means an automated pass — the shape of the file, the tags spelled
+correctly, no copied text, and an agent's own check of the sources. No person is named
+anywhere in any of the ten files as having reviewed them. Every one was written by the
+same automated author, and every source carries the same reading date, 4 September
+2026.
 
-**3. The pictures fold onto one side of the net, and can mislead.** Six drills carry
-a diagram. Four of them are drawn as a **half court**, and the rules of the drawing
-system force everything in a half-court picture onto one side of the net. So in
-*Split-step reaction gate* the words say the feeder stands at "the opposite service
-line" while the picture puts him on the player's own side; in *Pre-serve routine
-anchor* the serve targets are drawn in the server's own service boxes rather than
-across the net. Nothing is wrong with the coaching there — it is a drawing
+**3. The pictures fold onto one side of the net, and can mislead.** All ten carry a
+diagram. Five of them are drawn as a **half court** — the split-step gate, the red-ball
+game, the pre-serve routine, the bodyweight circuit and the short-ball drill — and the
+rules of the drawing system force everything in a half-court picture onto one side of
+the net. So in *Split-step reaction gate* the words say the feeder stands at "the
+opposite service line" while the picture puts him on the player's own side; in
+*Pre-serve routine anchor* the serve targets are drawn in the server's own service
+boxes rather than across the net. Nothing is wrong with the coaching there — it is a drawing
 convention. But do not use the pictures to judge which side of the net anything is
 on. The words are what count.
 
@@ -61,13 +63,15 @@ are two kinds:
 - **An in-house entry** — "TennisAI coaching library … written from standard
   coaching curricula", with no link. This is the project saying "we wrote this
   ourselves from ordinary coaching practice". All ten have one.
-- **An outside source** — a named author or body, a title, and a link that was
-  opened. Each of these carries a date the page was read (`fetchedAt`), and all ten
+- **An outside source** — a named author or body, a title, and a link. Each of these
+  carries the date the file records for reading the page (`fetchedAt`), and all ten
   drills record **4 September 2026**.
 
 The one caveat you should know: the automated check insists a `reviewed` drill has at
-least one working outside link, but it does **not** check that anybody recorded a date
-for actually reading it. In these ten they all did. It is a courtesy, not a guarantee.
+least one outside link beginning `https`, but it checks neither that the link still
+resolves nor that anybody recorded a date for reading it. In these ten a date is
+recorded on every outside source. It is a courtesy, not a guarantee — and nothing in
+this document was checked by opening a link.
 
 ---
 
@@ -91,8 +95,8 @@ for actually reading it. In these ten they all did. It is a courtesy, not a guar
   only split steps that land in time are counted. **Regression:** announce the
   direction, and bring the cones in to 2 m.
 - **Sources:** the in-house entry, plus a 2017 article in the *Journal of Human
-  Kinetics* comparing split-step movement speed in professional and junior players,
-  read on 4 September 2026. The link works.
+  Kinetics* comparing split-step movement speed in professional and junior players.
+  The file records it as read on 4 September 2026.
 - **Worth a second look:** the words put the feeder at "the opposite service line"
   (across the net) but the drill is booked for **half a court** and the picture puts
   him on the player's own side, about 4.5 m in front. Those are two different drills
@@ -324,8 +328,8 @@ for actually reading it. In these ten they all did. It is a courtesy, not a guar
   split-before-contact requirement). Both read 4 September 2026.
 - **Worth a second look:** nothing beyond the two general points — it leans on the
   same men's-singles paper as the other tactics drills, and it is high intensity from
-  under-14 up. Of the eight non-physical drills, this one is the most internally
-  consistent: the words, the numbers and the picture agree.
+  under-14 up. Of the nine drills other than the bodyweight circuit, this is the most
+  internally consistent one: the words, the numbers and the picture agree.
 
 ---
 

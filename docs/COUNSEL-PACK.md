@@ -55,9 +55,11 @@ them directly (`deploy/hetzner/Caddyfile:23-33`). The backup is written nightly 
 same disk (`deploy/hetzner/backup.sh`).
 
 **The provider is Hetzner** — the deployment directory is named for it and the runbook
-refers to the Hetzner Cloud Firewall (`deploy/hetzner/README.md:38`). Hetzner is a
-German company, and the policy says so (`en.json:1025`, `en.json:1036`). **The
-data-centre location is not established.** Nothing in the repository records which
+refers to the Hetzner Cloud Firewall (`deploy/hetzner/README.md:38`). The policy
+describes it as a German hosting company (`en.json:1025`, `en.json:1036`); that is a
+fact about Hetzner rather than one recorded anywhere in the repository, which names
+the provider and nothing more (see 2.5). **The data-centre location is not
+established.** Nothing in the repository records which
 country this particular server physically sits in, and the policy is explicit about
 that rather than guessing (`en.json:1036`). Counsel should treat the location as an
 open fact to be obtained from the hosting account, not from this document.
@@ -144,7 +146,7 @@ checked without reading TypeScript.
 | Claim (and where it is written) | What the code shows | Where | Status |
 |---|---|---|---|
 | The account is created but stays inert below the threshold; a one-time link goes to the guardian's e-mail; until they approve, the account cannot be used (`en.json:1004`) | That is the described and tested behaviour, including when no mail transport exists — in which case the account is created, marked consent-required, and **no token is minted at all** | `server/src/auth/guardianConsent.ts:6-10`; `server/src/auth/guardianConsentNoMail.routes.test.ts:1-17` | Backed, with caveat — see question 6 |
-| "the age of digital consent this deployment is configured with — **16 unless the operator changes it**" (`en.json:1004`, repeated in the terms at `en.json:1132`) | The default is 16. The threshold is read from an environment variable at every call. **But the deployment recipe passes no such variable to the API container, and the container's `.env` file is excluded from its image, so nothing can set it.** The deployed API therefore enforces 16, and an operator cannot change it without editing the compose file | `server/src/auth/guardianConsent.ts:26-27,49-50`; `server/.env.example:32`; `deploy/hetzner/docker-compose.yml:36-77`; `server/.dockerignore:2-3` | **Backed as to 16; the words "unless the operator changes it" are not accurate for this deployment.** See question 7 |
+| "the age of digital consent this deployment is configured with — **16 unless the operator changes it**" (`en.json:1004`, repeated in the terms at `en.json:1134`) | The default is 16. The threshold is read from an environment variable at every call. **But the deployment recipe passes no such variable to the API container, and the container's `.env` file is excluded from its image, so nothing can set it.** The deployed API therefore enforces 16, and an operator cannot change it without editing the compose file | `server/src/auth/guardianConsent.ts:26-27,49-50`; `server/.env.example:32`; `deploy/hetzner/docker-compose.yml:36-77`; `server/.dockerignore:2-3` | **Backed as to 16; the words "unless the operator changes it" are not accurate for this deployment.** See question 7 |
 | GDPR Article 8 leaves the exact age to each member state, 13 to 16, which is why it is a setting (`en.json:1004`) | The code comment says the same, naming Spain 14, Germany 16, Ireland 16, Denmark 13 | `server/src/auth/guardianConsent.ts:12-16` | Not a code matter (a statement of law) |
 | The app sets no cookies at all, so there is no consent banner (`en.json:1009`) | No server response sets a cookie, and no application code writes `document.cookie`. **One file does**: an unused user-interface component from a third-party component library writes a `sidebar_state` cookie. Nothing in the app imports it, so it is never rendered and never bundled | `src/components/ui/sidebar.tsx:68`; verified no import of that module anywhere | **Backed, with caveat.** True of behaviour today. One import would make it false, silently, with no banner |
 | The browser keeps: the sign-in token; the language and theme choice; an approximate location only if the map is asked for distances; get-started checklist progress; drafts of long forms; small interface preferences (`en.json:1011-1016`) | Each has an identifiable writer: token, language, location, checklist, form drafts, and the collapsed-navigation flag. **The theme is the exception** — it is stored by the `next-themes` dependency's own default, not by a line of this project's code | `src/auth/AuthContext.tsx:37`; `src/lib/i18n.ts:24`; `src/hooks/useGeolocation.ts:20,39`; `src/components/dashboard/getStartedStorage.ts:49`; `src/lib/drafts/useFormDraft.ts:32`; `src/layouts/DashboardLayout.tsx:34`; `src/components/ThemeProvider.tsx:1-14` | Backed, with caveat |
@@ -374,7 +376,7 @@ file is excluded from its image (`server/.dockerignore:2-3`), so nothing can sup
 one. The deployed API therefore enforces **16**, and an operator cannot change that
 without editing the compose file — which makes the policy's phrase "16 unless the
 operator changes it" (`en.json:1004`, and the same words in the terms at
-`en.json:1132`) misleading for this deployment.
+`en.json:1134`) misleading for this deployment.
 
 **So the residual question runs the opposite way to a stricter-elsewhere problem.**
 Spain's age of digital consent is 14. This deployment treats a Spanish 14- or
