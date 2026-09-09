@@ -140,3 +140,12 @@ On the box itself (bypasses TLS and Caddy): `curl -s localhost/api/health`.
 - The nightly backup silently failing. Check `/var/log/tennisai-backup.log`
   after any change; a restore drill is documented in [`../RESTORE.md`](../RESTORE.md).
 - The NOOMA bot on the same machine — separate product, separate monitoring.
+
+## `calendar.lastImportAt` survives restarts (since 2026-09-09)
+
+That timestamp is read from the database — the newest time the feed confirmed
+any tournament — not from the API process. Before this it lived in memory and
+read `null` for the hours between every deploy and the next 04:00 UTC import,
+which is precisely the condition the "older than 36 h" rule above alarms on. If
+you configured a monitor before this date and it alarmed after each release,
+that was the reason, and it no longer applies.

@@ -100,6 +100,20 @@ export function createHealthRouter(limit: { windowMs: number; max: number } = HE
       await prisma.$queryRaw`SELECT 1`;
       const dbLatencyMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
 
+      // When the feed last confirmed anything, read from the DATABASE. The
+      // in-memory record (importStatus.ts) empties on every restart, so for the
+      // hours between a deploy and the next 04:00 UTC run this field read
+      // `null` — which is exactly what the monitoring README tells a monitor to
+      // alarm on. The feed stamps lastSeenAt on every row it touches, so the
+      // newest value is the last import, and it survives a restart. Memory is
+      // the fallback for a database with no rows yet.
+      const newest = await prisma.tournament.findFirst({
+        where: { lastSeenAt: { not: null } },
+        orderBy: { lastSeenAt: "desc" },
+        select: { lastSeenAt: true },
+      });
+      const newestImportAt = newest?.lastSeenAt?.toISOString() ?? null;
+
       res.json({
         ok: true,
         db: "up",
@@ -114,7 +128,7 @@ export function createHealthRouter(limit: { windowMs: number; max: number } = HE
         // A calendar feed that has silently stopped looks exactly like one that
         // is working, until a coach plans a season against stale data. Reporting
         // it here makes a dead source visible without opening a shell.
-        calendar: { lastImportAt: lastImportAt(), sources: publicSources() },
+        calendar: { lastImportAt: newestImportAt ?? lastImportAt(), sources: publicSources() },
         time: new Date().toISOString(),
       });
     } catch {

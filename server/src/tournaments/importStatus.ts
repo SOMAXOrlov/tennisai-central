@@ -8,6 +8,12 @@
 //
 // Deliberately in memory. This is operational telemetry, not data — a restart
 // losing it is correct, and it costs no schema.
+//
+// One exception, made in health.ts: `lastImportAt` there is read from the
+// database (newest Tournament.lastSeenAt) and only falls back to this map. A
+// monitor alarms when that timestamp is older than 36 h, and for the hours
+// after every deploy this map is empty — so the memory value alone produced a
+// false alarm on every release. Per-source results stay here.
 
 import type { SourceResult } from "./feed/types";
 
