@@ -819,14 +819,6 @@
       "coach": {
         "title": "Entrenador",
         "desc": "Construye una sesión a partir de un foco, revísala después con lo trabajado y lo siguiente, y filtra el calendario por un jugador o un equipo."
-      },
-      "parent": {
-        "title": "Padre o madre",
-        "desc": "Sigue el calendario, los resultados y los gastos de tu hijo o hija desde una cuenta de observador conectada, y aprueba la cuenta de un menor desde el correo que te enviamos."
-      },
-      "admin": {
-        "title": "Administrador de academia",
-        "desc": "El rol más incompleto por ahora, y así lo indicamos dentro de la aplicación: las pantallas de resumen de la academia son una vista previa con cifras de ejemplo. Hoy los grupos, los equipos y los calendarios se llevan desde las cuentas de entrenador."
       }
     },
     "access": {
