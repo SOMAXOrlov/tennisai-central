@@ -15,6 +15,17 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    # Cap the log driver. Without this Docker keeps every line forever; the
+    # api's access log grows with traffic and nothing on this 38 GB disk would
+    # say so until it was full. Set PER SERVICE rather than in
+    # /etc/docker/daemon.json on purpose: daemon.json needs a daemon restart,
+    # which would take the NOOMA bot on the same host down with it. Takes
+    # effect when compose next recreates the container, i.e. the next deploy.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_USER: tennisai
       POSTGRES_DB: tennisai
@@ -33,6 +44,17 @@ services:
     build:
       context: ../../server
     restart: unless-stopped
+    # Cap the log driver. Without this Docker keeps every line forever; the
+    # api's access log grows with traffic and nothing on this 38 GB disk would
+    # say so until it was full. Set PER SERVICE rather than in
+    # /etc/docker/daemon.json on purpose: daemon.json needs a daemon restart,
+    # which would take the NOOMA bot on the same host down with it. Takes
+    # effect when compose next recreates the container, i.e. the next deploy.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       NODE_ENV: production
       PORT: "4000"
@@ -123,6 +145,17 @@ services:
         # site can be renamed later without rebuilding for a new API hostname.
         VITE_API_BASE_URL: /api
     restart: unless-stopped
+    # Cap the log driver. Without this Docker keeps every line forever; the
+    # api's access log grows with traffic and nothing on this 38 GB disk would
+    # say so until it was full. Set PER SERVICE rather than in
+    # /etc/docker/daemon.json on purpose: daemon.json needs a daemon restart,
+    # which would take the NOOMA bot on the same host down with it. Takes
+    # effect when compose next recreates the container, i.e. the next deploy.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS in .env}
     ports:
