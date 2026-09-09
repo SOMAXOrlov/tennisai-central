@@ -32,7 +32,12 @@
 	# proposed, this comment is the answer.
 
 	header {
-		# Caddy sets HSTS itself once HTTPS is live; these are the rest.
+		# Strict-Transport-Security is deliberately NOT here yet. An earlier
+		# comment said Caddy adds it by itself; it does not, and the header was
+		# never sent. Turning it on pins every visiting browser to HTTPS for
+		# max-age, which is the right thing to do for the permanent domain and
+		# the wrong thing to do on a throwaway sslip.io name. DOMAIN.md step 3
+		# says when and how. These three are set explicitly:
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
