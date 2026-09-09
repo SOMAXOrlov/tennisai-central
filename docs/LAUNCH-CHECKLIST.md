@@ -101,3 +101,47 @@ Seventeen pull requests, #18 through #35, merged into `main`.
 - The next-tournament card shows no "prepared" status, because nothing exposes preparation runs per tournament to the client.
 - The frontend's unused-variable lint rule is still off; enabling it costs 53 fixes and belongs in its own change.
 - Four vendored interface primitives are exempt from the translation check because nothing renders them.
+
+---
+
+## 6. Launch-readiness review, 2026-09-09
+
+Run against the live server and the code, not the previous sections of this
+file. Production at the time: 6 coach and 4 player accounts, 4 active
+connections, 4,088 tournaments refreshed daily, 0 drills, no mail transport.
+Decisions taken by the owner the same day: all seven players are 14 or older;
+mail is to be configured before launch; this launch is coach and players only
+(no parents); host maintenance approved.
+
+**Done on 2026-09-09**
+
+- Host rebooted onto kernel 6.8.0-139 (two security kernels had been waiting
+  on a reboot for days). ~30 s of downtime; all four containers, TennisAI and
+  the NOOMA bot, came back on their own.
+- SSH password authentication disabled (`/etc/ssh/sshd_config.d/60-hardening.conf`)
+  and fail2ban installed. Root was already key-only and no other login account
+  exists, so nothing changed functionally; 167,063 failed logins had hit the
+  port in the previous seven days.
+- In the same pull request as this section: the landing page stops advertising
+  parent and admin roles and signup stops offering "observer"; the deploy
+  script's health gate now reaches the API (it had been passing on Caddy's 308
+  redirect without ever contacting it); container logs are capped per service;
+  `calendar.lastImportAt` is read from the database so it no longer reads
+  `null` after every restart; build cache is pruned after each healthy deploy;
+  the two places that claimed HSTS was on no longer do.
+
+**Still open, with an owner**
+
+| Item | Owner | Notes |
+|---|---|---|
+| Seven `{{TOKEN}}`s in `src/lib/legal/companyDetails.ts` | owner | Live users already exist, so this is a gap today, not a pre-launch item |
+| Mail transport | owner (credentials) | Gmail app password or any SMTP into the server `.env`; then `REQUIRE_EMAIL_VERIFICATION=true` and a restart. Unblocks password recovery and notifications; under-14 signups would need it too |
+| Approve the ten drills, then run `content:import` on the server | Coach Kalinin, then operator | Deploy never imports content; the Session Builder is empty in production until this is done |
+| Domain, then HSTS | owner, then operator | `deploy/hetzner/DOMAIN.md` |
+| Off-site backups | owner creates a Hetzner Storage Box; operator adds one rsync line to `backup.sh` | The single biggest operational risk: every backup is on the disk it protects |
+| External monitoring account | owner | `deploy/hetzner/monitoring/`; import the JSON, assert on `"ok":true` |
+| `MAX_SIGNUPS` from 50 down to roughly coach + 7 + spare | owner or operator | One line in the server `.env`; signup is open to strangers until the policy is real |
+| Test accounts | owner decides; operator drafts SQL, owner runs it | Six coach and four player accounts exist before any real player has joined |
+| Retired Render service | owner | Stopped answering within 15 s on 2026-09-09; only the Render dashboard can say whether it sleeps or is gone. It was attached to a database |
+| Error tracking | owner decides | None exists; a client crash reaches nobody unless the user pastes diagnostics. Acceptable for ten people; a Sentry decision later means a privacy-policy line |
+| Spanish copy | owner decides | Agent-written, never read by a native speaker; matters only if the group uses Spanish |

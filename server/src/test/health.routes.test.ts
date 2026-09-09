@@ -76,6 +76,53 @@ describe("GET /api/health — database reachable", () => {
     expect(res.body.calendar).toEqual({ lastImportAt: null, sources: [] });
   });
 
+  // `calendar.lastImportAt` comes from the DATABASE first. The in-memory record
+  // is emptied by beforeEach, which is exactly the state the API is in for the
+  // hours after every deploy - and the state that used to make this field read
+  // null and trip the "older than 36 h" monitor rule on every release.
+  it("reads the last calendar import from the database, so a restart does not blank it", async () => {
+    db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    const seen = new Date("2026-09-08T04:00:39.704Z");
+    db.tournament.findFirst.mockResolvedValue({ lastSeenAt: seen });
+
+    const res = await request(app).get("/api/health");
+
+    expect(res.status).toBe(200);
+    expect(res.body.calendar.lastImportAt).toBe(seen.toISOString());
+    // Newest row that the feed has ever confirmed - not the newest row created.
+    expect(db.tournament.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { lastSeenAt: { not: null } },
+        orderBy: { lastSeenAt: "desc" },
+        select: { lastSeenAt: true },
+      }),
+    );
+  });
+
+  it("falls back to the in-memory record when the database has no confirmed rows yet", async () => {
+    db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    db.tournament.findFirst.mockResolvedValue(null);
+    recordImport([{ source: "static-snapshot", federation: "ITF", imported: 3 }]);
+
+    const res = await request(app).get("/api/health");
+
+    expect(res.body.calendar.lastImportAt).not.toBeNull();
+    expect(new Date(res.body.calendar.lastImportAt).toISOString()).toBe(res.body.calendar.lastImportAt);
+  });
+
+  it("prefers the database timestamp over memory when both exist", async () => {
+    db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    const seen = new Date("2026-09-01T04:00:00.000Z");
+    db.tournament.findFirst.mockResolvedValue({ lastSeenAt: seen });
+    recordImport([{ source: "utr-events", federation: "UTR", imported: 1 }]); // "now" in memory
+
+    const res = await request(app).get("/api/health");
+
+    // The database wins even though memory is newer: the database is the one
+    // that survives a restart, and a monitor needs one consistent answer.
+    expect(res.body.calendar.lastImportAt).toBe(seen.toISOString());
+  });
+
   it("never leaks configuration or people", async () => {
     db.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
 

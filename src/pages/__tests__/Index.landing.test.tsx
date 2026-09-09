@@ -115,7 +115,9 @@ describe("landing page — English", () => {
     const roles = Object.values(en.landing.roles).filter(
       (r): r is { title: string; desc: string } => typeof r !== "string",
     );
-    expect(roles).toHaveLength(4);
+    // Player and coach. Parent and admin were removed on 2026-09-09: neither is
+    // a role the product can deliver yet, so the page stopped offering them.
+    expect(roles).toHaveLength(2);
 
     for (const role of roles) {
       const heading = screen.getByRole("heading", { name: role.title });

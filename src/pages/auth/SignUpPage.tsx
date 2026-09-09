@@ -13,7 +13,12 @@ import { interleave, slot, useT } from "@/lib/i18n";
 
 // Only the role keys live here; the label and blurb are looked up during render
 // so a language switch reaches them (a module constant would freeze to "en").
-const roles: UserRole[] = ["player", "coach", "observer"];
+// "observer" (the parent role) is deliberately not offered. An observer account
+// links to nothing today — the guardianship table has never had a row written
+// by any route — so offering it would create accounts that see an empty app.
+// The role still exists server-side and in every dashboard; this only removes
+// it from the door. Put it back here when guardianship linking ships.
+const roles: UserRole[] = ["player", "coach"];
 
 /** One live-checked rule under the password box. */
 function Rule({ met, children }: { met: boolean; children: React.ReactNode }) {

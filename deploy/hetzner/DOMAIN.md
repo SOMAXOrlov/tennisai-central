@@ -77,7 +77,25 @@ docker compose logs --tail 30 web | grep -iE "certificate|obtain|error"
 ```bash
 curl -fsS https://example.com/api/health          # {"ok":true,...}
 curl -o /dev/null -sS -w '%{http_code}\n' https://example.com/
-curl -sSI https://example.com | grep -i strict-transport   # HSTS present
+curl -sSI https://example.com | grep -iE "x-frame|nosniff"   # security headers present
+```
+
+**HSTS is not sent yet, by design.** Caddy does not add it on its own (an earlier
+version of this file assumed it did), and once a browser has seen it, that browser
+refuses plain HTTP to the host for `max-age` — fine for a domain you keep, wrong
+for the throwaway sslip.io name. After the new domain has served HTTPS correctly
+for a few days, add this line inside the `header { }` block of the Caddyfile:
+
+```
+Strict-Transport-Security "max-age=31536000; includeSubDomains"
+```
+
+The Caddyfile is baked into the web image, so rebuild that one service and
+confirm the header:
+
+```bash
+docker compose up -d --build web
+curl -sSI https://example.com | grep -i strict-transport
 ```
 
 Then open the site and sign in. If sign-in works, the same-origin assumption

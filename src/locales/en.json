@@ -819,14 +819,6 @@
       "coach": {
         "title": "Coach",
         "desc": "Build a session from a focus, review it afterwards with what was worked on and what comes next, and filter the calendar down to one player or one team."
-      },
-      "parent": {
-        "title": "Parent",
-        "desc": "Follow your child's schedule, results and training costs from a connected observer account — and approve a junior's account from the e-mail we send you."
-      },
-      "admin": {
-        "title": "Academy admin",
-        "desc": "The thinnest role so far, and we say so in the app: the academy overview screens are a preview with sample figures. Squads, teams and calendars run through the coach accounts today."
       }
     },
     "access": {

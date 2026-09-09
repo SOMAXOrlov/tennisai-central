@@ -14,7 +14,14 @@ import { DEMO_CONTACT_EMAIL, isUnresolved } from "@/lib/legal/companyDetails";
 // then keep serving English after someone switches the language.
 const CAPABILITIES = ["calendar", "sessions", "kit", "tournaments"] as const;
 const STEPS = ["step1", "step2", "step3"] as const;
-const ROLES = ["player", "coach", "parent", "admin"] as const;
+// Two, not four. This page used to advertise "parent" and "academy admin" as
+// well, and neither is something the product can deliver today: signup offers
+// no admin role at all, and a parent's "observer" account links to nothing —
+// no route has ever written a row to the guardianship table. A card for a role
+// that leads nowhere is a promise the app breaks on the very next screen. The
+// owner's decision for this launch is coach and players only, and these are
+// the two roles that actually work.
+const ROLES = ["player", "coach"] as const;
 
 /**
  * The three differentiator blocks, each with a real screenshot.
@@ -235,17 +242,16 @@ const Index = () => {
           <Reveal as="span" className="block">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">{t("landing.roles.eyebrow")}</p>
           </Reveal>
-          {/* Four cards, one per role, each linking to the same sign-up — the
+          {/* Two cards, one per role, each linking to the same sign-up — the
               role is chosen inside the flow, so a separate per-role URL would
               be a promise the router does not keep. */}
-          <div className="mt-10 grid grid-cols-1 border-t border-border sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-1 border-t border-border sm:grid-cols-2">
             {ROLES.map((key, i) => (
               <Reveal
                 key={key}
                 delay={i * 80}
                 className={
                   "border-b border-border p-6 md:p-8 " +
-                  (i < ROLES.length - 1 ? "lg:border-r " : "") +
                   (i % 2 === 0 ? "sm:border-r " : "")
                 }
               >
