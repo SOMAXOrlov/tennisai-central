@@ -13,7 +13,9 @@ import {
   Brain, ArrowRight, Clock, MapPin, Target, Hand,
 } from "lucide-react";
 import { useConnections } from "@/store/ConnectionStore";
-import { useTrainings, useTeams, usePlayerTournaments, useEquipment, useFinanceSummary } from "@/hooks/api/queries";
+import { useTrainings, useTeams, usePlayerTournaments, useEquipment, useFinanceSummary, useStringSetups } from "@/hooks/api/queries";
+import { currentSetupFor } from "@/components/equipment/RacketStringing";
+import { formatSetupTension } from "@/lib/equipment/tension";
 import { format, parseISO, isPast } from "date-fns";
 import type { ConnectedPlayer } from "@/types";
 import { useT } from "@/lib/i18n";
@@ -41,12 +43,13 @@ function SectionHeader({ icon, title, count }: { icon: React.ReactNode; title: s
 }
 
 export function PlayerDetailDrawer({ player, open, onOpenChange, readOnly, onCreateTraining }: PlayerDetailDrawerProps) {
-  const { t, formatDate, formatCurrency } = useT();
+  const { t, formatDate, formatCurrency, formatNumber } = useT();
   const { data: trainings = [] } = useTrainings();
   const { data: teams = [] } = useTeams();
   const { data: playerTournaments = [] } = usePlayerTournaments();
   const playerId = player?.id ?? "";
   const { data: equipment = [] } = useEquipment(playerId);
+  const { data: setups = [] } = useStringSetups(playerId);
   const { data: financeSummary } = useFinanceSummary(playerId);
 
   const playerTrainings = useMemo(
@@ -176,11 +179,20 @@ export function PlayerDetailDrawer({ player, open, onOpenChange, readOnly, onCre
               <p className="text-xs text-muted-foreground">{t("playerDetail.noEquipment")}</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                {equipment.slice(0, 6).map((eq) => (
-                  <span key={eq.id} className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[11px] font-medium text-foreground">
-                    {eq.name}
-                  </span>
-                ))}
+                {equipment.slice(0, 6).map((eq) => {
+                  // A racket chip carries what is in it: the coach's first question.
+                  const setup = eq.category === "racket" ? currentSetupFor(setups, eq.id) : null;
+                  return (
+                    <span key={eq.id} className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 text-[11px] font-medium text-foreground">
+                      {eq.name}
+                      {setup && (
+                        <span className="ml-1 font-normal text-muted-foreground">
+                          · {formatSetupTension(setup.tensionMainsKg, setup.tensionCrossesKg, (n) => formatNumber(n))}
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
                 {equipment.length > 6 && <span className="text-[11px] text-muted-foreground">{t("playerDetail.moreEquipment", { count: equipment.length - 6 })}</span>}
               </div>
             )}

@@ -17,10 +17,11 @@ import {
 import { hiddenTournamentsApi } from "@/api/endpoints/hiddenTournaments";
 import { financeApi } from "@/api/endpoints/finance";
 import { equipmentApi } from "@/api/endpoints/equipment";
+import { stringSetupsApi } from "@/api/endpoints/stringSetups";
 import { notificationsApi } from "@/api/endpoints/notifications";
 import { profileApi, calendarPreferencesApi, type CalendarPreferences } from "@/api/endpoints/profile";
 import { trainingPlansApi } from "@/api/endpoints/trainingPlans";
-import type { TrainingSession, TrainingScope, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
+import type { TrainingSession, TrainingScope, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, StringSetup, StringSetupCreateInput, StringSetupUpdateInput, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
 import { toastSuccess, toastError } from "@/lib/feedback";
 
 // ─── Query Keys ───
@@ -43,6 +44,7 @@ export const queryKeys = {
   finance: (playerId: string) => ["finance", playerId] as const,
   financeSummary: (playerId: string) => ["financeSummary", playerId] as const,
   equipment: (playerId: string) => ["equipment", playerId] as const,
+  stringSetups: (playerId: string) => ["stringSetups", playerId] as const,
   notifications: (userId: string) => ["notifications", userId] as const,
   notificationPrefs: ["notificationPrefs"] as const,
   calendarPrefs: ["calendarPrefs"] as const,
@@ -77,6 +79,15 @@ function useInvalidateRelated() {
     },
     equipment: (playerId: string) => {
       qc.invalidateQueries({ queryKey: queryKeys.equipment(playerId) });
+      // Deleting a racket takes its stringing history with it.
+      qc.invalidateQueries({ queryKey: queryKeys.stringSetups(playerId) });
+    },
+    stringSetups: (playerId: string) => {
+      qc.invalidateQueries({ queryKey: queryKeys.stringSetups(playerId) });
+      // A match shows the tension that was in the racket on its day, and the
+      // statistics split by it — both are read from this history.
+      qc.invalidateQueries({ queryKey: ["matches"] });
+      qc.invalidateQueries({ queryKey: ["matchStats"] });
     },
     notifications: (userId: string) => {
       qc.invalidateQueries({ queryKey: queryKeys.notifications(userId) });
@@ -616,6 +627,46 @@ export function useDeleteEquipment() {
     mutationFn: ({ id, playerId }: { id: string; playerId: string }) => equipmentApi.deleteItem(id),
     onSuccess: (_, vars) => { inv.equipment(vars.playerId); toastSuccess("toast.equipment.removed"); },
     onError: (e: unknown) => toastError("toast.equipment.removeFailed", e),
+  });
+}
+
+// ─── String setup Hooks ───
+
+export function useStringSetups(playerId: string) {
+  return useQuery<StringSetup[]>({
+    queryKey: queryKeys.stringSetups(playerId),
+    queryFn: async () => (await stringSetupsApi.getSetups(playerId)).data,
+    enabled: !!playerId,
+  });
+}
+
+export function useCreateStringSetup() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ playerId, data }: { playerId: string; data: StringSetupCreateInput }) =>
+      stringSetupsApi.createSetup(playerId, data),
+    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); toastSuccess("toast.stringSetup.added"); },
+    onError: (e: unknown) => toastError("toast.stringSetup.addFailed", e),
+  });
+}
+
+/** Also how a setup is retired: send `retiredAt` + `retiredReason`. */
+export function useUpdateStringSetup() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; playerId: string; data: StringSetupUpdateInput }) =>
+      stringSetupsApi.updateSetup(id, data),
+    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); toastSuccess("toast.stringSetup.updated"); },
+    onError: (e: unknown) => toastError("toast.stringSetup.updateFailed", e),
+  });
+}
+
+export function useDeleteStringSetup() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id }: { id: string; playerId: string }) => stringSetupsApi.deleteSetup(id),
+    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); toastSuccess("toast.stringSetup.removed"); },
+    onError: (e: unknown) => toastError("toast.stringSetup.removeFailed", e),
   });
 }
 

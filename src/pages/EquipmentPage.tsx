@@ -1,7 +1,9 @@
-// Equipment — Grouped by category with condition tracking & AI upgrade suggestions
+// Equipment — Grouped by category with condition tracking & AI upgrade suggestions.
+// Rackets also carry their stringing: what is in the frame now (kg, with pounds
+// beside it), a Restring action, and the history — see components/equipment.
 import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
-import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/api/queries";
+import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment, useStringSetups } from "@/hooks/api/queries";
 import { tList, useT } from "@/lib/i18n";
 import { ErrorState, EmptyState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
@@ -13,10 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/responsive-dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
-  Package, Plus, Trash2, ChevronDown, Lightbulb,
+  Package, Pencil, Plus, Trash2, ChevronDown, Lightbulb,
 } from "lucide-react";
 import type { EquipmentCategory, EquipmentItem } from "@/types";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryLabel, categoryPlural, conditionLabel, getConditionLevel } from "@/components/equipment/categories";
+import { RacketStringing } from "@/components/equipment/RacketStringing";
+
+const EMPTY_FORM = { name: "", category: "racket" as EquipmentCategory, brand: "", model: "", condition: "", notes: "" };
 
 // ─── AI Upgrade Suggestions ───
 
@@ -42,11 +47,15 @@ export default function EquipmentPage() {
   const { user } = useAuth();
   const playerId = user?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
+  const { data: setups = [] } = useStringSetups(playerId);
   const createMut = useCreateEquipment();
+  const updateMut = useUpdateEquipment();
   const deleteMut = useDeleteEquipment();
   const [addOpen, setAddOpen] = useState(false);
+  /** The item being edited, or null when the dialog is adding a new one. */
+  const [editing, setEditing] = useState<EquipmentItem | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<EquipmentCategory>("racket");
-  const [form, setForm] = useState({ name: "", category: "racket" as EquipmentCategory, brand: "", model: "", condition: "", notes: "" });
+  const [form, setForm] = useState({ ...EMPTY_FORM });
   const [openGroups, setOpenGroups] = useState<Set<EquipmentCategory>>(new Set(CATEGORY_ORDER));
 
   // Group items by category
@@ -71,21 +80,39 @@ export default function EquipmentPage() {
     });
   };
 
-  const handleAdd = () => {
-    createMut.mutate({
-      playerId, name: form.name, category: form.category,
+  const closeDialog = () => { setAddOpen(false); setEditing(null); setForm({ ...EMPTY_FORM }); };
+
+  const handleSave = () => {
+    const data = {
+      name: form.name, category: form.category,
       brand: form.brand || undefined, model: form.model || undefined,
       condition: form.condition || undefined, notes: form.notes || undefined,
-    }, {
-      onSuccess: () => { setAddOpen(false); setForm({ name: "", category: "racket", brand: "", model: "", condition: "", notes: "" }); },
-    });
+    };
+    if (editing) {
+      updateMut.mutate({ id: editing.id, playerId, data }, { onSuccess: closeDialog });
+    } else {
+      createMut.mutate({ playerId, ...data }, { onSuccess: closeDialog });
+    }
   };
 
   const openAddDialog = (category?: EquipmentCategory) => {
-    setForm({ name: "", category: category ?? "racket", brand: "", model: "", condition: "", notes: "" });
+    setEditing(null);
+    setForm({ ...EMPTY_FORM, category: category ?? "racket" });
     setSelectedCategory(category ?? "racket");
     setAddOpen(true);
   };
+
+  const openEditDialog = (item: EquipmentItem) => {
+    setEditing(item);
+    setForm({
+      name: item.name, category: item.category, brand: item.brand ?? "", model: item.model ?? "",
+      condition: item.condition ?? "", notes: item.notes ?? "",
+    });
+    setSelectedCategory(item.category);
+    setAddOpen(true);
+  };
+
+  const saving = createMut.isPending || updateMut.isPending;
 
   if (!user || isLoading) return <PageSkeleton variant="cards" />;
   if (error) return <ErrorState error={error} message={t("states.load.equipment")} onRetry={() => void refetch()} />;
@@ -190,10 +217,18 @@ export default function EquipmentPage() {
                                 {item.model && <span>{item.model}</span>}
                                 {item.notes && <span className="text-muted-foreground/60">— {item.notes}</span>}
                               </div>
+                              {item.category === "racket" && (
+                                <RacketStringing racket={item} setups={setups} canEdit className="mt-2" />
+                              )}
                             </div>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 shrink-0" aria-label={`Delete ${item.name}`} onClick={() => deleteMut.mutate({ id: item.id, playerId })}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("equipment.editAria", { name: item.name })} onClick={() => openEditDialog(item)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label={t("equipment.deleteAria", { name: item.name })} onClick={() => deleteMut.mutate({ id: item.id, playerId })}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
                         );
                       })}
@@ -206,12 +241,12 @@ export default function EquipmentPage() {
         </div>
       )}
 
-      {/* Add Equipment Dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      {/* Add / edit Equipment Dialog */}
+      <Dialog open={addOpen} onOpenChange={(open) => { if (!open) closeDialog(); else setAddOpen(true); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("equipment.add.title")}</DialogTitle>
-            <DialogDescription>{t("equipment.add.description")}</DialogDescription>
+            <DialogTitle>{editing ? t("equipment.edit.title") : t("equipment.add.title")}</DialogTitle>
+            <DialogDescription>{editing ? t("equipment.edit.description") : t("equipment.add.description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -265,9 +300,11 @@ export default function EquipmentPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>{t("common.cancel")}</Button>
-            <Button onClick={handleAdd} disabled={!form.name.trim() || createMut.isPending}>
-              {createMut.isPending ? t("equipment.add.adding") : t("equipment.add.submit")}
+            <Button variant="outline" onClick={closeDialog}>{t("common.cancel")}</Button>
+            <Button onClick={handleSave} disabled={!form.name.trim() || saving}>
+              {editing
+                ? (saving ? t("equipment.edit.saving") : t("equipment.edit.submit"))
+                : (saving ? t("equipment.add.adding") : t("equipment.add.submit"))}
             </Button>
           </DialogFooter>
         </DialogContent>

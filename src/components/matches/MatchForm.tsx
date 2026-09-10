@@ -29,6 +29,7 @@ import { MATCH_FORMAT_OPTIONS, matchFormatLabel } from "@/lib/stats/format";
 import { useT } from "@/lib/i18n";
 import { MAX_SETS, parseSetRows, type SetRowsError } from "@/components/matches/setScores";
 import type {
+  EquipmentItem,
   IndoorOutdoor,
   MatchFormat,
   MatchResult,
@@ -42,6 +43,7 @@ import type {
 const NO_OPPONENT = "__none__";
 const NEW_OPPONENT = "__new__";
 const NO_RESULT = "__unrecorded__";
+const NO_RACKET = "__none__";
 
 /** Set-score problems → this form's copy keys. The rules live in setScores.ts. */
 const SET_ERROR_KEY: Record<SetRowsError, string> = {
@@ -56,6 +58,8 @@ export interface MatchFormValues {
   opponentId: string | null;
   /** Set when the user typed a brand-new opponent name. */
   newOpponent?: { firstName: string; lastName: string };
+  /** The player's own racket this match was played with, or null. */
+  racketItemId: string | null;
   date: string;
   competition: string | null;
   surface: Surface;
@@ -73,6 +77,8 @@ export interface MatchFormProps {
   mode: "create" | "edit";
   initial?: MatchView;
   opponents: Opponent[];
+  /** The player's rackets (EquipmentItem, category "racket") to tag the match with. */
+  rackets?: EquipmentItem[];
   submitting?: boolean;
   /** Rejects when the save fails — the form then keeps the input and its draft. */
   onSubmit: (values: MatchFormValues) => void | Promise<void>;
@@ -90,6 +96,7 @@ interface MatchFormDraft {
   opponentChoice: string;
   newFirstName: string;
   newLastName: string;
+  racketChoice: string;
   date: string;
   competition: string;
   surface: Surface;
@@ -169,6 +176,7 @@ function initialDraft(initial?: MatchView): MatchFormDraft {
     opponentChoice: initial?.opponentId ?? NO_OPPONENT,
     newFirstName: "",
     newLastName: "",
+    racketChoice: initial?.racketItemId ?? NO_RACKET,
     date: dateInputValue(initial?.date),
     competition: initial?.competition ?? "",
     surface: (initial?.surface as Surface) ?? "hard",
@@ -190,13 +198,14 @@ function initialDraft(initial?: MatchView): MatchFormDraft {
   };
 }
 
-export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCancel }: MatchFormProps) {
+export function MatchForm({ mode, initial, opponents, rackets = [], submitting, onSubmit, onCancel }: MatchFormProps) {
   const { t } = useT();
   const pristine = useMemo(() => initialDraft(initial), [initial]);
 
   const [opponentChoice, setOpponentChoice] = useState<string>(pristine.opponentChoice);
   const [newFirstName, setNewFirstName] = useState(pristine.newFirstName);
   const [newLastName, setNewLastName] = useState(pristine.newLastName);
+  const [racketChoice, setRacketChoice] = useState<string>(pristine.racketChoice);
   const [date, setDate] = useState(pristine.date);
   const [competition, setCompetition] = useState(pristine.competition);
   const [surface, setSurface] = useState<Surface>(pristine.surface);
@@ -229,10 +238,10 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
 
   const draftValue = useMemo<MatchFormDraft>(
     () => ({
-      opponentChoice, newFirstName, newLastName, date, competition, surface,
+      opponentChoice, newFirstName, newLastName, racketChoice, date, competition, surface,
       indoorOutdoor, format, result, conditions, sets, counts, buckets, statsOpen,
     }),
-    [opponentChoice, newFirstName, newLastName, date, competition, surface,
+    [opponentChoice, newFirstName, newLastName, racketChoice, date, competition, surface,
       indoorOutdoor, format, result, conditions, sets, counts, buckets, statsOpen],
   );
 
@@ -240,6 +249,7 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
     setOpponentChoice(d.opponentChoice ?? NO_OPPONENT);
     setNewFirstName(d.newFirstName ?? "");
     setNewLastName(d.newLastName ?? "");
+    setRacketChoice(d.racketChoice ?? NO_RACKET);
     setDate(d.date ?? pristine.date);
     setCompetition(d.competition ?? "");
     setSurface(d.surface ?? pristine.surface);
@@ -324,6 +334,9 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
           opponentChoice === NEW_OPPONENT
             ? { firstName: newFirstName.trim(), lastName: newLastName.trim() }
             : undefined,
+        // A racket that has since been deleted from the bag is dropped, not sent.
+        racketItemId:
+          racketChoice !== NO_RACKET && rackets.some((r) => r.id === racketChoice) ? racketChoice : null,
         date,
         competition: competition.trim() ? competition.trim() : null,
         surface,
@@ -386,6 +399,26 @@ export function MatchForm({ mode, initial, opponents, submitting, onSubmit, onCa
             {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
           </div>
         </div>
+
+        {(rackets.length > 0 || racketChoice !== NO_RACKET) && (
+          <div className="space-y-1.5 border-t border-border pt-4">
+            <Label htmlFor="match-racket">{t("matches.form.racket")}</Label>
+            <Select value={racketChoice} onValueChange={setRacketChoice}>
+              <SelectTrigger id="match-racket" className="sm:max-w-[calc(50%-0.5rem)]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_RACKET}>{t("matches.form.racketNotRecorded")}</SelectItem>
+                {rackets.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{t("matches.form.racketHint")}</p>
+          </div>
+        )}
 
         {opponentChoice === NEW_OPPONENT && (
           <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">

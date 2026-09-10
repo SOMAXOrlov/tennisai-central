@@ -18,6 +18,9 @@ import type {
   FinanceEntry,
   FinanceSummary,
   EquipmentItem,
+  StringSetup,
+  StringSetupCreateInput,
+  StringSetupUpdateInput,
   Notification,
   NotificationSettings,
   ConnectedPlayer,
@@ -29,6 +32,7 @@ import {
   mockFinanceEntries,
   mockFinanceSummary,
   mockEquipment,
+  mockStringSetups,
   mockNotifications,
   mockNotificationSettings,
 } from "@/mock/data";
@@ -53,6 +57,7 @@ class MockStore {
   playerTournaments: PlayerTournament[] = clone(mockPlayerTournaments);
   financeEntries: FinanceEntry[] = clone(mockFinanceEntries);
   equipment: EquipmentItem[] = clone(mockEquipment);
+  stringSetups: StringSetup[] = clone(mockStringSetups);
   notifications: Notification[] = clone(mockNotifications);
   notificationSettings: NotificationSettings = clone(mockNotificationSettings);
 
@@ -379,7 +384,46 @@ class MockStore {
     this.equipment[idx] = { ...this.equipment[idx], ...updates };
     return clone(this.equipment[idx]);
   }
-  deleteEquipmentItem(id: string) { this.equipment = this.equipment.filter((e) => e.id !== id); }
+  deleteEquipmentItem(id: string) {
+    this.equipment = this.equipment.filter((e) => e.id !== id);
+    // Cascade, as the database does: a racket's stringing history goes with it.
+    this.stringSetups = this.stringSetups.filter((s) => s.racketItemId !== id);
+  }
+
+  // ─── String setups (kilograms, like the API) ───
+  getStringSetups(playerId: string) {
+    return clone(
+      this.stringSetups
+        .filter((s) => s.playerId === playerId)
+        .sort((a, b) => new Date(b.strungAt).getTime() - new Date(a.strungAt).getTime()),
+    );
+  }
+  createStringSetup(playerId: string, data: StringSetupCreateInput) {
+    const racket = this.equipment.find((e) => e.id === data.racketItemId);
+    if (!racket) throw new Error("Racket not found");
+    if (racket.playerId !== playerId) throw new Error("That racket does not belong to this player");
+    const now = new Date().toISOString();
+    const setup: StringSetup = {
+      ...data,
+      id: this.nextId("ss"),
+      playerId,
+      strungAt: new Date(data.strungAt).toISOString(),
+      isCurrent: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.stringSetups.push(setup);
+    return clone(setup);
+  }
+  updateStringSetup(id: string, updates: StringSetupUpdateInput) {
+    const idx = this.stringSetups.findIndex((s) => s.id === id);
+    if (idx === -1) throw new Error("String setup not found");
+    const merged: StringSetup = { ...this.stringSetups[idx], ...updates, updatedAt: new Date().toISOString() };
+    merged.isCurrent = !merged.retiredAt;
+    this.stringSetups[idx] = merged;
+    return clone(merged);
+  }
+  deleteStringSetup(id: string) { this.stringSetups = this.stringSetups.filter((s) => s.id !== id); }
 
   // ─── Notifications ───
   getNotifications(userId?: string) {

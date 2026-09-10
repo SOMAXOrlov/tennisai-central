@@ -1812,7 +1812,7 @@
       "conditionPlaceholder": "Select condition…",
       "model": "Model",
       "notes": "Notes",
-      "notesPlaceholder": "e.g. Tension: 52 lbs",
+      "notesPlaceholder": "e.g. grip size L3",
       "adding": "Adding…",
       "submit": "Add Equipment"
     },
@@ -1897,7 +1897,49 @@
         "tip2": "Check dampeners, wristbands, and bags for wear that could affect your game or comfort"
       }
     },
-    "add2": "Add"
+    "add2": "Add",
+    "editAria": "Edit {name}",
+    "deleteAria": "Delete {name}",
+    "drawerStringingHint": "You can record a restring for {name}'s rackets; the rest of the list is theirs to change.",
+    "edit": {
+      "title": "Edit equipment",
+      "description": "Change the details of this item.",
+      "submit": "Save changes",
+      "saving": "Saving…"
+    },
+    "stringing": {
+      "none": "No stringing recorded",
+      "strungOn": "strung {date}",
+      "restring": "Restring",
+      "historyCount": "{count, plural, one {# stringing} other {# stringings}}",
+      "currentBadge": "Current",
+      "deleteAria": "Delete this stringing",
+      "unitsHint": "Kilograms — the pounds are shown alongside.",
+      "retired": {
+        "broke": "broke",
+        "dead": "went dead",
+        "switched": "switched",
+        "other": "replaced"
+      }
+    },
+    "restring": {
+      "title": "Restring {name}",
+      "description": "Record the new strings and tension. Kilograms, as the stringer sets them; the pounds are worked out for you.",
+      "date": "Strung on",
+      "string": "String",
+      "stringPlaceholder": "e.g. Luxilon ALU Power 1.25",
+      "crossesString": "Crosses string (if hybrid)",
+      "mains": "Mains (kg)",
+      "crosses": "Crosses (kg)",
+      "crossesPlaceholder": "Same as mains",
+      "lbs": "= {lbs} lb",
+      "tensionError": "Enter a tension between {min} and {max} kg.",
+      "previous": "What happened to the old strings?",
+      "notes": "Notes",
+      "notesPlaceholder": "e.g. felt stiff, dropping a kilo",
+      "saving": "Saving…",
+      "submit": "Save stringing"
+    }
   },
   "finance": {
     "title": "Finance",
@@ -2359,7 +2401,9 @@
       "viewAll": "View all",
       "noMatches": "No matches to show.",
       "trend": "Trend",
-      "trendDescription": "One point per logged match · {window}"
+      "trendDescription": "One point per logged match · {window}",
+      "byRacquet": "By racket & tension",
+      "byRacquetDescription": "Win rate per frame and string tension · only matches tagged with a racket · all matches"
     },
     "metric": {
       "firstServeIn": "1st serve in",
@@ -2444,7 +2488,14 @@
         }
       }
     },
-    "footnote": "Percentages are computed on read from the raw counts entered for each match. A metric shows {novalue} when the counts behind it were never entered — it is never shown as zero, and the trend line breaks rather than bridging a match with no counts."
+    "footnote": "Percentages are computed on read from the raw counts entered for each match. A metric shows {novalue} when the counts behind it were never entered — it is never shown as zero, and the trend line breaks rather than bridging a match with no counts.",
+    "racquets": {
+      "none": "No match has a racket recorded yet. Pick one when you log a match.",
+      "untagged": "{count, plural, one {# match has} other {# matches have}} no racket recorded.",
+      "unknownTension": "tension unknown",
+      "firstServe": "1st serve in",
+      "ratio": "Winners : unforced"
+    }
   },
   "matches": {
     "title": "Matches",
@@ -2536,7 +2587,10 @@
         "maxBreakPointsCreated": "Cannot exceed break points created",
         "maxBreakPointsFaced": "Cannot exceed break points faced",
         "maxNetApproaches": "Cannot exceed net approaches"
-      }
+      },
+      "racket": "Racket",
+      "racketNotRecorded": "Not recorded",
+      "racketHint": "Tag the frame so Statistics can compare tensions."
     },
     "stats": {
       "title": "Detailed stats (optional)",
@@ -2593,7 +2647,8 @@
       "notesBySet": "Notes by set",
       "setLabel": "Set {set}:",
       "computedNote": "Percentages are computed from the counts entered for this match — nothing is estimated."
-    }
+    },
+    "racketUnknownTension": "tension not recorded"
   },
   "training": {
     "title": "Trainings",
@@ -3352,6 +3407,14 @@
     "homeCountry": {
       "saved": "Home country saved",
       "saveFailed": "Couldn't save the home country"
+    },
+    "stringSetup": {
+      "added": "Stringing recorded",
+      "updated": "Stringing updated",
+      "removed": "Stringing removed",
+      "addFailed": "Couldn't record the stringing",
+      "updateFailed": "Couldn't update the stringing",
+      "removeFailed": "Couldn't remove the stringing"
     }
   }
 }

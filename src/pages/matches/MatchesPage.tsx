@@ -30,6 +30,8 @@ import {
   useOpponents,
   useUpdateMatch,
 } from "@/hooks/api/matches";
+import { useAuth } from "@/auth/AuthContext";
+import { useEquipment } from "@/hooks/api/queries";
 import type { MatchCreateInput, MatchUpdateInput, MatchView } from "@/types";
 
 type View = { mode: "list" } | { mode: "create" } | { mode: "edit"; match: MatchView };
@@ -44,6 +46,7 @@ function toCreateInput(values: MatchFormValues, opponentId: string | null): Matc
   return {
     ...counts,
     ...(opponentId ? { opponentId } : {}),
+    ...(values.racketItemId ? { racketItemId: values.racketItemId } : {}),
     date: values.date,
     ...(values.competition ? { competition: values.competition } : {}),
     surface: values.surface,
@@ -63,6 +66,8 @@ function toUpdateInput(values: MatchFormValues, opponentId: string | null): Matc
   return {
     ...counts,
     opponentId,
+    // null clears a racket tag the player removed; a chosen one replaces it.
+    racketItemId: values.racketItemId,
     date: values.date,
     competition: values.competition,
     surface: values.surface,
@@ -80,8 +85,12 @@ export default function MatchesPage() {
   const [view, setView] = useState<View>({ mode: "list" });
   const [deleteTarget, setDeleteTarget] = useState<MatchView | null>(null);
 
+  const { user } = useAuth();
   const { data: matches = [], isLoading, error, refetch } = useMatches();
   const { data: opponents = [] } = useOpponents();
+  // The player's rackets, so a match can say which frame it was played with.
+  const { data: equipment = [] } = useEquipment(user?.id ?? "");
+  const rackets = equipment.filter((item) => item.category === "racket");
 
   const createMatch = useCreateMatch();
   const updateMatch = useUpdateMatch();
@@ -124,6 +133,7 @@ export default function MatchesPage() {
           mode={editing ? "edit" : "create"}
           initial={editing}
           opponents={opponents}
+          rackets={rackets}
           submitting={saving}
           onSubmit={handleSubmit}
           onCancel={() => setView({ mode: "list" })}

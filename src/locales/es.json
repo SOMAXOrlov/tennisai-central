@@ -1812,7 +1812,7 @@
       "conditionPlaceholder": "Elige el estado…",
       "model": "Modelo",
       "notes": "Notas",
-      "notesPlaceholder": "Ej.: tensión 52 lb",
+      "notesPlaceholder": "Ej.: grip L3",
       "adding": "Añadiendo…",
       "submit": "Añadir material"
     },
@@ -1897,7 +1897,49 @@
         "tip2": "Revisa antivibradores, muñequeras y bolsas por si el desgaste afecta a tu juego o a tu comodidad"
       }
     },
-    "add2": "Añadir"
+    "add2": "Añadir",
+    "editAria": "Editar {name}",
+    "deleteAria": "Eliminar {name}",
+    "drawerStringingHint": "Puedes registrar un reencordado de las raquetas de {name}; el resto de la lista solo lo cambia el jugador.",
+    "edit": {
+      "title": "Editar material",
+      "description": "Cambia los datos de este artículo.",
+      "submit": "Guardar cambios",
+      "saving": "Guardando…"
+    },
+    "stringing": {
+      "none": "Sin encordado registrado",
+      "strungOn": "encordada el {date}",
+      "restring": "Reencordar",
+      "historyCount": "{count, plural, one {# encordado} other {# encordados}}",
+      "currentBadge": "Actual",
+      "deleteAria": "Eliminar este encordado",
+      "unitsHint": "Kilogramos; las libras se muestran al lado.",
+      "retired": {
+        "broke": "se rompió",
+        "dead": "perdió tensión",
+        "switched": "cambio de cordaje",
+        "other": "sustituido"
+      }
+    },
+    "restring": {
+      "title": "Reencordar {name}",
+      "description": "Registra el nuevo cordaje y la tensión. En kilogramos, como la pone el encordador; las libras se calculan solas.",
+      "date": "Fecha de encordado",
+      "string": "Cordaje",
+      "stringPlaceholder": "Ej.: Luxilon ALU Power 1.25",
+      "crossesString": "Cordaje de cruces (si es híbrido)",
+      "mains": "Verticales (kg)",
+      "crosses": "Cruces (kg)",
+      "crossesPlaceholder": "Igual que verticales",
+      "lbs": "= {lbs} lb",
+      "tensionError": "Introduce una tensión entre {min} y {max} kg.",
+      "previous": "¿Qué pasó con el cordaje anterior?",
+      "notes": "Notas",
+      "notesPlaceholder": "Ej.: lo notaba rígido, bajo un kilo",
+      "saving": "Guardando…",
+      "submit": "Guardar encordado"
+    }
   },
   "finance": {
     "title": "Finanzas",
@@ -2359,7 +2401,9 @@
       "viewAll": "Ver todos",
       "noMatches": "No hay partidos que mostrar.",
       "trend": "Tendencia",
-      "trendDescription": "Un punto por partido registrado · {window}"
+      "trendDescription": "Un punto por partido registrado · {window}",
+      "byRacquet": "Por raqueta y tensión",
+      "byRacquetDescription": "Porcentaje de victorias por raqueta y tensión del cordaje · solo partidos con raqueta indicada · todos los partidos"
     },
     "metric": {
       "firstServeIn": "Primer saque dentro",
@@ -2444,7 +2488,14 @@
         }
       }
     },
-    "footnote": "Los porcentajes se calculan al leerlos, a partir de los datos introducidos en cada partido. Un dato muestra {novalue} cuando nunca se introdujeron los recuentos que hay detrás: nunca se muestra como cero, y la línea de tendencia se corta en lugar de saltarse un partido sin datos."
+    "footnote": "Los porcentajes se calculan al leerlos, a partir de los datos introducidos en cada partido. Un dato muestra {novalue} cuando nunca se introdujeron los recuentos que hay detrás: nunca se muestra como cero, y la línea de tendencia se corta en lugar de saltarse un partido sin datos.",
+    "racquets": {
+      "none": "Ningún partido tiene raqueta registrada todavía. Elige una al registrar un partido.",
+      "untagged": "{count, plural, one {# partido sin} other {# partidos sin}} raqueta registrada.",
+      "unknownTension": "tensión desconocida",
+      "firstServe": "Primer saque dentro",
+      "ratio": "Ganadores : no forzados"
+    }
   },
   "matches": {
     "title": "Partidos",
@@ -2536,7 +2587,10 @@
         "maxBreakPointsCreated": "No puede superar las bolas de break generadas",
         "maxBreakPointsFaced": "No puede superar las bolas de break en contra",
         "maxNetApproaches": "No puede superar las subidas a la red"
-      }
+      },
+      "racket": "Raqueta",
+      "racketNotRecorded": "Sin registrar",
+      "racketHint": "Indica la raqueta para que Estadísticas pueda comparar tensiones."
     },
     "stats": {
       "title": "Estadísticas detalladas (opcional)",
@@ -2593,7 +2647,8 @@
       "notesBySet": "Notas por set",
       "setLabel": "Set {set}:",
       "computedNote": "Los porcentajes se calculan con los recuentos introducidos para este partido; no se estima nada."
-    }
+    },
+    "racketUnknownTension": "tensión sin registrar"
   },
   "training": {
     "title": "Entrenamientos",
@@ -3352,6 +3407,14 @@
     "homeCountry": {
       "saved": "País guardado",
       "saveFailed": "No se ha podido guardar el país"
+    },
+    "stringSetup": {
+      "added": "Encordado registrado",
+      "updated": "Encordado actualizado",
+      "removed": "Encordado eliminado",
+      "addFailed": "No se ha podido registrar el encordado",
+      "updateFailed": "No se ha podido actualizar el encordado",
+      "removeFailed": "No se ha podido eliminar el encordado"
     }
   }
 }

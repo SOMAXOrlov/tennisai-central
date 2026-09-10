@@ -13,8 +13,8 @@
 // implementation of the arithmetic is how that stops being true.
 // ============================================================
 
-import { Activity, Swords, Target } from "lucide-react";
-import { HeadlineCard, RecentFormStrip, SurfaceSplitList } from "@/components/stats";
+import { Activity, Swords, Target, Zap } from "lucide-react";
+import { HeadlineCard, RacquetSplitList, RecentFormStrip, SurfaceSplitList } from "@/components/stats";
 import { useMatchStats } from "@/hooks/api/matches";
 import { formatPct, formatWinLoss, matchCountLabel } from "@/lib/stats/format";
 import { useT } from "@/lib/i18n";
@@ -96,6 +96,14 @@ export function PlayerMatchResults({ player }: { player: ConnectedPlayer }) {
             <SubHeading icon={<Target className="h-3 w-3" />}>{t("stats.cards.bySurface")}</SubHeading>
             <SurfaceSplitList splits={stats.surfaces} />
           </div>
+
+          {/* Only when there is something to say: a coach's drawer is short. */}
+          {stats.racquets.length > 0 && (
+            <div>
+              <SubHeading icon={<Zap className="h-3 w-3" />}>{t("stats.cards.byRacquet")}</SubHeading>
+              <RacquetSplitList splits={stats.racquets} untagged={stats.matchesWithoutRacquet} />
+            </div>
+          )}
         </div>
       )}
     </div>

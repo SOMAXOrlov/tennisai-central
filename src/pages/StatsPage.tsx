@@ -13,7 +13,7 @@
 
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, BarChart3, ClipboardList, Loader2, Plus, Swords, Target } from "lucide-react";
+import { Activity, BarChart3, ClipboardList, Loader2, Plus, Swords, Target, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EmptyState, ErrorState } from "@/components/ui/shared";
@@ -24,6 +24,7 @@ import {
   HeadlineCard,
   MetricTile,
   PerformanceTrendChart,
+  RacquetSplitList,
   RecentFormStrip,
   StatsWindowControl,
   SurfaceSplitList,
@@ -219,6 +220,15 @@ export default function StatsPage() {
           icon={<Target className="h-4 w-4" />}
         >
           <SurfaceSplitList splits={stats.surfaces} />
+        </DashboardCard>
+
+        {/* ── Rackets & tension — the split a player changing strings came for ── */}
+        <DashboardCard
+          title={t("stats.cards.byRacquet")}
+          description={t("stats.cards.byRacquetDescription")}
+          icon={<Zap className="h-4 w-4" />}
+        >
+          <RacquetSplitList splits={stats.racquets} untagged={stats.matchesWithoutRacquet} />
         </DashboardCard>
 
         {/* ── Recent form ── */}
