@@ -25,6 +25,7 @@ import {
   DEFAULT_RECENT_COUNT,
   type StatsMatchRow,
 } from "../stats/compute";
+import { setupAtDate, type SetupHistoryRow } from "./racketSetup";
 
 export const matchesRouter = Router();
 
@@ -116,6 +117,9 @@ const createSchema = z.object({
   // `createdBy` is deliberately absent — the server pins it to req.userId.
   playerId: z.string().min(1).max(64).optional(),
   opponentId: z.string().min(1).max(64).nullable().optional(),
+  // The player's own EquipmentItem (category "racket"). Optional, and checked
+  // against the SUBJECT player below — never taken on trust.
+  racketItemId: z.string().min(1).max(64).nullable().optional(),
   date: isoDate,
   competition: z.string().max(200).optional(),
   surface: z.enum(MATCH_SURFACES),
@@ -132,6 +136,7 @@ const createSchema = z.object({
 
 const updateSchema = z.object({
   opponentId: z.string().min(1).max(64).nullable().optional(),
+  racketItemId: z.string().min(1).max(64).nullable().optional(),
   date: isoDate.optional(),
   competition: z.string().max(200).nullable().optional(),
   surface: z.enum(MATCH_SURFACES).optional(),
@@ -261,9 +266,43 @@ function readMomentum(value: Prisma.JsonValue | null): MomentumChange[] | undefi
 
 // ── Presentation ───────────────────────────────────────────────────────────
 
-type MatchWithOpponent = Match & { opponent: Opponent | null };
+type RacketSummary = { id: string; name: string };
+type MatchWithOpponent = Match & { opponent: Opponent | null; racketItem: RacketSummary | null };
 
-const withOpponent = { opponent: true } as const;
+const withOpponent = { opponent: true, racketItem: { select: { id: true, name: true } } } as const;
+
+/**
+ * The player's whole stringing history, oldest first, in the shape
+ * `setupAtDate` reads. Loaded once per request and shared by every match in
+ * the response — one query, not one per row.
+ */
+async function loadSetupHistory(playerId: string): Promise<SetupHistoryRow[]> {
+  return prisma.stringSetup.findMany({
+    where: { playerId },
+    orderBy: { strungAt: "asc" },
+    select: {
+      id: true,
+      racketItemId: true,
+      tensionMainsKg: true,
+      tensionCrossesKg: true,
+      strungAt: true,
+      retiredAt: true,
+      mainsCustomName: true,
+      mains: { select: { brand: true, model: true } },
+    },
+  });
+}
+
+/** Racket fields a match presents: the frame, and the strings in it that day. */
+function racketFields(m: MatchWithOpponent, setups: readonly SetupHistoryRow[]) {
+  if (!m.racketItemId) return { racketItemId: undefined, racketName: undefined, racketSetup: undefined };
+  const setup = setupAtDate(setups, m.racketItemId, m.date);
+  return {
+    racketItemId: m.racketItemId,
+    racketName: m.racketItem?.name,
+    racketSetup: setup ?? undefined,
+  };
+}
 
 /** `null` → `undefined` so the JSON body omits unset fields. */
 function optional<T>(value: T | null): T | undefined {
@@ -271,12 +310,13 @@ function optional<T>(value: T | null): T | undefined {
 }
 
 /** Raw counts as the client's `MatchStatsRaw`, plus computed percentages. */
-function present(m: MatchWithOpponent) {
+function present(m: MatchWithOpponent, setups: readonly SetupHistoryRow[]) {
   return {
     id: m.id,
     playerId: m.playerId,
     opponentId: optional(m.opponentId),
     opponentName: m.opponent ? `${m.opponent.firstName} ${m.opponent.lastName}`.trim() : undefined,
+    ...racketFields(m, setups),
     academyId: optional(m.academyId),
     date: m.date.toISOString(),
     competition: optional(m.competition),
@@ -308,7 +348,7 @@ function present(m: MatchWithOpponent) {
       rallyLengthBuckets: readNumberRecord(m.rallyLengthBuckets),
     },
     // Computed on read — never stored (schema contract).
-    computed: computeMatchStats(toStatsRow(m)),
+    computed: computeMatchStats(toStatsRow(m, setups)),
     momentumChanges: readMomentum(m.momentumChanges),
     notesBySet: readStringRecord(m.notesBySet),
     createdBy: m.createdBy,
@@ -318,12 +358,17 @@ function present(m: MatchWithOpponent) {
 }
 
 /** Narrow a Match row to exactly what the pure stats module reads. */
-function toStatsRow(m: Match): StatsMatchRow {
+function toStatsRow(m: MatchWithOpponent, setups: readonly SetupHistoryRow[]): StatsMatchRow {
+  const racket = racketFields(m, setups);
   return {
     id: m.id,
     date: m.date,
     surface: m.surface,
     result: m.result,
+    racketItemId: racket.racketItemId ?? null,
+    racketName: racket.racketName ?? null,
+    tensionMainsKg: racket.racketSetup?.tensionMainsKg ?? null,
+    tensionCrossesKg: racket.racketSetup?.tensionCrossesKg ?? null,
     firstServeAttempts: m.firstServeAttempts,
     firstServesIn: m.firstServesIn,
     firstServePointsWon: m.firstServePointsWon,
@@ -399,6 +444,21 @@ async function assertUsableOpponent(opponentId: string, userId: string, playerId
   }
 }
 
+/**
+ * A racket may be referenced only if it is the SUBJECT player's own equipment
+ * row and actually a racket. 404 — not 403 — so a probe cannot confirm another
+ * player's equipment ids. Without this a coach assigned to one player could
+ * tag a match with a stranger's frame.
+ */
+async function assertUsableRacket(racketItemId: string, playerId: string): Promise<void> {
+  const item = await prisma.equipmentItem.findUnique({
+    where: { id: racketItemId },
+    select: { playerId: true, category: true },
+  });
+  if (!item || item.playerId !== playerId) throw new HttpError(404, "Racket not found");
+  if (item.category !== "racket") throw new HttpError(400, "That equipment item is not a racket");
+}
+
 // ── Routes ─────────────────────────────────────────────────────────────────
 
 // GET /api/matches?playerId=&limit= — newest first. Defaults to own matches.
@@ -409,13 +469,16 @@ matchesRouter.get(
     const query = listQuerySchema.parse(req.query);
     const playerId = await resolvePlayerId(userId, query.playerId);
 
-    const rows = await prisma.match.findMany({
-      where: { playerId },
-      include: withOpponent,
-      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-      take: query.limit ?? 100,
-    });
-    return ok(res, rows.map(present));
+    const [rows, setups] = await Promise.all([
+      prisma.match.findMany({
+        where: { playerId },
+        include: withOpponent,
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        take: query.limit ?? 100,
+      }),
+      loadSetupHistory(playerId),
+    ]);
+    return ok(res, rows.map((m) => present(m, setups)));
   }),
 );
 
@@ -428,13 +491,18 @@ matchesRouter.get(
     const query = statsQuerySchema.parse(req.query);
     const playerId = await resolvePlayerId(userId, query.playerId);
 
-    const rows = await prisma.match.findMany({
-      where: { playerId },
-      orderBy: { date: "desc" },
-    });
-    const stats = computeAggregateStats(rows.map(toStatsRow), {
-      recentCount: query.recent ?? DEFAULT_RECENT_COUNT,
-    });
+    const [rows, setups] = await Promise.all([
+      prisma.match.findMany({
+        where: { playerId },
+        include: withOpponent,
+        orderBy: { date: "desc" },
+      }),
+      loadSetupHistory(playerId),
+    ]);
+    const stats = computeAggregateStats(
+      rows.map((m) => toStatsRow(m, setups)),
+      { recentCount: query.recent ?? DEFAULT_RECENT_COUNT },
+    );
     return ok(res, { playerId, ...stats });
   }),
 );
@@ -444,7 +512,7 @@ matchesRouter.get(
   "/:id",
   asyncHandler(async (req: AuthedRequest, res) => {
     const match = await accessibleMatch(req.params.id, req.userId!, "read");
-    return ok(res, present(match));
+    return ok(res, present(match, await loadSetupHistory(match.playerId)));
   }),
 );
 
@@ -458,6 +526,7 @@ matchesRouter.post(
     assertCoherentCounts(input);
 
     if (input.opponentId) await assertUsableOpponent(input.opponentId, userId, playerId);
+    if (input.racketItemId) await assertUsableRacket(input.racketItemId, playerId);
 
     const match = await prisma.match.create({
       data: {
@@ -465,6 +534,7 @@ matchesRouter.post(
         // NEVER from the client body — the authenticated user owns the record.
         createdBy: userId,
         opponentId: input.opponentId ?? null,
+        racketItemId: input.racketItemId ?? null,
         date: new Date(input.date),
         competition: input.competition,
         surface: input.surface,
@@ -498,7 +568,7 @@ matchesRouter.post(
       include: withOpponent,
     });
 
-    return ok(res, present(match), "Match logged", 201);
+    return ok(res, present(match, await loadSetupHistory(playerId)), "Match logged", 201);
   }),
 );
 
@@ -521,6 +591,7 @@ matchesRouter.patch(
     if (input.opponentId) {
       await assertUsableOpponent(input.opponentId, userId, existing.playerId);
     }
+    if (input.racketItemId) await assertUsableRacket(input.racketItemId, existing.playerId);
 
     const match = await prisma.match.update({
       where: { id: existing.id },
@@ -528,6 +599,7 @@ matchesRouter.patch(
         // playerId and createdBy are immutable — a match can never be
         // re-pointed at another player or re-owned via the API.
         opponentId: input.opponentId === undefined ? undefined : input.opponentId,
+        racketItemId: input.racketItemId === undefined ? undefined : input.racketItemId,
         date: input.date === undefined ? undefined : new Date(input.date),
         competition: input.competition,
         surface: input.surface,
@@ -561,7 +633,7 @@ matchesRouter.patch(
       include: withOpponent,
     });
 
-    return ok(res, present(match), "Match updated");
+    return ok(res, present(match, await loadSetupHistory(existing.playerId)), "Match updated");
   }),
 );
 
