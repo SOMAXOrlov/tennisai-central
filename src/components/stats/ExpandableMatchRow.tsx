@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { MatchDetailPanel } from "@/components/stats/MatchDetailPanel";
 import { formatMatchDate, formatScore, matchFormatLabel, surfaceLabel } from "@/lib/stats/format";
+import { formatSetupTension } from "@/lib/equipment/tension";
 import { cn } from "@/lib/utils";
 import type { MatchView } from "@/types";
 import { useT } from "@/lib/i18n";
@@ -14,7 +15,7 @@ export interface ExpandableMatchRowProps {
 }
 
 export function ExpandableMatchRow({ match, isOpen, onToggle }: ExpandableMatchRowProps) {
-  const { t } = useT();
+  const { t, formatNumber } = useT();
   return (
     <div className="border-b border-border last:border-b-0">
       <button
@@ -33,6 +34,14 @@ export function ExpandableMatchRow({ match, isOpen, onToggle }: ExpandableMatchR
             </p>
             <p className="text-xs text-muted-foreground">
               {formatMatchDate(match.date)} · {surfaceLabel(match.surface)} · {matchFormatLabel(match.format)}
+              {match.racketName && (
+                <>
+                  {" · "}
+                  {match.racketName}
+                  {match.racketSetup &&
+                    ` · ${formatSetupTension(match.racketSetup.tensionMainsKg, match.racketSetup.tensionCrossesKg, (n) => formatNumber(n))}`}
+                </>
+              )}
             </p>
           </div>
         </div>

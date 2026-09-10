@@ -198,6 +198,15 @@ export interface MatchComputedStats {
   winnerToUnforcedRatio?: number;
 }
 
+export interface MatchRacketSetup {
+  setupId: string;
+  tensionMainsKg: number;
+  /** Absent for a single-tension job (same as mains). */
+  tensionCrossesKg?: number;
+  stringName?: string;
+  strungAt: string; // ISO
+}
+
 export interface Match {
   id: string;
   playerId: string;
@@ -212,6 +221,16 @@ export interface Match {
   result?: "win" | "loss";
   scoreSets: MatchSetScore[];
   conditions?: string;
+  /** The player's own racket (EquipmentItem id) this match was played with. */
+  racketItemId?: string;
+  /** Resolved on read from the racket row. */
+  racketName?: string;
+  /**
+   * The string setup in the racket ON THE DAY, resolved on read from the
+   * player's stringing history — never stored on the match. Absent when no
+   * stringing covering that date was recorded. Tension is kilograms.
+   */
+  racketSetup?: MatchRacketSetup;
   stats: MatchStatsRaw;
   /** Present on read; computed from `stats`. */
   computed?: MatchComputedStats;
@@ -242,6 +261,7 @@ export type MatchCountFields = Omit<MatchStatsRaw, "rallyLengthBuckets">;
 export interface MatchCreateInput extends MatchStatsRaw {
   playerId?: string;
   opponentId?: string | null;
+  racketItemId?: string | null;
   date: string; // ISO or yyyy-MM-dd
   competition?: string;
   surface: Surface;
@@ -256,6 +276,7 @@ export interface MatchCreateInput extends MatchStatsRaw {
 /** PATCH payload — `null` explicitly clears a stored value. */
 export type MatchUpdateInput = {
   opponentId?: string | null;
+  racketItemId?: string | null;
   date?: string;
   competition?: string | null;
   surface?: Surface;
@@ -287,6 +308,26 @@ export interface SurfaceSplitStats {
   winRatePct: number | null;
 }
 
+/**
+ * One racket at one tension. The same frame restrung 24 → 22 kg is two rows —
+ * that difference is what a player changing tension came to see. Tension is
+ * kilograms; `null` means the matches had no stringing recorded for the day.
+ */
+export interface RacquetSplitStats {
+  racketItemId: string;
+  racketName: string;
+  tensionMainsKg: number | null;
+  tensionCrossesKg: number | null;
+  matches: number;
+  resultsRecorded: number;
+  wins: number | null;
+  losses: number | null;
+  winRatePct: number | null;
+  firstServePct: StatMetric;
+  unforcedErrors: StatMetric;
+  winnerToUnforcedRatio: StatMetric;
+}
+
 export interface RecentFormMatch {
   id: string;
   date: string | null;
@@ -315,6 +356,10 @@ export interface AggregateMatchStats {
   firstMatchDate: string | null;
   lastMatchDate: string | null;
   surfaces: SurfaceSplitStats[];
+  /** Per racket-and-tension, biggest sample first. */
+  racquets: RacquetSplitStats[];
+  /** Matches logged with no racket, so the UI can say what the split omits. */
+  matchesWithoutRacquet: number;
   serve: {
     firstServePct: StatMetric;
     firstServeWonPct: StatMetric;

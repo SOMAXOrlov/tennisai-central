@@ -1,23 +1,26 @@
 // ============================================================
-// A coach's view of one player's equipment — read-only by design.
+// A coach's view of one player's equipment.
 //
 // The server lets whoever may act for a player (their connected coach, a
-// consenting guardian) READ this list; adding, editing and deleting stay the
-// player's alone, so there is deliberately no control here that would be
-// refused. The grouping and condition styling are the player's own Equipment
-// page's, shared through components/equipment/categories.
+// consenting guardian) READ this list; adding, editing and deleting ITEMS stay
+// the player's alone, so there is deliberately no such control here that would
+// be refused. Stringing is different: a coach who strings for their player may
+// record a restring (server: stringSetups routes), so each racket shows its
+// setup with that one action. The grouping and condition styling are the
+// player's own Equipment page's, shared through components/equipment/categories.
 // ============================================================
 import { useMemo } from "react";
 import { Package } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEquipment } from "@/hooks/api/queries";
+import { useEquipment, useStringSetups } from "@/hooks/api/queries";
 import { ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { useT } from "@/lib/i18n";
 import type { ConnectedPlayer, EquipmentCategory, EquipmentItem } from "@/types";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryPlural, conditionLabel, getConditionLevel } from "./categories";
+import { RacketStringing } from "./RacketStringing";
 
 interface PlayerEquipmentDrawerProps {
   player: ConnectedPlayer | null;
@@ -28,6 +31,7 @@ interface PlayerEquipmentDrawerProps {
 export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEquipmentDrawerProps) {
   const playerId = player?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
+  const { data: setups = [] } = useStringSetups(playerId);
   const { t } = useT();
 
   const grouped = useMemo(() => {
@@ -46,7 +50,10 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
             <Package className="h-5 w-5 text-primary" />
             {t("equipment.drawerTitle", { name: `${player.firstName} ${player.lastName}` })}
           </SheetTitle>
-          <SheetDescription>{t("equipment.drawerHint", { name: player.firstName })}</SheetDescription>
+          <SheetDescription>
+            {t("equipment.drawerHint", { name: player.firstName })}{" "}
+            {t("equipment.drawerStringingHint", { name: player.firstName })}
+          </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
@@ -95,6 +102,9 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
                               {item.model && <span>{item.model}</span>}
                               {item.notes && <span className="text-muted-foreground/60">— {item.notes}</span>}
                             </div>
+                          )}
+                          {item.category === "racket" && (
+                            <RacketStringing racket={item} setups={setups} canEdit className="mt-2" />
                           )}
                         </li>
                       );

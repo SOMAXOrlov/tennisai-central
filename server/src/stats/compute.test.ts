@@ -43,8 +43,10 @@ describe("computeAggregateStats — empty input", () => {
     expect(stats.rally.netPointsWonPct.value).toBeNull();
   });
 
-  it("has no surfaces, no dates and an empty recent form", () => {
+  it("has no surfaces, no racquets, no dates and an empty recent form", () => {
     expect(stats.surfaces).toEqual([]);
+    expect(stats.racquets).toEqual([]);
+    expect(stats.matchesWithoutRacquet).toBe(0);
     expect(stats.firstMatchDate).toBeNull();
     expect(stats.lastMatchDate).toBeNull();
     expect(stats.recentForm).toEqual({
@@ -293,6 +295,73 @@ describe("computeAggregateStats — surface splits", () => {
     expect(stats.wins).toBe(2);
     expect(stats.losses).toBe(2);
     expect(stats.winRatePct).toBe(50);
+  });
+});
+
+// ── Racket + tension splits ─────────────────────────────────────────────────
+describe("computeAggregateStats — racquet splits", () => {
+  const PRO_STAFF = { racketItemId: "eq-ps", racketName: "Pro Staff 97" };
+  const PURE_DRIVE = { racketItemId: "eq-pd", racketName: "Pure Drive" };
+  const stats = computeAggregateStats([
+    // Pro Staff at 24 kg: two matches, one with serve counts.
+    row({ id: "a", ...PRO_STAFF, tensionMainsKg: 24, result: "win", firstServeAttempts: 50, firstServesIn: 30 }),
+    row({ id: "b", ...PRO_STAFF, tensionMainsKg: 24, tensionCrossesKg: 24, result: "loss" }),
+    // Same frame restrung to 22 kg — a different row.
+    row({ id: "c", ...PRO_STAFF, tensionMainsKg: 22, result: "win", winners: 10, unforcedErrors: 5 }),
+    // Same frame, a match before any stringing was recorded.
+    row({ id: "d", ...PRO_STAFF, tensionMainsKg: null }),
+    // A second frame.
+    row({ id: "e", ...PURE_DRIVE, tensionMainsKg: 25, tensionCrossesKg: 23, result: "loss" }),
+    // No racket recorded at all.
+    row({ id: "f", result: "win" }),
+  ]);
+
+  it("groups by racket AND tension, biggest sample first", () => {
+    expect(stats.racquets.map((r) => [r.racketName, r.tensionMainsKg, r.matches])).toEqual([
+      ["Pro Staff 97", 24, 2],
+      ["Pro Staff 97", 22, 1],
+      ["Pro Staff 97", null, 1],
+      ["Pure Drive", 25, 1],
+    ]);
+  });
+
+  it("treats a single-tension job and an explicit equal crosses tension as one setup", () => {
+    const at24 = stats.racquets[0];
+    expect(at24.tensionCrossesKg).toBe(24);
+    expect(at24.matches).toBe(2);
+    expect(at24.resultsRecorded).toBe(2);
+    expect(at24.wins).toBe(1);
+    expect(at24.losses).toBe(1);
+    expect(at24.winRatePct).toBe(50);
+  });
+
+  it("pools only the counts that were entered, and says how many matches fed each", () => {
+    const at24 = stats.racquets[0];
+    expect(at24.firstServePct).toEqual({ value: 60, sample: 1 });
+    expect(at24.unforcedErrors).toEqual({ value: null, sample: 0 });
+    const at22 = stats.racquets[1];
+    expect(at22.winnerToUnforcedRatio).toEqual({ value: 2, sample: 1 });
+    expect(at22.unforcedErrors).toEqual({ value: 5, sample: 1 });
+  });
+
+  it("keeps an unknown-tension match under its frame rather than inventing a tension", () => {
+    const unknown = stats.racquets[2];
+    expect(unknown.tensionMainsKg).toBeNull();
+    expect(unknown.tensionCrossesKg).toBeNull();
+    expect(unknown.wins).toBeNull();
+    expect(unknown.winRatePct).toBeNull();
+  });
+
+  it("carries crosses separately when they differ from the mains", () => {
+    const pureDrive = stats.racquets[3];
+    expect(pureDrive.tensionMainsKg).toBe(25);
+    expect(pureDrive.tensionCrossesKg).toBe(23);
+  });
+
+  it("counts the matches the split leaves out", () => {
+    expect(stats.matchesWithoutRacquet).toBe(1);
+    const inSplit = stats.racquets.reduce((acc, r) => acc + r.matches, 0);
+    expect(inSplit + stats.matchesWithoutRacquet).toBe(stats.matchesPlayed);
   });
 });
 

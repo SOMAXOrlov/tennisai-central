@@ -47,6 +47,14 @@ export type StatsMatchRow = {
   date: Date | string;
   surface: string;
   result?: string | null;
+  // ── racket + the string setup in force that day (resolved by the caller) ──
+  // All optional: a match logged without a racket is still a match. The route
+  // fills these from the player's EquipmentItem / StringSetup rows; this module
+  // only groups by them and never guesses a tension that was not recorded.
+  racketItemId?: string | null;
+  racketName?: string | null;
+  tensionMainsKg?: number | null;
+  tensionCrossesKg?: number | null;
 } & { [K in CountKey]?: number | null };
 
 /** A computed value plus the number of matches that contributed to it. */
@@ -64,6 +72,29 @@ export interface SurfaceSplit {
   wins: number | null;
   losses: number | null;
   winRatePct: number | null;
+}
+
+/**
+ * One racket at one string tension. The same frame restrung from 24 kg to
+ * 22 kg is TWO rows — that difference is exactly what a player changing
+ * tension wants to see. Tension is kilograms (the stored unit); a row whose
+ * matches had no stringing recorded for the day carries `null` tension and
+ * is still grouped under the frame, labelled as unknown by the UI.
+ */
+export interface RacquetSplit {
+  racketItemId: string;
+  racketName: string;
+  tensionMainsKg: number | null;
+  tensionCrossesKg: number | null;
+  matches: number;
+  resultsRecorded: number;
+  wins: number | null;
+  losses: number | null;
+  winRatePct: number | null;
+  /** The two figures tension most directly moves: control and depth. */
+  firstServePct: Metric;
+  unforcedErrors: Metric;
+  winnerToUnforcedRatio: Metric;
 }
 
 export interface RecentFormMatch {
@@ -93,6 +124,10 @@ export interface AggregateMatchStats {
   firstMatchDate: string | null;
   lastMatchDate: string | null;
   surfaces: SurfaceSplit[];
+  /** Per racket-and-tension splits, biggest sample first. */
+  racquets: RacquetSplit[];
+  /** Matches logged with no racket — so the UI can say what the split omits. */
+  matchesWithoutRacquet: number;
   serve: {
     firstServePct: Metric;
     firstServeWonPct: Metric;
@@ -260,6 +295,58 @@ function winLoss(rows: readonly StatsMatchRow[]): {
   };
 }
 
+function hasRacket(row: StatsMatchRow): row is StatsMatchRow & { racketItemId: string } {
+  return typeof row.racketItemId === "string" && row.racketItemId.length > 0;
+}
+
+/** A recorded tension, or null. Anything non-finite is "not recorded". */
+function tensionOf(v: number | null | undefined): number | null {
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : null;
+}
+
+/**
+ * Group matches by racket AND tension. Crosses default to the mains value
+ * when the stringing was a single-tension job (the API stores that as null),
+ * so "24 kg" and "24/24 kg" are one row, not two.
+ */
+function racquetSplits(rows: readonly StatsMatchRow[]): RacquetSplit[] {
+  const groups = new Map<string, { rows: StatsMatchRow[]; first: StatsMatchRow & { racketItemId: string } }>();
+  for (const row of rows) {
+    if (!hasRacket(row)) continue;
+    const mains = tensionOf(row.tensionMainsKg);
+    const crosses = mains === null ? null : (tensionOf(row.tensionCrossesKg) ?? mains);
+    const key = `${row.racketItemId}|${mains ?? "?"}|${crosses ?? "?"}`;
+    const group = groups.get(key);
+    if (group) group.rows.push(row);
+    else groups.set(key, { rows: [row], first: row });
+  }
+  return [...groups.values()]
+    .map(({ rows: groupRows, first }) => {
+      const wl = winLoss(groupRows);
+      const mains = tensionOf(first.tensionMainsKg);
+      return {
+        racketItemId: first.racketItemId,
+        racketName: typeof first.racketName === "string" && first.racketName ? first.racketName : first.racketItemId,
+        tensionMainsKg: mains,
+        tensionCrossesKg: mains === null ? null : (tensionOf(first.tensionCrossesKg) ?? mains),
+        matches: groupRows.length,
+        resultsRecorded: wl.resultsRecorded,
+        wins: wl.wins,
+        losses: wl.losses,
+        winRatePct: wl.winRatePct,
+        firstServePct: pooledPct(groupRows, "firstServesIn", "firstServeAttempts"),
+        unforcedErrors: pooledSum(groupRows, "unforcedErrors"),
+        winnerToUnforcedRatio: pooledRatio(groupRows, "winners", "unforcedErrors"),
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.matches - a.matches ||
+        a.racketName.localeCompare(b.racketName) ||
+        (a.tensionMainsKg ?? Number.POSITIVE_INFINITY) - (b.tensionMainsKg ?? Number.POSITIVE_INFINITY),
+    );
+}
+
 /**
  * Percentages for a single match. Every field is omitted when its inputs are
  * missing — the UI then renders "—" rather than a zero.
@@ -329,6 +416,10 @@ export function computeAggregateStats(
     })
     .sort((a, b) => b.matches - a.matches || a.surface.localeCompare(b.surface));
 
+  // ── per racket-and-tension splits, biggest sample first ──
+  const racquets = racquetSplits(rows);
+  const matchesWithoutRacquet = rows.filter((r) => !hasRacket(r)).length;
+
   // ── recent form: newest first, undated rows last ──
   const sorted = [...rows].sort((a, b) => {
     const at = toMillis(a.date);
@@ -362,6 +453,8 @@ export function computeAggregateStats(
     firstMatchDate,
     lastMatchDate,
     surfaces,
+    racquets,
+    matchesWithoutRacquet,
     serve: {
       firstServePct: pooledPct(rows, "firstServesIn", "firstServeAttempts"),
       firstServeWonPct: pooledPct(rows, "firstServePointsWon", "firstServesIn"),

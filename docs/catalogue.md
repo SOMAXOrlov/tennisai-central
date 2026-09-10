@@ -195,6 +195,27 @@ drift.
 is the 1970 epoch, and the usual `z.coerce.date()` would have accepted it
 silently, leaving the row retired forever with a date nobody typed.
 
+### Matches and the racket they were played with
+
+A match (`Match.racketItemId`, nullable, `SetNull`) may point at the player's
+own `EquipmentItem` — never at a catalogue product, because two identical frames
+strung differently are two rackets to a player. The matches API checks the
+racket belongs to the **subject** player (404, so a probe cannot confirm another
+player's equipment ids) and that it is category `racket`.
+
+**Nothing about the strings is copied onto the match.** The setup a match was
+played with is resolved on read (`server/src/matches/racketSetup.ts`): the
+`StringSetup` on that frame with the latest `strungAt` on or before the match
+day that had not been retired before that day, compared by calendar date so a
+racket strung the morning of the match counts for it. Correcting a stringing
+date therefore corrects every match it covers. A match with no covering setup
+presents no tension rather than the current one — March was not played with
+June's strings.
+
+`GET /api/matches/stats` groups by racket **and** tension (`racquets[]`, plus
+`matchesWithoutRacquet`), so the same frame at 24 kg and at 22 kg is two rows.
+That difference is exactly what a player changing tension came to see.
+
 ---
 
 ## CSV import

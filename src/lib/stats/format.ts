@@ -147,6 +147,8 @@ export function emptyAggregateStats(): AggregateMatchStats {
     firstMatchDate: null,
     lastMatchDate: null,
     surfaces: [],
+    racquets: [],
+    matchesWithoutRacquet: 0,
     serve: {
       firstServePct: noData(),
       firstServeWonPct: noData(),

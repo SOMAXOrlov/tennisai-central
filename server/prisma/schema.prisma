@@ -533,6 +533,8 @@ model EquipmentItem {
 
   // Every stringing this frame has been through.
   stringSetups StringSetup[] @relation("StringSetupRacket")
+  // Matches the player tagged as played with this frame (see Match.racketItemId).
+  matches      Match[]       @relation("MatchRacket")
 
   @@index([playerId])
   @@index([productId])
@@ -775,6 +777,12 @@ model Match {
   result               String? // win | loss — NEVER used to infer performance quality
   scoreSets            Json // [{ player: 6, opponent: 4, tiebreak?: "7-5" }]
   conditions           String?
+  // The frame in the player's bag this match was played with — optional, and
+  // a pointer to the player's OWN EquipmentItem (never a catalogue product).
+  // The string setup in force on the day is resolved on read from StringSetup
+  // history (matches/racketSetup.ts), never copied onto the match, so a
+  // corrected stringing date corrects every match it covers.
+  racketItemId         String?
   // ── raw counts (percentages computed on read) ──
   firstServeAttempts   Int?
   firstServesIn        Int?
@@ -803,11 +811,13 @@ model Match {
 
   player           User              @relation("MatchPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   opponent         Opponent?         @relation(fields: [opponentId], references: [id], onDelete: SetNull)
+  racketItem       EquipmentItem?    @relation("MatchRacket", fields: [racketItemId], references: [id], onDelete: SetNull)
   postMatchReports PostMatchReport[]
   issues           MatchIssue[]
 
   @@index([playerId])
   @@index([opponentId])
+  @@index([racketItemId])
   @@index([date])
   @@index([createdBy])
   @@map("matches")

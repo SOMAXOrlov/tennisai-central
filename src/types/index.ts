@@ -282,6 +282,67 @@ export interface EquipmentItem {
   condition?: string;
 }
 
+// --- String setups (one stringing job on one racket) ---
+// Mirrors server/src/stringSetups/routes.ts. TENSION IS KILOGRAMS — pounds are
+// derived on screen (src/lib/equipment/tension), never sent or stored.
+
+export type StringSetupRetiredReason = "broke" | "dead" | "switched" | "other";
+
+export interface StringSetup {
+  id: string;
+  playerId: string;
+  /** The player's own racket (EquipmentItem id), not a catalogue product. */
+  racketItemId: string;
+  mainsProductId?: string;
+  crossesProductId?: string;
+  mainsCustomName?: string;
+  crossesCustomName?: string;
+  mains?: { id: string; brand: string; model: string; variant: string };
+  crosses?: { id: string; brand: string; model: string; variant: string };
+  tensionMainsKg: number;
+  /** Absent means "same as mains" — a single-tension job. */
+  tensionCrossesKg?: number;
+  prestretch?: boolean;
+  strungAt: string; // ISO
+  stringerName?: string;
+  costEur?: number;
+  hoursPlayed?: number;
+  retiredAt?: string; // ISO
+  retiredReason?: StringSetupRetiredReason;
+  comfortNote?: number; // 1..5, the player's own verdict
+  notes?: string;
+  /** Derived by the API: no retiredAt ⇒ this is what is in the frame now. */
+  isCurrent: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StringSetupCreateInput {
+  racketItemId: string;
+  mainsCustomName?: string;
+  crossesCustomName?: string;
+  tensionMainsKg: number;
+  tensionCrossesKg?: number;
+  strungAt: string; // ISO or yyyy-MM-dd
+  stringerName?: string;
+  notes?: string;
+}
+
+/** PATCH payload. Retiring is `retiredAt` + `retiredReason`; there is no un-retire. */
+export interface StringSetupUpdateInput {
+  mainsCustomName?: string;
+  crossesCustomName?: string;
+  tensionMainsKg?: number;
+  tensionCrossesKg?: number;
+  strungAt?: string;
+  stringerName?: string;
+  hoursPlayed?: number;
+  retiredAt?: string;
+  retiredReason?: StringSetupRetiredReason;
+  comfortNote?: number;
+  notes?: string;
+}
+
 // --- Training ---
 
 export type TrainingType = "individual" | "team" | "match_practice" | "fitness" | "recovery" | "tactical";

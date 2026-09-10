@@ -17,6 +17,7 @@ import {
   matchFormatLabel,
   surfaceLabel,
 } from "@/lib/stats/format";
+import { formatSetupTension } from "@/lib/equipment/tension";
 import type { MatchComputedStats, MatchStatsRaw, MatchView } from "@/types";
 import { MatchIssuesPanel } from "@/components/matches/MatchIssuesPanel";
 import { useT } from "@/lib/i18n";
@@ -126,7 +127,7 @@ export interface MatchListProps {
 }
 
 export function MatchList({ matches, onEdit, onDelete, busyId }: MatchListProps) {
-  const { t } = useT();
+  const { t, formatNumber } = useT();
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
@@ -163,6 +164,15 @@ export function MatchList({ matches, onEdit, onDelete, busyId }: MatchListProps)
                     {matchFormatLabel(match.format)}
                     {match.competition ? ` · ${match.competition}` : ""}
                   </p>
+                  {match.racketName && (
+                    <p className="text-xs text-muted-foreground">
+                      {match.racketName}
+                      {" · "}
+                      {match.racketSetup
+                        ? formatSetupTension(match.racketSetup.tensionMainsKg, match.racketSetup.tensionCrossesKg, (n) => formatNumber(n))
+                        : t("matches.racketUnknownTension")}
+                    </p>
+                  )}
                 </div>
               </button>
 

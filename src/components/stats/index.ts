@@ -2,6 +2,7 @@
 export { HeadlineCard } from "./HeadlineCard";
 export { MetricTile } from "./MetricTile";
 export { SurfaceSplitList, SurfaceSplitRow } from "./SurfaceSplitList";
+export { RacquetSplitList, RacquetSplitRow } from "./RacquetSplitList";
 export { RecentFormStrip, FormChip } from "./RecentFormStrip";
 export { MatchDetailPanel } from "./MatchDetailPanel";
 export { ExpandableMatchRow } from "./ExpandableMatchRow";
