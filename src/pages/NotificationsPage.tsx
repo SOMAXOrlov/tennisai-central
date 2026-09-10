@@ -56,9 +56,15 @@ export default function NotificationsPage() {
               <CheckCheck className="h-3.5 w-3.5" /> {t("notifications.markAllRead")}
             </Button>
           )}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPrefs((v) => !v)}>
-            <Settings2 className="h-3.5 w-3.5" /> {showPrefs ? t("notifications.hideSettings") : t("notifications.settings")}
-          </Button>
+          {/* The first-run empty state below offers the same action as its
+              call to action; showing both put two "settings" buttons at two
+              sizes on one screen. The header keeps it once there is anything
+              in the inbox, or while the card is open and needs a way to close. */}
+          {(showPrefs || filtered.length > 0 || filter === "unread") && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPrefs((v) => !v)}>
+              <Settings2 className="h-3.5 w-3.5" /> {showPrefs ? t("notifications.hideSettings") : t("notifications.settings")}
+            </Button>
+          )}
           <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
             <TabsList><TabsTrigger value="all">{t("notifications.tabAll")}</TabsTrigger><TabsTrigger value="unread">{unreadCount > 0 ? t("notifications.tabUnreadCount", { count: unreadCount }) : t("notifications.tabUnread")}</TabsTrigger></TabsList>
           </Tabs>

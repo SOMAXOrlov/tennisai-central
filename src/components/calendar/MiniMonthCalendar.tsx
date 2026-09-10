@@ -89,7 +89,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
           <button
             onClick={() => setMiniMonth((p) => subMonths(p, 1))}
             aria-label={t("calendar.mini.previousMonth")}
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground coarse:min-h-11 coarse:min-w-11"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
           </button>
@@ -97,7 +97,7 @@ export function MiniMonthCalendar({ currentDate, events, onSelectDate, onMonthCh
           <button
             onClick={() => setMiniMonth((p) => addMonths(p, 1))}
             aria-label={t("calendar.mini.nextMonth")}
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground coarse:min-h-11 coarse:min-w-11"
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </button>

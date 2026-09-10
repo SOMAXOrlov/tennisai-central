@@ -209,8 +209,10 @@ export function DashboardLayout() {
                 // the first item to the last visibly sweep past every row
                 // between them, which reads as travel time, not responsiveness.
                 "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-120 touch-manipulation coarse:min-h-11",
+                // A soft green tint rather than a solid fill: the active row
+                // should read as "you are here", not as a button.
                 isActive
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary/10 font-semibold text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )
             }
@@ -232,9 +234,7 @@ export function DashboardLayout() {
                       // Genuinely live: a real count of things waiting. It stops
                       // when the count does, because the badge unmounts at zero.
                       "badge-live",
-                      // On the active row the pill behind it is already primary,
-                      // so a primary badge would vanish into it.
-                      isActive ? "bg-primary-foreground text-primary" : "bg-primary text-primary-foreground",
+                      "bg-primary text-primary-foreground",
                     )}
                     aria-label={t("nav.trainings.unreviewedAria", { count: unreviewedCount })}
                   >
@@ -248,7 +248,7 @@ export function DashboardLayout() {
                       // Genuinely live: a real count of things waiting. It stops
                       // when the count does, because the badge unmounts at zero.
                       "badge-live",
-                      isActive ? "bg-primary-foreground text-primary" : "bg-primary text-primary-foreground",
+                      "bg-primary text-primary-foreground",
                     )}
                     aria-label={t("nav.notifications.unreadAria", { count: unreadNotificationCount })}
                   >

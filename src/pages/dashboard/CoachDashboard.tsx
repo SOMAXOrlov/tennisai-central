@@ -103,10 +103,12 @@ export default function CoachDashboard() {
           <p className="text-muted-foreground">{t("dashboard.coach.header.subtitle")}</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" asChild>
+          {/* A coach schedules trainings weekly and creates a team once or
+              twice a season, so the training action carries the fill. */}
+          <Button size="sm" variant="outline" asChild>
             <Link to="/teams"><Plus className="mr-1.5 h-3.5 w-3.5" /> {t("dashboard.coach.createTeam")}</Link>
           </Button>
-          <Button size="sm" variant="outline" asChild>
+          <Button size="sm" asChild>
             <Link to="/trainings"><Plus className="mr-1.5 h-3.5 w-3.5" /> {t("dashboard.coach.newTraining")}</Link>
           </Button>
         </div>
@@ -178,7 +180,7 @@ export default function CoachDashboard() {
                     }
                   />
                   {/* ?player=<id> opens that player's stats drawer on /players. */}
-                  <Button size="sm" variant="ghost" className="text-xs" asChild>
+                  <Button size="sm" variant="ghost" asChild>
                     <Link to={`/players?player=${encodeURIComponent(player.id)}`}>
                       {t("dashboard.coach.connectedPlayers.view")} <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
@@ -322,7 +324,7 @@ export default function CoachDashboard() {
                   session out. Carry the intent: show the past list and open the
                   review for this session.
                 */}
-                <Button size="sm" variant="outline" className="shrink-0 text-xs" asChild>
+                <Button size="sm" variant="outline" className="shrink-0" asChild>
                   <Link to={`/trainings?filter=past&review=${encodeURIComponent(session.id)}`}>{t("dashboard.coach.needsReview.review")}</Link>
                 </Button>
               </div>

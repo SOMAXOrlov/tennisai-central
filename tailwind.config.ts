@@ -25,6 +25,10 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          foreground: "hsl(var(--ink-foreground))",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -94,6 +98,8 @@ export default {
       transitionTimingFunction: {
         /** Matte, editorial ease-out: decisive start, no bounce at the end. */
         editorial: "cubic-bezier(0.22, 1, 0.36, 1)",
+        /** Snappy standard curve for control feedback (buttons, nav, chips). */
+        snap: "cubic-bezier(0.2, 0, 0, 1)",
       },
       keyframes: {
         "accordion-down": {

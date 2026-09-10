@@ -175,7 +175,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable, registered 
       // `active:` gives a dragged chip a slight lift the moment it's grabbed —
       // the drag image is a browser-rendered snapshot, so this is the only
       // feedback that the chip itself is the thing being moved.
-      className={`flex w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-[colors,transform,box-shadow] duration-150 hover:bg-accent/40 ${sv?.dashed ? "border-dashed" : ""} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:scale-[1.03] active:cursor-grabbing active:shadow-md motion-reduce:active:scale-100" : ""}`}
+      className={`flex min-h-6 w-full items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-left text-[11px] font-medium leading-tight transition-[colors,transform,box-shadow] duration-150 hover:bg-accent/40 coarse:min-h-8 ${sv?.dashed ? "border-dashed" : ""} ${compact ? "py-px" : ""} ${draggable ? "cursor-grab active:scale-[1.03] active:cursor-grabbing active:shadow-md motion-reduce:active:scale-100" : ""}`}
     >
       {entity && <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: entity }} aria-hidden />}
       {/* Month cells are ~78-97px wide; the leading icon costs ~20px of that and
@@ -1199,9 +1199,12 @@ export default function CalendarPage() {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-            <TabsList className="h-8">
+            {/* Same 40px strip as Trainings and Tournaments. This row used to
+                override it to 32/24px, which made the calendar the one screen
+                with its own control height. */}
+            <TabsList>
               {(["month", "week", "day"] as ViewMode[]).map((v) => (
-                <TabsTrigger key={v} value={v} className="h-6 gap-1.5 px-2.5 text-xs capitalize">{VIEW_ICONS[v]}{t(`calendar.view.${v}`)}</TabsTrigger>
+                <TabsTrigger key={v} value={v} className="gap-1.5 px-3 capitalize">{VIEW_ICONS[v]}{t(`calendar.view.${v}`)}</TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
