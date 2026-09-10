@@ -165,7 +165,7 @@ export function GetStartedCard({ storageKey, items }: GetStartedCardProps) {
             </div>
 
             {!item.isDone && (
-              <Button size="sm" variant="outline" className="shrink-0 text-xs" asChild>
+              <Button size="sm" variant="outline" className="shrink-0" asChild>
                 <Link to={item.to}>
                   {item.actionLabel} <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>

@@ -1,6 +1,6 @@
 /* Fonts must be imported before Tailwind's layers, or the bundler drops the
    @import (CSS requires @import to precede all other rules). */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,36 +9,44 @@
 /* TennisAI Design System — Premium Sports SaaS */
 
 @layer base {
-  /* ── Modernist design system ──────────────────────────────
-     Warm paper background, near-black ink, single matte forest-green accent,
-     sharp corners, thin ruled borders. */
+  /* ── "Ink & Grass" design system ──────────────────────────
+     Pure-neutral ground with white cards, ink-filled primary buttons, and the
+     matte forest green kept as the ONE accent (active nav, badges, status
+     chips, success, focus ring, button hover baseline). Sharp corners, thin
+     ruled borders, no shadows. */
   :root {
-    --background: 40 33% 97%;        /* warm paper */
+    --background: 0 0% 98%;          /* neutral ground */
     --foreground: 0 0% 9%;           /* ink */
 
-    --card: 40 33% 99%;
+    --card: 0 0% 100%;
     --card-foreground: 0 0% 9%;
 
-    --popover: 40 33% 99%;
+    --popover: 0 0% 100%;
     --popover-foreground: 0 0% 9%;
 
-    --primary: 146 24% 33%;            /* matte forest green */
+    --primary: 146 24% 33%;            /* matte forest green — the one accent */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 16% 92%;
+    /* Filled buttons. Ink on the light theme so the green accent stays rare;
+       flips to paper on dark (ink-on-ink would vanish). Consumed only by the
+       Button `default` variant and the few hand-built filled controls. */
+    --ink: 0 0% 9%;
+    --ink-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 94%;
     --secondary-foreground: 0 0% 9%;
 
-    --muted: 40 16% 93%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 42%;      /* #6b6b6b — 5.3:1 on --background */
 
-    --accent: 40 16% 91%;
+    --accent: 0 0% 94%;
     --accent-foreground: 0 0% 9%;
 
     --destructive: 6 78% 42%;          /* #bf2818 — white text 5.95:1, as text 5.61:1 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 14% 86%;
-    --input: 40 14% 84%;
+    --border: 0 0% 89%;
+    --input: 0 0% 84%;
     --ring: 146 24% 33%;
 
     --radius: 0rem;                  /* sharp corners */
@@ -74,13 +82,13 @@
     --cal-fed-utr: 27.7 45.5% 41%;          /* #986539 — orange, light: 4.66:1 */
     --cal-fed-usta: 335.6 31.8% 50%;        /* #a85778 — rose, light: 4.61:1 */
 
-    --sidebar-background: 40 30% 95%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 20%;
     --sidebar-primary: 146 24% 33%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 16% 90%;
+    --sidebar-accent: 0 0% 94%;
     --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 40 14% 86%;
+    --sidebar-border: 0 0% 89%;
     --sidebar-ring: 146 24% 33%;
   }
 
@@ -100,6 +108,9 @@
        lighter and its text darker. Ink on #639c7c: 5.87:1; green on --background: 5.87:1. */
     --primary: 146 22% 50%;            /* #639c7c — matte forest green */
     --primary-foreground: 0 0% 7%;
+
+    --ink: 40 20% 92%;                 /* paper buttons on the dark ground */
+    --ink-foreground: 0 0% 7%;
 
     --secondary: 0 0% 15%;
     --secondary-foreground: 40 20% 92%;
@@ -233,8 +244,8 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
 
   /* ── Reduced motion ────────────────────────────────────────────────────
