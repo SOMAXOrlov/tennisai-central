@@ -224,3 +224,37 @@ if (env.requireEmailVerification && !emailEnabled) {
       "   REQUIRE_EMAIL_VERIFICATION=false.",
   );
 }
+
+// The mirror image, and the state this deployment was actually in: verification
+// switched OFF and no transport either. Nothing refuses, nothing is logged, and
+// /api/health reports `signupOpen: true` — so it reads as a healthy server while
+// no account mail of any kind leaves the process. Adults are created pre-verified
+// and get neither a verification nor a welcome mail (the welcome only fires from
+// POST /verify-email, which they never reach); a minor's guardian is never
+// emailed at all, and that account is created LOCKED with no token and no way to
+// approve it later. Silent is the wrong answer here.
+if (!env.requireEmailVerification && !emailEnabled) {
+  console.warn(
+    "⚠️  No mail transport is configured, and REQUIRE_EMAIL_VERIFICATION is off.\n" +
+      "   Signup is open but NO account email is sent: no verification, no welcome,\n" +
+      "   and no guardian-approval link — so every under-age signup is created\n" +
+      "   permanently locked. Set GMAIL_USER + GMAIL_APP_PASSWORD, or SMTP_HOST +\n" +
+      "   MAIL_FROM, then turn REQUIRE_EMAIL_VERIFICATION back on.",
+  );
+}
+
+// SMTP with nothing usable to put in the From header. `fromHeader()` falls back
+// to MAIL_FROM and then SMTP_USER, and that fallback only means anything when
+// the username IS an address. Providers where it is not are the common case —
+// the documented Resend example is literally `SMTP_USER=resend` — and that
+// builds `"TennisAI" <resend>`, which is rejected with a generic 5xx, one send
+// at a time, long after boot. The transport itself authenticates, so the boot
+// check reports success and the configuration looks correct. Say it here.
+if (mailTransport === "smtp" && !env.mailFrom && !env.smtpUser.includes("@")) {
+  console.warn(
+    "⚠️  SMTP_HOST is set but MAIL_FROM is blank, and SMTP_USER is not an email\n" +
+      "   address to fall back on. Every message would go out with an unusable From\n" +
+      "   header and be rejected. Set MAIL_FROM to an address your provider has\n" +
+      "   verified for your domain.",
+  );
+}

@@ -107,10 +107,21 @@ Set `REQUIRE_EMAIL_VERIFICATION=true` in the **same edit**, then
 `docker compose up -d`. The API checks the credentials at boot and logs whether
 they authenticated — `docker compose logs api | grep Mail`.
 
-Until a transport exists the server is honest rather than broken: **signup is
-refused** with 503 (instead of creating accounts nobody can ever log into), and
-password reset says it is unavailable instead of promising a link. `/api/health`
-reports `mailTransport` and `signupOpen` so this is visible without SSH.
+Until a transport exists, and **only while `REQUIRE_EMAIL_VERIFICATION=true`**,
+the server is honest rather than broken: **signup is refused** with 503 (instead
+of creating accounts nobody can ever log into), and password reset says it is
+unavailable instead of promising a link. `/api/health` reports `mailTransport`
+and `signupOpen` so this is visible without SSH.
+
+Turn verification **off** with no transport and that protection goes with it:
+signup stays open, `/api/health` still says `signupOpen: true`, and no account
+email of any kind is sent — no verification, no welcome, and no guardian
+approval link, so every under-age signup is created permanently locked with no
+way to approve it afterwards. The API warns about exactly this at boot
+(`docker compose logs api | grep Mail` shows the transport; the warning is just
+above it). Configure a transport **first**, confirm `"emailEnabled":true` on
+`/api/health`, and only then set `REQUIRE_EMAIL_VERIFICATION=true` — doing it in
+the other order closes signup with a 503 in the gap.
 
 ### Resetting one person's password without email
 
