@@ -244,10 +244,13 @@ describe("POST /api/player-tournaments", () => {
     await new Promise((r) => setTimeout(r, 10));
     // Cast the calls array rather than the callback: vitest types each call as
     // any[], which a tuple-typed parameter is not assignable to.
-    const calls = db.notification.create.mock.calls as Array<[{ data: { userId: string } }]>;
+    const calls = db.notification.create.mock.calls as Array<[{ data: { userId: string; linkTo: string } }]>;
     const notified = calls.map((c) => c[0].data.userId);
     expect(notified).toContain(OTHER);
     expect(notified).not.toContain(OWNER);
+    // The link opens the event on its preparation section — not the browse
+    // list, where the player would have to find it a second time.
+    expect(calls[0][0].data.linkTo).toBe("/tournaments/t-1#prepare");
   });
 
   it("404s an unknown tournament without writing an orphan entry", async () => {
@@ -326,5 +329,191 @@ describe("GET /api/player-tournaments — whose entries come back", () => {
     const res = await request(app).get("/api/player-tournaments");
     expect(res.status).toBe(401);
     expect(db.playerTournament.findMany).not.toHaveBeenCalled();
+  });
+});
+
+// ── Telling the coach when the PLAYER registers ─────────────────────────────
+//
+// The reverse of "coach enters player": when the player commits — enters
+// themselves as "registered", or moves an entry to "registered" from the
+// schedule — every coach of theirs (assigned or connected) is told, through
+// the same funnel that decides in-app vs email. Only a registration, only the
+// moment it happens, never the player themselves.
+describe("telling the coach when the player registers", () => {
+  const COACH = "user-coach";
+  const COACH_2 = "user-coach-2";
+
+  /** Notification recipients, after the fire-and-forget path has drained. */
+  async function recipients(): Promise<string[]> {
+    await new Promise((r) => setTimeout(r, 10));
+    const calls = db.notification.create.mock.calls as Array<[{ data: { userId: string } }]>;
+    return calls.map((c) => c[0].data.userId).sort();
+  }
+
+  function coaches() {
+    db.coachAssignment.findMany.mockResolvedValue([{ coachId: COACH }]);
+    // One connected coach, one connected observer: only the coach counts.
+    db.connectionRequest.findMany.mockResolvedValue([
+      { fromUserId: COACH_2, toUserId: OWNER },
+      { fromUserId: OWNER, toUserId: "user-observer" },
+    ]);
+    db.user.findMany.mockResolvedValue([{ id: COACH_2 }]);
+    db.notification.create.mockResolvedValue({ id: "n-1" });
+  }
+
+  it("POST as the player with status registered tells every coach, not the player", async () => {
+    db.tournament.findUnique.mockResolvedValue({ id: "t-1", name: "Madrid Open", city: "Madrid", startDate: new Date("2026-05-01") });
+    db.playerTournament.findUnique.mockResolvedValue(null); // no entry yet
+    db.playerTournament.upsert.mockResolvedValue(entryRow());
+    coaches();
+
+    const res = await request(app)
+      .post("/api/player-tournaments")
+      .set("Authorization", bearer(OWNER))
+      .send({ tournamentId: "t-1", status: "registered" });
+
+    expect(res.status).toBe(201);
+    expect(await recipients()).toEqual([COACH, COACH_2]);
+    const first = (db.notification.create.mock.calls as Array<[{ data: Record<string, string> }]>)[0][0].data;
+    expect(first).toMatchObject({ type: "tournament_entry_registered", linkTo: "/tournaments/t-1#prepare" });
+    // Who, which event, where and when — enough to act on without opening it.
+    expect(first.message).toContain("Owner");
+    expect(first.message).toContain("Madrid Open");
+    expect(first.message).toContain("1 May 2026");
+    // Only ACTIVE assignments, and only coaches among the connections.
+    expect(firstCallArg(db.coachAssignment.findMany).where).toMatchObject({ playerId: OWNER, status: "active" });
+    expect(firstCallArg(db.user.findMany).where).toMatchObject({ role: "coach" });
+  });
+
+  it("POST as the player with status planned tells nobody", async () => {
+    db.tournament.findUnique.mockResolvedValue({ id: "t-1", name: "Madrid Open", city: "Madrid", startDate: new Date("2026-05-01") });
+    db.playerTournament.findUnique.mockResolvedValue(null);
+    db.playerTournament.upsert.mockResolvedValue(entryRow({ status: "planned" }));
+    coaches();
+
+    await request(app)
+      .post("/api/player-tournaments")
+      .set("Authorization", bearer(OWNER))
+      .send({ tournamentId: "t-1", status: "planned" });
+
+    expect(await recipients()).toEqual([]);
+  });
+
+  it("re-saving an entry that was already registered is not announced again", async () => {
+    db.tournament.findUnique.mockResolvedValue({ id: "t-1", name: "Madrid Open", city: "Madrid", startDate: new Date("2026-05-01") });
+    db.playerTournament.findUnique.mockResolvedValue({ status: "registered" });
+    db.playerTournament.upsert.mockResolvedValue(entryRow());
+    coaches();
+
+    await request(app)
+      .post("/api/player-tournaments")
+      .set("Authorization", bearer(OWNER))
+      .send({ tournamentId: "t-1", status: "registered", notes: "hotel booked" });
+
+    expect(await recipients()).toEqual([]);
+  });
+
+  it("a coach entering the player as registered tells the player, not the coaches", async () => {
+    db.tournament.findUnique.mockResolvedValue({ id: "t-1", name: "Madrid Open", city: "Madrid", startDate: new Date("2026-05-01") });
+    db.coachAssignment.findUnique.mockResolvedValue({ status: "active" }); // assertCanActOnPlayer
+    db.playerTournament.findUnique.mockResolvedValue(null);
+    db.playerTournament.upsert.mockResolvedValue(entryRow({ playerId: OTHER, player: { id: OTHER, firstName: "Ana", lastName: "P" } }));
+    coaches();
+
+    await request(app)
+      .post("/api/player-tournaments")
+      .set("Authorization", bearer(OWNER))
+      .send({ tournamentId: "t-1", status: "registered", playerId: OTHER });
+
+    expect(await recipients()).toEqual([OTHER]);
+    expect(db.coachAssignment.findMany).not.toHaveBeenCalled();
+  });
+
+  it("PATCH planned → registered tells the coaches", async () => {
+    db.playerTournament.findUnique.mockResolvedValue({ playerId: OWNER, status: "planned" });
+    db.playerTournament.update.mockResolvedValue(entryRow());
+    coaches();
+
+    const res = await request(app)
+      .patch(`/api/player-tournaments/${ENTRY}`)
+      .set("Authorization", bearer(OWNER))
+      .send({ status: "registered" });
+
+    expect(res.status).toBe(200);
+    expect(await recipients()).toEqual([COACH, COACH_2]);
+    const first = (db.notification.create.mock.calls as Array<[{ data: Record<string, string> }]>)[0][0].data;
+    expect(first).toMatchObject({ type: "tournament_entry_registered", linkTo: "/tournaments/t-1#prepare" });
+  });
+
+  it("PATCH registered → played, or a notes-only edit, tells nobody", async () => {
+    db.playerTournament.findUnique.mockResolvedValue({ playerId: OWNER, status: "registered" });
+    db.playerTournament.update.mockResolvedValue(entryRow({ status: "played" }));
+    coaches();
+
+    await request(app)
+      .patch(`/api/player-tournaments/${ENTRY}`)
+      .set("Authorization", bearer(OWNER))
+      .send({ status: "played" });
+    await request(app)
+      .patch(`/api/player-tournaments/${ENTRY}`)
+      .set("Authorization", bearer(OWNER))
+      .send({ notes: "won R1" });
+
+    expect(await recipients()).toEqual([]);
+  });
+
+  it("still saves the entry when the coach lookup fails", async () => {
+    db.playerTournament.findUnique.mockResolvedValue({ playerId: OWNER, status: "planned" });
+    db.playerTournament.update.mockResolvedValue(entryRow());
+    db.coachAssignment.findMany.mockRejectedValue(new Error("db down"));
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await request(app)
+      .patch(`/api/player-tournaments/${ENTRY}`)
+      .set("Authorization", bearer(OWNER))
+      .send({ status: "registered" });
+
+    expect(res.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(db.notification.create).not.toHaveBeenCalled();
+    quiet.mockRestore();
+  });
+});
+
+// ── GET / — preparation status ──────────────────────────────────────────────
+describe("GET /api/player-tournaments — preparation status", () => {
+  it("stamps each entry with its latest successful match preparation", async () => {
+    db.user.findUnique.mockResolvedValue({ role: "player" });
+    db.playerTournament.findMany.mockResolvedValue([
+      entryRow(),
+      entryRow({ id: "pt-2", tournamentId: "t-2", tournament: { ...entryRow().tournament, id: "t-2" } }),
+    ]);
+    // Newest first, as the route orders them: the first row per pair wins.
+    db.aiGeneration.findMany.mockResolvedValue([
+      { userId: OWNER, reportId: "t-1", createdAt: new Date("2026-04-20T10:00:00.000Z") },
+      { userId: OWNER, reportId: "t-1", createdAt: new Date("2026-04-01T10:00:00.000Z") },
+    ]);
+
+    const res = await request(app).get("/api/player-tournaments").set("Authorization", bearer(OWNER));
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0].preparedAt).toBe("2026-04-20T10:00:00.000Z");
+    expect(res.body.data[1].preparedAt).toBeUndefined();
+    // Only SUCCESSFUL match-prep runs for these players and events were asked for.
+    expect(firstCallArg(db.aiGeneration.findMany).where).toMatchObject({
+      reportType: "match_prep",
+      status: "success",
+      userId: { in: [OWNER] },
+      reportId: { in: ["t-1", "t-2"] },
+    });
+  });
+
+  it("asks nothing about preparation when there are no entries", async () => {
+    db.user.findUnique.mockResolvedValue({ role: "player" });
+    db.playerTournament.findMany.mockResolvedValue([]);
+
+    await request(app).get("/api/player-tournaments").set("Authorization", bearer(OWNER));
+
+    expect(db.aiGeneration.findMany).not.toHaveBeenCalled();
   });
 });

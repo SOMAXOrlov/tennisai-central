@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Prisma, Tournament, PlayerTournament, User } from "@prisma/client";
 import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
-import { requireRole, readablePlayerIds, assertCanActOnPlayer, getRole } from "../authz";
+import { requireRole, readablePlayerIds, assertCanActOnPlayer, getRole, coachIdsOfPlayer } from "../authz";
 import { createAndDeliverNotification } from "../notifications/deliver";
 import { importTournaments } from "./feed";
 import {
@@ -101,6 +101,7 @@ function presentTournament(t: Tournament) {
  */
 function notifyPlayerOfEntry(
   playerId: string,
+  tournamentId: string,
   name: string,
   city: string,
   startDate: Date,
@@ -116,7 +117,10 @@ function notifyPlayerOfEntry(
     type: "tournament_entry_added",
     title: "Tournament added to your calendar",
     message: `Your coach entered you for ${name} in ${city} — ${when}.`,
-    linkTo: "/tournaments",
+    // Straight to the event itself, on the section with the countdown and the
+    // match preparation — not the browse list, where the player would have to
+    // find it again.
+    linkTo: `/tournaments/${tournamentId}#prepare`,
   })
     .then(() => undefined)
     .catch((err) => {
@@ -127,10 +131,72 @@ function notifyPlayerOfEntry(
     });
 }
 
+/**
+ * The other direction: a player REGISTERS for a tournament, and their coaches
+ * hear about it — in the app, and by email through the same funnel and the
+ * same "tournament reminders" switch as every other tournament message.
+ *
+ * Only a registration counts, and only the moment it happens. "Planned" and
+ * "maybe" are the player thinking aloud; a coach pinged for every daydream
+ * would mute the category and miss the one that matters. Re-saving an entry
+ * that was already registered is not news either, so callers check the status
+ * the row had BEFORE the write. Never told to the player themselves.
+ */
+async function notifyCoachesOfRegistration(
+  playerId: string,
+  playerFirstName: string,
+  tournamentId: string,
+  name: string,
+  city: string,
+  startDate: Date,
+): Promise<void> {
+  // Everything inside the try, the date formatting included: this runs after
+  // the entry is saved and must never be the reason the request fails.
+  try {
+    const when = startDate.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    const coachIds = await coachIdsOfPlayer(playerId);
+    await Promise.all(
+      coachIds
+        .filter((coachId) => coachId !== playerId)
+        .map((coachId) =>
+          createAndDeliverNotification(prisma, {
+            userId: coachId,
+            type: "tournament_entry_registered",
+            title: "Player registered for a tournament",
+            message: `${playerFirstName} registered for ${name} in ${city} — ${when}.`,
+            linkTo: `/tournaments/${tournamentId}#prepare`,
+          }),
+        ),
+    );
+  } catch (err) {
+    console.error(
+      `[tournaments] registration notification for ${playerId} failed:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
+}
+
+/** True when this write is the moment an entry BECOMES registered. */
+function becameRegistered(previous: string | null | undefined, next: string | undefined): boolean {
+  return next === "registered" && previous !== "registered";
+}
+
 type PTWithRelations = PlayerTournament & { tournament: Tournament; player: User };
 
-/** Map a PlayerTournament row (with relations) to the embedded front-end shape. */
-function presentPlayerTournament(pt: PTWithRelations) {
+/**
+ * Map a PlayerTournament row (with relations) to the embedded front-end shape.
+ *
+ * `preparedAt` is when the player last ran the match preparation for this
+ * event (a successful ai_generations row of type match_prep). The list route
+ * looks those up in one query and passes them in; the write routes leave it
+ * out, and the client re-reads the list right after a write anyway.
+ */
+function presentPlayerTournament(pt: PTWithRelations, preparedAt?: Date) {
   return {
     id: pt.id,
     tournamentId: pt.tournamentId,
@@ -139,7 +205,33 @@ function presentPlayerTournament(pt: PTWithRelations) {
     playerName: `${pt.player.firstName} ${pt.player.lastName}`,
     status: pt.status as (typeof STATUSES)[number],
     notes: pt.notes ?? undefined,
+    preparedAt: preparedAt?.toISOString(),
   };
+}
+
+/**
+ * When each (player, tournament) pair last had a SUCCESSFUL match preparation.
+ * Keyed `${playerId}:${tournamentId}`. One query for the whole list, newest
+ * first, so the first row seen per pair is the latest.
+ */
+async function preparationTimes(rows: PTWithRelations[]): Promise<Map<string, Date>> {
+  const out = new Map<string, Date>();
+  if (rows.length === 0) return out;
+  const runs = await prisma.aiGeneration.findMany({
+    where: {
+      reportType: "match_prep",
+      status: "success",
+      userId: { in: [...new Set(rows.map((r) => r.playerId))] },
+      reportId: { in: [...new Set(rows.map((r) => r.tournamentId))] },
+    },
+    select: { userId: true, reportId: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+  for (const run of runs ?? []) {
+    const key = `${run.userId}:${run.reportId}`;
+    if (!out.has(key)) out.set(key, run.createdAt);
+  }
+  return out;
 }
 
 // GET /api/tournaments — the global catalog.
@@ -670,7 +762,7 @@ tournamentsRouter.post(
       // Same rule as the ordinary entry route: something put on your calendar
       // by somebody else is news, and the person who did it is not told.
       if (d.playerId !== req.userId) {
-        void notifyPlayerOfEntry(d.playerId, created.name, created.city, created.startDate);
+        void notifyPlayerOfEntry(d.playerId, created.id, created.name, created.city, created.startDate);
       }
     }
 
@@ -707,7 +799,11 @@ playerTournamentsRouter.get(
       include: { tournament: true, player: true },
       orderBy: { createdAt: "desc" },
     });
-    return ok(res, rows.map(presentPlayerTournament));
+    const prepared = await preparationTimes(rows ?? []);
+    return ok(
+      res,
+      (rows ?? []).map((pt) => presentPlayerTournament(pt, prepared.get(`${pt.playerId}:${pt.tournamentId}`))),
+    );
   }),
 );
 
@@ -723,6 +819,13 @@ playerTournamentsRouter.post(
     // Default to the caller; a coach may name a connected player instead.
     const playerId = data.playerId ?? req.userId!;
     await assertCanActOnPlayer(req.userId!, playerId);
+
+    // What the row said before, so a re-save of an already-registered entry
+    // is not announced as a new registration.
+    const previous = await prisma.playerTournament.findUnique({
+      where: { tournamentId_playerId: { tournamentId: data.tournamentId, playerId } },
+      select: { status: true },
+    });
 
     // One entry per (tournament, player) — upsert keeps it idempotent.
     const pt = await prisma.playerTournament.upsert({
@@ -741,7 +844,12 @@ playerTournamentsRouter.post(
     // kind of thing they should hear about rather than discover. Never notify
     // the person who did it.
     if (playerId !== req.userId) {
-      void notifyPlayerOfEntry(playerId, tournament.name, tournament.city, tournament.startDate);
+      void notifyPlayerOfEntry(playerId, tournament.id, tournament.name, tournament.city, tournament.startDate);
+    } else if (becameRegistered(previous?.status, data.status)) {
+      // The player registered themselves: their coaches hear about it.
+      void notifyCoachesOfRegistration(
+        playerId, pt.player.firstName, tournament.id, tournament.name, tournament.city, tournament.startDate,
+      );
     }
 
     return ok(res, presentPlayerTournament(pt), "Tournament entry added", 201);
@@ -756,7 +864,7 @@ playerTournamentsRouter.patch(
 
     const existing = await prisma.playerTournament.findUnique({
       where: { id: req.params.id },
-      select: { playerId: true },
+      select: { playerId: true, status: true },
     });
     if (!existing) throw new HttpError(404, "Tournament entry not found");
     if (existing.playerId !== req.userId) throw new HttpError(403, "Not your tournament entry");
@@ -766,6 +874,14 @@ playerTournamentsRouter.patch(
       data: { status: data.status, notes: data.notes },
       include: { tournament: true, player: true },
     });
+
+    // "Planned" → "registered" from the schedule's status menu is the most
+    // common way a player commits; the coach hears about it here too.
+    if (becameRegistered(existing.status, data.status)) {
+      void notifyCoachesOfRegistration(
+        pt.playerId, pt.player.firstName, pt.tournament.id, pt.tournament.name, pt.tournament.city, pt.tournament.startDate,
+      );
+    }
     return ok(res, presentPlayerTournament(pt), "Tournament status updated");
   }),
 );

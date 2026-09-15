@@ -20,6 +20,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useConnections } from "@/store/ConnectionStore";
 import { usePlayerTournaments, useAddPlayerTournament } from "@/hooks/api/queries";
 import { describeClash, findClashes, timeLeft } from "@/lib/tournamentPlanning";
+import { EntryDeadlineNote } from "@/components/tournaments/TournamentChips";
 import type { Tournament, TournamentStatus } from "@/types";
 import { format, parseISO } from "date-fns";
 import { useT } from "@/lib/i18n";
@@ -148,6 +149,8 @@ export function AddToCalendarDialog({
                 {tournament.category ? ` · ${tournament.category}` : ""}
               </p>
             )}
+            {/* "In 3 days" above; the actual day here, for the diary. */}
+            <EntryDeadlineNote tournament={tournament} className="mt-1 block" />
           </div>
 
           {isCoach && (

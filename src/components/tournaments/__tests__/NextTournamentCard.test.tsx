@@ -82,8 +82,11 @@ describe("<NextTournamentCard />", () => {
     expect(screen.getByRole("link", { name: "Event t9" })).toHaveAttribute("href", "/tournaments/t9");
     expect(screen.getByRole("link", { name: /Prepare for this match/ })).toHaveAttribute("href", "/tournaments/t9#prepare");
     expect(screen.getByTestId("provenance-chip")).toHaveTextContent("via UTR");
-    // No invented preparation status anywhere on the card.
-    expect(screen.queryByText(/prepared/i)).toBeNull();
+    // The preparation status is the server's word, not a guess: an entry with
+    // no recorded run reads "not yet", never "prepared".
+    const prep = screen.getByTestId("prep-status-chip");
+    expect(prep.dataset.prepared).toBe("false");
+    expect(prep).toHaveTextContent("Not prepared yet");
   });
 
   it("says 'On now' for a tournament in progress", () => {

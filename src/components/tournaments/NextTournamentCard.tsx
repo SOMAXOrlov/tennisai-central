@@ -4,9 +4,9 @@
 // page". This one names the event, counts the days, and links straight to the
 // page where the conditions, the ball behaviour and the preparation are.
 //
-// No "prepared / not prepared" status is shown. The server records each
-// preparation run (ai_generations, reportType match_prep) but nothing exposes
-// that to the client yet, and a status the app cannot back is worse than none.
+// The "prepared / not yet" chip is backed by `preparedAt` on the entry — the
+// server's latest successful match_prep generation for this player and event
+// — so it is a recorded fact, never a guess from the client.
 
 import { Link } from "react-router-dom";
 import { ArrowRight, MapPin, Sparkles, Trophy } from "lucide-react";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { StatusBadge } from "@/components/ui/shared";
 import { ProvenanceChip } from "@/components/tournaments/ProvenanceChip";
+import { PrepStatusChip } from "@/components/tournaments/TournamentChips";
 import { usePlayerTournaments } from "@/hooks/api/queries";
 import { useT } from "@/lib/i18n";
 import { daysToStart, nextUpcoming } from "@/lib/tournamentPlanning";
@@ -80,7 +81,10 @@ export function NextTournamentCard() {
           <StatusBadge status={entry.status} className="shrink-0" />
         </div>
 
-        <ProvenanceChip tournament={tour} />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <ProvenanceChip tournament={tour} />
+          <PrepStatusChip preparedAt={entry.preparedAt} tournament={tour} />
+        </div>
 
         <div className="border-t border-border pt-3">
           <Button size="sm" className="gap-2" asChild>

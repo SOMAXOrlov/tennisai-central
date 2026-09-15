@@ -573,6 +573,11 @@
       "removing": "Removing…",
       "remove": "Remove"
     },
+    "chips": {
+      "deadline": "Entry deadline {date}",
+      "prepared": "Prepared {date}",
+      "notPrepared": "Not prepared yet"
+    },
     "planning": {
       "finished": "Finished",
       "onNow": "On now",
@@ -2849,6 +2854,10 @@
   },
   "calendar": {
     "title": "Calendar",
+    "nextBanner": {
+      "title": "Next tournament",
+      "prepare": "Prepare"
+    },
     "subtitle": {
       "player": "Your unified schedule — trainings, matches, tournaments & more.",
       "coach": "Manage your schedule and connected player events.",
@@ -3339,7 +3348,7 @@
     },
     "tournament": {
       "statusUpdated": "Tournament status updated",
-      "addedToSchedule": "Added to the schedule",
+      "addedWithCountdown": "{name} added to the schedule · {countdown}",
       "removedFromSchedule": "Removed from the schedule",
       "hidden": "Tournament hidden",
       "unhidden": "Tournament shown again",

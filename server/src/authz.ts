@@ -228,6 +228,42 @@ export async function assertSameAcademy(userIdA: string, userIdB: string): Promi
 }
 
 /**
+ * Every coach who should hear about a player's doings: the coaches actively
+ * ASSIGNED to the player, plus anyone the player has an active connection with
+ * who is a coach. Both routes, matching `readablePlayerIds` from the other
+ * side — a coach who can list a player's entries is a coach who hears about
+ * them.
+ *
+ * Tolerates a missing row set (the test harness returns undefined for
+ * anything not mocked), so a fire-and-forget caller never logs a TypeError.
+ */
+export async function coachIdsOfPlayer(playerId: string): Promise<string[]> {
+  const [assignments, connections] = await Promise.all([
+    prisma.coachAssignment.findMany({
+      where: { playerId, status: "active" },
+      select: { coachId: true },
+    }),
+    prisma.connectionRequest.findMany({
+      where: { status: "active", OR: [{ fromUserId: playerId }, { toUserId: playerId }] },
+      select: { fromUserId: true, toUserId: true },
+    }),
+  ]);
+  const coachIds = new Set<string>((assignments ?? []).map((a) => a.coachId));
+  const connected = (connections ?? [])
+    .map((c) => (c.fromUserId === playerId ? c.toUserId : c.fromUserId))
+    .filter((id) => id !== playerId && !coachIds.has(id));
+  if (connected.length) {
+    // A connection can be to an observer or another player; only coaches count.
+    const coaches = await prisma.user.findMany({
+      where: { id: { in: connected }, role: "coach" },
+      select: { id: true },
+    });
+    for (const c of coaches ?? []) coachIds.add(c.id);
+  }
+  return [...coachIds];
+}
+
+/**
  * Resolve every player id the current user is allowed to READ:
  *  - player: themselves
  *  - coach: themselves + actively-assigned players

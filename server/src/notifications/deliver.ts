@@ -61,6 +61,10 @@ export function categoryForType(type: string): CategoryFlag {
     // A coach entering a player belongs with tournament mail, not the
     // catch-all: someone who muted tournament alerts meant this one too.
     case "tournament_entry_added":
+    // …and the reverse: a player registering, told to their coach. Same
+    // switch, so the coach's Email toggle in Notification settings covers it.
+    case "tournament_entry_registered":
+    case "match_prep_ready":
       return "tournamentReminders";
     case "request_approval":
     case "training_request_created":

@@ -266,3 +266,38 @@ describe("POST /api/tournaments", () => {
     expect(res.status).toBe(201);
   });
 });
+
+describe("POST /api/tournaments — telling the player", () => {
+  it("notifies the entered player with a link to the new event's preparation", async () => {
+    db.coachAssignment.findUnique.mockResolvedValue({ status: "active" });
+    db.notification.create.mockResolvedValue({ id: "n-1", userId: PLAYER });
+
+    const res = await request(app)
+      .post("/api/tournaments")
+      .set("Authorization", bearer(COACH))
+      .send(entry({ playerId: PLAYER }));
+
+    expect(res.status).toBe(201);
+    // Fire-and-forget, so let the microtask queue drain before asserting.
+    await new Promise((r) => setTimeout(r, 10));
+    const calls = db.notification.create.mock.calls as Array<
+      [{ data: { userId: string; type: string; linkTo: string } }]
+    >;
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0].data).toMatchObject({
+      userId: PLAYER,
+      type: "tournament_entry_added",
+      linkTo: "/tournaments/clx-new-row#prepare",
+    });
+  });
+
+  it("tells nobody when the coach enters an event for themselves", async () => {
+    await request(app)
+      .post("/api/tournaments")
+      .set("Authorization", bearer(COACH))
+      .send(entry({ playerId: COACH }));
+
+    await new Promise((r) => setTimeout(r, 10));
+    expect(db.notification.create).not.toHaveBeenCalled();
+  });
+});

@@ -27,6 +27,7 @@ import { ProvenanceChip, ProvenanceLegend } from "@/components/tournaments/Prove
 import { AddToCalendarDialog } from "@/components/tournaments/AddToCalendarDialog";
 import { AddTournamentDialog } from "@/components/tournaments/AddTournamentDialog";
 import { TournamentScopeBanner } from "@/components/tournaments/TournamentScopeBanner";
+import { EntryDeadlineNote, PrepStatusChip, TimeLeftChip } from "@/components/tournaments/TournamentChips";
 import { useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
 // Loaded on demand: Leaflet + its CSS are ~160 KB and only the Map tab needs
 // them, so they must not ship with the rest of this page.
@@ -496,7 +497,13 @@ export default function TournamentsPage() {
                         </button>
                       </td>}
                       <td className="px-4 py-3 text-muted-foreground">{pt.tournament.city}, {pt.tournament.country}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(new Date(pt.tournament.startDate), SHORT_DATE)} – {formatDate(new Date(pt.tournament.endDate), SHORT_DATE)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        <div>{formatDate(new Date(pt.tournament.startDate), SHORT_DATE)} – {formatDate(new Date(pt.tournament.endDate), SHORT_DATE)}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <TimeLeftChip tournament={pt.tournament} />
+                          <PrepStatusChip preparedAt={pt.preparedAt} tournament={pt.tournament} />
+                        </div>
+                      </td>
                       <td className="px-4 py-3"><Badge variant="outline" className={surfaceColor[pt.tournament.surface] ?? ""}>{pt.tournament.surface}</Badge></td>
                       <td className="px-4 py-3">
                         {isPlayer ? (
@@ -613,6 +620,13 @@ export default function TournamentsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div className="flex items-center gap-1.5 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{formatDate(new Date(t.startDate), SHORT_DATE)} – {formatDate(new Date(t.endDate), FULL_DATE)}</div>
+                  {/* The countdown sits with the dates, where the deciding
+                      happens — the same one the add dialog and the tournament
+                      page show, so the number never changes between them. */}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <TimeLeftChip tournament={t} />
+                    <EntryDeadlineNote tournament={t} />
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     {t.category && <Badge variant="secondary">{t.category}</Badge>}
                     {t.level && <Badge variant="secondary">{t.level}</Badge>}
@@ -789,6 +803,7 @@ export default function TournamentsPage() {
                         <ProvenanceChip tournament={t} className="mt-1" />
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
+                        <TimeLeftChip tournament={t} />
                         <Badge variant="outline" className={surfaceColor[t.surface] ?? ""}>{t.surface}</Badge>
                         {distance != null && <Badge variant="outline" className="border-primary/40 text-primary">{formatDistanceKm(distance)}</Badge>}
                         {isPlayer && (

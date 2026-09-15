@@ -43,6 +43,7 @@ import { CalendarFiltersSheet } from "@/components/calendar/CalendarFiltersSheet
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MultiFilterMenu, SingleFilterMenu, LocationFilterMenu, ReassignDropStrip } from "@/components/calendar/CalendarFilterMenus";
 import { CalendarLegendPanel } from "@/components/calendar/CalendarLegend";
+import { NextTournamentBanner } from "@/components/calendar/NextTournamentBanner";
 import type { CalendarEvent, CalendarEventType, CalendarEventState, ConnectedPlayer, RecurrenceFrequency, RecurrenceEndType, RecurrenceRule, Tournament, TournamentFederation } from "@/types";
 import { useCalendarEvents, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent, useTeams, useTournaments, useAddPlayerTournament, usePlayerTournaments, useCalendarPreferences, useSaveCalendarPreferences } from "@/hooks/api/queries";
 import { queryKeys } from "@/hooks/api/queries";
@@ -1138,6 +1139,17 @@ export default function CalendarPage() {
       </div>
 
       {isObserver && <ReadOnlyBanner />}
+
+      {/* The next tournament on the schedule, counted down. Follows the player
+          filter, so a coach scoped to one player sees that player's event.
+          Renders nothing when there is none. */}
+      <NextTournamentBanner
+        entries={playerTournaments}
+        scope={isCoach ? playerScope : "all"}
+        viewerId={user?.id}
+        showPlayerName={isCoach && playerScope === "all"}
+        teamPlayerIds={isCoach ? teamPlayerIds : null}
+      />
 
       {/* ── Toolbar, phone ──────────────────────────────────────────────────
           The desktop run of dropdowns wrapped to three rows here, and with the

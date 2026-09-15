@@ -573,6 +573,11 @@
       "removing": "Quitando…",
       "remove": "Quitar"
     },
+    "chips": {
+      "deadline": "Cierre de inscripción {date}",
+      "prepared": "Preparado el {date}",
+      "notPrepared": "Sin preparar todavía"
+    },
     "planning": {
       "finished": "Finalizado",
       "onNow": "En juego",
@@ -2849,6 +2854,10 @@
   },
   "calendar": {
     "title": "Calendario",
+    "nextBanner": {
+      "title": "Próximo torneo",
+      "prepare": "Preparar"
+    },
     "subtitle": {
       "player": "Toda tu agenda: entrenamientos, partidos, torneos y más.",
       "coach": "Gestiona tu agenda y los eventos de los jugadores conectados.",
@@ -3339,7 +3348,7 @@
     },
     "tournament": {
       "statusUpdated": "Estado del torneo actualizado",
-      "addedToSchedule": "Añadido a la agenda",
+      "addedWithCountdown": "{name} añadido a la agenda · {countdown}",
       "removedFromSchedule": "Quitado de la agenda",
       "hidden": "Torneo ocultado",
       "unhidden": "Torneo visible de nuevo",
