@@ -23,6 +23,7 @@ import { profileApi, calendarPreferencesApi, type CalendarPreferences } from "@/
 import { trainingPlansApi } from "@/api/endpoints/trainingPlans";
 import type { TrainingSession, TrainingScope, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, StringSetup, StringSetupCreateInput, StringSetupUpdateInput, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
 import { toastSuccess, toastError } from "@/lib/feedback";
+import { timeLeft } from "@/lib/tournamentPlanning";
 
 // ─── Query Keys ───
 export const queryKeys = {
@@ -493,7 +494,15 @@ export function useAddPlayerTournament() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: (data: Omit<PlayerTournament, "id">) => tournamentsApi.addPlayerTournament(data),
-    onSuccess: () => { inv.tournament(); toastSuccess("toast.tournament.addedToSchedule"); },
+    // The confirmation carries the same countdown the card showed — "entries
+    // close in 3 days" is the fact a player most needs right after committing.
+    onSuccess: (_, vars) => {
+      inv.tournament();
+      toastSuccess("toast.tournament.addedWithCountdown", {
+        name: vars.tournament.name,
+        countdown: timeLeft(vars.tournament).label,
+      });
+    },
     onError: (e: unknown) => toastError("toast.tournament.addFailed", e),
   });
 }

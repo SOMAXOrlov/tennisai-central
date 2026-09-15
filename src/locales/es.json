@@ -573,6 +573,11 @@
       "removing": "Quitando…",
       "remove": "Quitar"
     },
+    "chips": {
+      "deadline": "Cierre de inscripción {date}",
+      "prepared": "Preparado el {date}",
+      "notPrepared": "Sin preparar todavía"
+    },
     "planning": {
       "finished": "Finalizado",
       "onNow": "En juego",
@@ -3343,7 +3348,7 @@
     },
     "tournament": {
       "statusUpdated": "Estado del torneo actualizado",
-      "addedToSchedule": "Añadido a la agenda",
+      "addedWithCountdown": "{name} añadido a la agenda · {countdown}",
       "removedFromSchedule": "Quitado de la agenda",
       "hidden": "Torneo ocultado",
       "unhidden": "Torneo visible de nuevo",

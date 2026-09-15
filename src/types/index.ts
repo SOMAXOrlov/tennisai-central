@@ -66,8 +66,11 @@ export type NotificationType =
   // A coach entering one of their players for a tournament.
   | "tournament_entry_added"
   // A player generated their match preparation for a tournament; their coach
-  // is told. Emitted by server/src/ai/routes.ts, gated by "aiInsightUpdates".
-  | "match_prep_ready";
+  // is told. Emitted by server/src/ai/routes.ts, gated by "tournamentReminders".
+  | "match_prep_ready"
+  // A player registered themselves for a tournament; their coaches are told.
+  // Emitted by server/src/tournaments/routes.ts, gated by "tournamentReminders".
+  | "tournament_entry_registered";
 
 export type TrainingRequestStatus = "pending" | "approved" | "rejected" | "reschedule_proposed" | "cancelled";
 
@@ -248,6 +251,12 @@ export interface PlayerTournament {
   playerName?: string;
   status: TournamentStatus;
   notes?: string;
+  /**
+   * When the player last ran the match preparation for this event — the
+   * server's latest successful match_prep generation. Absent means never.
+   * Only the list endpoint fills it in; a freshly written entry has none.
+   */
+  preparedAt?: string;
 }
 
 // --- Finance ---

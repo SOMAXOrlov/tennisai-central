@@ -14,7 +14,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
-import { requireRole, assertCanActOnPlayer } from "../authz";
+import { requireRole, assertCanActOnPlayer, coachIdsOfPlayer } from "../authz";
 import { aiConfig, completeText, AiProviderError } from "./provider";
 import {
   buildEvidence,
@@ -261,31 +261,10 @@ async function notifyCoachesOfPrep(
   tournamentName: string,
 ): Promise<void> {
   try {
-    const [assignments, connections] = await Promise.all([
-      prisma.coachAssignment.findMany({
-        where: { playerId, status: "active" },
-        select: { coachId: true },
-      }),
-      prisma.connectionRequest.findMany({
-        where: { status: "active", OR: [{ fromUserId: playerId }, { toUserId: playerId }] },
-        select: { fromUserId: true, toUserId: true },
-      }),
-    ]);
-    const coachIds = new Set<string>(assignments.map((a) => a.coachId));
-    const connected = connections
-      .map((c) => (c.fromUserId === playerId ? c.toUserId : c.fromUserId))
-      .filter((id) => id !== playerId && !coachIds.has(id));
-    if (connected.length) {
-      // A connection can be to an observer or another player; only coaches count.
-      const coaches = await prisma.user.findMany({
-        where: { id: { in: connected }, role: "coach" },
-        select: { id: true },
-      });
-      for (const c of coaches) coachIds.add(c.id);
-    }
+    const coachIds = await coachIdsOfPlayer(playerId);
     const who = playerFirstName ?? "Your player";
     await Promise.all(
-      [...coachIds].map((coachId) =>
+      coachIds.map((coachId) =>
         createAndDeliverNotification(prisma, {
           userId: coachId,
           type: "match_prep_ready",

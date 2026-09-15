@@ -40,6 +40,10 @@ describe("categoryForType", () => {
     expect(categoryForType("training_updated")).toBe("trainingReminders");
     expect(categoryForType("training_deleted")).toBe("trainingReminders");
     expect(categoryForType("tournament_reminder")).toBe("tournamentReminders");
+    // Both directions of a tournament entry ride the same switch.
+    expect(categoryForType("tournament_entry_added")).toBe("tournamentReminders");
+    expect(categoryForType("tournament_entry_registered")).toBe("tournamentReminders");
+    expect(categoryForType("match_prep_ready")).toBe("tournamentReminders");
     expect(categoryForType("finance_update")).toBe("financeUpdates");
     expect(categoryForType("ai_insight")).toBe("aiInsightUpdates");
   });

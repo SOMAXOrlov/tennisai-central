@@ -20,6 +20,7 @@ import { ArrowRight, MapPin, Sparkles, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 import { daysToStart, nextUpcoming } from "@/lib/tournamentPlanning";
+import { PrepStatusChip } from "@/components/tournaments/TournamentChips";
 import type { PlayerTournament } from "@/types";
 
 export interface NextTournamentBannerProps {
@@ -111,6 +112,7 @@ export function NextTournamentBanner({
               {next.playerName}
             </span>
           )}
+          <PrepStatusChip preparedAt={next.preparedAt} tournament={tour} className="hidden sm:inline-flex" />
         </div>
         <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
           <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
