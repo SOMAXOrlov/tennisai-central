@@ -2849,6 +2849,10 @@
   },
   "calendar": {
     "title": "Calendario",
+    "nextBanner": {
+      "title": "Próximo torneo",
+      "prepare": "Preparar"
+    },
     "subtitle": {
       "player": "Toda tu agenda: entrenamientos, partidos, torneos y más.",
       "coach": "Gestiona tu agenda y los eventos de los jugadores conectados.",

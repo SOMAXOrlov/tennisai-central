@@ -44,6 +44,15 @@ vi.mock("../ai/provider", () => {
   };
 });
 
+/** The conditions at the tournament — pre-computed fact, stubbed as such. */
+const conditions = vi.hoisted(() => ({
+  value: null as Record<string, unknown> | null,
+}));
+
+vi.mock("../conditions/service", () => ({
+  loadConditions: async () => conditions.value,
+}));
+
 import { prisma } from "../db";
 import { aiRouter } from "../ai/routes";
 import { bearer, createTestApp, prismaMockFrom } from "./harness";
@@ -93,8 +102,60 @@ const VALID_ADVICE = JSON.stringify({
   cautions: [],
 });
 
+/** A tournament with weather, so there is something to interpret. */
+function tournamentConditions() {
+  return {
+    tournament: {
+      id: "t-1",
+      name: "J100 Vic",
+      city: "Vic",
+      country: "Spain",
+      surface: "Clay",
+      indoorOutdoor: "outdoor",
+      ballBrand: null,
+      startDate: "2026-10-01",
+      endDate: "2026-10-04",
+    },
+    altitudeM: 480,
+    altitudeSource: "catalog",
+    altitudeAssumed: false,
+    weather: {
+      kind: "forecast",
+      temperatureC: 24,
+      temperatureMaxC: 28,
+      temperatureMinC: 19,
+      humidityPct: 50,
+      source: "Open-Meteo forecast",
+    },
+    weatherError: null,
+    physics: {
+      airDensity: 1.15,
+      densityVsReferencePct: -4,
+      pressureHPa: 957,
+      speed: "faster",
+      bounce: "higher",
+      drivers: ["Altitude 480 m thins the air"],
+    },
+    physicsBasis: "outdoor",
+  };
+}
+
+const VALID_PREP = JSON.stringify({
+  conditionsSummary: "Warm and dry at altitude: the ball flies.",
+  ballBehaviour: "Faster through the air, higher bounce.",
+  tacticalAdjustments: ["Take the ball early"],
+  preparation: ["Longer warm-up on the return"],
+  equipmentNotes: [],
+  cautions: [],
+});
+
 beforeEach(() => {
   vi.resetAllMocks();
+  conditions.value = tournamentConditions();
+  db.coachAssignment.findMany.mockResolvedValue([]);
+  db.connectionRequest.findMany.mockResolvedValue([]);
+  db.user.findMany.mockResolvedValue([]);
+  db.training.findMany.mockResolvedValue([]);
   provider.config = { provider: "anthropic", model: "test-model", apiKey: "unused-in-tests" };
   provider.text = VALID_ADVICE;
   provider.fail = null;
@@ -309,5 +370,78 @@ describe("POST /api/ai/training-advice — quota", () => {
     expect(res.status).toBe(429);
     expect(provider.lastPrompt).toBeNull();
     expect(db.training.findMany).not.toHaveBeenCalled();
+  });
+});
+
+// ── Match preparation: who hears about it ──────────────────────────────────
+
+describe("POST /api/ai/match-prep — notifications", () => {
+  it("tells every coach — assigned or connected — when a player prepares for their own event", async () => {
+    db.user.findUnique.mockResolvedValue({ role: "player", firstName: "Ana" });
+    db.coachAssignment.findMany.mockResolvedValue([{ coachId: COACH }]);
+    // One connected coach, one connected observer: only the coach counts.
+    db.connectionRequest.findMany.mockResolvedValue([
+      { fromUserId: "user-coach-2", toUserId: PLAYER },
+      { fromUserId: PLAYER, toUserId: "user-observer" },
+    ]);
+    db.user.findMany.mockResolvedValue([{ id: "user-coach-2" }]);
+    db.notification.create.mockResolvedValue({ id: "n-1" });
+    provider.text = VALID_PREP;
+
+    const res = await request(app)
+      .post("/api/ai/match-prep")
+      .set("Authorization", bearer(PLAYER))
+      .send({ tournamentId: "t-1" });
+
+    expect(res.status).toBe(200);
+    // Fire-and-forget, so let the microtask queue drain before asserting.
+    await new Promise((r) => setTimeout(r, 10));
+    const calls = db.notification.create.mock.calls as Array<
+      [{ data: { userId: string; type: string; linkTo: string; message: string } }]
+    >;
+    expect(calls.map((c) => c[0].data.userId).sort()).toEqual([COACH, "user-coach-2"]);
+    expect(calls[0][0].data).toMatchObject({
+      type: "match_prep_ready",
+      linkTo: "/tournaments/t-1#prepare",
+    });
+    // The coach is told who and which event — never the advice itself.
+    expect(calls[0][0].data.message).toContain("Ana");
+    expect(calls[0][0].data.message).toContain("J100 Vic");
+    expect(calls[0][0].data.message).not.toContain("Take the ball early");
+    // Only ACTIVE assignments were asked for, and only coaches among the connections.
+    const where = (db.coachAssignment.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(where).toMatchObject({ playerId: PLAYER, status: "active" });
+    const userWhere = (db.user.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0].where;
+    expect(userWhere).toMatchObject({ id: { in: ["user-coach-2", "user-observer"] }, role: "coach" });
+  });
+
+  it("tells nobody when the coach runs the preparation for their player", async () => {
+    asRole("coach");
+    connected();
+    db.coachAssignment.findMany.mockResolvedValue([{ coachId: COACH }]);
+    provider.text = VALID_PREP;
+
+    const res = await request(app)
+      .post("/api/ai/match-prep")
+      .set("Authorization", bearer(COACH))
+      .send({ tournamentId: "t-1", playerId: PLAYER });
+
+    expect(res.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(db.notification.create).not.toHaveBeenCalled();
+  });
+
+  it("still returns the report when the coach notification fails", async () => {
+    db.user.findUnique.mockResolvedValue({ role: "player", firstName: "Ana" });
+    db.coachAssignment.findMany.mockRejectedValue(new Error("db down"));
+    provider.text = VALID_PREP;
+
+    const res = await request(app)
+      .post("/api/ai/match-prep")
+      .set("Authorization", bearer(PLAYER))
+      .send({ tournamentId: "t-1" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.prep.tacticalAdjustments).toEqual(["Take the ball early"]);
   });
 });

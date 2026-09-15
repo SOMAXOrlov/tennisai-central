@@ -244,10 +244,13 @@ describe("POST /api/player-tournaments", () => {
     await new Promise((r) => setTimeout(r, 10));
     // Cast the calls array rather than the callback: vitest types each call as
     // any[], which a tuple-typed parameter is not assignable to.
-    const calls = db.notification.create.mock.calls as Array<[{ data: { userId: string } }]>;
+    const calls = db.notification.create.mock.calls as Array<[{ data: { userId: string; linkTo: string } }]>;
     const notified = calls.map((c) => c[0].data.userId);
     expect(notified).toContain(OTHER);
     expect(notified).not.toContain(OWNER);
+    // The link opens the event on its preparation section — not the browse
+    // list, where the player would have to find it a second time.
+    expect(calls[0][0].data.linkTo).toBe("/tournaments/t-1#prepare");
   });
 
   it("404s an unknown tournament without writing an orphan entry", async () => {

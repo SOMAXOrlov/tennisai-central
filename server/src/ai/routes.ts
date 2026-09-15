@@ -35,6 +35,7 @@ import {
   SYSTEM_PROMPT as MATCH_PREP_SYSTEM_PROMPT,
 } from "./matchPrep";
 import { loadConditions } from "../conditions/service";
+import { createAndDeliverNotification } from "../notifications/deliver";
 
 export const aiRouter = Router();
 
@@ -242,6 +243,66 @@ aiRouter.post(
 
 // ── Match preparation for a tournament ──────────────────────────────────────
 
+/**
+ * Tell every coach of a player that the player's match preparation for a
+ * tournament has been generated. Nothing from the report itself travels in
+ * the notification — the coach opens the tournament page to read it.
+ *
+ * "Coach of" means the same two rungs `readablePlayerIds` uses: an active
+ * CoachAssignment, or an active connection to a user whose role is coach.
+ * Assignments alone would miss the coach who entered the player in the first
+ * place — a connected coach can enter a player for a tournament, so they must
+ * also hear when the player prepares for it.
+ */
+async function notifyCoachesOfPrep(
+  playerId: string,
+  playerFirstName: string | null,
+  tournamentId: string,
+  tournamentName: string,
+): Promise<void> {
+  try {
+    const [assignments, connections] = await Promise.all([
+      prisma.coachAssignment.findMany({
+        where: { playerId, status: "active" },
+        select: { coachId: true },
+      }),
+      prisma.connectionRequest.findMany({
+        where: { status: "active", OR: [{ fromUserId: playerId }, { toUserId: playerId }] },
+        select: { fromUserId: true, toUserId: true },
+      }),
+    ]);
+    const coachIds = new Set<string>(assignments.map((a) => a.coachId));
+    const connected = connections
+      .map((c) => (c.fromUserId === playerId ? c.toUserId : c.fromUserId))
+      .filter((id) => id !== playerId && !coachIds.has(id));
+    if (connected.length) {
+      // A connection can be to an observer or another player; only coaches count.
+      const coaches = await prisma.user.findMany({
+        where: { id: { in: connected }, role: "coach" },
+        select: { id: true },
+      });
+      for (const c of coaches) coachIds.add(c.id);
+    }
+    const who = playerFirstName ?? "Your player";
+    await Promise.all(
+      [...coachIds].map((coachId) =>
+        createAndDeliverNotification(prisma, {
+          userId: coachId,
+          type: "match_prep_ready",
+          title: "Match preparation ready",
+          message: `${who} prepared for ${tournamentName}. The conditions readout and plan are on the tournament page.`,
+          linkTo: `/tournaments/${tournamentId}#prepare`,
+        }),
+      ),
+    );
+  } catch (err) {
+    console.error(
+      `[ai] match-prep coach notification for ${playerId} failed:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
+}
+
 const matchPrepRequestSchema = z.object({
   tournamentId: z.string().min(1),
   /** Defaults to the caller — a player preparing themselves is the common case. */
@@ -363,6 +424,15 @@ aiRouter.post(
       create: { userId: actorId, periodKey, reportsGenerated: 1 },
       update: { reportsGenerated: { increment: 1 } },
     });
+
+    // A player who prepared for their own event has done the thing their coach
+    // entered them for; the coach hears about it. A coach who ran it for the
+    // player is not told what they just did — the same "never notify yourself"
+    // rule the tournament entry follows. Fire-and-forget: the report is the
+    // deliverable, and a notification failure must never take it down.
+    if (actorId === playerId) {
+      void notifyCoachesOfPrep(playerId, player?.firstName ?? null, parsed.data.tournamentId, conditions.tournament.name);
+    }
 
     ok(res, {
       prep: {

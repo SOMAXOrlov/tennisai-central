@@ -101,6 +101,7 @@ function presentTournament(t: Tournament) {
  */
 function notifyPlayerOfEntry(
   playerId: string,
+  tournamentId: string,
   name: string,
   city: string,
   startDate: Date,
@@ -116,7 +117,10 @@ function notifyPlayerOfEntry(
     type: "tournament_entry_added",
     title: "Tournament added to your calendar",
     message: `Your coach entered you for ${name} in ${city} — ${when}.`,
-    linkTo: "/tournaments",
+    // Straight to the event itself, on the section with the countdown and the
+    // match preparation — not the browse list, where the player would have to
+    // find it again.
+    linkTo: `/tournaments/${tournamentId}#prepare`,
   })
     .then(() => undefined)
     .catch((err) => {
@@ -670,7 +674,7 @@ tournamentsRouter.post(
       // Same rule as the ordinary entry route: something put on your calendar
       // by somebody else is news, and the person who did it is not told.
       if (d.playerId !== req.userId) {
-        void notifyPlayerOfEntry(d.playerId, created.name, created.city, created.startDate);
+        void notifyPlayerOfEntry(d.playerId, created.id, created.name, created.city, created.startDate);
       }
     }
 
@@ -741,7 +745,7 @@ playerTournamentsRouter.post(
     // kind of thing they should hear about rather than discover. Never notify
     // the person who did it.
     if (playerId !== req.userId) {
-      void notifyPlayerOfEntry(playerId, tournament.name, tournament.city, tournament.startDate);
+      void notifyPlayerOfEntry(playerId, tournament.id, tournament.name, tournament.city, tournament.startDate);
     }
 
     return ok(res, presentPlayerTournament(pt), "Tournament entry added", 201);

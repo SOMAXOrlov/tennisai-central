@@ -64,7 +64,10 @@ export type NotificationType =
   | "calendar_event_updated"
   | "calendar_event_deleted"
   // A coach entering one of their players for a tournament.
-  | "tournament_entry_added";
+  | "tournament_entry_added"
+  // A player generated their match preparation for a tournament; their coach
+  // is told. Emitted by server/src/ai/routes.ts, gated by "aiInsightUpdates".
+  | "match_prep_ready";
 
 export type TrainingRequestStatus = "pending" | "approved" | "rejected" | "reschedule_proposed" | "cancelled";
 

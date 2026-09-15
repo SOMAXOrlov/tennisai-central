@@ -2849,6 +2849,10 @@
   },
   "calendar": {
     "title": "Calendar",
+    "nextBanner": {
+      "title": "Next tournament",
+      "prepare": "Prepare"
+    },
     "subtitle": {
       "player": "Your unified schedule — trainings, matches, tournaments & more.",
       "coach": "Manage your schedule and connected player events.",
