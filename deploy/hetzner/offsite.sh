@@ -73,8 +73,9 @@ fi
 rsync -t ${RSH[@]+"${RSH[@]}"} "${FILES[@]}" "$OFFSITE_TARGET"
 
 # Verify: a dry run of the same transfer must have nothing left to send. Any
-# itemized line starting with '<' is a file whose size or mtime still differs.
-PENDING="$(rsync -t -n -i ${RSH[@]+"${RSH[@]}"} "${FILES[@]}" "$OFFSITE_TARGET" | grep -c '^<' || true)"
+# itemized file line ('<f' when pushing over SSH, '>f' for a local target) is
+# a file whose size or mtime still differs.
+PENDING="$(rsync -t -n -i ${RSH[@]+"${RSH[@]}"} "${FILES[@]}" "$OFFSITE_TARGET" | grep -c '^[<>]f' || true)"
 if [ "$PENDING" != "0" ]; then
   log "VERIFY FAILED: $PENDING file(s) differ at $OFFSITE_TARGET after the copy"
   exit 1
