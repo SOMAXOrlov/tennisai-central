@@ -61,7 +61,7 @@ export const navItems: NavItem[] = [
   { to: "/matches", labelKey: "dashboard.nav.matches", icon: <ClipboardList className="h-4 w-4" />, roles: ["player"] },
   { to: "/stats", labelKey: "dashboard.nav.stats", icon: <BarChart3 className="h-4 w-4" />, roles: ["player"] },
   { to: "/equipment", labelKey: "dashboard.nav.equipment", icon: <Package className="h-4 w-4" />, roles: ["player"] },
-  { to: "/finance", labelKey: "dashboard.nav.finance", icon: <Wallet className="h-4 w-4" />, roles: ["player", "observer"] },
+  { to: "/finance", labelKey: "dashboard.nav.finance", icon: <Wallet className="h-4 w-4" />, roles: ["player", "observer", "coach"] },
 
   // Coach nav
   { to: "/players", labelKey: "dashboard.nav.players", icon: <Users className="h-4 w-4" />, roles: ["coach"] },

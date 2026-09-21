@@ -13,7 +13,7 @@ import {
   Brain, ArrowRight, Clock, MapPin, Target, Hand,
 } from "lucide-react";
 import { useConnections } from "@/store/ConnectionStore";
-import { useTrainings, useTeams, usePlayerTournaments, useEquipment, useFinanceSummary, useStringSetups } from "@/hooks/api/queries";
+import { useTrainings, useTeams, usePlayerTournaments, useEquipment, useFinanceInsights, useStringSetups } from "@/hooks/api/queries";
 import { currentSetupFor } from "@/components/equipment/RacketStringing";
 import { formatSetupTension } from "@/lib/equipment/tension";
 import { format, parseISO, isPast } from "date-fns";
@@ -50,7 +50,9 @@ export function PlayerDetailDrawer({ player, open, onOpenChange, readOnly, onCre
   const playerId = player?.id ?? "";
   const { data: equipment = [] } = useEquipment(playerId);
   const { data: setups = [] } = useStringSetups(playerId);
-  const { data: financeSummary } = useFinanceSummary(playerId);
+  // A coach is never shown the ledger — the server refuses it — only the
+  // aggregates the insights route computes for a connected coach.
+  const { data: insights } = useFinanceInsights(playerId, "season", open && !!playerId);
 
   const playerTrainings = useMemo(
     () => trainings.filter((t) => t.playerIds.includes(playerId)).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
@@ -71,9 +73,7 @@ export function PlayerDetailDrawer({ player, open, onOpenChange, readOnly, onCre
 
   if (!player) return null;
 
-  const totalExpenses = financeSummary
-    ? financeSummary.totalTraining + financeSummary.totalTravel + financeSummary.totalTournament + financeSummary.totalEquipment
-    : 0;
+  const costedTournaments = (insights?.tournaments ?? []).filter((tc) => tc.byCurrency.length > 0).slice(0, 3);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -198,29 +198,23 @@ export function PlayerDetailDrawer({ player, open, onOpenChange, readOnly, onCre
             )}
           </div>
 
-          {/* Finance Snapshot */}
-          {financeSummary && (
+          {/* Cost aggregates — what a coach may see of a player's money */}
+          {insights && (insights.costPerTrainingHour || costedTournaments.length > 0) && (
             <div className="space-y-2">
-              <SectionHeader icon={<DollarSign className="h-3 w-3" />} title={t("playerDetail.financeSummary")} />
-              <div className="grid grid-cols-2 gap-2">
+              <SectionHeader icon={<DollarSign className="h-3 w-3" />} title={t("finance.drawer.title")} />
+              {insights.costPerTrainingHour && (
                 <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("playerDetail.financeTraining")}</p>
-                  <p className="text-sm font-semibold text-foreground">{formatCurrency(financeSummary.totalTraining, financeSummary.currency)}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("finance.drawer.costPerHour")}</p>
+                  <p className="text-sm font-semibold text-foreground">{formatCurrency(insights.costPerTrainingHour.perHour, insights.costPerTrainingHour.currency)}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("playerDetail.financeTravel")}</p>
-                  <p className="text-sm font-semibold text-foreground">{formatCurrency(financeSummary.totalTravel, financeSummary.currency)}</p>
+              )}
+              {costedTournaments.map((tc) => (
+                <div key={tc.tournamentId} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/30 px-3 py-2">
+                  <p className="truncate text-xs text-foreground">{tc.name}</p>
+                  <p className="shrink-0 text-sm font-semibold text-foreground">{tc.byCurrency.map((c) => formatCurrency(c.total, c.currency)).join(" · ")}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("playerDetail.financeTournament")}</p>
-                  <p className="text-sm font-semibold text-foreground">{formatCurrency(financeSummary.totalTournament, financeSummary.currency)}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("playerDetail.financeEquipment")}</p>
-                  <p className="text-sm font-semibold text-foreground">{formatCurrency(financeSummary.totalEquipment, financeSummary.currency)}</p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">{t("playerDetail.financeTotal", { amount: formatCurrency(totalExpenses, financeSummary.currency) })}</p>
+              ))}
+              <p className="text-[11px] text-muted-foreground">{t("finance.drawer.note")}</p>
             </div>
           )}
 

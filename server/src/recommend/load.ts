@@ -328,7 +328,10 @@ async function dateOfBirthOf(prisma: PrismaClient, playerId: string): Promise<st
 export async function loadMoneyInput(prisma: PrismaClient, playerId: string, window: MoneyWindowKind, now: string): Promise<MoneyInput> {
   const [entries, tournaments, setups, trainings] = await Promise.all([
     prisma.financeEntry.findMany({
-      where: { playerId },
+      // Expenses only. The ledger now has an income side (prize money,
+      // sponsorship…) and this engine reasons about spending; a prize counted
+      // as a cost would invert every insight it produces.
+      where: { playerId, kind: "expense" },
       select: { id: true, category: true, amount: true, currency: true, date: true, tournamentId: true },
       orderBy: [{ date: "asc" }, { id: "asc" }],
     }),

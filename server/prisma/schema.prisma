@@ -81,6 +81,11 @@ model User {
   trainingRequestsAsCoach  TrainingRequest[]       @relation("TRCoach")
   // back-relations (finance / equipment / notifications)
   financeEntries           FinanceEntry[]
+  financeEntriesCreated    FinanceEntry[]          @relation("FinanceEntryCreatedBy")
+  financeEntriesUpdated    FinanceEntry[]          @relation("FinanceEntryUpdatedBy")
+  financeBudgets           FinanceBudget[]         @relation("FinanceBudgetPlayer")
+  financeAccessGiven       FinanceAccessGrant[]    @relation("FinanceAccessPlayer")
+  financeAccessReceived    FinanceAccessGrant[]    @relation("FinanceAccessGrantee")
   equipmentItems           EquipmentItem[]
   notifications            Notification[]
   notificationPreference   NotificationPreference?
@@ -499,14 +504,78 @@ model FinanceEntry {
   // Roland Garros actually cost" has to be inferred from a date window, which
   // is wrong the moment a flight is booked two months early.
   tournamentId String?
+  // expense | income. Every row written before this column existed was an
+  // expense — the ledger had no other side — so the default backfills them
+  // honestly. Income uses its own category vocabulary (prize_money,
+  // sponsorship, grant, family_contribution); the route refuses a cross-pair.
+  kind         String   @default("expense")
+  // Who wrote and who last changed the row. A parent with an access grant can
+  // add and correct entries on the player's behalf, and the player must be
+  // able to see that it was not them. Nullable because rows written before
+  // the grants existed have no author on record; SetNull because deleting a
+  // parent's account must not delete the family's ledger.
+  createdById  String?
+  updatedById  String?
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
 
   player     User        @relation(fields: [playerId], references: [id], onDelete: Cascade)
   tournament Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  createdBy  User?       @relation("FinanceEntryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy  User?       @relation("FinanceEntryUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([playerId])
   @@index([tournamentId])
   @@map("finance_entries")
+}
+
+// A season's spending plan, by expense category, in ONE currency. Actuals are
+// compared only against expenses logged in that currency; spend in any other
+// currency is listed beside the budget, never converted into it. One row per
+// player per season label ("2026", "2026/27").
+model FinanceBudget {
+  id          String   @id @default(cuid())
+  playerId    String
+  season      String
+  seasonStart String // "yyyy-MM-dd"
+  seasonEnd   String // "yyyy-MM-dd"
+  currency    String   @default("EUR")
+  // Record<expense category, planned amount>. Categories absent from the
+  // object have no budget line, which is different from a line of zero.
+  lines       Json
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  player User @relation("FinanceBudgetPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, season])
+  @@map("finance_budgets")
+}
+
+// What a player has let one other person do with their finances.
+//   view — read entries, summary, budget, insights
+//   add  — view, plus record entries (and correct or remove the ones they wrote)
+//   full — add, plus edit or delete any entry and set the budget
+// Granted by the player only, revocable any time. The grantee is a parent
+// (observer) connected to the player or a consented guardian. Coaches are not
+// granted: a connected coach sees aggregates (cost per tournament, per
+// training hour) through the insights route and nothing else.
+model FinanceAccessGrant {
+  id        String   @id @default(cuid())
+  playerId  String
+  granteeId String
+  level     String // view | add | full
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player  User @relation("FinanceAccessPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  grantee User @relation("FinanceAccessGrantee", fields: [granteeId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, granteeId])
+  @@index([granteeId])
+  @@map("finance_access_grants")
 }
 
 model EquipmentItem {

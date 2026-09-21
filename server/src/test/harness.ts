@@ -110,6 +110,11 @@ const DELEGATES = [
   // /api/players/:id/finance crashed on an undefined delegate.
   "equipmentItem",
   "financeEntry",
+  // The season budget and the per-person access grants the finance router
+  // reads before every answer (finance/access.ts resolves the caller's level
+  // from the grant table first).
+  "financeBudget",
+  "financeAccessGrant",
   // The recommendation routes derive level / age / comfort from the profile row.
   "playerProfile",
   // Gear catalogue domain.

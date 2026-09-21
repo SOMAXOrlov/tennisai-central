@@ -363,9 +363,18 @@ class MockStore {
     };
   }
   createFinanceEntry(data: Omit<FinanceEntry, "id" | "createdAt">) {
-    const entry: FinanceEntry = { ...data, id: this.nextId("f"), createdAt: new Date().toISOString() };
+    const entry: FinanceEntry = { kind: "expense", ...data, id: this.nextId("f"), createdAt: new Date().toISOString() };
     this.financeEntries.push(entry);
     return clone(entry);
+  }
+  updateFinanceEntry(id: string, data: Partial<FinanceEntry>) {
+    const idx = this.financeEntries.findIndex((f) => f.id === id);
+    if (idx === -1) throw new Error("Entry not found");
+    this.financeEntries[idx] = { ...this.financeEntries[idx], ...data, updatedAt: new Date().toISOString() };
+    return clone(this.financeEntries[idx]);
+  }
+  deleteFinanceEntry(id: string) {
+    this.financeEntries = this.financeEntries.filter((f) => f.id !== id);
   }
 
   // ─── Equipment ───

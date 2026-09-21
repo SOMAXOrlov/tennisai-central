@@ -1948,29 +1948,172 @@
   },
   "finance": {
     "title": "Finanzas",
-    "subtitle": "Seguimiento de los gastos de entrenamiento, viajes, torneos y material.",
+    "subtitle": "Lo que entra y lo que sale en la temporada: gastos, premios y apoyos, frente a un presupuesto.",
     "addExpense": "Añadir un gasto",
+    "addIncome": "Añadir un ingreso",
     "total": "Total",
     "transactions": "Movimientos",
     "entryCount": "{count, plural, one {# movimiento} other {# movimientos}}",
     "entryMeta": "{category} · {date}",
+    "season": "Temporada {season} · del {start} al {end}",
+    "tabs": {
+      "overview": "Resumen",
+      "entries": "Movimientos",
+      "budget": "Presupuesto",
+      "insights": "Análisis",
+      "access": "Acceso"
+    },
+    "kind": {
+      "expense": "Gasto",
+      "income": "Ingreso"
+    },
     "category": {
       "training": "Entrenamiento",
       "travel": "Viajes",
       "tournament": "Torneos",
-      "equipment": "Material"
+      "equipment": "Material",
+      "coaching": "Entrenador",
+      "stringing": "Encordado",
+      "tournament_fee": "Inscripciones",
+      "accommodation": "Alojamiento",
+      "food": "Comida",
+      "membership": "Cuotas de club",
+      "other": "Otros",
+      "prize_money": "Premios",
+      "sponsorship": "Patrocinio",
+      "grant": "Beca o ayuda",
+      "family_contribution": "Aportación familiar"
     },
     "add": {
       "title": "Añadir un gasto",
+      "incomeTitle": "Añadir un ingreso",
+      "editTitle": "Editar el movimiento",
       "description": "Registra un gasto nuevo relacionado con el tenis.",
+      "incomeDescription": "Registra dinero que entra: premios, un patrocinador, una beca o lo que aporta la familia.",
+      "kind": "Tipo",
       "descriptionLabel": "Descripción *",
       "descriptionPlaceholder": "Ej.: clases semanales",
+      "incomePlaceholder": "Ej.: cuartos de final del W15 de Hurghada",
       "amount": "Importe *",
       "amountPlaceholder": "0,00",
+      "currency": "Moneda",
       "category": "Categoría",
       "date": "Fecha",
-      "adding": "Añadiendo…",
-      "submit": "Añadir el gasto"
+      "saving": "Guardando…",
+      "submit": "Añadir el gasto",
+      "incomeSubmit": "Añadir el ingreso",
+      "editSubmit": "Guardar los cambios"
+    },
+    "overview": {
+      "income": "Ingresos",
+      "expenses": "Gastos",
+      "net": "Neto",
+      "nothingYet": "Todavía no hay nada registrado.",
+      "noSeasonData": "Nada registrado en la temporada {season} todavía. Los movimientos anteriores están en Movimientos."
+    },
+    "entries": {
+      "filter": {
+        "all": "Todos",
+        "expense": "Gastos",
+        "income": "Ingresos"
+      },
+      "emptyFilter": "Nada coincide con este filtro.",
+      "recordedBy": "registrado por {name}",
+      "edit": "Editar el movimiento",
+      "delete": "Eliminar el movimiento",
+      "deleteTitle": "¿Eliminar este movimiento?",
+      "deleteBody": "{description} ({amount}) se quitará del registro. No se puede deshacer.",
+      "confirmDelete": "Eliminar"
+    },
+    "budget": {
+      "title": "Presupuesto {season}",
+      "window": "Del {start} al {end} · {currency}",
+      "totalProgress": "{spent} de {planned} gastados · quedan {remaining}",
+      "noLines": "Todavía no hay importes previstos.",
+      "lineProgress": "{spent} de {planned}",
+      "unplannedSpend": "{spent} gastados sin nada previsto",
+      "otherCurrencies": "También se ha gastado en otras monedas, sin comparar con este presupuesto: {list}",
+      "noneTitle": "Sin presupuesto para esta temporada",
+      "noneDescription": "Decide cuánto puede costar la temporada, por categoría. Te avisaremos cuando una línea llegue al 80 % y cuando se pase.",
+      "noneReadOnly": "El jugador no ha fijado un presupuesto para esta temporada.",
+      "create": "Fijar un presupuesto",
+      "edit": "Editar",
+      "editTitle": "Presupuesto de la temporada",
+      "editDescription": "Importes previstos por categoría de gasto, en una sola moneda. Deja una línea vacía para no presupuestarla.",
+      "season": "Temporada",
+      "seasonHint": "Un año (2026) o una temporada partida (2026/27, de septiembre a agosto).",
+      "planned": "previsto",
+      "spent": "gastado",
+      "remaining": "queda",
+      "save": "Guardar el presupuesto",
+      "saving": "Guardando…"
+    },
+    "insights": {
+      "description": "Lo que dice el registro: cuánto costó de verdad cada torneo, cuánto cuesta una hora de entrenamiento y cómo se compara este periodo con el anterior.",
+      "aggregateNote": "Como entrenador ves el coste por torneo y por hora de entrenamiento de este jugador, nunca el registro en sí.",
+      "window": {
+        "label": "Periodo",
+        "month": "Últimos 30 días",
+        "season": "Últimos 6 meses",
+        "year": "Últimos 12 meses"
+      },
+      "noDataTitle": "Todavía no hay datos suficientes",
+      "noDataDescription": "El análisis aparece cuando se registran gastos, inscripciones a torneos o sesiones de entrenamiento.",
+      "headline": "Gastado ({currency})",
+      "previous": "Periodo anterior: {amount}",
+      "costPerHour": "Coste por hora de entrenamiento",
+      "costPerHourDetail": "{hours} h en {sessions} sesiones",
+      "stringingPerHour": "Encordado por hora de juego",
+      "stringingDetail": "{jobs} encordados · {hours} h",
+      "tournamentsTitle": "Lo que costó cada torneo",
+      "tournamentsDescription": "Inscripción, viaje, alojamiento, comida y encordado vinculados al torneo o registrados durante él.",
+      "noCostLogged": "sin gastos registrados",
+      "insightsTitle": "Observaciones",
+      "confidence": {
+        "low": "Confianza baja: pocos movimientos en este periodo.",
+        "medium": "Confianza media: basada en unos pocos movimientos.",
+        "high": "Confianza alta: basada en diez o más movimientos."
+      }
+    },
+    "access": {
+      "description": "Elige qué puede hacer cada padre o madre con tus finanzas. Puedes cambiar o quitar el acceso en cualquier momento; cada cambio que hagan queda registrado con su nombre.",
+      "level": {
+        "view": "Ver",
+        "add": "Ver y añadir",
+        "full": "Completo"
+      },
+      "levelHelp": {
+        "view": "Ve los movimientos, el presupuesto y el análisis.",
+        "add": "Además puede registrar gastos e ingresos, y corregir o quitar lo que haya registrado.",
+        "full": "Además puede cambiar o eliminar cualquier movimiento y fijar el presupuesto."
+      },
+      "yours": {
+        "add": "Puede ver este registro y añadir movimientos. Puede cambiar o quitar los movimientos que usted haya registrado.",
+        "full": "Tiene acceso completo a este registro, incluido el presupuesto."
+      },
+      "grantsTitle": "Quién tiene acceso",
+      "eligibleTitle": "Pueden recibir acceso",
+      "eligibleDescription": "Padres y madres conectados contigo. Los entrenadores no aparecen: un entrenador conectado solo ve el coste por torneo y por hora de entrenamiento.",
+      "grant": "Dar acceso",
+      "remove": "Quitar",
+      "changeLevel": "Cambiar el acceso de {name}",
+      "chooseLevel": "Nivel de acceso para {name}",
+      "noneTitle": "Todavía no hay con quién compartir",
+      "noneDescription": "Puedes dar acceso a un padre o una madre conectados contigo. Conéctate primero y después elige aquí un nivel.",
+      "noneAction": "Ir a Conexiones"
+    },
+    "noAccess": {
+      "title": "Sin acceso a las finanzas de este jugador",
+      "description": "El jugador decide quién ve su dinero. Pídale que le dé acceso desde su página de Finanzas."
+    },
+    "coach": {
+      "subtitle": "Coste por torneo y por hora de entrenamiento de tus jugadores.",
+      "noPlayers": "Conecta primero con un jugador; sus costes agregados aparecerán aquí."
+    },
+    "drawer": {
+      "title": "Costes",
+      "costPerHour": "Coste por hora de entrenamiento",
+      "note": "Agregados de los últimos seis meses. El registro en sí queda con el jugador."
     }
   },
   "playerDetail": {
@@ -1988,12 +2131,6 @@
     "equipment": "Material",
     "noEquipment": "Sin material registrado",
     "moreEquipment": "+{count} más",
-    "financeSummary": "Resumen de gastos",
-    "financeTraining": "Entrenamiento",
-    "financeTravel": "Viajes",
-    "financeTournament": "Torneos",
-    "financeEquipment": "Material",
-    "financeTotal": "Total: {amount}",
     "fullCalendar": "Ver el calendario",
     "allTrainings": "Ver los entrenamientos",
     "stats": {
@@ -3362,8 +3499,17 @@
       "added": "Torneo añadido"
     },
     "finance": {
-      "added": "Gasto añadido",
-      "addFailed": "No se ha podido añadir el gasto"
+      "added": "Movimiento añadido",
+      "addFailed": "No se ha podido añadir el movimiento",
+      "updated": "Movimiento actualizado",
+      "updateFailed": "No se ha podido actualizar el movimiento",
+      "removed": "Movimiento eliminado",
+      "removeFailed": "No se ha podido eliminar el movimiento",
+      "budgetSaved": "Presupuesto guardado",
+      "budgetFailed": "No se ha podido guardar el presupuesto",
+      "accessUpdated": "Acceso actualizado",
+      "accessRemoved": "Acceso quitado",
+      "accessFailed": "No se ha podido cambiar el acceso"
     },
     "equipment": {
       "added": "Material añadido",

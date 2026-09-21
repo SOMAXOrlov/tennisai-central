@@ -15,13 +15,13 @@ import {
   type NewTournament,
 } from "@/api/endpoints/tournaments";
 import { hiddenTournamentsApi } from "@/api/endpoints/hiddenTournaments";
-import { financeApi } from "@/api/endpoints/finance";
+import { financeApi, type InsightsWindow } from "@/api/endpoints/finance";
 import { equipmentApi } from "@/api/endpoints/equipment";
 import { stringSetupsApi } from "@/api/endpoints/stringSetups";
 import { notificationsApi } from "@/api/endpoints/notifications";
 import { profileApi, calendarPreferencesApi, type CalendarPreferences } from "@/api/endpoints/profile";
 import { trainingPlansApi } from "@/api/endpoints/trainingPlans";
-import type { TrainingSession, TrainingScope, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntry, EquipmentItem, StringSetup, StringSetupCreateInput, StringSetupUpdateInput, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
+import type { TrainingSession, TrainingScope, TrainingRequest, Team, CalendarEvent, PlayerTournament, FinanceEntryInput, FinanceBudgetInput, FinanceGrantLevel, EquipmentItem, StringSetup, StringSetupCreateInput, StringSetupUpdateInput, Notification, NotificationSettings, ConnectedPlayer, User, TrainingPlanCreateInput, PlayerSessionFeedback } from "@/types";
 import { toastSuccess, toastError } from "@/lib/feedback";
 import { timeLeft } from "@/lib/tournamentPlanning";
 
@@ -583,10 +583,13 @@ export function useFinanceEntries(playerId: string) {
   });
 }
 
-export function useFinanceSummary(playerId: string) {
+export function useFinanceSummary(playerId: string, season?: string) {
   return useQuery({
-    queryKey: queryKeys.financeSummary(playerId),
-    queryFn: async () => (await financeApi.getSummary(playerId)).data,
+    // The bare key stays `["financeSummary", playerId]` when no season is
+    // asked for, so the dashboards' cache entry and the invalidation prefix
+    // are unchanged; a season adds a third element.
+    queryKey: season ? [...queryKeys.financeSummary(playerId), season] : queryKeys.financeSummary(playerId),
+    queryFn: async () => (await financeApi.getSummary(playerId, season)).data,
     enabled: !!playerId,
   });
 }
@@ -594,10 +597,86 @@ export function useFinanceSummary(playerId: string) {
 export function useCreateFinanceEntry() {
   const inv = useInvalidateRelated();
   return useMutation({
-    mutationFn: ({ playerId, data }: { playerId: string; data: Omit<FinanceEntry, "id" | "createdAt" | "playerId"> }) =>
+    mutationFn: ({ playerId, data }: { playerId: string; data: FinanceEntryInput }) =>
       financeApi.createEntry(playerId, data),
     onSuccess: (_, vars) => { inv.finance(vars.playerId); toastSuccess("toast.finance.added"); },
     onError: (e: unknown) => toastError("toast.finance.addFailed", e),
+  });
+}
+
+export function useUpdateFinanceEntry() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; playerId: string; data: Partial<FinanceEntryInput> }) =>
+      financeApi.updateEntry(id, data),
+    onSuccess: (_, vars) => { inv.finance(vars.playerId); toastSuccess("toast.finance.updated"); },
+    onError: (e: unknown) => toastError("toast.finance.updateFailed", e),
+  });
+}
+
+export function useDeleteFinanceEntry() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id }: { id: string; playerId: string }) => financeApi.deleteEntry(id),
+    onSuccess: (_, vars) => { inv.finance(vars.playerId); toastSuccess("toast.finance.removed"); },
+    onError: (e: unknown) => toastError("toast.finance.removeFailed", e),
+  });
+}
+
+export function useFinanceBudget(playerId: string, season?: string) {
+  return useQuery({
+    queryKey: ["financeBudget", playerId, season ?? ""] as const,
+    queryFn: async () => (await financeApi.getBudget(playerId, season)).data,
+    enabled: !!playerId,
+  });
+}
+
+export function useSaveFinanceBudget() {
+  const qc = useQueryClient();
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ playerId, data }: { playerId: string; data: FinanceBudgetInput }) => financeApi.saveBudget(playerId, data),
+    onSuccess: (_, vars) => {
+      inv.finance(vars.playerId);
+      qc.invalidateQueries({ queryKey: ["financeBudget", vars.playerId] });
+      toastSuccess("toast.finance.budgetSaved");
+    },
+    onError: (e: unknown) => toastError("toast.finance.budgetFailed", e),
+  });
+}
+
+export function useFinanceAccess(playerId: string, enabled = true) {
+  return useQuery({
+    queryKey: ["financeAccess", playerId] as const,
+    queryFn: async () => (await financeApi.getAccess(playerId)).data,
+    enabled: !!playerId && enabled,
+  });
+}
+
+export function useSetFinanceAccess() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ playerId, granteeId, level }: { playerId: string; granteeId: string; level: FinanceGrantLevel }) =>
+      financeApi.setAccess(playerId, granteeId, level),
+    onSuccess: (_, vars) => { qc.invalidateQueries({ queryKey: ["financeAccess", vars.playerId] }); toastSuccess("toast.finance.accessUpdated"); },
+    onError: (e: unknown) => toastError("toast.finance.accessFailed", e),
+  });
+}
+
+export function useRemoveFinanceAccess() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ playerId, granteeId }: { playerId: string; granteeId: string }) => financeApi.removeAccess(playerId, granteeId),
+    onSuccess: (_, vars) => { qc.invalidateQueries({ queryKey: ["financeAccess", vars.playerId] }); toastSuccess("toast.finance.accessRemoved"); },
+    onError: (e: unknown) => toastError("toast.finance.accessFailed", e),
+  });
+}
+
+export function useFinanceInsights(playerId: string, window: InsightsWindow = "season", enabled = true) {
+  return useQuery({
+    queryKey: ["financeInsights", playerId, window] as const,
+    queryFn: async () => (await financeApi.getInsights(playerId, window)).data,
+    enabled: !!playerId && enabled,
   });
 }
 
