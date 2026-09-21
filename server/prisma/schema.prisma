@@ -594,6 +594,14 @@ model EquipmentItem {
   // product being retired from the catalogue must never delete a player's own
   // record of the racket in their bag.
   productId    String?
+  // Category-specific facts (grip size, gauge, shoe size…), validated per
+  // category in equipment/routes.ts. JSON so a new fact is not a migration.
+  specs        Json?
+  // One photo per item, the owner's alone to see. Same scheme as User.photoId:
+  // a random 32-hex storage name in UPLOADS_DIR, never a URL; served only by
+  // GET /equipment/:id/photo behind the ownership check.
+  photoId        String?
+  photoUpdatedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1576,6 +1584,12 @@ model StringSetup {
   // Null means "same as mains" — a single-tension job, which is most of them.
   tensionCrossesKg Float?
   prestretch       Boolean?
+  // How much string went into the frame and where it came from — a pre-cut
+  // set or cut from a reel. Metres. Crosses recorded separately for a hybrid.
+  mainsLengthM     Float?
+  crossesLengthM   Float?
+  mainsSource      String? // set | reel
+  crossesSource    String? // set | reel
 
   strungAt     DateTime
   stringerName String?

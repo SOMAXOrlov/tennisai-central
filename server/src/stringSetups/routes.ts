@@ -23,6 +23,14 @@ export const stringSetupsRouter = Router();
 
 const RETIRED_REASONS = ["broke", "dead", "switched", "other"] as const;
 
+// Where the string came from: a pre-cut set, or cut off a reel.
+const STRING_SOURCES = ["set", "reel"] as const;
+
+// Metres of string that went into the frame. A full set is ~12 m, a half set
+// for a hybrid ~6 m; the bounds only refuse nonsense (a reel length, a
+// gauge typed here), not a stringer's habit.
+const lengthM = z.number().positive().min(1).max(20);
+
 // Kilograms. The bounds are deliberately generous — 10 kg is looser than anyone
 // strings and 35 kg is tighter — because the job of this check is to catch a
 // pounds value typed into a kilograms field (a 55 would be nonsense at 55 kg),
@@ -51,6 +59,10 @@ const createSchema = z
     // Absent means "same as mains" — one tension, which is most jobs.
     tensionCrossesKg: tensionKg.optional(),
     prestretch: z.boolean().optional(),
+    mainsLengthM: lengthM.optional(),
+    crossesLengthM: lengthM.optional(),
+    mainsSource: z.enum(STRING_SOURCES).optional(),
+    crossesSource: z.enum(STRING_SOURCES).optional(),
     strungAt: dateInput,
     stringerName: z.string().max(200).optional(),
     costEur: z.number().nonnegative().optional(),
@@ -78,6 +90,10 @@ type SetupRow = {
   tensionMainsKg: number;
   tensionCrossesKg: number | null;
   prestretch: boolean | null;
+  mainsLengthM?: number | null;
+  crossesLengthM?: number | null;
+  mainsSource?: string | null;
+  crossesSource?: string | null;
   strungAt: Date;
   stringerName: string | null;
   costEur: number | null;
@@ -108,6 +124,10 @@ function present(s: SetupRow) {
     tensionMainsKg: s.tensionMainsKg,
     tensionCrossesKg: s.tensionCrossesKg ?? undefined,
     prestretch: s.prestretch ?? undefined,
+    mainsLengthM: s.mainsLengthM ?? undefined,
+    crossesLengthM: s.crossesLengthM ?? undefined,
+    mainsSource: s.mainsSource ?? undefined,
+    crossesSource: s.crossesSource ?? undefined,
     strungAt: s.strungAt.toISOString(),
     stringerName: s.stringerName ?? undefined,
     costEur: s.costEur ?? undefined,

@@ -24,7 +24,6 @@
 // ============================================================================
 
 import { Router } from "express";
-import multer from "multer";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "../db";
@@ -32,45 +31,23 @@ import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "..
 import { assertCanViewPlayerPhoto } from "../authz";
 import { isMinorAccount } from "../auth/guardianConsent";
 import { publicUser } from "../lib/publicUser";
+import { PHOTO_UNAVAILABLE_MESSAGE, photoUpload, uploadedImage } from "./upload";
 import {
-  MAX_PHOTO_BYTES,
-  MULTIPART_OVERHEAD_BYTES,
   deletePhoto,
   newPhotoId,
   readPhoto,
   reencodeToSquareWebp,
-  sniffImageMime,
   writePhoto,
   STORED_PHOTO_MIME,
 } from "./storage";
 
-/**
- * The one answer to every "no". Used verbatim for the 403 and the 404 so the
- * two are distinguishable only by status, never by content — and so neither
- * hints at whether a photo is there.
- */
-export const PHOTO_UNAVAILABLE_MESSAGE = "No photo available";
+// The upload chain, the size cap and the "no photo" sentence now live in
+// ./upload so equipment photos share them; the export stays for the tests
+// and for anything else that imported it from here.
+export { PHOTO_UNAVAILABLE_MESSAGE };
 
-/** Human-readable size cap, for the messages that quote it. */
-const MAX_PHOTO_MB = Math.round(MAX_PHOTO_BYTES / (1024 * 1024));
 
-/**
- * Multipart parsing, into memory rather than a temp file. The whole point of
- * this endpoint is that the ORIGINAL bytes never touch the disk — writing them
- * to a spool directory first, EXIF and GPS intact, would undo the feature even
- * if the file were deleted a moment later.
- *
- * `limits` is the real cap: multer aborts the stream the moment the file passes
- * fileSize, so a hostile 500 MB body is never buffered. The Content-Length
- * pre-check below is the cheaper first line, not the only one.
- */
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_PHOTO_BYTES, files: 1, fields: 2, parts: 3 },
-});
 
-/** The form field the browser must use. */
-const PHOTO_FIELD = "photo";
 
 export const photosRouter = Router();
 
@@ -79,72 +56,13 @@ export const photosRouter = Router();
 photosRouter.post(
   "/me/photo",
   requireAuth,
-  // Two gates, both giving the same plain sentence, because neither is enough
-  // on its own:
-  //
-  //   HERE, from the declared Content-Length — the cheap one. An obviously
-  //   oversized request is refused without parsing a byte of multipart.
-  //
-  //   BELOW, from multer's `limits.fileSize` — the real one. A client can
-  //   under-declare or omit its length; multer counts what actually arrives and
-  //   aborts the stream at the cap, so the whole body is never in memory.
-  //
-  // The body is drained before answering. Replying while it is still arriving
-  // makes the client report a connection reset instead of reading the 413,
-  // which is the difference between "your photo is too big" and "the site is
-  // broken". Draining costs bandwidth we have already been sent and no memory.
-  (req, res, next) => {
-    const declared = Number(req.headers["content-length"] ?? 0);
-    if (!Number.isFinite(declared) || declared <= MAX_PHOTO_BYTES + MULTIPART_OVERHEAD_BYTES) {
-      next();
-      return;
-    }
-    const tooLarge = () => {
-      if (res.headersSent) return;
-      res.status(413).json({ message: `That photo is over ${MAX_PHOTO_MB} MB. Please choose a smaller one.` });
-    };
-    req.on("end", tooLarge);
-    req.on("aborted", tooLarge);
-    req.resume();
-  },
-  (req, res, next) => {
-    upload.single(PHOTO_FIELD)(req, res, (err: unknown) => {
-      if (!err) return next();
-      if (err instanceof multer.MulterError) {
-        if (err.code === "LIMIT_FILE_SIZE") {
-          return next(
-            new HttpError(413, `That photo is over ${MAX_PHOTO_MB} MB. Please choose a smaller one.`),
-          );
-        }
-        // A wrong field name, too many parts, too many files: all client shape
-        // errors, none of them worth a bespoke sentence each.
-        return next(new HttpError(400, `Send one image file in a "${PHOTO_FIELD}" field.`));
-      }
-      return next(err);
-    });
-  },
+  // Size gates and multipart parsing: ./upload (shared with equipment photos).
+  ...photoUpload,
   asyncHandler(async (req: AuthedRequest, res) => {
-    const file = req.file;
-    if (!file || file.buffer.length === 0) {
-      throw new HttpError(400, `Send one image file in a "${PHOTO_FIELD}" field.`);
-    }
-
-    // By magic bytes. The declared Content-Type and the filename are both
-    // written by the client, so neither is evidence of anything.
-    const sniffed = sniffImageMime(file.buffer);
-    if (sniffed === null) {
-      throw new HttpError(
-        415,
-        "That file is not a JPEG, PNG or WebP image. Please choose a photo in one of those formats.",
-      );
-    }
-
-    // THE STRIP. sharp decodes the pixels and writes a fresh WebP; nothing asks
-    // it to carry metadata across, so EXIF, GPS, XMP and the embedded thumbnail
-    // are all gone from what gets written. The original buffer is never stored.
+    const bytes = uploadedImage(req);
     let reencoded: Buffer;
     try {
-      reencoded = await reencodeToSquareWebp(file.buffer);
+      reencoded = await reencodeToSquareWebp(bytes);
     } catch {
       // The bytes had the right magic number and still would not decode: a
       // truncated download, a fuzzed file, a format sharp was built without.
