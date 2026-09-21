@@ -58,6 +58,26 @@ cd /opt/tennisai && bash deploy/hetzner/update.sh
 
 Pulls, rebuilds, restarts. Database and `.env` are outside git and untouched.
 
+### Automatic, from GitHub (since 2026-09-21)
+
+Every merge to `main` that passes CI runs `.github/workflows/deploy.yml`, which
+connects over SSH and runs `deploy-from-ci.sh`: backup, then `update.sh`, then a
+check that no migration is left half-applied. It is the same sequence as by
+hand, and it fails loudly for the same reasons. One-off setup, as root on the
+server, then paste the private key into the `DEPLOY_SSH_KEY` repository secret
+(also `DEPLOY_HOST`, and `DEPLOY_USER` if not root):
+
+```bash
+ssh-keygen -t ed25519 -N "" -C github-deploy -f /root/.ssh/github-deploy
+printf 'command="/opt/tennisai/deploy/hetzner/deploy-from-ci.sh",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty %s\n' "$(cat /root/.ssh/github-deploy.pub)" >> /root/.ssh/authorized_keys
+cat /root/.ssh/github-deploy
+```
+
+The key can run that one script and nothing else. To deploy without a merge,
+use "Run workflow" on the Deploy action. To stop automatic deploys, delete the
+`DEPLOY_SSH_KEY` secret — the workflow then fails at its first step and touches
+nothing.
+
 ## Backups
 
 The database now shares a disk with the app, so nothing else holds a copy.
