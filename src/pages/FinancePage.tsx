@@ -78,9 +78,11 @@ const canPlan = (a: FinanceAccessLevel) => a === "owner" || a === "full";
 const canChange = (a: FinanceAccessLevel, e: FinanceEntry, userId: string) =>
   a === "owner" || a === "full" || (a === "add" && e.createdById === userId);
 
+// Inside the token set on purpose: the warning icon carries the meaning, and
+// red stays reserved for "over" — the only state that is a problem today.
 const STATUS_STYLE: Record<FinanceBudgetStatus, string> = {
   ok: "text-foreground",
-  warning: "text-amber-700 dark:text-amber-400",
+  warning: "text-foreground",
   over: "text-destructive",
   unplanned: "text-muted-foreground",
 };
@@ -114,13 +116,11 @@ function EntryDialog({
   onSubmit: (data: FinanceEntryInput) => void;
 }) {
   const { t } = useT();
+  // Seeded once per mount. The callers give the dialog a `key` (the kind
+  // being added, or the id being edited), so a different subject remounts
+  // it — and a parent re-render, such as a refetch or a failed save flipping
+  // isPending, never wipes what the user has typed.
   const [form, setForm] = useState<EntryForm>(initial);
-  // Re-seed when the dialog opens for a different row.
-  const [seed, setSeed] = useState(initial);
-  if (seed !== initial) {
-    setSeed(initial);
-    setForm(initial);
-  }
   const categories = form.kind === "income" ? FINANCE_INCOME_CATEGORIES : FINANCE_EXPENSE_CATEGORIES;
   const valid = form.description.trim().length > 0 && Number(form.amount) > 0 && !!form.date;
 
@@ -361,6 +361,7 @@ function EntriesTab({
 
       {editForm && editing && (
         <EntryDialog
+          key={editing.id}
           open
           onOpenChange={(v) => !v && setEditing(null)}
           initial={editForm}
@@ -788,6 +789,7 @@ export default function FinancePage() {
 
       {addOpen && (
         <EntryDialog
+          key={addOpen}
           open
           onOpenChange={(v) => !v && setAddOpen(null)}
           initial={emptyForm(addOpen)}
