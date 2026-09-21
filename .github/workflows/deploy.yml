@@ -1,0 +1,77 @@
+# ============================================================
+# Deploy to the Hetzner server after CI passes on main.
+#
+# Runs when the "CI" workflow finishes successfully for a push to main, and
+# does over SSH exactly what a person did by hand until 2026-09-21:
+# backup.sh, then update.sh (which fetches origin/main, rebuilds the
+# containers, runs the Prisma migrations at API start and fails loudly if
+# /api/health does not answer). Can also be started by hand from the Actions
+# tab ("Run workflow").
+#
+# The server side is deploy/hetzner/deploy-from-ci.sh. The SSH key GitHub
+# uses is locked to that one script in /root/.ssh/authorized_keys, so a
+# leaked key can redeploy main and nothing else.
+#
+# Secrets (repository settings → Secrets and variables → Actions):
+#   DEPLOY_SSH_KEY   private key whose public half is in authorized_keys
+#   DEPLOY_HOST      46.225.83.85 (or the server's hostname)
+#   DEPLOY_USER      root
+# ============================================================
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; a second push waits instead of racing the first.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy main to Hetzner
+    # Only after a green CI on a push to main — a red CI must never reach the server.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ vars.SITE_ADDRESS || 'tennisai' }}
+    timeout-minutes: 20
+    steps:
+      - name: Check the secrets are set
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$HOST" ]; then
+            echo "::error::DEPLOY_SSH_KEY and DEPLOY_HOST must be set as repository secrets (see .github/workflows/deploy.yml)."
+            exit 1
+          fi
+
+      - name: Install the deploy key
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the server's host key instead of trusting whatever answers.
+          # Rotate this line if the server is ever reinstalled.
+          printf '%s\n' "$HOST ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKhtB7ssRU4UNDrVSkaiFxBrzBYvSNYHlej3DPqKMnEV" > ~/.ssh/known_hosts
+
+      - name: Backup, update, verify
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        # The key's authorized_keys entry forces deploy-from-ci.sh, so the
+        # command here is informational; the server runs the script regardless.
+        run: |
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes \
+            "$USER@$HOST" deploy-from-ci
