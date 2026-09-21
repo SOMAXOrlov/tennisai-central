@@ -149,7 +149,12 @@ describe("PATCH /api/finance/:id", () => {
       .send({ amount: 35 });
 
     expect(res.status).toBe(200);
-    expect(firstCallArg(db.financeEntry.update)).toEqual({ where: { id: "fin-1" }, data: { amount: 35 } });
+    // The change is stamped with who made it, so a parent's correction is
+    // visible to the player as theirs.
+    expect(firstCallArg(db.financeEntry.update)).toMatchObject({
+      where: { id: "fin-1" },
+      data: { amount: 35, updatedById: OWNER },
+    });
   });
 
   it("403s a DIFFERENT user and does not update", async () => {
