@@ -70,6 +70,13 @@ alone would restore accounts with missing pictures. Install it as a nightly job:
 ( crontab -l 2>/dev/null; echo "17 3 * * * bash /opt/tennisai/deploy/hetzner/backup.sh >> /var/log/tennisai-backup.log 2>&1" ) | crontab -
 ```
 
+Both files stay on the same disk as the database, so `backup.sh` ends by
+calling [`offsite.sh`](./offsite.sh), which pushes the newest 14 of each to a
+Hetzner Storage Box (or any rsync-over-SSH target) and verifies the copy. It
+is a logged no-op until root creates `/etc/tennisai/offsite.env`; the four
+lines it needs, and the one-time Storage Box setup, are in
+[`RESTORE.md`, "Off-site copy"](./RESTORE.md#off-site-copy).
+
 Restoring is **not** a one-liner: the dump recreates every table but drops
 none, so piping it into the live database as it stands fails half-way with
 duplicate-key errors. The procedure — stop the API, wipe the schema, restore
