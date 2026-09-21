@@ -42,6 +42,13 @@ export type Category = (typeof CATEGORIES)[number];
 
 export const SURFACES = ["clay", "hard", "grass", "indoor", "all"] as const;
 
+// A string item is a pre-cut SET (one racket) or a REEL (many). Only the
+// string category carries these; on any other category they are refused.
+export const STRING_FORMS = ["set", "reel"] as const;
+export type StringForm = (typeof STRING_FORMS)[number];
+// Metres on the item. A set is ~12 m, the biggest reel 200 m; 300 leaves room.
+export const stringLengthM = z.number().positive().max(300);
+
 /** ISO day, the form the client has always sent for acquiredDate. */
 const isoDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use yyyy-MM-dd");
 
@@ -58,7 +65,8 @@ const SPECS: Record<Category, z.ZodTypeAny> = {
   string: z
     .object({
       gaugeMm: z.number().min(1).max(1.6).optional(),
-      // A pre-cut set (12 m) or a reel (100 / 200 m) — what is in the bag.
+      // Superseded by the stringLengthM column (2026-09-21). Still accepted so
+      // a legacy string row edited in the form does not 400 under .strict().
       setLengthM: z.number().min(1).max(300).optional(),
     })
     .strict(),
@@ -81,7 +89,16 @@ const baseSchema = z.object({
   acquiredDate: isoDay.optional(),
   condition: z.string().trim().max(40).optional(),
   specs: z.record(z.unknown()).nullable().optional(),
+  stringForm: z.enum(STRING_FORMS).optional(),
+  stringLengthM: stringLengthM.optional(),
 });
+
+/** The set/reel fields belong to strings alone; anywhere else they are a mistake. */
+function assertStringFieldsFit(category: Category, d: { stringForm?: string; stringLengthM?: number }) {
+  if (category !== "string" && (d.stringForm !== undefined || d.stringLengthM !== undefined)) {
+    throw new HttpError(400, "Only a string can be a set or a reel");
+  }
+}
 
 function validateSpecs(
   category: Category,
@@ -112,6 +129,10 @@ function present(e: EquipmentItem) {
     // Presence only. The bytes come from GET /equipment/:id/photo, owner-only.
     photoId: e.photoId ?? undefined,
     photoUpdatedAt: e.photoUpdatedAt ? e.photoUpdatedAt.toISOString() : undefined,
+    stringForm: e.stringForm ?? undefined,
+    stringLengthM: e.stringLengthM ?? undefined,
+    stringRemainingM: e.stringRemainingM ?? undefined,
+    usedUpAt: e.usedUpAt ? e.usedUpAt.toISOString() : undefined,
   };
 }
 
@@ -139,9 +160,13 @@ equipmentRouter.post(
   asyncHandler(async (req: AuthedRequest, res) => {
     if (req.params.playerId !== req.userId) throw new HttpError(403, "You can only add your own equipment");
     const d = baseSchema.parse(req.body);
+    assertStringFieldsFit(d.category, d);
     const specs = validateSpecs(d.category, d.specs);
+    // A new set or reel starts full. Remaining is a column of its own because
+    // every stringing job decrements it in place.
+    const stringRemainingM = d.stringLengthM;
     const created = await prisma.equipmentItem.create({
-      data: { ...d, specs, playerId: req.params.playerId },
+      data: { ...d, specs, stringRemainingM, playerId: req.params.playerId },
     });
     return ok(res, present(created), "Item added", 201);
   }),
@@ -156,15 +181,29 @@ equipmentRouter.patch(
     // change; a category change without new specs drops the old ones, which
     // would otherwise leave a racket carrying a gauge.
     const category = (d.category ?? item.category) as Category;
+    assertStringFieldsFit(category, d);
     const specs =
       d.specs !== undefined
         ? validateSpecs(category, d.specs)
         : d.category && d.category !== item.category
           ? Prisma.JsonNull
           : undefined;
+    // Correcting the length of a reel moves what is left by the same amount:
+    // a 200 m reel entered as 100 m with 40 m already gone has 140 m left,
+    // not 200. Never below zero, never above the new total.
+    let stringRemainingM: number | undefined;
+    if (d.stringLengthM !== undefined && category === "string") {
+      const previousTotal = item.stringLengthM ?? d.stringLengthM;
+      const previousLeft = item.stringRemainingM ?? previousTotal;
+      stringRemainingM = Math.min(d.stringLengthM, Math.max(0, previousLeft + (d.stringLengthM - previousTotal)));
+    }
     const updated = await prisma.equipmentItem.update({
       where: { id: req.params.id },
-      data: { ...d, specs },
+      data: {
+        ...d,
+        specs,
+        ...(stringRemainingM !== undefined ? { stringRemainingM, usedUpAt: stringRemainingM > 0 ? null : item.usedUpAt ?? new Date() } : {}),
+      },
     });
     return ok(res, present(updated), "Item updated");
   }),

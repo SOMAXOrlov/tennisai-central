@@ -11,6 +11,14 @@
 //
 // TENSION IS KILOGRAMS. Clients display pounds by converting on read
 // (lbs = kg × 2.2046). Nothing stores pounds.
+//
+// THE BAG. A job may name the string item each side was cut from
+// (`mainsItemId`, `crossesItemId`). Creating the job then draws on that item
+// in the same transaction: a SET is used up outright (one set, one racket,
+// even when only half of it went into a hybrid — the owner's rule of
+// 2026-09-21), a REEL loses the metres recorded for that side and is marked
+// used up when nothing usable is left. Deleting the job puts the metres back.
+// What was drawn cannot be edited afterwards; delete and record again.
 // ============================================================================
 
 import { Router } from "express";
@@ -63,6 +71,8 @@ const createSchema = z
     crossesLengthM: lengthM.optional(),
     mainsSource: z.enum(STRING_SOURCES).optional(),
     crossesSource: z.enum(STRING_SOURCES).optional(),
+    mainsItemId: z.string().min(1).optional(),
+    crossesItemId: z.string().min(1).optional(),
     strungAt: dateInput,
     stringerName: z.string().max(200).optional(),
     costEur: z.number().nonnegative().optional(),
@@ -77,7 +87,15 @@ const createSchema = z
     path: ["retiredReason"],
   });
 
-const updateSchema = createSchema.innerType().partial().omit({ racketItemId: true });
+// What was drawn from the bag is fixed once recorded: the deduction already
+// happened. Delete the job and record it again to change it.
+const updateSchema = createSchema
+  .innerType()
+  .partial()
+  .omit({ racketItemId: true, mainsItemId: true, crossesItemId: true });
+
+// Below this, a reel has nothing a stringer can use; it counts as empty.
+const EMPTY_BELOW_M = 0.5;
 
 type SetupRow = {
   id: string;
@@ -94,6 +112,8 @@ type SetupRow = {
   crossesLengthM?: number | null;
   mainsSource?: string | null;
   crossesSource?: string | null;
+  mainsItemId?: string | null;
+  crossesItemId?: string | null;
   strungAt: Date;
   stringerName: string | null;
   costEur: number | null;
@@ -128,6 +148,8 @@ function present(s: SetupRow) {
     crossesLengthM: s.crossesLengthM ?? undefined,
     mainsSource: s.mainsSource ?? undefined,
     crossesSource: s.crossesSource ?? undefined,
+    mainsItemId: s.mainsItemId ?? undefined,
+    crossesItemId: s.crossesItemId ?? undefined,
     strungAt: s.strungAt.toISOString(),
     stringerName: s.stringerName ?? undefined,
     costEur: s.costEur ?? undefined,
@@ -153,6 +175,88 @@ async function assertProductsExist(ids: Array<string | undefined>) {
   });
   const missing = wanted.filter((id) => !found.some((f) => f.id === id));
   if (missing.length) throw new HttpError(400, `Unknown product: ${missing.join(", ")}`);
+}
+
+type BagItem = {
+  id: string;
+  playerId: string;
+  category: string;
+  name: string;
+  stringForm: string | null;
+  stringLengthM: number | null;
+  stringRemainingM: number | null;
+  usedUpAt: Date | null;
+};
+
+const BAG_SELECT = {
+  id: true,
+  playerId: true,
+  category: true,
+  name: true,
+  stringForm: true,
+  stringLengthM: true,
+  stringRemainingM: true,
+  usedUpAt: true,
+} as const;
+
+/** One side of a job and what it drew from the bag. */
+type Draw = { itemId: string; lengthM: number | undefined };
+
+/**
+ * Load the string items a job draws from and check every one may be drawn
+ * from: the player's own, a string, not yet used up, and — for a reel — with
+ * enough metres for what this job takes off it (both sides summed when a
+ * hybrid is cut from one reel).
+ */
+async function loadDraws(playerId: string, draws: Draw[]): Promise<Map<string, BagItem>> {
+  const ids = [...new Set(draws.map((d) => d.itemId))];
+  if (ids.length === 0) return new Map();
+  const rows = (await prisma.equipmentItem.findMany({
+    where: { id: { in: ids } },
+    select: BAG_SELECT,
+  })) as BagItem[];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  for (const id of ids) {
+    const item = byId.get(id);
+    if (!item || item.playerId !== playerId) throw new HttpError(400, "That string is not in this player's bag");
+    if (item.category !== "string") throw new HttpError(400, `${item.name} is not a string`);
+    if (item.usedUpAt) throw new HttpError(400, `${item.name} is already used up`);
+    if (item.stringForm === "reel") {
+      const need = draws
+        .filter((d) => d.itemId === id)
+        .reduce((sum, d) => {
+          if (d.lengthM === undefined) throw new HttpError(400, `Enter how many metres were cut from ${item.name}`);
+          return sum + d.lengthM;
+        }, 0);
+      const left = item.stringRemainingM ?? item.stringLengthM ?? Number.POSITIVE_INFINITY;
+      if (need > left + 1e-9) {
+        throw new HttpError(400, `${item.name} has only ${Math.round(left * 10) / 10} m left, not enough for ${need} m`);
+      }
+    }
+  }
+  return byId;
+}
+
+/** Metres to take off each item for these draws; a set is always all of it. */
+function deductions(draws: Draw[], items: Map<string, BagItem>): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const d of draws) {
+    const item = items.get(d.itemId)!;
+    if (item.stringForm === "set") {
+      out.set(d.itemId, item.stringRemainingM ?? item.stringLengthM ?? 0);
+    } else if (item.stringForm === "reel") {
+      out.set(d.itemId, (out.get(d.itemId) ?? 0) + (d.lengthM ?? 0));
+    }
+    // A legacy string row (no form) is linked for the history and untouched.
+  }
+  return out;
+}
+
+function drawsOf(d: { mainsItemId?: string; crossesItemId?: string; mainsLengthM?: number; crossesLengthM?: number }): Draw[] {
+  const out: Draw[] = [];
+  if (d.mainsItemId) out.push({ itemId: d.mainsItemId, lengthM: d.mainsLengthM });
+  if (d.crossesItemId) out.push({ itemId: d.crossesItemId, lengthM: d.crossesLengthM });
+  return out;
 }
 
 // ── GET /api/players/:playerId/string-setups ────────────────────────────────
@@ -193,17 +297,57 @@ stringSetupsRouter.post(
 
     await assertProductsExist([d.mainsProductId, d.crossesProductId]);
 
-    const created = await prisma.stringSetup.create({
-      data: { ...d, playerId },
-      include: { mains: PRODUCT_SUMMARY, crosses: PRODUCT_SUMMARY },
+    const draws = drawsOf(d);
+    const items = await loadDraws(playerId, draws);
+    const takes = deductions(draws, items);
+    // The item's name and form travel with the job, so the history still
+    // reads right after the empty reel is thrown away.
+    const mainsItem = d.mainsItemId ? items.get(d.mainsItemId) : undefined;
+    const crossesItem = d.crossesItemId ? items.get(d.crossesItemId) : undefined;
+    const formOf = (item: BagItem | undefined) =>
+      item?.stringForm === "set" || item?.stringForm === "reel" ? item.stringForm : undefined;
+    const data = {
+      ...d,
+      playerId,
+      mainsCustomName: d.mainsCustomName ?? mainsItem?.name,
+      crossesCustomName: d.crossesCustomName ?? crossesItem?.name,
+      mainsSource: d.mainsSource ?? formOf(mainsItem),
+      crossesSource: d.crossesSource ?? formOf(crossesItem),
+    };
+
+    const created = await prisma.$transaction(async (tx) => {
+      const row = await tx.stringSetup.create({
+        data,
+        include: { mains: PRODUCT_SUMMARY, crosses: PRODUCT_SUMMARY },
+      });
+      for (const [itemId, metres] of takes) {
+        const item = items.get(itemId)!;
+        const left = Math.max(0, (item.stringRemainingM ?? item.stringLengthM ?? 0) - metres);
+        await tx.equipmentItem.update({
+          where: { id: itemId },
+          data: { stringRemainingM: left, usedUpAt: left < EMPTY_BELOW_M ? new Date() : null },
+        });
+      }
+      return row;
     });
     return ok(res, present(created as SetupRow), "String setup added", 201);
   }),
 );
 
+type Actionable = {
+  playerId: string;
+  mainsItemId?: string | null;
+  crossesItemId?: string | null;
+  mainsLengthM?: number | null;
+  crossesLengthM?: number | null;
+};
+
 /** Load a setup and check the caller may act for its owner. */
-async function actionableSetup(id: string, userId: string): Promise<{ playerId: string }> {
-  const setup = await prisma.stringSetup.findUnique({ where: { id }, select: { playerId: true } });
+async function actionableSetup(id: string, userId: string): Promise<Actionable> {
+  const setup = (await prisma.stringSetup.findUnique({
+    where: { id },
+    select: { playerId: true, mainsItemId: true, crossesItemId: true, mainsLengthM: true, crossesLengthM: true },
+  })) as Actionable | null;
   if (!setup) throw new HttpError(404, "String setup not found");
   await assertCanActOnPlayer(userId, setup.playerId);
   return setup;
@@ -217,8 +361,11 @@ stringSetupsRouter.patch(
   "/string-setups/:id",
   requireAuth,
   asyncHandler(async (req: AuthedRequest, res) => {
-    await actionableSetup(req.params.id, req.userId!);
+    const setup = await actionableSetup(req.params.id, req.userId!);
     const d = updateSchema.parse(req.body);
+    if ((setup.mainsItemId && d.mainsLengthM !== undefined) || (setup.crossesItemId && d.crossesLengthM !== undefined)) {
+      throw new HttpError(400, "The metres drawn from the bag are fixed. Delete the stringing and record it again.");
+    }
     if (d.retiredAt && !d.retiredReason) {
       // Re-checked here because `.partial()` drops the object-level refinement.
       throw new HttpError(400, "retiredReason is required when retiredAt is set");
@@ -239,8 +386,36 @@ stringSetupsRouter.delete(
   "/string-setups/:id",
   requireAuth,
   asyncHandler(async (req: AuthedRequest, res) => {
-    await actionableSetup(req.params.id, req.userId!);
-    await prisma.stringSetup.delete({ where: { id: req.params.id } });
+    const setup = await actionableSetup(req.params.id, req.userId!);
+    // Put the metres back on whatever the job drew from, if it still exists.
+    // Without this the bag drifts on the first mistyped job, which is what
+    // auto-deduction was chosen to prevent.
+    const draws = drawsOf({
+      mainsItemId: setup.mainsItemId ?? undefined,
+      crossesItemId: setup.crossesItemId ?? undefined,
+      mainsLengthM: setup.mainsLengthM ?? undefined,
+      crossesLengthM: setup.crossesLengthM ?? undefined,
+    });
+    const ids = [...new Set(draws.map((x) => x.itemId))];
+    const items = ids.length
+      ? ((await prisma.equipmentItem.findMany({ where: { id: { in: ids } }, select: BAG_SELECT })) as BagItem[])
+      : [];
+    await prisma.$transaction(async (tx) => {
+      await tx.stringSetup.delete({ where: { id: req.params.id } });
+      for (const item of items) {
+        const total = item.stringLengthM ?? 0;
+        let left: number;
+        if (item.stringForm === "set") left = total;
+        else if (item.stringForm === "reel") {
+          const back = draws.filter((x) => x.itemId === item.id).reduce((sum, x) => sum + (x.lengthM ?? 0), 0);
+          left = Math.min(total, (item.stringRemainingM ?? 0) + back);
+        } else continue;
+        await tx.equipmentItem.update({
+          where: { id: item.id },
+          data: { stringRemainingM: left, usedUpAt: left < EMPTY_BELOW_M ? item.usedUpAt : null },
+        });
+      }
+    });
     return ok(res, null, "String setup deleted");
   }),
 );

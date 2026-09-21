@@ -139,6 +139,49 @@ describe("POST /api/players/:playerId/equipment — specs by category", () => {
   });
 });
 
+describe("set and reel fields — strings only", () => {
+  it("a new reel starts full", async () => {
+    db.equipmentItem.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => itemRow({ ...data }));
+    const res = await request(app)
+      .post(`/api/players/${PLAYER}/equipment`)
+      .set("Authorization", bearer(PLAYER))
+      .send({ category: "string", name: "ALU Power reel", stringForm: "reel", stringLengthM: 200 });
+    expect(res.status).toBe(201);
+    const data = firstCallArg<{ data: Record<string, unknown> }>(db.equipmentItem.create).data;
+    expect(data).toMatchObject({ stringForm: "reel", stringLengthM: 200, stringRemainingM: 200 });
+    expect(res.body.data).toMatchObject({ stringForm: "reel", stringLengthM: 200, stringRemainingM: 200 });
+  });
+
+  it("refuses a reel on a racket", async () => {
+    const res = await request(app)
+      .post(`/api/players/${PLAYER}/equipment`)
+      .set("Authorization", bearer(PLAYER))
+      .send({ category: "racket", name: "Frame", stringForm: "reel", stringLengthM: 200 });
+    expect(res.status).toBe(400);
+    expect(db.equipmentItem.create).not.toHaveBeenCalled();
+  });
+
+  it("correcting a reel's length moves what is left by the same amount", async () => {
+    db.equipmentItem.findUnique.mockResolvedValue(
+      itemRow({ category: "string", stringForm: "reel", stringLengthM: 100, stringRemainingM: 60, usedUpAt: null }),
+    );
+    db.equipmentItem.update.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => itemRow({ ...data }));
+    const res = await request(app).patch(`/api/equipment/${ITEM}`).set("Authorization", bearer(PLAYER)).send({ stringLengthM: 200 });
+    expect(res.status).toBe(200);
+    expect(firstCallArg<{ data: Record<string, unknown> }>(db.equipmentItem.update).data).toMatchObject({ stringLengthM: 200, stringRemainingM: 160, usedUpAt: null });
+  });
+
+  it("still accepts a legacy setLengthM spec on an existing string", async () => {
+    db.equipmentItem.findUnique.mockResolvedValue(itemRow({ category: "string", specs: { gaugeMm: 1.25, setLengthM: 12 } }));
+    db.equipmentItem.update.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => itemRow({ ...data }));
+    const res = await request(app)
+      .patch(`/api/equipment/${ITEM}`)
+      .set("Authorization", bearer(PLAYER))
+      .send({ specs: { gaugeMm: 1.3, setLengthM: 12 } });
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("PATCH /api/equipment/:id", () => {
   it("drops the old specs when the category changes and none are sent", async () => {
     db.equipmentItem.findUnique.mockResolvedValue(itemRow());

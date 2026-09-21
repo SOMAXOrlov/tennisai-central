@@ -602,6 +602,15 @@ model EquipmentItem {
   // GET /equipment/:id/photo behind the ownership check.
   photoId        String?
   photoUpdatedAt DateTime?
+  // Strings only. A string item is a SET (one pre-cut length, one racket)
+  // or a REEL (many rackets). Remaining metres come down with every
+  // stringing job that draws from this item, and `usedUpAt` is set the
+  // moment nothing usable is left. Null on every other category and on
+  // string rows recorded before 2026-09-21, which render as before.
+  stringForm       String? // set | reel
+  stringLengthM    Float?
+  stringRemainingM Float?
+  usedUpAt         DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -610,6 +619,8 @@ model EquipmentItem {
 
   // Every stringing this frame has been through.
   stringSetups StringSetup[] @relation("StringSetupRacket")
+  mainsJobs   StringSetup[] @relation("StringSetupMainsItem")
+  crossesJobs StringSetup[] @relation("StringSetupCrossesItem")
   // Matches the player tagged as played with this frame (see Match.racketItemId).
   matches      Match[]       @relation("MatchRacket")
 
@@ -1590,6 +1601,12 @@ model StringSetup {
   crossesLengthM   Float?
   mainsSource      String? // set | reel
   crossesSource    String? // set | reel
+  // The string item in the player's bag each side was cut from. Metres are
+  // deducted from that item when the job is created and restored when the
+  // job is deleted. SetNull: throwing away an empty reel must not erase the
+  // history of what it strung.
+  mainsItemId      String?
+  crossesItemId    String?
 
   strungAt     DateTime
   stringerName String?
@@ -1611,6 +1628,8 @@ model StringSetup {
 
   player     User              @relation("StringSetupPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   racketItem EquipmentItem     @relation("StringSetupRacket", fields: [racketItemId], references: [id], onDelete: Cascade)
+  mainsItem   EquipmentItem?   @relation("StringSetupMainsItem", fields: [mainsItemId], references: [id], onDelete: SetNull)
+  crossesItem EquipmentItem?   @relation("StringSetupCrossesItem", fields: [crossesItemId], references: [id], onDelete: SetNull)
   mains      EquipmentProduct? @relation("StringSetupMains", fields: [mainsProductId], references: [id], onDelete: SetNull)
   crosses    EquipmentProduct? @relation("StringSetupCrosses", fields: [crossesProductId], references: [id], onDelete: SetNull)
 
