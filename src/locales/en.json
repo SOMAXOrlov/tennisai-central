@@ -1948,29 +1948,172 @@
   },
   "finance": {
     "title": "Finance",
-    "subtitle": "Track training, travel, tournament, and equipment costs.",
+    "subtitle": "Money in and out for the season: costs, prize money and support, against a budget.",
     "addExpense": "Add Expense",
+    "addIncome": "Add Income",
     "total": "Total",
     "transactions": "Transactions",
     "entryCount": "{count, plural, one {# entry} other {# entries}}",
     "entryMeta": "{category} · {date}",
+    "season": "Season {season} · {start} to {end}",
+    "tabs": {
+      "overview": "Overview",
+      "entries": "Entries",
+      "budget": "Budget",
+      "insights": "Insights",
+      "access": "Access"
+    },
+    "kind": {
+      "expense": "Cost",
+      "income": "Income"
+    },
     "category": {
       "training": "Training",
       "travel": "Travel",
       "tournament": "Tournament",
-      "equipment": "Equipment"
+      "equipment": "Equipment",
+      "coaching": "Coaching",
+      "stringing": "Stringing",
+      "tournament_fee": "Entry fees",
+      "accommodation": "Accommodation",
+      "food": "Food",
+      "membership": "Membership",
+      "other": "Other",
+      "prize_money": "Prize money",
+      "sponsorship": "Sponsorship",
+      "grant": "Grant or scholarship",
+      "family_contribution": "Family contribution"
     },
     "add": {
       "title": "Add Expense",
+      "incomeTitle": "Add Income",
+      "editTitle": "Edit entry",
       "description": "Track a new tennis-related expense.",
+      "incomeDescription": "Record money coming in: prize money, a sponsor, a grant, or what the family puts in.",
+      "kind": "Type",
       "descriptionLabel": "Description *",
       "descriptionPlaceholder": "e.g. Weekly coaching",
+      "incomePlaceholder": "e.g. W15 Hurghada quarter-final",
       "amount": "Amount *",
       "amountPlaceholder": "0.00",
+      "currency": "Currency",
       "category": "Category",
       "date": "Date",
-      "adding": "Adding…",
-      "submit": "Add Expense"
+      "saving": "Saving…",
+      "submit": "Add Expense",
+      "incomeSubmit": "Add Income",
+      "editSubmit": "Save changes"
+    },
+    "overview": {
+      "income": "Income",
+      "expenses": "Costs",
+      "net": "Net",
+      "nothingYet": "Nothing recorded yet.",
+      "noSeasonData": "Nothing recorded in season {season} yet. Earlier entries are under Entries."
+    },
+    "entries": {
+      "filter": {
+        "all": "All",
+        "expense": "Costs",
+        "income": "Income"
+      },
+      "emptyFilter": "Nothing matches this filter.",
+      "recordedBy": "recorded by {name}",
+      "edit": "Edit entry",
+      "delete": "Delete entry",
+      "deleteTitle": "Delete this entry?",
+      "deleteBody": "{description} ({amount}) will be removed from the ledger. This cannot be undone.",
+      "confirmDelete": "Delete"
+    },
+    "budget": {
+      "title": "Budget {season}",
+      "window": "{start} to {end} · {currency}",
+      "totalProgress": "{spent} of {planned} spent · {remaining} left",
+      "noLines": "No amounts planned yet.",
+      "lineProgress": "{spent} of {planned}",
+      "unplannedSpend": "{spent} spent, nothing planned",
+      "otherCurrencies": "Also spent in other currencies, not compared with this budget: {list}",
+      "noneTitle": "No budget for this season",
+      "noneDescription": "Decide what the season may cost, by category. You will be warned when a line reaches 80% and when it goes over.",
+      "noneReadOnly": "The player has not set a budget for this season.",
+      "create": "Set a budget",
+      "edit": "Edit",
+      "editTitle": "Season budget",
+      "editDescription": "Planned amounts per cost category, in one currency. Leave a line empty to not budget for it.",
+      "season": "Season",
+      "seasonHint": "A year (2026) or a split season (2026/27, September to August).",
+      "planned": "planned",
+      "spent": "spent",
+      "remaining": "left",
+      "save": "Save budget",
+      "saving": "Saving…"
+    },
+    "insights": {
+      "description": "What the ledger says: what each tournament really cost, what an hour of training costs, and how this window compares with the one before.",
+      "aggregateNote": "As a coach you see cost per tournament and per training hour for this player, never the ledger itself.",
+      "window": {
+        "label": "Window",
+        "month": "Last 30 days",
+        "season": "Last 6 months",
+        "year": "Last 12 months"
+      },
+      "noDataTitle": "Not enough recorded yet",
+      "noDataDescription": "Insights appear once costs, tournament entries or training sessions are logged.",
+      "headline": "Spent ({currency})",
+      "previous": "Previous window: {amount}",
+      "costPerHour": "Cost per training hour",
+      "costPerHourDetail": "{hours} h across {sessions} sessions",
+      "stringingPerHour": "Stringing per hour of play",
+      "stringingDetail": "{jobs} restrings · {hours} h",
+      "tournamentsTitle": "What each tournament cost",
+      "tournamentsDescription": "Entry, travel, accommodation, food and stringing linked to the event or logged during it.",
+      "noCostLogged": "no costs logged",
+      "insightsTitle": "Observations",
+      "confidence": {
+        "low": "Low confidence: few entries in this window.",
+        "medium": "Medium confidence: based on a handful of entries.",
+        "high": "High confidence: based on ten or more entries."
+      }
+    },
+    "access": {
+      "description": "Choose what each parent may do with your finances. You can change or remove access at any time; every change they make is recorded with their name.",
+      "level": {
+        "view": "View",
+        "add": "View and add",
+        "full": "Full"
+      },
+      "levelHelp": {
+        "view": "Sees entries, the budget and insights.",
+        "add": "Can also record costs and income, and correct or remove what they recorded.",
+        "full": "Can also change or delete any entry and set the budget."
+      },
+      "yours": {
+        "add": "You may view this ledger and record entries. You can change or remove the entries you recorded.",
+        "full": "You have full access to this ledger, including the budget."
+      },
+      "grantsTitle": "Who has access",
+      "eligibleTitle": "Can be given access",
+      "eligibleDescription": "Parents connected to you. Coaches are not listed: a connected coach sees cost per tournament and per training hour only.",
+      "grant": "Grant",
+      "remove": "Remove",
+      "changeLevel": "Change access for {name}",
+      "chooseLevel": "Access level for {name}",
+      "noneTitle": "No parent to share with yet",
+      "noneDescription": "Access can be given to a parent connected to you. Connect first, then choose a level here.",
+      "noneAction": "Go to Connections"
+    },
+    "noAccess": {
+      "title": "No access to this player's finances",
+      "description": "The player decides who sees their money. Ask them to grant you access from their Finance page."
+    },
+    "coach": {
+      "subtitle": "Cost per tournament and per training hour for your players.",
+      "noPlayers": "Connect a player first; their cost aggregates appear here."
+    },
+    "drawer": {
+      "title": "Costs",
+      "costPerHour": "Cost per training hour",
+      "note": "Aggregates over the last six months. The ledger itself stays with the player."
     }
   },
   "playerDetail": {
@@ -1988,12 +2131,6 @@
     "equipment": "Equipment",
     "noEquipment": "No equipment tracked",
     "moreEquipment": "+{count} more",
-    "financeSummary": "Finance Summary",
-    "financeTraining": "Training",
-    "financeTravel": "Travel",
-    "financeTournament": "Tournament",
-    "financeEquipment": "Equipment",
-    "financeTotal": "Total: {amount}",
     "fullCalendar": "Full Calendar",
     "allTrainings": "All Trainings",
     "stats": {
@@ -3362,8 +3499,17 @@
       "added": "Tournament added"
     },
     "finance": {
-      "added": "Expense added",
-      "addFailed": "Couldn't add the expense"
+      "added": "Entry added",
+      "addFailed": "Couldn't add the entry",
+      "updated": "Entry updated",
+      "updateFailed": "Couldn't update the entry",
+      "removed": "Entry removed",
+      "removeFailed": "Couldn't remove the entry",
+      "budgetSaved": "Budget saved",
+      "budgetFailed": "Couldn't save the budget",
+      "accessUpdated": "Access updated",
+      "accessRemoved": "Access removed",
+      "accessFailed": "Couldn't change the access"
     },
     "equipment": {
       "added": "Equipment added",

@@ -37,7 +37,50 @@ export interface RecurrenceRule {
   exceptions?: string[];
 }
 
-export type FinanceCategory = "training" | "travel" | "tournament" | "equipment";
+/** Money going out. The first four are the original vocabulary. */
+export type FinanceExpenseCategory =
+  | "training"
+  | "travel"
+  | "tournament"
+  | "equipment"
+  | "coaching"
+  | "stringing"
+  | "tournament_fee"
+  | "accommodation"
+  | "food"
+  | "membership"
+  | "other";
+
+/** Money coming in. Prize money links to the tournament it was won at. */
+export type FinanceIncomeCategory = "prize_money" | "sponsorship" | "grant" | "family_contribution";
+
+export type FinanceCategory = FinanceExpenseCategory | FinanceIncomeCategory;
+
+export type FinanceKind = "expense" | "income";
+
+export const FINANCE_EXPENSE_CATEGORIES: FinanceExpenseCategory[] = [
+  "training",
+  "travel",
+  "tournament",
+  "equipment",
+  "coaching",
+  "stringing",
+  "tournament_fee",
+  "accommodation",
+  "food",
+  "membership",
+  "other",
+];
+
+export const FINANCE_INCOME_CATEGORIES: FinanceIncomeCategory[] = ["prize_money", "sponsorship", "grant", "family_contribution"];
+
+/**
+ * What the current user may do with a player's finances, as the server says.
+ * owner: the player. full / add / view: granted by the player. aggregate: a
+ * connected coach, who sees cost per tournament and per training hour only.
+ */
+export type FinanceAccessLevel = "owner" | "full" | "add" | "view" | "aggregate";
+export type FinanceGrantLevel = "view" | "add" | "full";
 
 export type EquipmentCategory = "racket" | "string" | "shoes" | "balls" | "accessories";
 
@@ -264,20 +307,141 @@ export interface PlayerTournament {
 export interface FinanceEntry {
   id: string;
   playerId: string;
+  /** Absent on rows written before the ledger had an income side: an expense. */
+  kind?: FinanceKind;
   category: FinanceCategory;
   description: string;
   amount: number;
   currency: string;
   date: string;
+  tournamentId?: string;
+  /** Who wrote the row — a parent with access, or the player. */
+  createdById?: string;
+  createdByName?: string;
+  updatedById?: string;
+  updatedByName?: string;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export type FinanceEntryInput = Pick<FinanceEntry, "kind" | "category" | "description" | "amount" | "currency" | "date" | "tournamentId">;
+
+/** Totals in ONE currency. Never added to another currency's block. */
+export interface FinanceCurrencyBlock {
+  currency: string;
+  entries: number;
+  income: number;
+  expenses: number;
+  net: number;
+  byCategory: Record<string, number>;
+  incomeByCategory: Record<string, number>;
+}
+
+export type FinanceBudgetStatus = "ok" | "warning" | "over" | "unplanned";
+
+export interface FinanceBudgetLine {
+  category: string;
+  planned: number;
+  spent: number;
+  remaining: number;
+  ratio: number | null;
+  status: FinanceBudgetStatus;
+}
+
+export interface FinanceBudget {
+  id: string;
+  playerId: string;
+  season: string;
+  seasonStart: string;
+  seasonEnd: string;
+  currency: string;
+  lines: Record<string, number>;
+  updatedAt?: string;
+}
+
+export interface FinanceBudgetInput {
+  season?: string;
+  seasonStart?: string;
+  seasonEnd?: string;
+  currency: string;
+  lines: Record<string, number>;
+}
+
+/** The season plan compared with what was actually spent, as the summary reports it. */
+export interface FinanceBudgetSummary extends FinanceBudget {
+  progress: FinanceBudgetLine[];
+  totalPlanned: number;
+  totalSpent: number;
+  totalRemaining: number;
+  ratio: number | null;
+  status: FinanceBudgetStatus;
+  /** Spend in currencies other than the plan's, listed, never converted. */
+  otherCurrencies: { currency: string; expenses: number }[];
 }
 
 export interface FinanceSummary {
+  // All-time cost totals in the four original categories. Kept for the
+  // dashboards and the player drawer.
   totalTraining: number;
   totalTravel: number;
   totalTournament: number;
   totalEquipment: number;
   currency: string;
+  byCategory?: Record<string, number>;
+  total?: number;
+  // The season view.
+  access?: FinanceAccessLevel;
+  season?: { label: string; start: string; end: string };
+  perCurrency?: FinanceCurrencyBlock[];
+  budget?: FinanceBudgetSummary | null;
+}
+
+export interface FinanceAccessGrant {
+  granteeId: string;
+  name: string;
+  role: string;
+  level: FinanceGrantLevel;
+  updatedAt?: string;
+}
+
+export interface FinanceAccessOverview {
+  grants: FinanceAccessGrant[];
+  /** Connected parents and consented guardians who hold no grant yet. */
+  eligible: { id: string; name: string; role: string }[];
+}
+
+export interface FinanceTournamentCost {
+  tournamentId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  byCurrency: { currency: string; total: number; byCategory: Record<string, number>; entries: number }[];
+  matched: { byTournamentId: number; byDateWindow: number };
+}
+
+export interface FinanceCurrencyTotals {
+  currency: string;
+  entries: number;
+  total: number;
+  byCategory: Record<string, number>;
+  previousTotal: number;
+  previousByCategory: Record<string, number>;
+}
+
+/** The money engine's answer. A coach receives the `aggregate` scope: no headline, no insights. */
+export interface FinanceInsights {
+  version: string;
+  computedAt: string;
+  scope: "full" | "aggregate";
+  window: { kind: "month" | "season" | "year"; days: number; from: string; to: string; previousFrom: string };
+  tournaments: FinanceTournamentCost[];
+  costPerTrainingHour: { currency: string; cost: number; hours: number; sessions: number; perHour: number } | null;
+  stringingPerHour: { currency: string; cost: number; hours: number; jobs: number; perHour: number; source: "setups" | "finance" } | null;
+  confidence: { level: "low" | "medium" | "high"; raisedBy?: string };
+  headline?: FinanceCurrencyTotals | null;
+  otherCurrencies?: FinanceCurrencyTotals[];
+  insights?: { code: string; textEn: string; headlineNumber: number; currency: string }[];
 }
 
 // --- Equipment ---

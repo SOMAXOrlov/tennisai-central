@@ -167,7 +167,7 @@ const App = () => (
                 <Route path="/stats" element={<RouteGuard allowedRoles={["player"]} showDenied><Page><StatsPage /></Page></RouteGuard>} />
                 <Route path="/matches" element={<RouteGuard allowedRoles={["player"]} showDenied><Page><MatchesPage /></Page></RouteGuard>} />
                 <Route path="/equipment" element={<RouteGuard allowedRoles={["player"]} showDenied><Page><EquipmentPage /></Page></RouteGuard>} />
-                <Route path="/finance" element={<RouteGuard allowedRoles={["player", "observer"]} showDenied><Page><FinancePage /></Page></RouteGuard>} />
+                <Route path="/finance" element={<RouteGuard allowedRoles={["player", "observer", "coach"]} showDenied><Page><FinancePage /></Page></RouteGuard>} />
 
                 {/* Coach only */}
                 <Route path="/players" element={<RouteGuard allowedRoles={["coach"]} showDenied><Page><PlayersPage /></Page></RouteGuard>} />
