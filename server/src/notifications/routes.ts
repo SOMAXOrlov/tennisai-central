@@ -20,7 +20,16 @@ function present(n: Notification) {
     read: n.read,
     linkTo: n.linkTo ?? undefined,
     createdAt: n.createdAt.toISOString(),
+    archivedAt: n.archivedAt ? n.archivedAt.toISOString() : undefined,
   };
+}
+
+/** The notification, if it exists and belongs to the caller; 404 / 403 otherwise. */
+async function owned(id: string, userId: string): Promise<Notification> {
+  const n = await prisma.notification.findUnique({ where: { id } });
+  if (!n) throw new HttpError(404, "Notification not found");
+  if (n.userId !== userId) throw new HttpError(403, "Not your notification");
+  return n;
 }
 
 function presentPrefs(p: NotificationPreference) {
@@ -87,7 +96,12 @@ notificationsRouter.get(
 notificationsRouter.patch(
   "/notifications/read-all",
   asyncHandler(async (req: AuthedRequest, res) => {
-    await prisma.notification.updateMany({ where: { userId: req.userId! }, data: { read: true } });
+    // Archived rows are already out of the unread count; "mark all read" is
+    // about the inbox the user is looking at.
+    await prisma.notification.updateMany({
+      where: { userId: req.userId!, archivedAt: null },
+      data: { read: true },
+    });
     return ok(res, null);
   }),
 );
@@ -95,11 +109,44 @@ notificationsRouter.patch(
 notificationsRouter.patch(
   "/notifications/:id/read",
   asyncHandler(async (req: AuthedRequest, res) => {
-    const n = await prisma.notification.findUnique({ where: { id: req.params.id } });
-    if (!n) throw new HttpError(404, "Notification not found");
-    if (n.userId !== req.userId) throw new HttpError(403, "Not your notification");
+    await owned(req.params.id, req.userId!);
     await prisma.notification.update({ where: { id: req.params.id }, data: { read: true } });
     return ok(res, null);
+  }),
+);
+
+// Archiving also marks read: an archived notification is by definition dealt
+// with, and leaving it "unread" would make the archive tab grow a badge.
+notificationsRouter.patch(
+  "/notifications/:id/archive",
+  asyncHandler(async (req: AuthedRequest, res) => {
+    await owned(req.params.id, req.userId!);
+    const n = await prisma.notification.update({
+      where: { id: req.params.id },
+      data: { archivedAt: new Date(), read: true },
+    });
+    return ok(res, present(n), "Notification archived");
+  }),
+);
+
+notificationsRouter.patch(
+  "/notifications/:id/unarchive",
+  asyncHandler(async (req: AuthedRequest, res) => {
+    await owned(req.params.id, req.userId!);
+    const n = await prisma.notification.update({
+      where: { id: req.params.id },
+      data: { archivedAt: null },
+    });
+    return ok(res, present(n), "Notification restored");
+  }),
+);
+
+notificationsRouter.delete(
+  "/notifications/:id",
+  asyncHandler(async (req: AuthedRequest, res) => {
+    await owned(req.params.id, req.userId!);
+    await prisma.notification.delete({ where: { id: req.params.id } });
+    return ok(res, null, "Notification deleted");
   }),
 );
 

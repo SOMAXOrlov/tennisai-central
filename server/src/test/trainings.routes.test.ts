@@ -458,7 +458,9 @@ describe("trainings notify the players", () => {
       data: { message: string; linkTo: string };
     };
     expect(written.data.message).toContain("Serve & first ball");
-    expect(written.data.linkTo).toBe("/calendar");
+    // The link lands on the day and opens the session as the PLAYER sees it
+    // on the calendar (calendar/routes.ts projectTraining ids).
+    expect(written.data.linkTo).toBe("/calendar?date=2026-06-01&event=training-tr-1-user-player");
   });
 
   it("tells a player they were dropped, and a new one they were added", async () => {

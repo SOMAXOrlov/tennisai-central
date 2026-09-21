@@ -283,8 +283,9 @@ describe("PATCH /api/trainings/:id — which occurrences a change reaches", () =
       .send({ title: "Renamed" });
 
     expect(res.status).toBe(200);
-    // No sibling lookup at all — "one" never asks about the series.
-    expect(db.training.findMany).not.toHaveBeenCalled();
+    // No SIBLING lookup — "one" never asks about the series. The notification's
+    // clash check does read the player's trainings, but never by seriesId.
+    expect(db.training.findMany.mock.calls.filter((c) => (c[0] as { where?: { seriesId?: unknown } })?.where?.seriesId !== undefined)).toHaveLength(0);
     expect(db.training.update).toHaveBeenCalledTimes(1);
   });
 
@@ -387,7 +388,9 @@ describe("PATCH /api/trainings/:id — which occurrences a change reaches", () =
       .send({ title: "Renamed", scope: "series" });
 
     expect(res.status).toBe(200);
-    expect(db.training.findMany).not.toHaveBeenCalled();
+    // No SIBLING lookup — "one" never asks about the series. The notification's
+    // clash check does read the player's trainings, but never by seriesId.
+    expect(db.training.findMany.mock.calls.filter((c) => (c[0] as { where?: { seriesId?: unknown } })?.where?.seriesId !== undefined)).toHaveLength(0);
     expect(db.training.update).toHaveBeenCalledTimes(1);
   });
 
