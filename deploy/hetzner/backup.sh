@@ -11,7 +11,7 @@
 # that is not there — and, for the photograph of a child, would mean the only
 # copy of it ever lived on one disk.
 #
-# Installed by setup-backup.sh as a daily cron job; can also be run by hand:
+# Installed as a daily cron job (see README.md, "Backups"); can also be run by hand:
 #   bash /opt/tennisai/deploy/hetzner/backup.sh
 #
 # Restoring (and the drill that proves these dumps restore): see RESTORE.md.
@@ -60,3 +60,9 @@ fi
 # kept without a dump from around the same night, or the other way round.
 ls -1t "$DEST"/tennisai_*.sql.gz | tail -n +$((KEEP + 1)) | xargs -r rm --
 ls -1t "$DEST"/uploads_*.tar.gz 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm --
+
+# Off-site copy — the only part of this that survives the disk. offsite.sh is a
+# logged no-op until /etc/tennisai/offsite.env exists (RESTORE.md, "Off-site
+# copy"). Its failure must never undo the local backup above, so it runs last
+# and is not allowed to abort this script.
+bash ./offsite.sh || { rc=$?; echo "$(date -u +%FT%TZ) OFF-SITE COPY FAILED (exit $rc); the local archives above are intact"; }
