@@ -1,29 +1,64 @@
 // ============================================================================
-// RestringDialog — what a stringing job records besides tension.
+// RestringDialog — the string comes from the bag.
 //
-// Length is metres per job with the same bounds the server enforces; the
-// crosses have their own string and length only when the job is declared a
-// hybrid; stringer and cost travel with the job. Nothing typed as empty is
-// sent, so the API never receives a zero it did not get.
+// The dialog lists the player's active strings (reels first), prefills a
+// reel's metres from the last job on it, shows what will be left, refuses an
+// over-draw before any round trip, and still lets a shop string in as "Other".
+// Length is metres per job with the same bounds the server enforces.
 // ============================================================================
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { EquipmentItem } from "@/types";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { EquipmentItem, StringSetup } from "@/types";
 
-const createMutateAsync = vi.fn();
+const create = vi.fn();
+const update = vi.fn();
+
+const racket: EquipmentItem = { id: "eq-1", playerId: "p1", category: "racket", name: "Pure Aero" };
+const bag: EquipmentItem[] = [
+  racket,
+  { id: "reel", playerId: "p1", category: "string", name: "ALU Power", stringForm: "reel", stringLengthM: 200, stringRemainingM: 114 },
+  { id: "short", playerId: "p1", category: "string", name: "RPM Blast", stringForm: "reel", stringLengthM: 100, stringRemainingM: 9 },
+  { id: "set", playerId: "p1", category: "string", name: "Hyper-G", stringForm: "set", stringLengthM: 12, stringRemainingM: 12 },
+  { id: "gone", playerId: "p1", category: "string", name: "Lynx Tour", stringForm: "set", stringLengthM: 12, stringRemainingM: 0, usedUpAt: "2026-01-12T10:00:00Z" },
+];
+const oldJob: StringSetup = {
+  id: "ss-0", playerId: "p1", racketItemId: "eq-1", tensionMainsKg: 23, strungAt: "2026-05-01T00:00:00Z",
+  mainsItemId: "reel", mainsLengthM: 11, isCurrent: false, createdAt: "2026-05-01T00:00:00Z", updatedAt: "2026-05-01T00:00:00Z",
+};
+
 vi.mock("@/hooks/api/queries", () => ({
-  useCreateStringSetup: () => ({ mutateAsync: createMutateAsync, isPending: false }),
-  useUpdateStringSetup: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateStringSetup: () => ({ mutateAsync: create, isPending: false }),
+  useUpdateStringSetup: () => ({ mutateAsync: update, isPending: false }),
+  useEquipment: () => ({ data: bag }),
+  useStringSetups: () => ({ data: [oldJob] }),
 }));
 
 const { RestringDialog, parseLengthM } = await import("@/components/equipment/RestringDialog");
 
-const RACKET: EquipmentItem = { id: "eq-1", playerId: "p1", category: "racket", name: "Pro Staff 97" };
+function renderDialog(current: StringSetup | null = null) {
+  return render(<RestringDialog racket={racket} current={current} open onOpenChange={vi.fn()} />);
+}
 
-afterEach(() => {
-  cleanup();
-  createMutateAsync.mockReset();
+// Radix Select opens from the keyboard in jsdom (pointer events carry no
+// pointerType there) and scrolls the focused option into view.
+Element.prototype.scrollIntoView ??= () => {};
+window.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} };
+
+/** Open a Radix select by its trigger label and pick the option matching `option`. */
+async function pick(label: RegExp | string, option: RegExp) {
+  fireEvent.keyDown(screen.getByRole("combobox", { name: label }), { key: "Enter" });
+  fireEvent.click(await screen.findByRole("option", { name: option }));
+}
+
+const typeMains = () => fireEvent.change(screen.getByLabelText("Mains (kg)"), { target: { value: "23" } });
+const save = () => fireEvent.click(screen.getByRole("button", { name: "Save stringing" }));
+const sent = () => create.mock.calls[0][0].data as Record<string, unknown>;
+
+beforeEach(() => {
+  create.mockReset().mockResolvedValue({ data: {} });
+  update.mockReset().mockResolvedValue({ data: {} });
 });
+afterEach(cleanup);
 
 describe("parseLengthM", () => {
   it("reads metres with a comma or a point, is null when empty, NaN when out of range", () => {
@@ -36,47 +71,93 @@ describe("parseLengthM", () => {
   });
 });
 
-describe("RestringDialog", () => {
-  it("sends the mains length, stringer and cost, and nothing for fields left empty", async () => {
-    createMutateAsync.mockResolvedValue({ data: {} });
-    render(<RestringDialog racket={RACKET} current={null} open onOpenChange={vi.fn()} />);
+describe("RestringDialog — strings from the bag", () => {
+  it("lists the active strings and leaves the used-up one out", async () => {
+    renderDialog();
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "String" }), { key: "Enter" });
+    const list = await screen.findByRole("listbox");
+    const names = within(list).getAllByRole("option").map((o) => o.textContent ?? "");
+    expect(names.some((n) => n.includes("ALU Power"))).toBe(true);
+    expect(names.some((n) => n.includes("RPM Blast"))).toBe(true);
+    expect(names.some((n) => n.includes("Hyper-G"))).toBe(true);
+    expect(names.some((n) => n.includes("Lynx Tour"))).toBe(false);
+    expect(names.at(-1)).toMatch(/other/i);
+  });
 
-    fireEvent.change(screen.getByLabelText("Mains (kg)"), { target: { value: "23" } });
-    fireEvent.change(screen.getByLabelText("Mains length (m)"), { target: { value: "12" } });
+  it("prefills a reel from the last job, shows what is left, and sends the item", async () => {
+    renderDialog();
+    typeMains();
+    await pick(/^String$/, /ALU Power/);
+    expect((screen.getByLabelText("Length (m)") as HTMLInputElement).value).toBe("11");
+    expect(screen.getByText(/103 m left after this · about 9 rackets/)).toBeInTheDocument();
+
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(sent()).toMatchObject({ racketItemId: "eq-1", tensionMainsKg: 23, mainsItemId: "reel", mainsLengthM: 11 });
+    expect(sent()).not.toHaveProperty("mainsCustomName");
+    expect(sent()).not.toHaveProperty("mainsSource");
+  });
+
+  it("refuses to draw more than the reel has left", async () => {
+    renderDialog();
+    typeMains();
+    await pick(/^String$/, /RPM Blast/);
+    fireEvent.change(screen.getByLabelText("Length (m)"), { target: { value: "12" } });
+    expect(screen.getByText("Only 9 m left on this reel.")).toBeInTheDocument();
+    save();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("sends a set as the item alone — no length to enter", async () => {
+    renderDialog();
+    typeMains();
+    await pick(/^String$/, /Hyper-G/);
+    expect(screen.queryByLabelText("Length (m)")).toBeNull();
+    expect(screen.getByText(/whole set is used up/i)).toBeInTheDocument();
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(sent().mainsItemId).toBe("set");
+    expect(sent()).not.toHaveProperty("mainsLengthM");
+  });
+
+  it("keeps the free-text path for a string that is not in the bag, and nothing typed as empty is sent", async () => {
+    renderDialog();
+    typeMains();
+    await pick(/^String$/, /other/i);
+    fireEvent.change(screen.getByLabelText("String name"), { target: { value: "Shop string" } });
+    fireEvent.change(screen.getByLabelText("Length (m)"), { target: { value: "12" } });
+    await pick("From", /reel/i);
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(sent()).toMatchObject({ mainsCustomName: "Shop string", mainsLengthM: 12, mainsSource: "reel" });
+    expect(sent()).not.toHaveProperty("mainsItemId");
+    expect(sent()).not.toHaveProperty("crossesLengthM");
+    expect(sent()).not.toHaveProperty("stringerName");
+    expect(sent()).not.toHaveProperty("costEur");
+  });
+
+  it("sends both sides of a hybrid", async () => {
+    renderDialog();
+    typeMains();
+    await pick(/^String$/, /ALU Power/);
+    fireEvent.click(screen.getByLabelText(/hybrid/i));
+    await pick(/crosses string/i, /Hyper-G/);
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(sent()).toMatchObject({ mainsItemId: "reel", mainsLengthM: 11, crossesItemId: "set" });
+    expect(sent()).not.toHaveProperty("crossesLengthM");
+  });
+
+  it("keeps stringer and cost behind More, and sends them when filled", async () => {
+    renderDialog();
+    typeMains();
+    expect(screen.queryByLabelText("Stringer")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^More/ }));
     fireEvent.change(screen.getByLabelText("Stringer"), { target: { value: "Club shop" } });
     fireEvent.change(screen.getByLabelText("Cost (EUR)"), { target: { value: "25" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save stringing" }));
-
-    await waitFor(() => expect(createMutateAsync).toHaveBeenCalledTimes(1));
-    const { data } = createMutateAsync.mock.calls[0][0] as { data: Record<string, unknown> };
-    expect(data).toMatchObject({ racketItemId: "eq-1", tensionMainsKg: 23, mainsLengthM: 12, stringerName: "Club shop", costEur: 25 });
-    expect(data).not.toHaveProperty("crossesLengthM");
-    expect(data).not.toHaveProperty("mainsSource");
-    expect(data).not.toHaveProperty("crossesCustomName");
-  });
-
-  it("shows the crosses string and length only for a hybrid, and sends them", async () => {
-    createMutateAsync.mockResolvedValue({ data: {} });
-    render(<RestringDialog racket={RACKET} current={null} open onOpenChange={vi.fn()} />);
-
-    expect(screen.queryByLabelText("Crosses string (if hybrid)")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("checkbox", { name: /Hybrid/ }));
-    fireEvent.change(screen.getByLabelText("Crosses string (if hybrid)"), { target: { value: "Natural gut" } });
-    fireEvent.change(screen.getByLabelText("Crosses length (m)"), { target: { value: "6" } });
-    fireEvent.change(screen.getByLabelText("Mains (kg)"), { target: { value: "24" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save stringing" }));
-
-    await waitFor(() => expect(createMutateAsync).toHaveBeenCalledTimes(1));
-    const { data } = createMutateAsync.mock.calls[0][0] as { data: Record<string, unknown> };
-    expect(data).toMatchObject({ crossesCustomName: "Natural gut", crossesLengthM: 6 });
-  });
-
-  it("refuses a length outside 1–20 m before any round trip", async () => {
-    render(<RestringDialog racket={RACKET} current={null} open onOpenChange={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText("Mains (kg)"), { target: { value: "23" } });
-    fireEvent.change(screen.getByLabelText("Mains length (m)"), { target: { value: "200" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save stringing" }));
-    expect(await screen.findByText("Enter a length between 1 and 20 m.")).toBeInTheDocument();
-    expect(createMutateAsync).not.toHaveBeenCalled();
+    save();
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(sent()).toMatchObject({ stringerName: "Club shop", costEur: 25 });
   });
 });

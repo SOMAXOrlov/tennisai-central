@@ -63,6 +63,9 @@ function allowVia(relationship: "coach" | "guardian" | "none") {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  // Creating and deleting a job runs inside a transaction; hand the callback
+  // the same mock so every existing assertion on the delegates still holds.
+  db.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) => fn(db));
 });
 
 // ── GET /api/players/:playerId/string-setups ────────────────────────────────

@@ -458,7 +458,8 @@ export interface EquipmentSpecs {
   weightG?: number; // racket
   stringPattern?: string; // racket
   gaugeMm?: number; // string
-  setLengthM?: number; // string — the set or reel in the bag
+  /** @deprecated 2026-09-21 — the length now lives on EquipmentItem.stringLengthM. Read for legacy rows, never written. */
+  setLengthM?: number;
   size?: string; // shoes
   surface?: ShoeSurface; // shoes
   quantity?: number; // balls
@@ -483,7 +484,20 @@ export interface EquipmentItem {
    */
   photoId?: string;
   photoUpdatedAt?: string;
+  /**
+   * Strings only. A SET is one pre-cut length for one racket; a REEL strings
+   * many. Remaining metres come down with every restring that draws from
+   * this item (the server does the deduction); `usedUpAt` is set when nothing
+   * usable is left. All absent on other categories and on legacy string rows.
+   */
+  stringForm?: StringForm;
+  stringLengthM?: number;
+  stringRemainingM?: number;
+  usedUpAt?: string;
 }
+
+/** A string item's form in the bag. */
+export type StringForm = "set" | "reel";
 
 /** Where the string for a job came from: a pre-cut set or cut off a reel. */
 export type StringSource = "set" | "reel";
@@ -514,6 +528,9 @@ export interface StringSetup {
   crossesLengthM?: number;
   mainsSource?: StringSource;
   crossesSource?: StringSource;
+  /** The string items in the bag each side was cut from, when it was one of them. */
+  mainsItemId?: string;
+  crossesItemId?: string;
   strungAt: string; // ISO
   stringerName?: string;
   costEur?: number;
@@ -541,6 +558,9 @@ export interface StringSetupCreateInput {
   crossesLengthM?: number;
   mainsSource?: StringSource;
   crossesSource?: StringSource;
+  /** Draw this job from these items in the bag; the server deducts the metres. */
+  mainsItemId?: string;
+  crossesItemId?: string;
   notes?: string;
 }
 
