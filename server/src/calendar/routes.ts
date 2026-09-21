@@ -5,6 +5,7 @@ import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
 import { assertCanActOnPlayer } from "../authz";
 import { expandRecurrence, type PresentedEvent } from "./recurrence";
+import { calendarLink, clashSuffix, findClashes } from "./clashes";
 import { createNotification } from "../notifications/routes";
 
 export const calendarRouter = Router();
@@ -186,7 +187,7 @@ async function connectedTo(userId: string): Promise<string[]> {
  * connections module documents on its own notifier.
  */
 async function announceEvent(
-  event: Pick<CalendarEvent, "title" | "type" | "startDate" | "playerId">,
+  event: Pick<CalendarEvent, "id" | "title" | "type" | "startDate" | "endDate" | "playerId">,
   actorId: string,
   type: "calendar_event_created" | "calendar_event_updated" | "calendar_event_deleted",
   verb: string,
@@ -202,11 +203,23 @@ async function announceEvent(
 }
 
 async function announce(
-  event: Pick<CalendarEvent, "title" | "type" | "startDate" | "playerId">,
+  event: Pick<CalendarEvent, "id" | "title" | "type" | "startDate" | "endDate" | "playerId">,
   actorId: string,
   type: string,
   verb: string,
 ) {
+  const deleted = type === "calendar_event_deleted";
+  // Whose schedule this lands on: the player it is for, else the actor's own.
+  // A cancelled event overlaps nothing, and there is no event left to open.
+  const clashes = deleted
+    ? []
+    : await findClashes(prisma, {
+        personId: event.playerId ?? actorId,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        excludeEventId: event.id,
+      });
+  const linkTo = deleted ? calendarLink(event.startDate) : calendarLink(event.startDate, event.id);
   const when = event.startDate.toLocaleString("en-GB", {
     weekday: "short",
     day: "numeric",
@@ -232,8 +245,8 @@ async function announce(
       userId,
       type,
       title: `${event.type[0].toUpperCase()}${event.type.slice(1)} ${verb}`,
-      message: `${who} ${verb} "${event.title}" on ${when}.`,
-      linkTo: "/calendar",
+      message: `${who} ${verb} "${event.title}" on ${when}.${clashSuffix(clashes)}`,
+      linkTo,
     });
   }
 }

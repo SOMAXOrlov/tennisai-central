@@ -801,6 +801,60 @@ export function useMarkAllNotificationsRead() {
   });
 }
 
+// Archive, restore and delete follow the mark-read shape: the row moves the
+// moment the user taps, and every ["notifications", userId] cache is restored
+// verbatim if the write fails.
+function useOptimisticNotificationChange(
+  mutationFn: (id: string) => Promise<unknown>,
+  patch: (rows: Notification[], id: string) => Notification[],
+  okKey: string,
+  failKey: string,
+) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onMutate: async (id: string) => {
+      await qc.cancelQueries({ queryKey: ["notifications"] });
+      const previous = qc.getQueriesData<Notification[]>({ queryKey: ["notifications"] });
+      qc.setQueriesData<Notification[]>({ queryKey: ["notifications"] }, (old) => (old ? patch(old, id) : old));
+      return { previous };
+    },
+    onSuccess: () => toastSuccess(okKey),
+    onError: (e: unknown, _id, ctx) => {
+      ctx?.previous.forEach(([key, data]) => { qc.setQueryData(key, data); });
+      toastError(failKey, e);
+    },
+    onSettled: () => { qc.invalidateQueries({ queryKey: ["notifications"] }); },
+  });
+}
+
+export function useArchiveNotification() {
+  return useOptimisticNotificationChange(
+    (id) => notificationsApi.archive(id),
+    (rows, id) => rows.map((n) => (n.id === id ? { ...n, archivedAt: new Date().toISOString(), read: true } : n)),
+    "toast.notification.archived",
+    "toast.notification.archiveFailed",
+  );
+}
+
+export function useUnarchiveNotification() {
+  return useOptimisticNotificationChange(
+    (id) => notificationsApi.unarchive(id),
+    (rows, id) => rows.map((n) => (n.id === id ? { ...n, archivedAt: undefined } : n)),
+    "toast.notification.unarchived",
+    "toast.notification.unarchiveFailed",
+  );
+}
+
+export function useDeleteNotification() {
+  return useOptimisticNotificationChange(
+    (id) => notificationsApi.remove(id),
+    (rows, id) => rows.filter((n) => n.id !== id),
+    "toast.notification.deleted",
+    "toast.notification.deleteFailed",
+  );
+}
+
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: queryKeys.notificationPrefs,

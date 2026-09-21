@@ -1,5 +1,7 @@
 // Calendar — Professional planning tool with month/week/day views
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { clashIdSet, clashesFor } from "@/lib/calendar/clashes";
+import { parseDeepLinkDate, resolveDeepLinkedEvent } from "@/lib/calendar/deepLink";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/AuthContext";
@@ -35,6 +37,7 @@ import {
   Plane, Heart, MapPin, Clock, Plus, Pencil, Trash2, User, Users, Filter, StickyNote,
   LayoutGrid, List, Columns, PanelLeftClose, PanelLeftOpen, Repeat, Globe, CheckCircle2,
   RefreshCw, Download,
+  AlertTriangle,
 } from "lucide-react";
 import { MiniMonthCalendar } from "@/components/calendar/MiniMonthCalendar";
 import { DayEventsSheet } from "@/components/calendar/DayEventsSheet";
@@ -131,7 +134,7 @@ function getEventsForDay(events: CalendarEvent[], day: Date) {
   });
 }
 
-function EventChip({ event, onClick, showPlayer, compact, draggable, registered }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean; registered?: boolean }) {
+function EventChip({ event, onClick, showPlayer, compact, draggable, registered, clash }: { event: CalendarEvent; onClick: () => void; showPlayer?: boolean; compact?: boolean; draggable?: boolean; registered?: boolean; clash?: boolean }) {
   const cfg = EVENT_CONFIG[event.type];
   void cfg;
   const isRecurring = !!event.recurrence || !!event.recurrenceParentId;
@@ -186,6 +189,7 @@ function EventChip({ event, onClick, showPlayer, compact, draggable, registered 
       <span className={`truncate ${sv?.strike ? "line-through" : ""}`}>{showPlayer && event.playerName ? <>{event.playerName.split(" ")[0]}: {displayTitle}</> : displayTitle}</span>
       {isRecurring && <Repeat className="h-2.5 w-2.5 shrink-0 opacity-60" />}
       {registered && <CheckCircle2 className="h-3 w-3 shrink-0" />}
+      {clash && <AlertTriangle className="h-3 w-3 shrink-0" role="img" aria-label={translate("calendar.clash.chipAria")} />}
     </button>
   );
 }
@@ -199,10 +203,12 @@ function StateBadge({ state }: { state?: CalendarEventState }) {
 
 
 
-function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting, onRegister, registering, alreadyRegistered }: {
+function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDeleteSingle, readOnly, hideCoachNotes, deleting, onRegister, registering, alreadyRegistered, clashes }: {
   event: CalendarEvent | null; open: boolean; onOpenChange: (o: boolean) => void;
   onEdit: () => void; onDelete: () => void; onDeleteSingle?: () => void; readOnly?: boolean; hideCoachNotes?: boolean; deleting?: boolean;
   onRegister?: () => void; registering?: boolean; alreadyRegistered?: boolean;
+  /** Other events on the same schedule that overlap this one (lib/calendar/clashes). */
+  clashes?: CalendarEvent[];
 }) {
   const { t, formatDate } = useT();
   const [showRecurringChoice, setShowRecurringChoice] = useState(false);
@@ -254,6 +260,16 @@ function EventDetailDrawer({ event, open, onOpenChange, onEdit, onDelete, onDele
               )}
               {event.location && <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{event.location}</div>}
               {event.playerName && <div className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4 shrink-0" />{event.playerName}</div>}
+              {clashes && clashes.length > 0 && (
+                <div className="rounded-lg border border-border bg-muted p-3">
+                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground dark:text-foreground"><AlertTriangle className="h-3 w-3" />{t("calendar.clash.title")}</div>
+                  <ul className="space-y-0.5 text-sm text-foreground dark:text-foreground">
+                    {clashes.map((c) => (
+                      <li key={c.id}>{c.title} · {formatDate(parseISO(c.startDate), TIME_ONLY)} – {formatDate(parseISO(c.endDate), TIME_ONLY)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {event.description && <p className="text-muted-foreground">{event.description}</p>}
               {!hideCoachNotes && event.coachNotes && (
                 <div className="rounded-lg border border-border bg-muted p-3">
@@ -435,11 +451,11 @@ function EventFormDialog({ open, onOpenChange, initial, onSave, playerOptions, s
 
 // ─── Month View ───
 
-function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, onOpenDay, showPlayerLabel, onDropEvent, canDrag, registeredIntlIds }: {
+function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, onOpenDay, showPlayerLabel, onDropEvent, canDrag, registeredIntlIds, clashIds }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void;
   /** Opens the full, scrollable list for one day. */
   onOpenDay?: (day: Date, events: CalendarEvent[]) => void; showPlayerLabel?: boolean;
-  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean; registeredIntlIds?: Set<string>;
+  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean; registeredIntlIds?: Set<string>; clashIds?: Set<string>;
 }) {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -482,7 +498,7 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, onOpenDay
             >
               <div className={`mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : isCurrentMonth ? "text-foreground" : "text-muted-foreground/40"}`}>{format(day, "d")}</div>
               <div className="flex flex-col gap-0.5">
-                {dayEvents.slice(0, MONTH_CELL_EVENT_LIMIT).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact draggable={canDrag} registered={registeredIntlIds?.has(e.id)} />))}
+                {dayEvents.slice(0, MONTH_CELL_EVENT_LIMIT).map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} compact draggable={canDrag} registered={registeredIntlIds?.has(e.id)} clash={clashIds?.has(e.id)} />))}
                 {dayEvents.length > MONTH_CELL_EVENT_LIMIT && (
                   // Was plain text: it told you 181 events were there and gave
                   // you no way to reach them.
@@ -505,9 +521,9 @@ function MonthlyView({ currentDate, events, onSelectEvent, onDayClick, onOpenDay
 
 // ─── Week View ───
 
-function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel, onDropEvent, canDrag, registeredIntlIds }: {
+function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayerLabel, onDropEvent, canDrag, registeredIntlIds, clashIds }: {
   currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; onDayClick?: (day: Date) => void; showPlayerLabel?: boolean;
-  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean; registeredIntlIds?: Set<string>;
+  onDropEvent?: (eventId: string, oldStart: string, oldEnd: string, targetDay: Date) => void; canDrag?: boolean; registeredIntlIds?: Set<string>; clashIds?: Set<string>;
 }) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -542,7 +558,7 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{format(day, "EEE", { locale: getDateFnsLocale() })}</div>
                 <div className={`mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors ${isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"}`}>{format(day, "d")}</div>
               </div>
-              <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} draggable={canDrag} registered={registeredIntlIds?.has(e.id)} />))}</div>
+              <div className="flex flex-col gap-1.5">{dayEvents.map((e) => (<EventChip key={e.id} event={e} onClick={() => onSelectEvent(e)} showPlayer={showPlayerLabel} draggable={canDrag} registered={registeredIntlIds?.has(e.id)} clash={clashIds?.has(e.id)} />))}</div>
             </div>
           );
         })}
@@ -553,8 +569,8 @@ function WeeklyView({ currentDate, events, onSelectEvent, onDayClick, showPlayer
 
 // ─── Day View ───
 
-function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, registeredIntlIds }: {
-  currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; showPlayerLabel?: boolean; registeredIntlIds?: Set<string>;
+function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, registeredIntlIds, clashIds }: {
+  currentDate: Date; events: CalendarEvent[]; onSelectEvent: (e: CalendarEvent) => void; showPlayerLabel?: boolean; registeredIntlIds?: Set<string>; clashIds?: Set<string>;
 }) {
   const dayEvents = getEventsForDay(events, currentDate).sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
   const isToday = isDateToday(currentDate);
@@ -593,6 +609,7 @@ function DayView({ currentDate, events, onSelectEvent, showPlayerLabel, register
                   <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: withAlpha(eventBaseColor(event.type, event.title), "1f"), borderColor: withAlpha(eventBaseColor(event.type, event.title), "59"), color: eventBaseColor(event.type, event.title) }}>{cfg.icon}{eventTypeLabel(event.type)}</span>
                    <StateBadge state={event.state} />
                    {registeredIntlIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><CheckCircle2 className="h-3 w-3" />{translate("calendar.registered")}</span>}
+                  {clashIds?.has(event.id) && <span className="inline-flex items-center gap-0.5 rounded-full bg-muted border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-foreground"><AlertTriangle className="h-3 w-3" />{translate("calendar.clash.badge")}</span>}
                 </div>
                 <h4 className="mt-1 text-sm font-semibold text-foreground">{event.title}</h4>
                 {showPlayerLabel && event.playerName && event.playerId && (
@@ -685,7 +702,7 @@ export default function CalendarPage() {
   // Deep link: /calendar?player=<id> or ?team=<id> arrives already scoped —
   // the player and team action menus point here. Read once, as the initial
   // value; the params stay in the URL so the scoped view can be shared.
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [playerScope, setPlayerScope] = useState<string>(() => searchParams.get("player") || "all");
   const [teamScope, setTeamScope] = useState<string>(() => searchParams.get("team") || "__all__");
   // An id that turns out not to be one of ours (stale link, other coach's
@@ -846,6 +863,10 @@ export default function CalendarPage() {
     // are already in this list, so nothing recomputes less often.
   }, [events, activeFilters, playerScope, connectedPlayers, user?.id, isPlayer, isCoach, isObserver, teamPlayerIds, showOwnEvents, internationalEvents]);
 
+  // Everything on screen that overlaps something else on the same schedule.
+  // Same rule the server applies when it writes the notification message.
+  const clashIds = useMemo(() => clashIdSet(scopedEvents, registeredIntlIds), [scopedEvents, registeredIntlIds]);
+
   const toggleFilter = (type: CalendarEventType) => {
     setActiveFilters((prev) => { const next = new Set(prev); if (next.has(type)) next.delete(type); else next.add(type); return next; });
   };
@@ -859,6 +880,34 @@ export default function CalendarPage() {
   };
 
   const handleSelectEvent = (e: CalendarEvent) => { setSelectedEvent(e); setDrawerOpen(true); };
+
+  // Arriving from a notification: /calendar?date=YYYY-MM-DD&event=<id> lands on
+  // that day and, once the events are here, opens that event. The params are
+  // then dropped with a replace so moving around the calendar does not re-fire.
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    const dateParam = searchParams.get("date");
+    const eventParam = searchParams.get("event");
+    if (!dateParam && !eventParam) return;
+    if (eventParam && isLoading) return;
+
+    const day = parseDeepLinkDate(dateParam);
+    if (day) { setCurrentDate(day); setView("day"); }
+    if (eventParam) {
+      const target = resolveDeepLinkedEvent(events, eventParam, dateParam);
+      if (target) {
+        if (!day) { setCurrentDate(parseISO(target.startDate)); setView("day"); }
+        setSelectedEvent(target);
+        setDrawerOpen(true);
+      }
+    }
+    deepLinkHandled.current = true;
+    const next = new URLSearchParams(searchParams);
+    next.delete("date");
+    next.delete("event");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams, events, isLoading]);
 
   const handleDayClick = canEdit ? (day: Date) => {
     if (view !== "day") {
@@ -1417,9 +1466,9 @@ export default function CalendarPage() {
             />
           )}
 
-          {renderView === "month" && scopedEvents.length > 0 && <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} onOpenDay={openDay} showPlayerLabel={showPlayerLabels} onDropEvent={canEdit ? handleDropEvent : undefined} canDrag={canEdit} registeredIntlIds={registeredIntlIds} />}
-          {renderView === "week" && scopedEvents.length > 0 && <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} onDropEvent={canEdit ? handleDropEvent : undefined} canDrag={canEdit} registeredIntlIds={registeredIntlIds} />}
-          {renderView === "day" && <DayView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} showPlayerLabel={showPlayerLabels} registeredIntlIds={registeredIntlIds} />}
+          {renderView === "month" && scopedEvents.length > 0 && <MonthlyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} onOpenDay={openDay} showPlayerLabel={showPlayerLabels} onDropEvent={canEdit ? handleDropEvent : undefined} canDrag={canEdit} registeredIntlIds={registeredIntlIds} clashIds={clashIds} />}
+          {renderView === "week" && scopedEvents.length > 0 && <WeeklyView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} onDayClick={handleDayClick} showPlayerLabel={showPlayerLabels} onDropEvent={canEdit ? handleDropEvent : undefined} canDrag={canEdit} registeredIntlIds={registeredIntlIds} clashIds={clashIds} />}
+          {renderView === "day" && <DayView currentDate={currentDate} events={scopedEvents} onSelectEvent={handleSelectEvent} showPlayerLabel={showPlayerLabels} registeredIntlIds={registeredIntlIds} clashIds={clashIds} />}
         </div>
       </div>
 
@@ -1468,10 +1517,11 @@ export default function CalendarPage() {
         open={!!daySheet}
         onOpenChange={(o) => { if (!o) setDaySheet(null); }}
         registeredIds={registeredIntlIds}
+        clashIds={clashIds}
         onSelectEvent={(e) => { setDaySheet(null); handleSelectEvent(e); }}
       />
 
-      <EventDetailDrawer event={selectedEvent} open={drawerOpen} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || (selectedEvent ? isProjected(selectedEvent.id) : false)} hideCoachNotes={isObserver} deleting={deleteMut.isPending} registering={registerMut.isPending} alreadyRegistered={selectedEvent ? registeredIntlIds.has(selectedEvent.id) : false} onRegister={selectedEvent?.id.startsWith("intl-") && isPlayer ? () => {
+      <EventDetailDrawer event={selectedEvent} open={drawerOpen} clashes={selectedEvent ? clashesFor(scopedEvents, selectedEvent, registeredIntlIds) : undefined} onOpenChange={(o) => { setDrawerOpen(o); if (!o) setSelectedEvent(null); }} onEdit={handleEdit} onDelete={handleDelete} onDeleteSingle={handleDeleteSingle} readOnly={isObserver || (selectedEvent ? isProjected(selectedEvent.id) : false)} hideCoachNotes={isObserver} deleting={deleteMut.isPending} registering={registerMut.isPending} alreadyRegistered={selectedEvent ? registeredIntlIds.has(selectedEvent.id) : false} onRegister={selectedEvent?.id.startsWith("intl-") && isPlayer ? () => {
         const tournamentId = selectedEvent!.id.replace("intl-", "");
         const tournament = tournaments.find(t => t.id === tournamentId);
         if (!tournament) return;

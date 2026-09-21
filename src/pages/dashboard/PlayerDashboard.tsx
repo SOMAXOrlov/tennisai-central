@@ -28,6 +28,7 @@ import {
   useFinanceSummary,
   useEquipment,
 } from "@/hooks/api/queries";
+import { inInbox, internalPath } from "@/lib/notifications";
 import { useOnboarding } from "@/hooks/api/onboarding";
 import { isBefore } from "date-fns";
 import { useT, formatDate as formatDateIntl } from "@/lib/i18n";
@@ -76,7 +77,9 @@ export default function PlayerDashboard() {
     .filter((e) => !isBefore(new Date(e.startDate), now))
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
     .slice(0, 4);
-  const unreadNotifications = notifications.filter((n) => !n.read);
+  // Archived notifications are filed away: not in this list, not in the count.
+  const inbox = notifications.filter(inInbox);
+  const unreadNotifications = inbox.filter((n) => !n.read);
   const finance = {
     totalTraining: financeSummary?.totalTraining ?? 0,
     totalTravel: financeSummary?.totalTravel ?? 0,
@@ -313,11 +316,11 @@ export default function PlayerDashboard() {
           }
         >
           <div className="space-y-3">
-            {notifications.length === 0 && (
+            {inbox.length === 0 && (
               <p className="py-4 text-center text-sm text-muted-foreground">{t("dashboard.common.noNotificationsYet")}</p>
             )}
-            {notifications.slice(0, 3).map((notif) => (
-              <div key={notif.id} className="flex items-start gap-3">
+            {inbox.slice(0, 3).map((notif) => (
+              <Link key={notif.id} to={internalPath(notif.linkTo) ?? "/notifications"} className="flex items-start gap-3 rounded-md transition-colors hover:bg-accent/20">
                 <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notif.read ? "bg-muted" : "bg-primary"}`} />
                 <div className="min-w-0 flex-1">
                   <p className={`text-sm ${notif.read ? "text-muted-foreground" : "font-medium text-foreground"}`}>
@@ -326,7 +329,7 @@ export default function PlayerDashboard() {
                   <p className="truncate text-xs text-muted-foreground">{notif.message}</p>
                 </div>
                 <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(notif.createdAt)}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </DashboardCard>

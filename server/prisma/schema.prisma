@@ -622,6 +622,10 @@ model Notification {
   // Set once this notification has been delivered by email, so a retry or a
   // scheduled sweep can never send the same notification twice.
   emailedAt DateTime?
+  // Set when the user files the notification away. An archived notification is
+  // out of the inbox and out of the unread count but still theirs to reopen or
+  // delete; a deleted one is gone. Null means it is in the inbox.
+  archivedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -6,6 +6,7 @@ import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "..
 import { requireRole, assertCanActOnPlayer } from "../authz";
 import { assertLibraryDrillsUsable } from "../trainingPlans/routes";
 import { createNotification } from "../notifications/routes";
+import { calendarLink, clashSuffix, findClashes } from "../calendar/clashes";
 import { expandWeekly, RecurrenceError, type WeeklyRecurrence } from "./recurrence";
 
 export const trainingsRouter = Router();
@@ -428,9 +429,10 @@ trainingsRouter.post(
     // ONE notification per player for the whole series. Twenty-six identical
     // "New training scheduled" messages is not twenty-six times the
     // information; it is a reason to turn notifications off.
-    notifyPlayers(playerIds, req.userId!, {
+    void notifyPlayers(playerIds, req.userId!, {
       type: "training_created",
       title: created.length > 1 ? "New weekly training scheduled" : "New training scheduled",
+      slot: { trainingId: first.id, startDate: first.startDate, endDate: first.endDate },
       message:
         created.length > 1
           ? `${who} scheduled "${first.title}" weekly — ${created.length} sessions from ${whenLabel(first.startDate)}.`
@@ -529,9 +531,10 @@ trainingsRouter.post(
     });
 
     const who = await coachName(req.userId!);
-    notifyPlayers(created.participants.map((p) => p.playerId), req.userId!, {
+    void notifyPlayers(created.participants.map((p) => p.playerId), req.userId!, {
       type: "training_created",
       title: "New training scheduled",
+      slot: { trainingId: created.id, startDate: created.startDate, endDate: created.endDate },
       message: `${who} scheduled "${created.title}" for ${whenLabel(created.startDate)}${created.location ? ` at ${created.location}` : ""}.`,
     });
 
@@ -654,22 +657,25 @@ trainingsRouter.patch(
     const when = `${whenLabel(updated.startDate)}${updated.location ? ` at ${updated.location}` : ""}`;
     const many = updatedRows.length > 1 ? ` (${updatedRows.length} sessions)` : "";
 
-    notifyPlayers(after.filter((id) => !before.includes(id)), req.userId!, {
+    void notifyPlayers(after.filter((id) => !before.includes(id)), req.userId!, {
       type: "training_created",
       title: "You were added to a training",
+      slot: { trainingId: updated.id, startDate: updated.startDate, endDate: updated.endDate },
       message: `${who} added you to "${updated.title}" on ${when}${many}.`,
     });
-    notifyPlayers(before.filter((id) => !after.includes(id)), req.userId!, {
+    void notifyPlayers(before.filter((id) => !after.includes(id)), req.userId!, {
       type: "training_deleted",
       title: "You were removed from a training",
+      slot: { trainingId: updated.id, startDate: updated.startDate, endDate: updated.endDate, deleted: true },
       message: `${who} removed you from "${updated.title}" on ${when}${many}.`,
     });
     // A cancellation is not "an update". A player who reads "Training updated"
     // and turns up to an empty court has been told the wrong thing.
     const cancelled = data.status === "cancelled" && anchor.status !== "cancelled";
-    notifyPlayers(after.filter((id) => before.includes(id)), req.userId!, {
+    void notifyPlayers(after.filter((id) => before.includes(id)), req.userId!, {
       type: cancelled ? "training_deleted" : "training_updated",
       title: cancelled ? "Training cancelled" : "Training updated",
+      slot: { trainingId: updated.id, startDate: updated.startDate, endDate: updated.endDate, deleted: cancelled },
       message: cancelled
         ? `${who} cancelled "${updated.title}" on ${when}${many}.`
         : `${who} changed "${updated.title}" — now ${when}${many}.`,
@@ -721,12 +727,13 @@ trainingsRouter.delete(
 
     const who = await coachName(req.userId!);
     const many = targets.length > 1 ? ` (${targets.length} sessions)` : "";
-    notifyPlayers(
+    void notifyPlayers(
       targets.flatMap((t) => t.participants.map((p) => p.playerId)),
       req.userId!,
       {
         type: "training_deleted",
         title: "Training cancelled",
+        slot: { trainingId: anchor.id, startDate: anchor.startDate, endDate: anchor.endDate, deleted: true },
         message: `${who} cancelled "${anchor.title}" on ${whenLabel(anchor.startDate)}${many}.`,
       },
     );
@@ -1099,14 +1106,45 @@ async function coachName(coachId: string): Promise<string> {
  * that triggered it. The actor is filtered out — nobody needs telling about
  * something they just did themselves.
  */
-function notifyPlayers(
+interface NotifySlot {
+  trainingId: string;
+  startDate: Date;
+  endDate: Date;
+  /** The session is gone (deleted or cancelled): link to the day, check no clash. */
+  deleted?: boolean;
+}
+
+async function notifyPlayers(
   playerIds: string[],
   actorId: string,
-  input: { type: string; title: string; message: string },
+  input: { type: string; title: string; message: string; slot?: NotifySlot },
 ) {
+  const { slot, ...body } = input;
   for (const userId of dedupe(playerIds)) {
     if (userId === actorId) continue;
-    void createNotification({ ...input, userId, linkTo: "/calendar" });
+    // The calendar shows a training to a player under `training-<id>-<player>`
+    // (see calendar/routes.ts projectTraining), so that is what the link opens.
+    let linkTo = "/calendar";
+    let message = body.message;
+    if (slot) {
+      linkTo = slot.deleted
+        ? calendarLink(slot.startDate)
+        : calendarLink(slot.startDate, `training-${slot.trainingId}-${userId}`);
+      if (!slot.deleted) {
+        try {
+          const clashes = await findClashes(prisma, {
+            personId: userId,
+            startDate: slot.startDate,
+            endDate: slot.endDate,
+            excludeTrainingId: slot.trainingId,
+          });
+          message += clashSuffix(clashes);
+        } catch {
+          // A clash lookup that fails must not silence the notification itself.
+        }
+      }
+    }
+    void createNotification({ type: body.type, title: body.title, message, userId, linkTo });
   }
 }
 

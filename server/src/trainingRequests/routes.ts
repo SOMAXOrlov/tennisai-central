@@ -4,6 +4,7 @@ import type { TrainingRequest, User } from "@prisma/client";
 import { prisma } from "../db";
 import { asyncHandler, requireAuth, ok, HttpError, type AuthedRequest } from "../http";
 import { createNotification } from "../notifications/routes";
+import { calendarLink, clashSuffix, findClashes } from "../calendar/clashes";
 
 export const trainingRequestsRouter = Router();
 trainingRequestsRouter.use(requireAuth);
@@ -161,12 +162,21 @@ trainingRequestsRouter.post(
         include: withUsers,
       });
     });
+    // The player's new session may sit on top of something already booked;
+    // say so in the same breath, and open the calendar on that event.
+    const eventId = updated.calendarEventId ?? undefined;
+    const clashes = await findClashes(prisma, {
+      personId: r.playerId,
+      startDate,
+      endDate,
+      excludeEventId: eventId,
+    }).catch(() => []);
     void createNotification({
       userId: r.playerId,
       type: "training_request_approved",
       title: "Training Request Approved",
-      message: `Your ${r.trainingType} request for ${r.preferredDate} was approved${coachMessage ? `: "${coachMessage}"` : ""}`,
-      linkTo: "/calendar",
+      message: `Your ${r.trainingType} request for ${r.preferredDate} was approved${coachMessage ? `: "${coachMessage}"` : ""}.${clashSuffix(clashes)}`,
+      linkTo: calendarLink(startDate, eventId),
     });
     return ok(res, present(updated), "Request approved");
   }),

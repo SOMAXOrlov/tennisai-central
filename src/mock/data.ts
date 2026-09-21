@@ -167,9 +167,13 @@ export const mockStringSetups: StringSetup[] = [
 ];
 
 export const mockNotifications: Notification[] = [
-  { id: "n1", userId: "p1", type: "request_approval", title: "New Connection Request", message: "Coach Jordan Smith wants to connect with you", read: false, createdAt: "2026-03-07T10:00:00Z" },
-  { id: "n2", userId: "p1", type: "tournament_reminder", title: "Tournament Coming Up", message: "City Open 2026 starts in 5 weeks", read: true, createdAt: "2026-03-06T09:00:00Z" },
+  { id: "n1", userId: "p1", type: "request_approval", title: "New Connection Request", message: "Coach Jordan Smith wants to connect with you", read: false, linkTo: "/connections", createdAt: "2026-03-07T10:00:00Z" },
+  // The links below are what the server writes (server/src/calendar/clashes.ts
+  // calendarLink): the calendar opens on that day with that event.
+  { id: "n4", userId: "p1", type: "training_created", title: "New training scheduled", message: "Jordan Smith scheduled \"Morning Training\" for Mon 9 Mar, 08:00 at Court A.", read: false, linkTo: "/calendar?date=2026-03-09&event=e1", createdAt: "2026-03-06T18:00:00Z" },
+  { id: "n2", userId: "p1", type: "tournament_reminder", title: "Tournament Coming Up", message: "Regional Open starts in 5 weeks", read: true, linkTo: "/calendar?date=2026-03-15&event=e2", createdAt: "2026-03-06T09:00:00Z" },
   { id: "n3", userId: "p1", type: "ai_insight", title: "New AI Insight", message: "Your preparation analysis for City Open is ready", read: false, createdAt: "2026-03-05T14:00:00Z" },
+  { id: "n5", userId: "p1", type: "training_updated", title: "Training updated", message: "Jordan Smith changed \"Agility Drills\" — now Mon 2 Mar, 07:00 at Court B.", read: true, linkTo: "/calendar?date=2026-03-02&event=e10", createdAt: "2026-03-01T09:00:00Z", archivedAt: "2026-03-02T08:00:00Z" },
 ];
 
 export const mockNotificationSettings: NotificationSettings = {

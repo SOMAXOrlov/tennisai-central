@@ -725,6 +725,8 @@ export interface Notification {
   /** Link to related entity for click-through */
   linkTo?: string;
   createdAt: string;
+  /** Set when filed away: out of the inbox and the unread count, still reopenable. */
+  archivedAt?: string;
 }
 
 export interface NotificationSettings {

@@ -182,6 +182,10 @@
       "unread": {
         "title": "All caught up",
         "description": "There are no unread notifications."
+      },
+      "archived": {
+        "title": "Nothing archived",
+        "description": "Notifications you file away end up here, where they can be restored or deleted."
       }
     },
     "players": {
@@ -1658,7 +1662,16 @@
           "description": "Account and general app notifications"
         }
       }
-    }
+    },
+    "tabArchived": "Archived",
+    "archive": "Archive",
+    "unarchive": "Restore",
+    "delete": "Delete",
+    "archiveAria": "Archive: {title}",
+    "unarchiveAria": "Restore to inbox: {title}",
+    "deleteAria": "Delete: {title}",
+    "openAria": "{title}. {message}. Open the related page.",
+    "rowAria": "{title}. {message}."
   },
   "search": {
     "trigger": "Search — pages, players and tournaments",
@@ -3179,6 +3192,11 @@
       "month": "Export this month",
       "week": "Export this week",
       "day": "Export this day"
+    },
+    "clash": {
+      "badge": "Clash",
+      "title": "Overlaps with",
+      "chipAria": "Overlaps with another event on this schedule"
     }
   },
   "auth": {
@@ -3525,7 +3543,13 @@
       "markReadFailed": "Couldn't mark the notification as read",
       "preferenceFailed": "Couldn't save the preference",
       "pushEnabled": "Push notifications enabled on this device",
-      "pushFailed": "Couldn't enable push on this device"
+      "pushFailed": "Couldn't enable push on this device",
+      "archived": "Notification archived",
+      "archiveFailed": "Couldn't archive the notification",
+      "unarchived": "Notification restored to the inbox",
+      "unarchiveFailed": "Couldn't restore the notification",
+      "deleted": "Notification deleted",
+      "deleteFailed": "Couldn't delete the notification"
     },
     "profile": {
       "updated": "Profile updated",
