@@ -1822,7 +1822,6 @@
       "submit": "Add Equipment",
       "acquired": "Acquired on",
       "details": "Details",
-      "stringHint": "A set or reel in your bag. What is in a racket right now is recorded on the racket, with Restring.",
       "photo": "Photo"
     },
     "category": {
@@ -1964,7 +1963,18 @@
       "stringer": "Stringer",
       "stringerPlaceholder": "e.g. club pro shop",
       "cost": "Cost (EUR)",
-      "costError": "Enter a cost of zero or more."
+      "costError": "Enter a cost of zero or more.",
+      "pickPlaceholder": "Pick a string from your bag",
+      "other": "Other, not in my bag",
+      "otherName": "String name",
+      "optionReel": "{name} · reel, {left} m left",
+      "optionSet": "{name} · set",
+      "setUsesAll": "The whole set is used up by this restring.",
+      "length": "Length (m)",
+      "afterDraw": "{left} m left after this · about {rackets} rackets",
+      "afterDrawShort": "{left} m left after this",
+      "overDraw": "Only {left} m left on this reel.",
+      "more": "More: stringer, cost, notes"
     },
     "row": {
       "since": "since {date}"
@@ -1990,7 +2000,6 @@
         "weightG": "Weight (g)",
         "stringPattern": "String pattern",
         "gaugeMm": "Gauge (mm)",
-        "setLengthM": "Length in the bag (m)",
         "size": "Size",
         "surface": "Court surface",
         "quantity": "Quantity"
@@ -2000,7 +2009,6 @@
         "weightG": "{value} g",
         "stringPattern": "{value}",
         "gaugeMm": "{value} mm",
-        "setLengthM": "{value} m",
         "size": "Size {value}",
         "surface": "{value}",
         "quantity": "×{value}"
@@ -2013,6 +2021,28 @@
       "grass": "Grass",
       "indoor": "Indoor",
       "all": "All surfaces"
+    },
+    "bag": {
+      "formLabel": "Form",
+      "form": {
+        "set": "Set",
+        "reel": "Reel"
+      },
+      "setPill": "Set · {m} m",
+      "length": "Length (m)",
+      "lengthHint": {
+        "set": "One pre-cut set strings one racket.",
+        "reel": "A reel strings many rackets; metres come off it with every restring."
+      },
+      "lengthError": "Enter a length between 1 and {max} m.",
+      "remaining": "{left} m left of {total} m",
+      "racketsLeft": "{count, plural, one {≈ # racket left} other {≈ # rackets left}}",
+      "jobs": "{count, plural, one {# restring so far} other {# restrings so far}}",
+      "notEnough": "not enough for a full racket",
+      "low": "Low",
+      "usedUp": "Used up",
+      "usedGroup": "{count, plural, one {Used up · # string} other {Used up · # strings}}",
+      "fillAria": "{name}: {left} of {total} metres left"
     }
   },
   "finance": {

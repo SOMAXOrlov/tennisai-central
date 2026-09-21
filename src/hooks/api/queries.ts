@@ -752,7 +752,7 @@ export function useCreateStringSetup() {
   return useMutation({
     mutationFn: ({ playerId, data }: { playerId: string; data: StringSetupCreateInput }) =>
       stringSetupsApi.createSetup(playerId, data),
-    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); toastSuccess("toast.stringSetup.added"); },
+    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); inv.equipment(vars.playerId); toastSuccess("toast.stringSetup.added"); },
     onError: (e: unknown) => toastError("toast.stringSetup.addFailed", e),
   });
 }
@@ -772,7 +772,7 @@ export function useDeleteStringSetup() {
   const inv = useInvalidateRelated();
   return useMutation({
     mutationFn: ({ id }: { id: string; playerId: string }) => stringSetupsApi.deleteSetup(id),
-    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); toastSuccess("toast.stringSetup.removed"); },
+    onSuccess: (_, vars) => { inv.stringSetups(vars.playerId); inv.equipment(vars.playerId); toastSuccess("toast.stringSetup.removed"); },
     onError: (e: unknown) => toastError("toast.stringSetup.removeFailed", e),
   });
 }

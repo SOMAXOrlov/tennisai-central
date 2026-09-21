@@ -22,6 +22,7 @@ import type { ConnectedPlayer, EquipmentCategory, EquipmentItem } from "@/types"
 import { specChips } from "@/lib/equipment/specs";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryPlural, conditionLabel, getConditionLevel } from "./categories";
 import { RacketStringing } from "./RacketStringing";
+import { StringFormPill, StringItemRow } from "./StringItemRow";
 
 interface PlayerEquipmentDrawerProps {
   player: ConnectedPlayer | null;
@@ -90,6 +91,7 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
                         <li key={item.id} className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
+                            {item.category === "string" && <StringFormPill item={item} />}
                             {item.condition && (
                               <span className={`inline-flex border px-2 py-0 text-[10px] font-medium ${CONDITION_STYLES[level]}`}>
                                 {conditionLabel(item.category, item.condition)}
@@ -111,6 +113,7 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
                               ))}
                             </div>
                           )}
+                          {item.category === "string" && <StringItemRow item={item} setups={setups} className="mt-2" />}
                           {item.category === "racket" && (
                             <RacketStringing racket={item} setups={setups} canEdit className="mt-2" />
                           )}

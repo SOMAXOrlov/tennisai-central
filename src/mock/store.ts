@@ -411,9 +411,41 @@ class MockStore {
     const racket = this.equipment.find((e) => e.id === data.racketItemId);
     if (!racket) throw new Error("Racket not found");
     if (racket.playerId !== playerId) throw new Error("That racket does not belong to this player");
+    // Draw from the bag the way the server does: a set is used up outright,
+    // a reel loses the metres (both sides summed when cut from one reel).
+    const draws = [
+      ...(data.mainsItemId ? [{ itemId: data.mainsItemId, m: data.mainsLengthM }] : []),
+      ...(data.crossesItemId ? [{ itemId: data.crossesItemId, m: data.crossesLengthM }] : []),
+    ];
+    const names: Partial<StringSetup> = {};
+    for (const itemId of new Set(draws.map((d) => d.itemId))) {
+      const item = this.equipment.find((e) => e.id === itemId);
+      if (!item || item.playerId !== playerId) throw new Error("That string is not in this player's bag");
+      if (item.category !== "string") throw new Error(`${item.name} is not a string`);
+      if (item.usedUpAt) throw new Error(`${item.name} is already used up`);
+      const left = item.stringRemainingM ?? item.stringLengthM ?? 0;
+      let next = left;
+      if (item.stringForm === "reel") {
+        const need = draws.filter((d) => d.itemId === itemId).reduce((sum, d) => {
+          if (d.m === undefined) throw new Error(`Enter how many metres were cut from ${item.name}`);
+          return sum + d.m;
+        }, 0);
+        if (need > left + 1e-9) throw new Error(`${item.name} has only ${Math.round(left * 10) / 10} m left, not enough for ${need} m`);
+        next = left - need;
+      } else if (item.stringForm === "set") {
+        next = 0;
+      }
+      if (item.stringForm) {
+        item.stringRemainingM = next;
+        item.usedUpAt = next < 0.5 ? new Date().toISOString() : undefined;
+      }
+      if (itemId === data.mainsItemId) { names.mainsCustomName = data.mainsCustomName ?? item.name; names.mainsSource = data.mainsSource ?? item.stringForm; }
+      if (itemId === data.crossesItemId) { names.crossesCustomName = data.crossesCustomName ?? item.name; names.crossesSource = data.crossesSource ?? item.stringForm; }
+    }
     const now = new Date().toISOString();
     const setup: StringSetup = {
       ...data,
+      ...names,
       id: this.nextId("ss"),
       playerId,
       strungAt: new Date(data.strungAt).toISOString(),
@@ -432,7 +464,26 @@ class MockStore {
     this.stringSetups[idx] = merged;
     return clone(merged);
   }
-  deleteStringSetup(id: string) { this.stringSetups = this.stringSetups.filter((s) => s.id !== id); }
+  deleteStringSetup(id: string) {
+    const setup = this.stringSetups.find((s) => s.id === id);
+    // The metres go back on what the job drew from, if it is still in the bag.
+    if (setup) {
+      const draws = [
+        ...(setup.mainsItemId ? [{ itemId: setup.mainsItemId, m: setup.mainsLengthM ?? 0 }] : []),
+        ...(setup.crossesItemId ? [{ itemId: setup.crossesItemId, m: setup.crossesLengthM ?? 0 }] : []),
+      ];
+      for (const itemId of new Set(draws.map((d) => d.itemId))) {
+        const item = this.equipment.find((e) => e.id === itemId);
+        if (!item?.stringForm) continue;
+        const total = item.stringLengthM ?? 0;
+        const back = draws.filter((d) => d.itemId === itemId).reduce((sum, d) => sum + d.m, 0);
+        const left = item.stringForm === "set" ? total : Math.min(total, (item.stringRemainingM ?? 0) + back);
+        item.stringRemainingM = left;
+        if (left >= 0.5) item.usedUpAt = undefined;
+      }
+    }
+    this.stringSetups = this.stringSetups.filter((s) => s.id !== id);
+  }
 
   // ─── Notifications ───
   getNotifications(userId?: string) {

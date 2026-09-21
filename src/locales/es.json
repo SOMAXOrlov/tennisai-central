@@ -1822,7 +1822,6 @@
       "submit": "Añadir material",
       "acquired": "Adquirido el",
       "details": "Detalles",
-      "stringHint": "Un set o una bobina en tu bolsa. Lo que lleva una raqueta ahora se registra en la raqueta, con Encordar.",
       "photo": "Foto"
     },
     "category": {
@@ -1964,7 +1963,18 @@
       "stringer": "Encordador",
       "stringerPlaceholder": "p. ej. tienda del club",
       "cost": "Coste (EUR)",
-      "costError": "Indica un coste de cero o más."
+      "costError": "Indica un coste de cero o más.",
+      "pickPlaceholder": "Elige un cordaje de tu bolsa",
+      "other": "Otro, no está en mi bolsa",
+      "otherName": "Nombre del cordaje",
+      "optionReel": "{name} · bobina, quedan {left} m",
+      "optionSet": "{name} · set",
+      "setUsesAll": "Este encordado agota el set completo.",
+      "length": "Longitud (m)",
+      "afterDraw": "Quedarán {left} m · unas {rackets} raquetas",
+      "afterDrawShort": "Quedarán {left} m",
+      "overDraw": "Solo quedan {left} m en esta bobina.",
+      "more": "Más: encordador, coste, notas"
     },
     "row": {
       "since": "desde {date}"
@@ -1990,7 +2000,6 @@
         "weightG": "Peso (g)",
         "stringPattern": "Patrón de encordado",
         "gaugeMm": "Calibre (mm)",
-        "setLengthM": "Longitud en la bolsa (m)",
         "size": "Talla",
         "surface": "Superficie",
         "quantity": "Cantidad"
@@ -2000,7 +2009,6 @@
         "weightG": "{value} g",
         "stringPattern": "{value}",
         "gaugeMm": "{value} mm",
-        "setLengthM": "{value} m",
         "size": "Talla {value}",
         "surface": "{value}",
         "quantity": "×{value}"
@@ -2013,6 +2021,28 @@
       "grass": "Hierba",
       "indoor": "Cubierta",
       "all": "Todas las superficies"
+    },
+    "bag": {
+      "formLabel": "Formato",
+      "form": {
+        "set": "Set",
+        "reel": "Bobina"
+      },
+      "setPill": "Set · {m} m",
+      "length": "Longitud (m)",
+      "lengthHint": {
+        "set": "Un set precortado encuerda una raqueta.",
+        "reel": "Una bobina encuerda muchas raquetas; los metros se descuentan con cada encordado."
+      },
+      "lengthError": "Indica una longitud entre 1 y {max} m.",
+      "remaining": "Quedan {left} m de {total} m",
+      "racketsLeft": "{count, plural, one {≈ # raqueta más} other {≈ # raquetas más}}",
+      "jobs": "{count, plural, one {# encordado hasta ahora} other {# encordados hasta ahora}}",
+      "notEnough": "no llega para una raqueta entera",
+      "low": "Poca",
+      "usedUp": "Agotado",
+      "usedGroup": "{count, plural, one {Agotados · # cordaje} other {Agotados · # cordajes}}",
+      "fillAria": "{name}: quedan {left} de {total} metros"
     }
   },
   "finance": {

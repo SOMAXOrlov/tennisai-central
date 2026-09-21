@@ -14,6 +14,8 @@ vi.mock("@/hooks/api/queries", () => ({
   useDeleteStringSetup: () => ({ mutate: removeMutate, isPending: false }),
   useCreateStringSetup: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateStringSetup: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useEquipment: () => ({ data: [] }),
+  useStringSetups: () => ({ data: [] }),
 }));
 
 const { RacketStringing, currentSetupFor } = await import("@/components/equipment/RacketStringing");

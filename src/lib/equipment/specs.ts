@@ -25,10 +25,10 @@ export const SPEC_FIELDS: Record<EquipmentCategory, SpecField[]> = {
     { key: "weightG", kind: "number", step: 1, min: 200, max: 400, placeholder: "305" },
     { key: "stringPattern", kind: "text", placeholder: "16x19" },
   ],
-  string: [
-    { key: "gaugeMm", kind: "number", step: 0.01, min: 1, max: 1.6, placeholder: "1.25" },
-    { key: "setLengthM", kind: "number", step: 0.5, min: 1, max: 300, placeholder: "12" },
-  ],
+  // Length is not a spec any more: it is the set/reel form and stringLengthM
+  // on the item itself (lib/equipment/bag). Legacy rows may still carry
+  // `setLengthM`; it is neither shown nor written.
+  string: [{ key: "gaugeMm", kind: "number", step: 0.01, min: 1, max: 1.6, placeholder: "1.25" }],
   shoes: [
     { key: "size", kind: "text", placeholder: "EU 42.5" },
     { key: "surface", kind: "surface" },
