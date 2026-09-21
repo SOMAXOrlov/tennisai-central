@@ -182,6 +182,10 @@
       "unread": {
         "title": "Todo al día",
         "description": "No hay notificaciones sin leer."
+      },
+      "archived": {
+        "title": "Nada archivado",
+        "description": "Las notificaciones que archives aparecen aquí, donde puedes restaurarlas o eliminarlas."
       }
     },
     "players": {
@@ -1658,7 +1662,16 @@
           "description": "Notificaciones de la cuenta y generales de la app"
         }
       }
-    }
+    },
+    "tabArchived": "Archivadas",
+    "archive": "Archivar",
+    "unarchive": "Restaurar",
+    "delete": "Eliminar",
+    "archiveAria": "Archivar: {title}",
+    "unarchiveAria": "Devolver a la bandeja: {title}",
+    "deleteAria": "Eliminar: {title}",
+    "openAria": "{title}. {message}. Abrir la página relacionada.",
+    "rowAria": "{title}. {message}."
   },
   "search": {
     "trigger": "Buscar: páginas, jugadores y torneos",
@@ -3179,6 +3192,11 @@
       "month": "Exportar este mes",
       "week": "Exportar esta semana",
       "day": "Exportar este día"
+    },
+    "clash": {
+      "badge": "Solapamiento",
+      "title": "Se solapa con",
+      "chipAria": "Se solapa con otro evento de esta agenda"
     }
   },
   "auth": {
@@ -3525,7 +3543,13 @@
       "markReadFailed": "No se ha podido marcar la notificación como leída",
       "preferenceFailed": "No se ha podido guardar la preferencia",
       "pushEnabled": "Notificaciones push activadas en este dispositivo",
-      "pushFailed": "No se han podido activar las notificaciones push en este dispositivo"
+      "pushFailed": "No se han podido activar las notificaciones push en este dispositivo",
+      "archived": "Notificación archivada",
+      "archiveFailed": "No se ha podido archivar la notificación",
+      "unarchived": "Notificación devuelta a la bandeja",
+      "unarchiveFailed": "No se ha podido restaurar la notificación",
+      "deleted": "Notificación eliminada",
+      "deleteFailed": "No se ha podido eliminar la notificación"
     },
     "profile": {
       "updated": "Perfil actualizado",

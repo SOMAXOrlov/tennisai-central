@@ -6,7 +6,7 @@
 
 import { useMemo } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
-import { CalendarDays, MapPin } from "lucide-react";
+import { AlertTriangle, CalendarDays, MapPin } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -26,6 +26,8 @@ export interface DayEventsSheetProps {
   onSelectEvent: (event: CalendarEvent) => void;
   /** Ids the viewer's players are entered for, badged so they stand out. */
   registeredIds?: Set<string>;
+  /** Ids that overlap something else on the same schedule (lib/calendar/clashes). */
+  clashIds?: Set<string>;
 }
 
 export function DayEventsSheet({
@@ -35,6 +37,7 @@ export function DayEventsSheet({
   onOpenChange,
   onSelectEvent,
   registeredIds,
+  clashIds,
 }: DayEventsSheetProps) {
   const { t, getDateFnsLocale } = useT();
   const dfl = { locale: getDateFnsLocale() };
@@ -100,6 +103,12 @@ export function DayEventsSheet({
                       {registeredIds?.has(e.id) && (
                         <Badge variant="outline" className="shrink-0 text-[10px]">
                           {t("calendar.day.entered")}
+                        </Badge>
+                      )}
+                      {clashIds?.has(e.id) && (
+                        <Badge variant="outline" className="shrink-0 gap-1 text-[10px]">
+                          <AlertTriangle className="h-3 w-3" aria-hidden="true" />
+                          {t("calendar.clash.badge")}
                         </Badge>
                       )}
                     </div>

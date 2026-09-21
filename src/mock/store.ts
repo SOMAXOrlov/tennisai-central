@@ -444,7 +444,24 @@ class MockStore {
     if (n) n.read = true;
   }
   markAllNotificationsRead(userId: string) {
-    this.notifications.filter((n) => n.userId === userId).forEach((n) => { n.read = true; });
+    // Archived rows are already dealt with; this is about the inbox.
+    this.notifications.filter((n) => n.userId === userId && !n.archivedAt).forEach((n) => { n.read = true; });
+  }
+  archiveNotification(id: string) {
+    const n = this.notifications.find((n) => n.id === id);
+    if (!n) return null;
+    n.archivedAt = new Date().toISOString();
+    n.read = true;
+    return clone(n);
+  }
+  unarchiveNotification(id: string) {
+    const n = this.notifications.find((n) => n.id === id);
+    if (!n) return null;
+    delete n.archivedAt;
+    return clone(n);
+  }
+  deleteNotification(id: string) {
+    this.notifications = this.notifications.filter((n) => n.id !== id);
   }
   addNotification(data: Omit<Notification, "id" | "createdAt">) {
     const notif: Notification = { ...data, id: this.nextId("n"), createdAt: new Date().toISOString() };

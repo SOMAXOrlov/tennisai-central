@@ -1,26 +1,30 @@
-// Notifications — Full inbox with read/unread, filters via React Query
+// Notifications — the inbox, with what a person can do with each one.
+//
+// Open (follow the server's link: a calendar day and event, a tournament, the
+// finance page), mark read, archive (out of the inbox and the unread count,
+// still there under Archived), restore, delete. Three tabs: All is the inbox,
+// Unread is the inbox's unread rows, Archived is what has been filed away.
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
-import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/api/queries";
+import {
+  useNotifications,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useArchiveNotification,
+  useUnarchiveNotification,
+  useDeleteNotification,
+} from "@/hooks/api/queries";
 import { useT } from "@/lib/i18n";
+import { inInbox, internalPath, isUnread } from "@/lib/notifications";
 import { ErrorState, EmptyState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCheck, ChevronRight, Inbox, Settings2 } from "lucide-react";
-import { format } from "date-fns";
+import { Archive, ArchiveRestore, CheckCheck, ChevronRight, Inbox, Settings2, Trash2 } from "lucide-react";
 import { NotificationPreferencesCard } from "@/components/notifications/NotificationPreferencesCard";
 
-/**
- * `linkTo` comes from the server, so only in-app paths are followed — never an
- * absolute or protocol-relative URL.
- */
-function internalPath(linkTo: string | undefined): string | null {
-  if (!linkTo) return null;
-  if (!linkTo.startsWith("/") || linkTo.startsWith("//")) return null;
-  return linkTo;
-}
+type Filter = "all" | "unread" | "archived";
 
 export default function NotificationsPage() {
   const { t, formatDate } = useT();
@@ -30,18 +34,42 @@ export default function NotificationsPage() {
   const { data: notifications = [], isLoading, error, refetch } = useNotifications(userId);
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
-  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const archive = useArchiveNotification();
+  const unarchive = useUnarchiveNotification();
+  const remove = useDeleteNotification();
+  const [filter, setFilter] = useState<Filter>("all");
   const [showPrefs, setShowPrefs] = useState(false);
 
   const filtered = useMemo(() => {
-    if (filter === "unread") return notifications.filter((n) => !n.read);
-    return notifications;
+    if (filter === "unread") return notifications.filter(isUnread);
+    if (filter === "archived") return notifications.filter((n) => !inInbox(n));
+    return notifications.filter(inInbox);
   }, [notifications, filter]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter(isUnread).length;
+  const inboxCount = notifications.filter(inInbox).length;
 
   if (isLoading) return <PageSkeleton variant="list" />;
   if (error) return <ErrorState error={error} message={t("states.load.notifications")} onRetry={() => void refetch()} />;
+
+  const emptyState = () => {
+    if (filter === "unread") {
+      return <EmptyState icon={<Inbox className="h-6 w-6 text-muted-foreground" />} title={t("empty.notifications.unread.title")} description={t("empty.notifications.unread.description")} />;
+    }
+    if (filter === "archived") {
+      return <EmptyState icon={<Archive className="h-6 w-6 text-muted-foreground" />} title={t("empty.notifications.archived.title")} description={t("empty.notifications.archived.description")} />;
+    }
+    // First run: the inbox has never had anything in it. The one useful
+    // thing to do here is decide what should arrive — the settings card.
+    return (
+      <EmptyState
+        icon={<Inbox className="h-6 w-6 text-muted-foreground" />}
+        title={t("empty.notifications.title")}
+        description={t("empty.notifications.description")}
+        action={!showPrefs ? <Button variant="outline" className="gap-1.5" onClick={() => setShowPrefs(true)}><Settings2 className="h-4 w-4" /> {t("empty.notifications.action")}</Button> : undefined}
+      />
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -60,13 +88,17 @@ export default function NotificationsPage() {
               call to action; showing both put two "settings" buttons at two
               sizes on one screen. The header keeps it once there is anything
               in the inbox, or while the card is open and needs a way to close. */}
-          {(showPrefs || filtered.length > 0 || filter === "unread") && (
+          {(showPrefs || inboxCount > 0 || filter !== "all") && (
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPrefs((v) => !v)}>
               <Settings2 className="h-3.5 w-3.5" /> {showPrefs ? t("notifications.hideSettings") : t("notifications.settings")}
             </Button>
           )}
-          <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-            <TabsList><TabsTrigger value="all">{t("notifications.tabAll")}</TabsTrigger><TabsTrigger value="unread">{unreadCount > 0 ? t("notifications.tabUnreadCount", { count: unreadCount }) : t("notifications.tabUnread")}</TabsTrigger></TabsList>
+          <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)}>
+            <TabsList>
+              <TabsTrigger value="all">{t("notifications.tabAll")}</TabsTrigger>
+              <TabsTrigger value="unread">{unreadCount > 0 ? t("notifications.tabUnreadCount", { count: unreadCount }) : t("notifications.tabUnread")}</TabsTrigger>
+              <TabsTrigger value="archived">{t("notifications.tabArchived")}</TabsTrigger>
+            </TabsList>
           </Tabs>
         </div>
       </div>
@@ -74,49 +106,58 @@ export default function NotificationsPage() {
       {showPrefs && <NotificationPreferencesCard />}
 
       {filtered.length === 0 ? (
-        filter === "unread" ? (
-          <EmptyState icon={<Inbox className="h-6 w-6 text-muted-foreground" />} title={t("empty.notifications.unread.title")} description={t("empty.notifications.unread.description")} />
-        ) : (
-          // First run: the inbox has never had anything in it. The one useful
-          // thing to do here is decide what should arrive — the settings card.
-          <EmptyState
-            icon={<Inbox className="h-6 w-6 text-muted-foreground" />}
-            title={t("empty.notifications.title")}
-            description={t("empty.notifications.description")}
-            action={!showPrefs ? <Button variant="outline" className="gap-1.5" onClick={() => setShowPrefs(true)}><Settings2 className="h-4 w-4" /> {t("empty.notifications.action")}</Button> : undefined}
-          />
-        )
+        emptyState()
       ) : (
-        <div className="space-y-2">
+        <ul className="space-y-2">
           {filtered.map((n) => {
             const target = internalPath(n.linkTo);
+            const archived = !inInbox(n);
+            const busy = archive.isPending || unarchive.isPending || remove.isPending;
             return (
-              <button
+              <li
                 key={n.id}
-                type="button"
-                aria-label={target ? `${n.title}. ${n.message}. Open related page.` : `${n.title}. ${n.message}.`}
-                onClick={() => {
-                  if (!n.read) markRead.mutate(n.id);
-                  if (target) navigate(target);
-                }}
-                className={`group flex w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-all hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${target ? "cursor-pointer hover:border-primary/40" : ""} ${!n.read ? "bg-primary/5 border-primary/20" : "bg-card"}`}
+                className={`group flex items-start gap-2 rounded-xl border border-border p-2 pl-4 transition-colors hover:bg-accent/20 ${target ? "hover:border-primary/40" : ""} ${isUnread(n) ? "bg-primary/5 border-primary/20" : "bg-card"}`}
               >
-                <div className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${n.read ? "bg-muted" : "bg-primary"}`} />
-                <div className="min-w-0 flex-1">
-                  <p className={`text-sm ${n.read ? "text-muted-foreground" : "font-medium text-foreground"}`}>{n.title}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{n.message}</p>
+                <button
+                  type="button"
+                  aria-label={target ? t("notifications.openAria", { title: n.title, message: n.message }) : t("notifications.rowAria", { title: n.title, message: n.message })}
+                  onClick={() => {
+                    if (!n.read) markRead.mutate(n.id);
+                    if (target) navigate(target);
+                  }}
+                  className={`flex min-w-0 flex-1 items-start gap-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${target ? "cursor-pointer" : "cursor-default"}`}
+                >
+                  <div className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${n.read ? "bg-muted" : "bg-primary"}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm ${n.read ? "text-muted-foreground" : "font-medium text-foreground"}`}>{n.title}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{n.message}</p>
+                  </div>
+                  <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(new Date(n.createdAt), { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+                  {target && (
+                    <ChevronRight
+                      aria-hidden="true"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                    />
+                  )}
+                </button>
+                <div className="flex shrink-0 items-center">
+                  {archived ? (
+                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("notifications.unarchiveAria", { title: n.title })} title={t("notifications.unarchive")} disabled={busy} onClick={() => unarchive.mutate(n.id)}>
+                      <ArchiveRestore className="h-3.5 w-3.5" />
+                    </Button>
+                  ) : (
+                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("notifications.archiveAria", { title: n.title })} title={t("notifications.archive")} disabled={busy} onClick={() => archive.mutate(n.id)}>
+                      <Archive className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label={t("notifications.deleteAria", { title: n.title })} title={t("notifications.delete")} disabled={busy} onClick={() => remove.mutate(n.id)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-                <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(new Date(n.createdAt), { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
-                {target && (
-                  <ChevronRight
-                    aria-hidden="true"
-                    className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary group-focus-visible:text-primary"
-                  />
-                )}
-              </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

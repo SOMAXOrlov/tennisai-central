@@ -23,6 +23,21 @@ export const notificationsApi = {
     return apiClient.patch("/notifications/read-all");
   },
 
+  async archive(id: string): Promise<ApiResponse<Notification | null>> {
+    if (USE_MOCK) { await delay(); return { data: mockStore.archiveNotification(id), message: "Notification archived" }; }
+    return apiClient.patch(`/notifications/${id}/archive`);
+  },
+
+  async unarchive(id: string): Promise<ApiResponse<Notification | null>> {
+    if (USE_MOCK) { await delay(); return { data: mockStore.unarchiveNotification(id), message: "Notification restored" }; }
+    return apiClient.patch(`/notifications/${id}/unarchive`);
+  },
+
+  async remove(id: string): Promise<ApiResponse<null>> {
+    if (USE_MOCK) { await delay(); mockStore.deleteNotification(id); return { data: null, message: "Notification deleted" }; }
+    return apiClient.delete(`/notifications/${id}`);
+  },
+
   async getPreferences(): Promise<ApiResponse<NotificationSettings>> {
     if (USE_MOCK) { await delay(); return { data: mockStore.getNotificationSettings() }; }
     return apiClient.get("/notification-preferences");
