@@ -718,6 +718,25 @@ export function useDeleteEquipment() {
   });
 }
 
+export function useUploadEquipmentPhoto() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id, file, onProgress }: { id: string; playerId: string; file: File; onProgress?: (fraction: number) => void }) =>
+      equipmentApi.uploadPhoto(id, file, onProgress),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toastSuccess("toast.equipment.photoSaved"); },
+    onError: (e: unknown) => toastError("toast.equipment.photoFailed", e),
+  });
+}
+
+export function useRemoveEquipmentPhoto() {
+  const inv = useInvalidateRelated();
+  return useMutation({
+    mutationFn: ({ id }: { id: string; playerId: string }) => equipmentApi.removePhoto(id),
+    onSuccess: (_, vars) => { inv.equipment(vars.playerId); toastSuccess("toast.equipment.photoRemoved"); },
+    onError: (e: unknown) => toastError("toast.equipment.photoRemoveFailed", e),
+  });
+}
+
 // ─── String setup Hooks ───
 
 export function useStringSetups(playerId: string) {

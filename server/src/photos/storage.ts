@@ -56,6 +56,13 @@ export const MULTIPART_OVERHEAD_BYTES = 64 * 1024;
 /** Longest edge of the stored square. Enough for a retina 128-pixel avatar. */
 export const PHOTO_MAX_EDGE = 512;
 
+/**
+ * Equipment photos are not avatars: a racket is tall, a shoe is wide, and the
+ * detail a coach looks for (a notch in a string bed, a worn sole) needs more
+ * than 512 px. Longest edge; the picture is fitted inside, never cropped.
+ */
+export const ITEM_PHOTO_MAX_EDGE = 1024;
+
 /** WebP quality. 82 is visually indistinguishable at avatar sizes. */
 const PHOTO_WEBP_QUALITY = 82;
 
@@ -172,6 +179,20 @@ export async function reencodeToSquareWebp(bytes: Buffer): Promise<Buffer> {
   return sharp(bytes)
     .rotate()
     .resize(side, side, { fit: "cover", position: "centre" })
+    .webp({ quality: PHOTO_WEBP_QUALITY })
+    .toBuffer();
+}
+
+/**
+ * Re-encode to WebP, fitting INSIDE a `maxEdge` square without cropping and
+ * without enlarging. The same strip as `reencodeToSquareWebp`: sharp decodes
+ * the pixels and writes a fresh file, so EXIF, GPS and any embedded profile
+ * are gone; `.rotate()` first so the orientation tag is honoured, not dropped.
+ */
+export async function reencodeToWebpWithin(bytes: Buffer, maxEdge: number): Promise<Buffer> {
+  return sharp(bytes)
+    .rotate()
+    .resize(maxEdge, maxEdge, { fit: "inside", withoutEnlargement: true })
     .webp({ quality: PHOTO_WEBP_QUALITY })
     .toBuffer();
 }

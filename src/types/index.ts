@@ -446,6 +446,24 @@ export interface FinanceInsights {
 
 // --- Equipment ---
 
+export type ShoeSurface = "clay" | "hard" | "grass" | "indoor" | "all";
+
+/**
+ * Category-specific facts, validated per category by the server
+ * (server/src/equipment/routes.ts) and drawn by src/lib/equipment/specs.
+ * One flat shape: each category uses its own few keys.
+ */
+export interface EquipmentSpecs {
+  gripSize?: string; // racket
+  weightG?: number; // racket
+  stringPattern?: string; // racket
+  gaugeMm?: number; // string
+  setLengthM?: number; // string — the set or reel in the bag
+  size?: string; // shoes
+  surface?: ShoeSurface; // shoes
+  quantity?: number; // balls
+}
+
 export interface EquipmentItem {
   id: string;
   playerId: string;
@@ -456,7 +474,19 @@ export interface EquipmentItem {
   notes?: string;
   acquiredDate?: string;
   condition?: string;
+  /** Null on a write clears them. */
+  specs?: EquipmentSpecs | null;
+  /**
+   * Presence only. The picture itself comes from GET /equipment/:id/photo,
+   * which answers the owner and nobody else. `photoUpdatedAt` changes the
+   * cache key when the picture is replaced.
+   */
+  photoId?: string;
+  photoUpdatedAt?: string;
 }
+
+/** Where the string for a job came from: a pre-cut set or cut off a reel. */
+export type StringSource = "set" | "reel";
 
 // --- String setups (one stringing job on one racket) ---
 // Mirrors server/src/stringSetups/routes.ts. TENSION IS KILOGRAMS — pounds are
@@ -479,6 +509,11 @@ export interface StringSetup {
   /** Absent means "same as mains" — a single-tension job. */
   tensionCrossesKg?: number;
   prestretch?: boolean;
+  /** Metres that went into the frame; crosses separately for a hybrid. */
+  mainsLengthM?: number;
+  crossesLengthM?: number;
+  mainsSource?: StringSource;
+  crossesSource?: StringSource;
   strungAt: string; // ISO
   stringerName?: string;
   costEur?: number;
@@ -501,6 +536,11 @@ export interface StringSetupCreateInput {
   tensionCrossesKg?: number;
   strungAt: string; // ISO or yyyy-MM-dd
   stringerName?: string;
+  costEur?: number;
+  mainsLengthM?: number;
+  crossesLengthM?: number;
+  mainsSource?: StringSource;
+  crossesSource?: StringSource;
   notes?: string;
 }
 
@@ -512,6 +552,11 @@ export interface StringSetupUpdateInput {
   tensionCrossesKg?: number;
   strungAt?: string;
   stringerName?: string;
+  costEur?: number;
+  mainsLengthM?: number;
+  crossesLengthM?: number;
+  mainsSource?: StringSource;
+  crossesSource?: StringSource;
   hoursPlayed?: number;
   retiredAt?: string;
   retiredReason?: StringSetupRetiredReason;

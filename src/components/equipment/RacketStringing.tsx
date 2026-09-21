@@ -55,6 +55,19 @@ export function RacketStringing({ racket, setups, canEdit, className }: RacketSt
   const current = useMemo(() => currentSetupFor(setups, racket.id), [setups, racket.id]);
   const num = (n: number) => formatNumber(n);
 
+  // "12 m set", or "6 m set + 6 m reel" for a hybrid recorded on both sides.
+  const lengthSummary = (s: StringSetup): string | null => {
+    const part = (m: number | undefined, source: string | undefined): string | null => {
+      if (m === undefined) return null;
+      const metres = t("equipment.stringing.length", { m: num(m) });
+      return source ? `${metres} ${t(`equipment.stringing.source.${source}`)}` : metres;
+    };
+    const mains = part(s.mainsLengthM, s.mainsSource);
+    const crosses = part(s.crossesLengthM, s.crossesSource);
+    if (mains && crosses) return `${mains} + ${crosses}`;
+    return mains ?? crosses;
+  };
+
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
@@ -94,6 +107,8 @@ export function RacketStringing({ racket, setups, canEdit, className }: RacketSt
                 <p className="text-foreground">
                   <span className="font-medium">{formatSetupTension(s.tensionMainsKg, s.tensionCrossesKg, num)}</span>
                   {setupStringName(s) && <span className="text-muted-foreground"> · {setupStringName(s)}</span>}
+                  {lengthSummary(s) && <span className="text-muted-foreground"> · {lengthSummary(s)}</span>}
+                  {typeof s.costEur === "number" && <span className="text-muted-foreground"> · {t("equipment.stringing.cost", { amount: num(s.costEur) })}</span>}
                 </p>
                 <p className="text-muted-foreground">
                   {formatDate(s.strungAt, { day: "numeric", month: "short", year: "numeric" })}
