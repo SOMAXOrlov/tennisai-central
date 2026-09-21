@@ -1,9 +1,15 @@
 // Equipment — Grouped by category with condition tracking & AI upgrade suggestions.
 // Rackets also carry their stringing: what is in the frame now (kg, with pounds
 // beside it), a Restring action, and the history — see components/equipment.
+// Each item can carry the few category-specific facts a coach asks about
+// (lib/equipment/specs), the date it was acquired, and one photo that only
+// the player sees.
 import { useState, useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
-import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment, useStringSetups } from "@/hooks/api/queries";
+import {
+  useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment, useStringSetups,
+  useUploadEquipmentPhoto, useRemoveEquipmentPhoto,
+} from "@/hooks/api/queries";
 import { tList, useT } from "@/lib/i18n";
 import { ErrorState, EmptyState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
@@ -17,11 +23,25 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   Package, Pencil, Plus, Trash2, ChevronDown, Lightbulb,
 } from "lucide-react";
-import type { EquipmentCategory, EquipmentItem } from "@/types";
-import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryLabel, categoryPlural, conditionLabel, getConditionLevel } from "@/components/equipment/categories";
+import type { EquipmentCategory, EquipmentItem, ShoeSurface } from "@/types";
+import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_DOT, CONDITION_STYLES, categoryLabel, categoryPlural, conditionLabel, getConditionLevel } from "@/components/equipment/categories";
 import { RacketStringing } from "@/components/equipment/RacketStringing";
+import { EquipmentPhoto } from "@/components/equipment/EquipmentPhoto";
+import { EquipmentPhotoField } from "@/components/equipment/EquipmentPhotoField";
+import { SPEC_FIELDS, SURFACES, formToSpecs, specChips, specsToForm, type SpecsForm } from "@/lib/equipment/specs";
 
-const EMPTY_FORM = { name: "", category: "racket" as EquipmentCategory, brand: "", model: "", condition: "", notes: "" };
+interface FormState {
+  name: string;
+  category: EquipmentCategory;
+  brand: string;
+  model: string;
+  condition: string;
+  acquiredDate: string;
+  notes: string;
+  specs: SpecsForm;
+}
+
+const EMPTY_FORM: FormState = { name: "", category: "racket", brand: "", model: "", condition: "", acquiredDate: "", notes: "", specs: {} };
 
 // ─── AI Upgrade Suggestions ───
 
@@ -43,7 +63,7 @@ function getUpgradeSuggestions(items: EquipmentItem[]): { category: EquipmentCat
 // ─── Main Page ───
 
 export default function EquipmentPage() {
-  const { t, locale } = useT();
+  const { t, locale, formatDate, formatNumber } = useT();
   const { user } = useAuth();
   const playerId = user?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
@@ -51,11 +71,14 @@ export default function EquipmentPage() {
   const createMut = useCreateEquipment();
   const updateMut = useUpdateEquipment();
   const deleteMut = useDeleteEquipment();
+  const uploadPhoto = useUploadEquipmentPhoto();
+  const removePhoto = useRemoveEquipmentPhoto();
   const [addOpen, setAddOpen] = useState(false);
   /** The item being edited, or null when the dialog is adding a new one. */
   const [editing, setEditing] = useState<EquipmentItem | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<EquipmentCategory>("racket");
-  const [form, setForm] = useState({ ...EMPTY_FORM });
+  const [form, setForm] = useState<FormState>({ ...EMPTY_FORM });
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
   const [openGroups, setOpenGroups] = useState<Set<EquipmentCategory>>(new Set(CATEGORY_ORDER));
 
   // Group items by category
@@ -80,25 +103,47 @@ export default function EquipmentPage() {
     });
   };
 
-  const closeDialog = () => { setAddOpen(false); setEditing(null); setForm({ ...EMPTY_FORM }); };
+  const closeDialog = () => {
+    setAddOpen(false);
+    setEditing(null);
+    setForm({ ...EMPTY_FORM });
+    setPendingPhoto(null);
+    setUploadPercent(null);
+  };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const data = {
-      name: form.name, category: form.category,
-      brand: form.brand || undefined, model: form.model || undefined,
-      condition: form.condition || undefined, notes: form.notes || undefined,
+      name: form.name.trim(), category: form.category,
+      brand: form.brand.trim() || undefined, model: form.model.trim() || undefined,
+      condition: form.condition || undefined, notes: form.notes.trim() || undefined,
+      acquiredDate: form.acquiredDate || undefined,
+      // null clears what an earlier edit set; the server drops it from the row.
+      specs: formToSpecs(form.category, form.specs),
     };
-    if (editing) {
-      updateMut.mutate({ id: editing.id, playerId, data }, { onSuccess: closeDialog });
-    } else {
-      createMut.mutate({ playerId, ...data }, { onSuccess: closeDialog });
+    try {
+      let id = editing?.id;
+      if (editing) {
+        await updateMut.mutateAsync({ id: editing.id, playerId, data });
+      } else {
+        const created = await createMut.mutateAsync({ playerId, ...data });
+        id = created.data.id;
+      }
+      // The photo goes up after the row exists, so a new item has an id to hang it on.
+      if (pendingPhoto && id) {
+        setUploadPercent(0);
+        await uploadPhoto.mutateAsync({ id, playerId, file: pendingPhoto, onProgress: (f) => setUploadPercent(Math.round(f * 100)) });
+      }
+      closeDialog();
+    } catch {
+      // The hooks already showed the error toast; keep what was typed.
+      setUploadPercent(null);
     }
   };
 
   const openAddDialog = (category?: EquipmentCategory) => {
     setEditing(null);
     setForm({ ...EMPTY_FORM, category: category ?? "racket" });
-    setSelectedCategory(category ?? "racket");
+    setPendingPhoto(null);
     setAddOpen(true);
   };
 
@@ -106,18 +151,27 @@ export default function EquipmentPage() {
     setEditing(item);
     setForm({
       name: item.name, category: item.category, brand: item.brand ?? "", model: item.model ?? "",
-      condition: item.condition ?? "", notes: item.notes ?? "",
+      condition: item.condition ?? "", acquiredDate: item.acquiredDate ?? "", notes: item.notes ?? "",
+      specs: specsToForm(item.specs ?? undefined),
     });
-    setSelectedCategory(item.category);
+    setPendingPhoto(null);
     setAddOpen(true);
   };
 
-  const saving = createMut.isPending || updateMut.isPending;
+  /** Name from brand and model when the player has not typed one — one less field to fill. */
+  const suggestName = () => {
+    setForm((f) => (f.name.trim() ? f : { ...f, name: [f.brand.trim(), f.model.trim()].filter(Boolean).join(" ") }));
+  };
+
+  const saving = createMut.isPending || updateMut.isPending || uploadPhoto.isPending;
 
   if (!user || isLoading) return <PageSkeleton variant="cards" />;
   if (error) return <ErrorState error={error} message={t("states.load.equipment")} onRetry={() => void refetch()} />;
 
   const currentConditions = CATEGORY_CONFIG[form.category].conditions;
+  const specFields = SPEC_FIELDS[form.category];
+  // The edited item, refreshed from the list so a removed or replaced photo shows at once.
+  const editingLive = editing ? items.find((i) => i.id === editing.id) ?? editing : null;
 
   return (
     <div className="space-y-6">
@@ -200,8 +254,10 @@ export default function EquipmentPage() {
                     <div className="border-t border-border divide-y divide-border">
                       {catItems.map((item) => {
                         const level = getConditionLevel(item.category, item.condition);
+                        const chips = specChips(item.category, item.specs ?? undefined, t, formatNumber);
                         return (
                           <div key={item.id} className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-accent/5">
+                            <EquipmentPhoto item={item} size="sm" />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
                                 <h3 className="text-sm font-medium text-foreground truncate">{item.name}</h3>
@@ -211,12 +267,20 @@ export default function EquipmentPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
                                 {item.brand && <span>{item.brand}</span>}
                                 {item.brand && item.model && <span>·</span>}
                                 {item.model && <span>{item.model}</span>}
+                                {item.acquiredDate && <span>· {t("equipment.row.since", { date: formatDate(new Date(`${item.acquiredDate}T00:00:00`), { month: "short", year: "numeric" }) })}</span>}
                                 {item.notes && <span className="text-muted-foreground/60">— {item.notes}</span>}
                               </div>
+                              {chips.length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {chips.map((chip) => (
+                                    <Badge key={chip} variant="outline" className="px-1.5 py-0 text-[10px] font-normal">{chip}</Badge>
+                                  ))}
+                                </div>
+                              )}
                               {item.category === "racket" && (
                                 <RacketStringing racket={item} setups={setups} canEdit className="mt-2" />
                               )}
@@ -243,65 +307,112 @@ export default function EquipmentPage() {
 
       {/* Add / edit Equipment Dialog */}
       <Dialog open={addOpen} onOpenChange={(open) => { if (!open) closeDialog(); else setAddOpen(true); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editing ? t("equipment.edit.title") : t("equipment.add.title")}</DialogTitle>
             <DialogDescription>{editing ? t("equipment.edit.description") : t("equipment.add.description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
+              <Label htmlFor="equipment-category">{t("equipment.add.category")}</Label>
+              <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as EquipmentCategory, condition: "", specs: {} }))}>
+                <SelectTrigger id="equipment-category"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_ORDER.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      <span className="flex items-center gap-2">{CATEGORY_CONFIG[c].icon}{categoryLabel(c)}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.category === "string" && <p className="text-xs text-muted-foreground">{t("equipment.add.stringHint")}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="equipment-brand">{t("equipment.add.brand")}</Label>
+                <Input id="equipment-brand" value={form.brand} onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))} onBlur={suggestName} placeholder={t("equipment.add.brandPlaceholder")} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="equipment-model">{t("equipment.add.model")}</Label>
+                <Input id="equipment-model" value={form.model} onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))} onBlur={suggestName} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="equipment-name">{t("equipment.add.name")}</Label>
               <Input id="equipment-name" aria-required="true" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("equipment.add.namePlaceholder")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="equipment-category">{t("equipment.add.category")}</Label>
-                <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as EquipmentCategory, condition: "" }))}>
-                  <SelectTrigger id="equipment-category"><SelectValue /></SelectTrigger>
+                <Label htmlFor="equipment-condition">{t("equipment.add.condition")}</Label>
+                <Select value={form.condition} onValueChange={(v) => setForm((f) => ({ ...f, condition: v }))}>
+                  <SelectTrigger id="equipment-condition"><SelectValue placeholder={t("equipment.add.conditionPlaceholder")} /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORY_ORDER.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        <span className="flex items-center gap-2">{CATEGORY_CONFIG[c].icon}{categoryLabel(c)}</span>
+                    {currentConditions.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        <span className="flex items-center gap-2">
+                          <span className={`h-2 w-2 shrink-0 rounded-full ${CONDITION_DOT[c.level]}`} aria-hidden="true" />
+                          {conditionLabel(form.category, c.value)}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="equipment-brand">{t("equipment.add.brand")}</Label>
-                <Input id="equipment-brand" value={form.brand} onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))} placeholder={t("equipment.add.brandPlaceholder")} />
+                <Label htmlFor="equipment-acquired">{t("equipment.add.acquired")}</Label>
+                <Input id="equipment-acquired" type="date" value={form.acquiredDate} onChange={(e) => setForm((f) => ({ ...f, acquiredDate: e.target.value }))} />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="equipment-condition">{t("equipment.add.condition")}</Label>
-              <Select value={form.condition} onValueChange={(v) => setForm((f) => ({ ...f, condition: v }))}>
-                <SelectTrigger id="equipment-condition"><SelectValue placeholder={t("equipment.add.conditionPlaceholder")} /></SelectTrigger>
-                <SelectContent>
-                  {currentConditions.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      <span className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${CONDITION_STYLES[c.level].split(" ")[0].replace("/10", "")}`} />
-                        {conditionLabel(form.category, c.value)}
-                      </span>
-                    </SelectItem>
+
+            {specFields.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-foreground">{t("equipment.add.details")}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {specFields.map((field) => (
+                    <div key={field.key} className="space-y-1.5">
+                      <Label htmlFor={`equipment-spec-${field.key}`}>{t(`equipment.specs.label.${field.key}`)}</Label>
+                      {field.kind === "surface" ? (
+                        <Select value={form.specs.surface ?? ""} onValueChange={(v) => setForm((f) => ({ ...f, specs: { ...f.specs, surface: v as ShoeSurface } }))}>
+                          <SelectTrigger id={`equipment-spec-${field.key}`}><SelectValue placeholder={t("equipment.specs.surfacePlaceholder")} /></SelectTrigger>
+                          <SelectContent>
+                            {SURFACES.map((s) => (
+                              <SelectItem key={s} value={s}>{t(`equipment.surface.${s}`)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          id={`equipment-spec-${field.key}`}
+                          inputMode={field.kind === "number" ? "decimal" : undefined}
+                          value={form.specs[field.key] ?? ""}
+                          onChange={(e) => setForm((f) => ({ ...f, specs: { ...f.specs, [field.key]: e.target.value } }))}
+                          placeholder={field.placeholder}
+                        />
+                      )}
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="equipment-model">{t("equipment.add.model")}</Label>
-                <Input id="equipment-model" value={form.model} onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))} />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="equipment-notes">{t("equipment.add.notes")}</Label>
-                <Input id="equipment-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder={t("equipment.add.notesPlaceholder")} />
-              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="equipment-notes">{t("equipment.add.notes")}</Label>
+              <Input id="equipment-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder={t("equipment.add.notesPlaceholder")} />
             </div>
+
+            <EquipmentPhotoField
+              item={editingLive}
+              pending={pendingPhoto}
+              onChoose={setPendingPhoto}
+              onRemoveExisting={editingLive?.photoId ? () => removePhoto.mutate({ id: editingLive.id, playerId }) : undefined}
+              removing={removePhoto.isPending}
+              uploadPercent={uploadPercent}
+              disabled={saving}
+            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>{t("common.cancel")}</Button>
-            <Button onClick={handleSave} disabled={!form.name.trim() || saving}>
+            <Button variant="outline" onClick={closeDialog} disabled={saving}>{t("common.cancel")}</Button>
+            <Button onClick={() => void handleSave()} disabled={!form.name.trim() || saving}>
               {editing
                 ? (saving ? t("equipment.edit.saving") : t("equipment.edit.submit"))
                 : (saving ? t("equipment.add.adding") : t("equipment.add.submit"))}

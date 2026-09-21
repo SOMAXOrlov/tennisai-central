@@ -1819,7 +1819,11 @@
       "notes": "Notas",
       "notesPlaceholder": "Ej.: grip L3",
       "adding": "Añadiendo…",
-      "submit": "Añadir material"
+      "submit": "Añadir material",
+      "acquired": "Adquirido el",
+      "details": "Detalles",
+      "stringHint": "Un set o una bobina en tu bolsa. Lo que lleva una raqueta ahora se registra en la raqueta, con Encordar.",
+      "photo": "Foto"
     },
     "category": {
       "racket": {
@@ -1925,6 +1929,12 @@
         "dead": "perdió tensión",
         "switched": "cambio de cordaje",
         "other": "sustituido"
+      },
+      "length": "{m} m",
+      "cost": "{amount} EUR",
+      "source": {
+        "set": "set",
+        "reel": "bobina"
       }
     },
     "restring": {
@@ -1943,7 +1953,66 @@
       "notes": "Notas",
       "notesPlaceholder": "Ej.: lo notaba rígido, bajo un kilo",
       "saving": "Guardando…",
-      "submit": "Guardar encordado"
+      "submit": "Guardar encordado",
+      "hybrid": "Híbrido: otra cuerda en las cruzadas",
+      "mainsLength": "Longitud verticales (m)",
+      "crossesLength": "Longitud cruzadas (m)",
+      "lengthPlaceholder": "12",
+      "lengthError": "Indica una longitud entre 1 y 20 m.",
+      "source": "Origen",
+      "sourcePlaceholder": "Set o bobina",
+      "stringer": "Encordador",
+      "stringerPlaceholder": "p. ej. tienda del club",
+      "cost": "Coste (EUR)",
+      "costError": "Indica un coste de cero o más."
+    },
+    "row": {
+      "since": "desde {date}"
+    },
+    "photo": {
+      "choose": "Elegir foto",
+      "replace": "Cambiar foto",
+      "remove": "Quitar foto",
+      "removing": "Quitando…",
+      "clear": "Descartar",
+      "pending": "Lista para guardar: {name}",
+      "hint": "JPEG, PNG o WebP, hasta {max} MB. Solo tú la ves; los datos de ubicación y cámara se eliminan al guardarla.",
+      "alt": "Foto de {name}",
+      "previewAlt": "La foto que acabas de elegir",
+      "unavailable": "Las fotos necesitan el servidor real; no están disponibles en la demo.",
+      "rejectedType": "Ese archivo no es una imagen JPEG, PNG o WebP.",
+      "rejectedSize": "Esa foto supera los {max} MB. Elige una más pequeña.",
+      "uploading": "Guardando la foto… {percent}%"
+    },
+    "specs": {
+      "label": {
+        "gripSize": "Tamaño de grip",
+        "weightG": "Peso (g)",
+        "stringPattern": "Patrón de encordado",
+        "gaugeMm": "Calibre (mm)",
+        "setLengthM": "Longitud en la bolsa (m)",
+        "size": "Talla",
+        "surface": "Superficie",
+        "quantity": "Cantidad"
+      },
+      "chip": {
+        "gripSize": "Grip {value}",
+        "weightG": "{value} g",
+        "stringPattern": "{value}",
+        "gaugeMm": "{value} mm",
+        "setLengthM": "{value} m",
+        "size": "Talla {value}",
+        "surface": "{value}",
+        "quantity": "×{value}"
+      },
+      "surfacePlaceholder": "Cualquier superficie"
+    },
+    "surface": {
+      "clay": "Tierra batida",
+      "hard": "Pista dura",
+      "grass": "Hierba",
+      "indoor": "Cubierta",
+      "all": "Todas las superficies"
     }
   },
   "finance": {
@@ -3517,7 +3586,11 @@
       "removed": "Material eliminado",
       "addFailed": "No se ha podido añadir el material",
       "updateFailed": "No se ha podido actualizar el material",
-      "removeFailed": "No se ha podido eliminar el material"
+      "removeFailed": "No se ha podido eliminar el material",
+      "photoSaved": "Foto guardada",
+      "photoFailed": "No se ha podido guardar la foto",
+      "photoRemoved": "Foto quitada",
+      "photoRemoveFailed": "No se ha podido quitar la foto"
     },
     "notification": {
       "allRead": "Todas las notificaciones marcadas como leídas",

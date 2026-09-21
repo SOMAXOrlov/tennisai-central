@@ -86,11 +86,24 @@ export const CATEGORY_ORDER: EquipmentCategory[] = ["racket", "string", "shoes",
 
 // ─── Condition badge colors ───
 
+// Worse is never the accent colour. The accent (green) reads as "good" to
+// anyone, and the previous mapping painted "Fraying" and "Broken" green while
+// "Fresh" stayed grey — the inverse of what a player expects at a glance.
+// Excellent and good are quiet; fair is outlined so it stands out without
+// alarm; poor alone is destructive, because it alone means "act now".
 export const CONDITION_STYLES: Record<string, string> = {
   excellent: "bg-muted text-foreground dark:text-foreground border-border",
   good: "bg-muted text-foreground dark:text-foreground border-border",
-  fair: "bg-primary/10 text-primary dark:text-primary border-primary/25",
-  poor: "bg-primary/10 text-primary dark:text-primary border-primary/25",
+  fair: "bg-background text-foreground dark:text-foreground border-foreground/50",
+  poor: "bg-destructive/10 text-destructive border-destructive/30",
+};
+
+/** The dot beside each option in the condition picker: same scale, no words. */
+export const CONDITION_DOT: Record<string, string> = {
+  excellent: "bg-foreground",
+  good: "bg-foreground/50",
+  fair: "border border-foreground bg-transparent",
+  poor: "bg-destructive",
 };
 
 export function getConditionLevel(category: EquipmentCategory, condition?: string): string {

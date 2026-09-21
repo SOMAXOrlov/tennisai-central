@@ -19,6 +19,7 @@ import { ErrorState } from "@/components/ui/shared";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { useT } from "@/lib/i18n";
 import type { ConnectedPlayer, EquipmentCategory, EquipmentItem } from "@/types";
+import { specChips } from "@/lib/equipment/specs";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, CONDITION_STYLES, categoryPlural, conditionLabel, getConditionLevel } from "./categories";
 import { RacketStringing } from "./RacketStringing";
 
@@ -32,7 +33,7 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
   const playerId = player?.id ?? "";
   const { data: items = [], isLoading, error, refetch } = useEquipment(playerId);
   const { data: setups = [] } = useStringSetups(playerId);
-  const { t } = useT();
+  const { t, formatNumber } = useT();
 
   const grouped = useMemo(() => {
     const map: Record<EquipmentCategory, EquipmentItem[]> = { racket: [], string: [], shoes: [], balls: [], accessories: [] };
@@ -101,6 +102,13 @@ export function PlayerEquipmentDrawer({ player, open, onOpenChange }: PlayerEqui
                               {item.brand && item.model && <span>·</span>}
                               {item.model && <span>{item.model}</span>}
                               {item.notes && <span className="text-muted-foreground/60">— {item.notes}</span>}
+                            </div>
+                          )}
+                          {specChips(item.category, item.specs ?? undefined, t, formatNumber).length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {specChips(item.category, item.specs ?? undefined, t, formatNumber).map((chip) => (
+                                <Badge key={chip} variant="outline" className="px-1.5 py-0 text-[10px] font-normal">{chip}</Badge>
+                              ))}
                             </div>
                           )}
                           {item.category === "racket" && (

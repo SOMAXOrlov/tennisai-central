@@ -137,9 +137,9 @@ export const mockFinanceSummary: FinanceSummary = {
 };
 
 export const mockEquipment: EquipmentItem[] = [
-  { id: "eq1", playerId: "p1", category: "racket", name: "Wilson Pro Staff 97", brand: "Wilson", model: "Pro Staff 97", condition: "Good", acquiredDate: "2025-09-01" },
-  { id: "eq2", playerId: "p1", category: "string", name: "Luxilon ALU Power", brand: "Luxilon", model: "ALU Power 125", condition: "Fraying" },
-  { id: "eq3", playerId: "p1", category: "shoes", name: "Nike Vapor Pro 2", brand: "Nike", model: "Vapor Pro 2", condition: "New" },
+  { id: "eq1", playerId: "p1", category: "racket", name: "Wilson Pro Staff 97", brand: "Wilson", model: "Pro Staff 97", condition: "Good", acquiredDate: "2025-09-01", specs: { gripSize: "L3", weightG: 315, stringPattern: "16x19" } },
+  { id: "eq2", playerId: "p1", category: "string", name: "Luxilon ALU Power", brand: "Luxilon", model: "ALU Power 125", condition: "Fraying", specs: { gaugeMm: 1.25, setLengthM: 12 } },
+  { id: "eq3", playerId: "p1", category: "shoes", name: "Nike Vapor Pro 2", brand: "Nike", model: "Vapor Pro 2", condition: "New", specs: { size: "EU 43", surface: "hard" } },
   { id: "eq4", playerId: "p1", category: "racket", name: "Babolat Pure Drive", brand: "Babolat", model: "Pure Drive 2024", condition: "Fair", acquiredDate: "2024-06-15" },
   { id: "eq5", playerId: "p1", category: "accessories", name: "Wilson Pro Overgrip (3-pack)", brand: "Wilson", condition: "Worn" },
   { id: "eq6", playerId: "p1", category: "balls", name: "Wilson US Open Balls", brand: "Wilson", condition: "Practice", notes: "Can of 4" },
@@ -150,6 +150,7 @@ export const mockStringSetups: StringSetup[] = [
   {
     id: "ss1", playerId: "p1", racketItemId: "eq1",
     mainsCustomName: "Luxilon ALU Power 1.25", tensionMainsKg: 24,
+    mainsLengthM: 12, mainsSource: "set", costEur: 28,
     strungAt: "2026-01-12T10:00:00Z", retiredAt: "2026-02-20T10:00:00Z", retiredReason: "broke",
     hoursPlayed: 14, isCurrent: false, createdAt: "2026-01-12T10:00:00Z", updatedAt: "2026-02-20T10:00:00Z",
   },

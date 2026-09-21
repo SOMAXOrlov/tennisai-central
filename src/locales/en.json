@@ -1819,7 +1819,11 @@
       "notes": "Notes",
       "notesPlaceholder": "e.g. grip size L3",
       "adding": "Adding…",
-      "submit": "Add Equipment"
+      "submit": "Add Equipment",
+      "acquired": "Acquired on",
+      "details": "Details",
+      "stringHint": "A set or reel in your bag. What is in a racket right now is recorded on the racket, with Restring.",
+      "photo": "Photo"
     },
     "category": {
       "racket": {
@@ -1925,6 +1929,12 @@
         "dead": "went dead",
         "switched": "switched",
         "other": "replaced"
+      },
+      "length": "{m} m",
+      "cost": "{amount} EUR",
+      "source": {
+        "set": "set",
+        "reel": "reel"
       }
     },
     "restring": {
@@ -1943,7 +1953,66 @@
       "notes": "Notes",
       "notesPlaceholder": "e.g. felt stiff, dropping a kilo",
       "saving": "Saving…",
-      "submit": "Save stringing"
+      "submit": "Save stringing",
+      "hybrid": "Hybrid — a different string in the crosses",
+      "mainsLength": "Mains length (m)",
+      "crossesLength": "Crosses length (m)",
+      "lengthPlaceholder": "12",
+      "lengthError": "Enter a length between 1 and 20 m.",
+      "source": "From",
+      "sourcePlaceholder": "Set or reel",
+      "stringer": "Stringer",
+      "stringerPlaceholder": "e.g. club pro shop",
+      "cost": "Cost (EUR)",
+      "costError": "Enter a cost of zero or more."
+    },
+    "row": {
+      "since": "since {date}"
+    },
+    "photo": {
+      "choose": "Choose photo",
+      "replace": "Replace photo",
+      "remove": "Remove photo",
+      "removing": "Removing…",
+      "clear": "Clear choice",
+      "pending": "Ready to save: {name}",
+      "hint": "JPEG, PNG or WebP, up to {max} MB. Only you can see it; location and camera data are removed when it is saved.",
+      "alt": "Photo of {name}",
+      "previewAlt": "The photo you just chose",
+      "unavailable": "Photos need the live server; they are not available in the demo.",
+      "rejectedType": "That file is not a JPEG, PNG or WebP image.",
+      "rejectedSize": "That photo is over {max} MB. Please choose a smaller one.",
+      "uploading": "Saving the photo… {percent}%"
+    },
+    "specs": {
+      "label": {
+        "gripSize": "Grip size",
+        "weightG": "Weight (g)",
+        "stringPattern": "String pattern",
+        "gaugeMm": "Gauge (mm)",
+        "setLengthM": "Length in the bag (m)",
+        "size": "Size",
+        "surface": "Court surface",
+        "quantity": "Quantity"
+      },
+      "chip": {
+        "gripSize": "Grip {value}",
+        "weightG": "{value} g",
+        "stringPattern": "{value}",
+        "gaugeMm": "{value} mm",
+        "setLengthM": "{value} m",
+        "size": "Size {value}",
+        "surface": "{value}",
+        "quantity": "×{value}"
+      },
+      "surfacePlaceholder": "Any surface"
+    },
+    "surface": {
+      "clay": "Clay",
+      "hard": "Hard court",
+      "grass": "Grass",
+      "indoor": "Indoor",
+      "all": "All surfaces"
     }
   },
   "finance": {
@@ -3517,7 +3586,11 @@
       "removed": "Equipment removed",
       "addFailed": "Couldn't add the equipment",
       "updateFailed": "Couldn't update the equipment",
-      "removeFailed": "Couldn't remove the equipment"
+      "removeFailed": "Couldn't remove the equipment",
+      "photoSaved": "Photo saved",
+      "photoFailed": "Couldn't save the photo",
+      "photoRemoved": "Photo removed",
+      "photoRemoveFailed": "Couldn't remove the photo"
     },
     "notification": {
       "allRead": "All notifications marked as read",
